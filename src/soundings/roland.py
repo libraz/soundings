@@ -1,0 +1,103 @@
+"""Roland exclusive messages: DT1 (write) and RQ1 (read).
+
+The address and size are three seven-bit bytes each, and the checksum covers
+both plus the data. Nothing here knows what any address means -- that is the
+measurement's job, not the transport's.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+ROLAND_ID = 0x41
+GS_MODEL_ID = 0x42
+CMD_RQ1 = 0x11
+CMD_DT1 = 0x12
+
+DEFAULT_DEVICE_ID = 0x10
+
+
+def checksum(payload: list[int]) -> int:
+    return (128 - sum(payload) % 128) % 128
+
+
+def _three(value: int) -> list[int]:
+    if not 0 <= value < (1 << 21):
+        raise ValueError(f"value {value} does not fit in three seven-bit bytes")
+    return [(value >> 14) & 0x7F, (value >> 7) & 0x7F, value & 0x7F]
+
+
+def address_bytes(address: int | tuple[int, int, int] | str) -> list[int]:
+    """Accept 0x400130, (0x40, 0x01, 0x30) or '40 01 30'."""
+    if isinstance(address, str):
+        parts = [int(p, 16) for p in address.replace(",", " ").split()]
+        if len(parts) != 3:
+            raise ValueError(f"expected three address bytes, got {address!r}")
+        return parts
+    if isinstance(address, tuple):
+        if len(address) != 3:
+            raise ValueError(f"expected three address bytes, got {address!r}")
+        return list(address)
+    return _three(address)
+
+
+def rq1(
+    address: int | tuple[int, int, int] | str,
+    size: int,
+    *,
+    device_id: int = DEFAULT_DEVICE_ID,
+    model_id: int = GS_MODEL_ID,
+) -> list[int]:
+    payload = address_bytes(address) + _three(size)
+    return [0xF0, ROLAND_ID, device_id, model_id, CMD_RQ1, *payload, checksum(payload), 0xF7]
+
+
+def dt1(
+    address: int | tuple[int, int, int] | str,
+    data: list[int],
+    *,
+    device_id: int = DEFAULT_DEVICE_ID,
+    model_id: int = GS_MODEL_ID,
+) -> list[int]:
+    payload = address_bytes(address) + list(data)
+    return [0xF0, ROLAND_ID, device_id, model_id, CMD_DT1, *payload, checksum(payload), 0xF7]
+
+
+@dataclass(frozen=True)
+class Dt1Reply:
+    address: tuple[int, int, int]
+    data: list[int]
+    checksum_ok: bool
+
+    @property
+    def size(self) -> int:
+        return len(self.data)
+
+
+def parse_dt1(raw: list[int]) -> Dt1Reply | None:
+    """Parse a DT1 reply, or return None if this is not a well-formed one.
+
+    The checksum is reported rather than enforced. A bad checksum means the path
+    corrupted the message, which is a finding about the measurement setup and
+    must not be silently discarded.
+    """
+    if len(raw) < 11:
+        return None
+    if raw[0] != 0xF0 or raw[1] != ROLAND_ID or raw[4] != CMD_DT1 or raw[-1] != 0xF7:
+        return None
+    body = raw[5:-2]
+    if len(body) < 4:
+        return None
+    return Dt1Reply(
+        address=(body[0], body[1], body[2]),
+        data=body[3:],
+        checksum_ok=raw[-2] == checksum(body),
+    )
+
+
+IDENTITY_REQUEST = [0xF0, 0x7E, 0x7F, 0x06, 0x01, 0xF7]
+GM_SYSTEM_ON = [0xF0, 0x7E, 0x7F, 0x09, 0x01, 0xF7]
+
+
+def gs_reset(*, device_id: int = DEFAULT_DEVICE_ID) -> list[int]:
+    return dt1("40 00 7F", [0x00], device_id=device_id)

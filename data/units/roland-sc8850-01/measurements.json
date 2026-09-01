@@ -1,0 +1,76 @@
+{
+  "unit_id": "roland-sc8850-01",
+  "schema_version": 0,
+  "note": "Early measurements taken while establishing the measurement chain. Not a sweep; these are the addresses and behaviours probed by hand. Every entry is a value this unit returned.",
+  "addresses": [
+    {
+      "address": "40 00 00",
+      "name": "MASTER TUNE",
+      "size_returned": 4,
+      "value_after_power_on": "00 04 00 00",
+      "readable": true
+    },
+    {
+      "address": "40 00 04",
+      "name": "MASTER VOLUME",
+      "size_returned": 1,
+      "value_after_power_on": "7F",
+      "readable": true
+    },
+    {
+      "address": "40 00 7F",
+      "name": "SYSTEM MODE SET",
+      "readable": false,
+      "note": "No reply to RQ1 at any tested size. Write-only."
+    },
+    {
+      "address": "40 01 30",
+      "name": "REVERB MACRO",
+      "size_returned": 1,
+      "value_after_power_on": "04",
+      "readable": true
+    },
+    {
+      "address": "40 01 33",
+      "name": "REVERB LEVEL",
+      "size_returned": 1,
+      "value_after_power_on": "40",
+      "readable": true
+    },
+    {
+      "address": "40 01 38",
+      "name": "CHORUS MACRO",
+      "size_returned": 1,
+      "value_after_power_on": "02",
+      "readable": true
+    },
+    {
+      "address": "40 11 00",
+      "size_returned": 1,
+      "value_after_power_on": "00",
+      "readable": true,
+      "note": "Answers a size-1 request but returns nothing for a size-64 request."
+    }
+  ],
+  "region_probes": [
+    { "address": "40 00 00", "requested": 64, "returned": 7 },
+    { "address": "40 01 00", "requested": 64, "returned": 16 },
+    { "address": "40 01 30", "requested": 64, "returned": 64, "note": "region is at least 64 bytes; not bounded by this probe" },
+    { "address": "40 02 00", "requested": 64, "returned": 64, "note": "region is at least 64 bytes; not bounded by this probe" },
+    { "address": "40 03 00", "requested": 64, "returned": 30 },
+    { "address": "40 11 00", "requested": 64, "returned": 0, "note": "refused rather than truncated" }
+  ],
+  "behaviours": [
+    {
+      "id": "cc10-pan-separation-depends-on-patch",
+      "summary": "CC10 hard pan fully separates a mono patch but leaves a stereo patch's internal spread largely intact.",
+      "method": "CC10=0 and CC10=127, note 84 at velocity 127, CC7=127, CC11=127, reverb and chorus sends at 0. Peak level per output channel over the sustained section.",
+      "results": [
+        { "program": 56, "separation_db": 68.0, "detail": "opposite channel reached the measurement noise floor" },
+        { "program": 80, "separation_db": 27.1 },
+        { "program": 0, "separation_db": 4.1 }
+      ],
+      "note": "Suggests pan is applied per part but does not override a patch's internal per-wave placement. The signal path itself has no measurable crosstalk, which is what the program 56 result establishes."
+    }
+  ]
+}

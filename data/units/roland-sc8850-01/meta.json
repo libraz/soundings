@@ -1,0 +1,53 @@
+{
+  "unit_id": "roland-sc8850-01",
+  "manufacturer": "Roland",
+  "model": "SC-8850",
+  "identity_reply": "F0 7E 10 06 02 41 42 00 00 06 00 00 00 00 F7",
+  "identity_decoded": {
+    "manufacturer_id": "41",
+    "device_family": "0042",
+    "device_family_member": "0600",
+    "software_revision": "00 00 00 00",
+    "note": "The unit reports an all-zero software revision, so the firmware version cannot be read from the Identity Reply. Firmware identification for this unit is unresolved."
+  },
+  "device_id": {
+    "responds_to": ["10", "7F"],
+    "does_not_respond_to": ["00", "11"]
+  },
+  "specifications_claimed": ["GM", "GS"],
+  "specifications_measured": ["GS"],
+  "rear_selector": {
+    "positions_labelled": ["PC", "Mac", "USB"],
+    "position_used": "unlabelled fourth position (DIN MIDI)",
+    "note": "The DIN MIDI IN does not reach the tone generator in any of the three labelled positions. MIDI OUT still emits Active Sensing in every position, so the failure presents as a healthy receive path with a silent transmit path. The selector is read only at power-on."
+  },
+  "measurement_chain": {
+    "midi_interface": "Focusrite Scarlett 4i4 4th Gen",
+    "midi_cables": "Roland RMIDI-B3 x2",
+    "midi_wiring": "interface MIDI OUT -> unit MIDI IN 1; unit MIDI OUT 1 -> interface MIDI IN",
+    "audio_cable": "Roland RCC-3-2R28",
+    "audio_wiring": "unit OUTPUT 1 L -> interface INPUT 3; R -> INPUT 4 (rear, fixed gain)",
+    "unit_volume": "maximum (hard stop, exactly reproducible without markings)",
+    "capture": "CoreAudio HAL AudioDeviceCreateIOProcID, 48000 Hz, 6 ch, float32",
+    "capture_note": "ffmpeg -f avfoundation silently loses about 11 percent of samples on this path and must not be used."
+  },
+  "measurement_health": {
+    "sysex_reply_checksums": "6/6 verified",
+    "repeat_read_identical": "100/100",
+    "sysex_round_trip_median_ms": 23.4,
+    "sysex_round_trip_range_ms": [20.2, 25.1],
+    "interface_loopback_sysex_bytes": 203,
+    "interface_loopback_result": "byte-exact",
+    "capture_timeline_ratio": 1.0004,
+    "capture_timeline_stddev_ms": 2.51,
+    "capture_dropouts": 0,
+    "noise_floor_dbfs": -90.3,
+    "peak_dbfs_at_maximum": -25.0,
+    "peak_conditions": "CC7=127, CC11=127, velocity=127"
+  },
+  "capabilities_confirmed": {
+    "rq1_readback": true,
+    "rq1_block_read": true,
+    "oversized_request_behaviour": "not uniform: some regions truncate the reply at the region boundary, others refuse entirely and return nothing. A silent reply does not mean the region is absent."
+  }
+}
