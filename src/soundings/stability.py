@@ -206,15 +206,36 @@ def signal_over_silence(signal: np.ndarray, sample_rate: int, *, before: float) 
     return _db(_rms(loud), _rms(quiet))
 
 
-def compare(
+@dataclass
+class Isolation:
+    """A take with its reference divided out, leaving only what the reference is not."""
+
+    reference: np.ndarray
+    """The reference, trimmed to the region both takes cover."""
+
+    residual: np.ndarray
+    """What the take holds that the best-fitting copy of the reference does not."""
+
+    gain: float
+    """The factor the take was scaled up by to match the reference."""
+
+    delay_samples: float
+    correlation: float
+
+
+def isolate(
     reference: np.ndarray,
     take: np.ndarray,
-    sample_rate: int,
     *,
-    silence_before: float = 0.3,
     guard: int = 256,
-) -> Comparison:
-    """Align a take to a reference, level it, subtract, and report what is left."""
+) -> Isolation:
+    """Align, level, and subtract, keeping the difference rather than measuring it.
+
+    The same three steps `compare` takes, stopping one short. What is left is the
+    part of the take the reference cannot account for -- an effect's return, when
+    the reference is the same note with that effect switched off -- and it is a
+    signal in its own right that can be measured further.
+    """
     reference = np.asarray(reference, dtype=np.float64)
     take = np.asarray(take, dtype=np.float64)
     length = min(reference.size, take.size)
@@ -230,7 +251,29 @@ def compare(
     # The factor that scales the take up to the reference; the take's own level
     # relative to the reference is its reciprocal, which is what gets reported.
     gain = float(np.dot(a, b)) / denominator if denominator > 0 else 0.0
-    residual = a - gain * b
+    return Isolation(
+        reference=a,
+        residual=a - gain * b,
+        gain=gain,
+        delay_samples=delay,
+        correlation=correlation,
+    )
+
+
+def compare(
+    reference: np.ndarray,
+    take: np.ndarray,
+    sample_rate: int,
+    *,
+    silence_before: float = 0.3,
+    guard: int = 256,
+) -> Comparison:
+    """Align a take to a reference, level it, subtract, and report what is left."""
+    reference = np.asarray(reference, dtype=np.float64)
+    reference = reference[: min(reference.size, np.asarray(take).size)]
+    apart = isolate(reference, take, guard=guard)
+    a, gain, residual = apart.reference, apart.gain, apart.residual
+    delay, correlation = apart.delay_samples, apart.correlation
 
     return Comparison(
         delay_samples=delay,
@@ -364,9 +407,11 @@ def summarise(comparisons: list[Comparison], *, label: str) -> str:
 
 __all__ = [
     "Comparison",
+    "Isolation",
     "ToneFit",
     "compare",
     "cross_correlate",
+    "isolate",
     "noise_floor",
     "shift",
     "summarise",
