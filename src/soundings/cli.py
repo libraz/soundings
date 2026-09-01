@@ -282,6 +282,89 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tone_map(args: argparse.Namespace) -> int:
+    from .resets import Prober, catalogue
+    from .tonemap import SAMPLE_PROGRAMS, Asker, summarise, survey
+
+    with MidiLink(args.port) as link:
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not asking.")
+            return 1
+
+        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        prober = Prober(link, baseline={}, device_id=args.device_id)
+        prober.apply(gs_reset)
+
+        asker = Asker(
+            link,
+            channel=args.channel,
+            map_select=args.map_select,
+            device_id=args.device_id,
+            settle=args.settle,
+        )
+        # Nothing can be asked until the part is standing somewhere the sweep
+        # knows about, or the first answer is a comparison against a guess.
+        if not asker.settle_on(0, 0):
+            print(
+                "\nThe part would not take bank 0 program 0, so nothing here would mean anything."
+            )
+            return 1
+
+        banks = range(args.banks_from, args.banks_to + 1)
+        print(
+            f"\nmap {args.map_select}, channel {args.channel + 1}, "
+            f"banks {banks.start}-{banks.stop - 1}"
+        )
+        found = survey(
+            asker,
+            banks=banks,
+            exhaustive=args.exhaustive,
+            progress=lambda m: print(f"  {m}"),
+        )
+        prober.apply(gs_reset)
+
+    print()
+    print(
+        summarise(found, len(SAMPLE_PROGRAMS), asker.asks, asker.unread, exhaustive=args.exhaustive)
+    )
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "channel": args.channel + 1,
+                    "map_select": args.map_select,
+                    "method": "Each tone was asked for by sending its bank select and a program "
+                    "change, then reading the part's own tone bytes back. The unit discards a "
+                    "combination it does not have and leaves the part where it was, so a part "
+                    "that moved to what was asked for is the tone existing. The part is moved "
+                    "away first whenever it already stands on what is about to be asked.",
+                    "sampled_before_sweeping": None if args.exhaustive else list(SAMPLE_PROGRAMS),
+                    "sampling_caveat": (
+                        "Every bank was asked for all 128 programs, so a bank absent here "
+                        "answered none of them."
+                        if args.exhaustive
+                        else "A bank that answered none of the sampled programs was not swept "
+                        "and is absent here. A bank whose only tones sit between them would "
+                        "read as empty."
+                    ),
+                    "requests": asker.asks,
+                    "reads_unusable": asker.unread,
+                    "banks": [b.to_json() for b in found],
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0 if not asker.unread else 1
+
+
 def _part_block(family: int, channel: int) -> tuple[int, int, int]:
     """The per-part block for a channel, in one of the families of them.
 
@@ -705,6 +788,36 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_write_probe)
+
+    p = sub.add_parser(
+        "tone-map",
+        help="find which tones exist, by asking for each and seeing whether it was taken",
+    )
+    p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
+    p.add_argument(
+        "--map-select",
+        type=lambda s: int(s, 0),
+        default=0,
+        help="the CC32 value held for the whole survey",
+    )
+    p.add_argument(
+        "--exhaustive",
+        action="store_true",
+        help="ask every bank for all 128 programs instead of sampling first; three times "
+        "the cost and the only form with nothing to caveat",
+    )
+    p.add_argument("--banks-from", type=lambda s: int(s, 0), default=0)
+    p.add_argument("--banks-to", type=lambda s: int(s, 0), default=127)
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.04,
+        help="pause after a program change before reading the part back; the tone was "
+        "measured to reach the part block in a median 12.6 ms",
+    )
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_tone_map)
 
     p = sub.add_parser(
         "reset-probe",
