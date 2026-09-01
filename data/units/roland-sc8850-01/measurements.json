@@ -41,6 +41,11 @@
       "address": "52 00 00",
       "readable": false,
       "note": "No reply, while 50 and 51 both answer. The space is not dense."
+    },
+    {
+      "address": "40 03 1D",
+      "readable": true,
+      "note": "Answers a one byte read and takes any value, yet lies outside every region the sweep bounded, so it is absent from address-map.json and from the power-on capture. The mirror image of 40 01 41 to 47, which a block read reaches and a one byte read does not: neither kind of read alone bounds a region."
     }
   ],
   "behaviours": [
@@ -625,6 +630,38 @@
         "That the three routes behave alike in anything but the value stored. Rate of change, resolution and audible result were not compared."
       ],
       "reproduced": true
+    },
+    {
+      "id": "gs-reset-reproduces-the-power-on-state-and-the-two-gm-resets-do-not",
+      "summary": "GS Reset returns all 37502 readable bytes to exactly what the unit held after a power cycle. GM1 System On leaves 88 of them elsewhere and GM2 System On leaves 974, and the two GM resets are not nested: they share 32 changes, GM1 makes 56 the other does not, and GM2 makes 942 the other does not. All three restore every marked byte, so the difference is not in what they reset but in what they additionally set.",
+      "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on-state.json.",
+      "results": {
+        "GS Reset": {
+          "message": "F0 41 10 42 12 40 00 7F 00 41 F7",
+          "marked_bytes_restored": "50 of 51",
+          "readable_bytes_differing_from_power_on": 0
+        },
+        "GM1 System On": {
+          "message": "F0 7E 7F 09 01 F7",
+          "marked_bytes_restored": "50 of 51",
+          "readable_bytes_differing_from_power_on": 88,
+          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks (40 10 to 40 1F and 50 10 to 50 1F), and at low bytes 23 and 24 in 28 of them; 40 10, 40 18, 50 10 and 50 18 already held 00 there"
+        },
+        "GM2 System On": {
+          "message": "F0 7E 7F 09 03 F7",
+          "marked_bytes_restored": "50 of 51",
+          "readable_bytes_differing_from_power_on": 974,
+          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks, as GM1 also does; 00 -> 7A at low byte 00 in all 32 blocks of the 40 4x and 50 4x family, which is the byte CC32 writes into; and 65 bytes in each of the fourteen drum setup families 41 to 47, 4A to 4F and 51",
+          "does_not_change": "low bytes 23 and 24, which GM1 System On does"
+        }
+      },
+      "reproduced": "three runs, the last two from a common starting state, all giving 88 and 974 exactly",
+      "not_established": [
+        "What any of the changed fields is. The addresses and the transitions are what was measured; naming them would be reading the manual, not the machine.",
+        "Whether the changes are audible. This is a read back and nothing was heard.",
+        "What System Mode Set does. It reinitialises rather than resetting parameters and was not sent.",
+        "That GS Reset reproduces power-on for anything unreadable. 37502 bytes of the 42064 the map spans were compared; the rest answer no read."
+      ]
     }
   ]
 }
