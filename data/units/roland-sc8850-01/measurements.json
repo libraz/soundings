@@ -62,6 +62,21 @@
   ],
   "behaviours": [
     {
+      "id": "rq1-large-size-hangs-the-unit",
+      "summary": "An RQ1 request for 256 bytes stops the unit responding entirely, including its Active Sensing. Recovery needs a power cycle.",
+      "method": "RQ1 at 40 01 30 with increasing sizes, checking after each that a known-good one-byte read still answers.",
+      "results": [
+        { "size": 32, "returned": 32, "unit_alive_after": true },
+        { "size": 64, "returned": 64, "unit_alive_after": true },
+        { "size": 128, "returned": null, "unit_alive_after": true },
+        { "size": 200, "returned": null, "unit_alive_after": true },
+        { "size": 256, "returned": null, "unit_alive_after": false }
+      ],
+      "boundary": "between 200 and 256; not narrowed further, because each test past the boundary costs a power cycle",
+      "note": "The failure is total and silent: Active Sensing stops, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
+      "reproduced": true
+    },
+    {
       "id": "cc10-pan-separation-depends-on-patch",
       "summary": "CC10 hard pan fully separates a mono patch but leaves a stereo patch's internal spread largely intact.",
       "method": "CC10=0 and CC10=127, note 84 at velocity 127, CC7=127, CC11=127, reverb and chorus sends at 0. Peak level per output channel over the sustained section.",
