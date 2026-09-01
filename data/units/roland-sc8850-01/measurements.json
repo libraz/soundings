@@ -1,7 +1,7 @@
 {
   "unit_id": "roland-sc8850-01",
   "schema_version": 0,
-  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte.",
+  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte. power-on-state.json holds the whole readable map as read immediately after a power cycle, before anything but RQ1 had been sent.",
   "withdrawn": {
     "what": "An earlier hand measured table of addresses and region sizes.",
     "why": "It was taken before the reply deadline was understood, so replies were running one request behind and its sizes and values were the previous probe's answer. Three of its rows were re-read cleanly and all three were wrong: 40 00 00 was recorded as 7 bytes reading 00 04 00 00 and is 4 bytes reading 00 00 04 07; 40 00 04 was recorded as readable holding 7F and does not answer at any size; 40 01 30 was recorded as returning 64 bytes and bounds at 24, refusing 64. The rest is not individually retracted because it was produced the same way and none of it is needed -- the sweep covers it.",
@@ -558,7 +558,7 @@
       },
       "note": "The NRPN selector is re-sent with every value rather than once per pair. A selector left standing from an earlier stimulus is the ordinary way for a data entry to land somewhere nobody named.",
       "not_established": [
-        "That writing the byte by SysEx is a third way into the same location. It was not tried from that direction.",
+        "Nothing further about the SysEx route beyond the value stored; that it is a third way in, and that these bytes have no mirror, is recorded separately.",
         "That the two routes are equivalent in anything but the value stored. Rate of change, resolution and audible result were not compared.",
         "Anything about the per-note drum NRPNs, which only mean something on a part in drum mode."
       ],
@@ -590,7 +590,39 @@
       ],
       "not_established": [
         "Where the other three RPNs are kept. They changed no byte of the readable space; whether they are held somewhere unaddressable or not held at all is not decided by this.",
-        "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported."
+        "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported. A DT1 write to the same byte is kept verbatim, so the conversion is in the RPN receiver and the byte itself is an ordinary 0 to 127 field: see sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly",
+      "summary": "A DT1 write reaches every byte a control change and an NRPN were measured to reach, keeping the value verbatim, and moves nothing else anywhere in the readable map. So each of these parameters has one storage location with three ways in and no mirror. The three routes are not interchangeable: RPN 00 05 converts on the way in while a DT1 to the same byte does not, so the scaling belongs to the receiver rather than to the storage.",
+      "method": "The same difference scan, sending a DT1 write as the stimulus. Each byte is primed at 20, written 60 and returned to 20, and the whole watched space is diffed rather than only the byte written, so a second location holding the same value would show. Every target byte is read before anything is written and written back and re-read at the end; a byte that would not read is never written to.",
+      "results": {
+        "reached verbatim by DT1": [
+          "40 11 19",
+          "40 11 1C",
+          "40 11 21",
+          "40 11 22",
+          "40 11 30",
+          "40 11 31",
+          "40 11 32",
+          "40 11 33",
+          "40 11 34",
+          "40 11 35",
+          "40 11 36",
+          "40 11 37",
+          "40 21 04"
+        ],
+        "mirrors found": "none",
+        "40 21 04 by DT1": "60 is stored as 60",
+        "40 21 04 by RPN 00 05": "6 is stored as 7F, and the fit is floor(v * 127 / 6)"
+      },
+      "mirror_search": "Two of the thirteen, 40 11 32 and 40 21 04, were written with all 854 regions watched rather than only the 85 under 40. Each moved its own byte and nothing else in the 37502 readable bytes. The other eleven were watched over the 85 regions under 40 only.",
+      "not_established": [
+        "That the other eleven have no mirror outside the 40 block. Only two were checked against the whole map; watching all 854 regions for all thirteen takes about four hours.",
+        "Which other parameters convert on the way in. Only 40 21 04 has been compared across two routes at several values.",
+        "That the three routes behave alike in anything but the value stored. Rate of change, resolution and audible result were not compared."
       ],
       "reproduced": true
     }
