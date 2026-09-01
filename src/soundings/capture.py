@@ -14,6 +14,7 @@ measurement is trusted.
 from __future__ import annotations
 
 import queue
+import threading
 import time
 from dataclasses import dataclass, field
 
@@ -35,6 +36,9 @@ class Recording:
     """Times PortAudio reported it had dropped input. Non-zero invalidates the take."""
 
     started_at: float = field(default=0.0)
+
+    open_seconds: float = field(default=0.0)
+    """Stream open to first block. Whatever is triggered before this is never captured."""
 
     @property
     def frames(self) -> int:
@@ -64,6 +68,7 @@ class Recording:
         return (
             f"{self.seconds:.3f}s / {self.requested_seconds:.3f}s requested "
             f"(ratio {self.length_ratio:.4f}), overflows {self.overflows}, "
+            f"opened in {self.open_seconds * 1000:.0f} ms, "
             f"{'OK' if self.healthy else 'UNHEALTHY'}"
         )
 
@@ -96,11 +101,21 @@ def record(
     sample_rate: int | None = None,
     channels: int | None = None,
     blocksize: int = 2048,
+    ready: threading.Event | None = None,
 ) -> Recording:
     """Record from one input device and return the samples with their health.
 
     This never raises on a lossy capture. A lossy capture is a measurement about
     the setup, and the caller has to be able to see it.
+
+    **Opening the device takes time, and on this chain it takes most of a
+    second.** Anything triggered on a timer started alongside the call to this
+    function therefore happens before a single sample has been captured, and what
+    comes back is the tail of a sound whose beginning was never recorded -- at
+    the right length, with no overflow, and healthy by every check here. So the
+    duration is counted from the first block rather than from the call, and
+    `ready` is set at that same moment for a caller that has a stimulus to
+    trigger. A stimulus anchored to anything else is anchored to the wrong clock.
     """
     index = resolve_device(device)
     info = sd.query_devices(index)
@@ -109,12 +124,17 @@ def record(
 
     blocks: queue.Queue = queue.Queue()
     overflows = 0
+    flowing = threading.Event()
 
     def callback(indata, frames, time_info, status):
         nonlocal overflows
         if status.input_overflow:
             overflows += 1
         blocks.put(indata.copy())
+        if not flowing.is_set():
+            flowing.set()
+            if ready is not None:
+                ready.set()
 
     started = time.monotonic()
     with sd.InputStream(
@@ -125,8 +145,12 @@ def record(
         blocksize=blocksize,
         callback=callback,
     ):
+        flowing.wait(timeout=max(5.0, seconds))
+        opened = time.monotonic()
         time.sleep(seconds)
 
+    if ready is not None:
+        ready.set()  # so a waiting stimulus thread cannot hang on a stream that never ran
     chunks = []
     while not blocks.empty():
         chunks.append(blocks.get())
@@ -138,6 +162,7 @@ def record(
         requested_seconds=seconds,
         overflows=overflows,
         started_at=started,
+        open_seconds=opened - started,
     )
 
 
