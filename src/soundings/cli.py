@@ -13,6 +13,11 @@ from . import roland
 from .midi import MidiLink, list_ports
 from .selftest import midi_selftest, timeline_selftest
 
+_LEAD_IN_HELP = (
+    "dB the lead-in must sit below its own take; above this something was sounding before "
+    "the note and the noise floor, which is the yardstick for everything else, is wrong"
+)
+
 
 def cmd_devices(args: argparse.Namespace) -> int:
     ins, outs = list_ports()
@@ -539,6 +544,404 @@ def _stimuli(args: argparse.Namespace) -> list:
     raise ValueError(args.kind)
 
 
+def _record_note(
+    link: MidiLink,
+    *,
+    device: str | None,
+    channel: int,
+    note: int,
+    velocity: int,
+    hold: float,
+    seconds: float,
+    lead: float,
+):
+    """Record while one note is played, with silence before it to measure the floor."""
+    import threading
+
+    ready = threading.Event()
+
+    def play() -> None:
+        # Wait for audio to be flowing, not merely for the recorder to have been
+        # called. Opening the device outlasts any lead-in worth having.
+        ready.wait(timeout=30.0)
+        time.sleep(lead)
+        link.send([0x90 | (channel & 0x0F), note & 0x7F, velocity & 0x7F])
+        time.sleep(hold)
+        link.send([0x80 | (channel & 0x0F), note & 0x7F, 0])
+
+    thread = threading.Thread(target=play, daemon=True)
+    thread.start()
+    recording = cap.record(seconds, device=device, ready=ready)
+    thread.join(timeout=hold + lead + 1.0)
+    return recording
+
+
+def _loudest_channel(recording) -> int:
+    import numpy as np
+
+    peaks = [float(abs(recording.samples[:, c]).max()) for c in range(recording.samples.shape[1])]
+    return int(np.argmax(peaks))
+
+
+def _master_tune_cents(link: MidiLink, device_id: int) -> float | None:
+    """MASTER TUNE as cents off A440, from the four nibbles the unit stores it in."""
+    reply = roland.parse_dt1(link.exchange(roland.rq1((0x40, 0x00, 0x00), 4, device_id=device_id)))
+    if reply is None or reply.size != 4:
+        return None
+    packed = 0
+    for nibble in reply.data:
+        packed = (packed << 4) | (nibble & 0x0F)
+    return (packed - 0x400) / 10.0
+
+
+def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
+    """Refuse a run whose lead-in was not silent, naming why it matters."""
+    from . import stability
+
+    worst = stability.quietest_lead_in([t for g in groups for t in g], rate, before=before)
+    if worst <= limit:
+        return True
+    print(
+        f"\nThe quietest lead-in is only {worst:.1f} dB below its take, against {limit:.0f} dB "
+        "asked for. Something was sounding before the note: the tail of the take before it, or "
+        "another process driving the same unit. The noise floor sets the yardstick every number "
+        "here is judged against, so nothing measured from these takes would mean anything."
+    )
+    return False
+
+
+def cmd_contrast(args: argparse.Namespace) -> int:
+    """Play the same note under two settings and say whether the unit sounded different."""
+    from . import audible, stability
+    from .resets import Prober, catalogue
+
+    def setting(value: int) -> list[list[int]]:
+        if args.cc is not None:
+            return [[0xB0 | args.channel, args.cc & 0x7F, value & 0x7F]]
+        return [roland.dt1(args.address, [value], device_id=args.device_id)]
+
+    where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
+    label = f"{where} {args.values[0]} against {args.values[1]}"
+    stimulus = (
+        f"program {args.program}, note {args.note}, velocity {args.velocity}, "
+        f"held {args.hold:.1f} s, captured {args.seconds:.1f} s"
+    )
+
+    with MidiLink(args.port) as link:
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not recording.")
+            return 1
+
+        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        prober = Prober(link, baseline={}, device_id=args.device_id)
+        prober.apply(gs_reset)
+        for message in (
+            [0xC0 | args.channel, args.program & 0x7F],
+            [0xB0 | args.channel, 7, 127],
+            [0xB0 | args.channel, 11, 127],
+        ):
+            link.send(message)
+        time.sleep(0.3)
+
+        print(f"\n{label}\n  {stimulus}")
+        captured: list[list] = []
+        for value in args.values:
+            for message in setting(value):
+                link.send(message)
+            time.sleep(args.settle)
+            takes = []
+            for _ in range(args.takes):
+                recording = _record_note(
+                    link,
+                    device=args.audio,
+                    channel=args.channel,
+                    note=args.note,
+                    velocity=args.velocity,
+                    hold=args.hold,
+                    seconds=args.seconds,
+                    lead=args.lead,
+                )
+                if not recording.healthy:
+                    print(f"  lossy capture: {recording.health_report()}")
+                    return 1
+                takes.append(recording)
+                time.sleep(args.between)
+            print(f"  {where} = {value}: {len(takes)} takes")
+            captured.append(takes)
+        prober.apply(gs_reset)
+
+    index = _loudest_channel(captured[0][0])
+    rate = captured[0][0].sample_rate
+    groups = [[t.channel(index) for t in takes] for takes in captured]
+    rise = stability.signal_over_silence(groups[0][0], rate, before=args.lead * 0.8)
+    print(f"  channel {index} of {captured[0][0].device}: note {rise:.1f} dB over the lead-in")
+    if not rise > args.min_rise:
+        print(
+            f"\nThe note never rose {args.min_rise} dB above the silence before it, so these "
+            "takes hold no sound from the unit. Name the right input with --audio."
+        )
+        return 1
+
+    if not _lead_in_ok(groups, rate, args.lead * 0.8, args.max_lead_in):
+        return 1
+    verdict = audible.judge(
+        groups[0],
+        groups[1],
+        rate,
+        label=label,
+        stimulus=stimulus,
+        silence_before=args.lead * 0.8,
+        margin_db=args.margin,
+    )
+    print()
+    print(verdict.describe())
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "controller": args.cc,
+                    "address": None if args.cc is not None else args.address,
+                    "values": list(args.values),
+                    "method": "The same note was played several times under each setting. Takes "
+                    "of one setting are compared with each other to measure what the unit fails "
+                    "to repeat, and takes of the two settings are compared the same way to "
+                    "measure the change. The second must clear the first by the margin, so a "
+                    "unit that repeats badly cannot be read as a parameter that does something. "
+                    "Level is judged separately, because the alignment divides out the best "
+                    "fitting gain and a parameter that only changes level would otherwise "
+                    "leave no trace.",
+                    **verdict.to_json(),
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0
+
+
+def _bank_program(spec: str) -> tuple[int, int]:
+    """'80' or '8:80' -- a bare number is the GM bank, which is bank 0."""
+    bank, _, program = spec.rpartition(":")
+    return (int(bank or 0, 0), int(program, 0))
+
+
+def cmd_repeat(args: argparse.Namespace) -> int:
+    from . import stability
+    from .resets import Prober, catalogue
+    from .tonemap import Asker
+
+    setup = [
+        [0xC0 | args.channel, args.program & 0x7F],
+        [0xB0 | args.channel, 7, 127],
+        [0xB0 | args.channel, 11, 127],
+        [0xB0 | args.channel, 91, args.reverb & 0x7F],
+        [0xB0 | args.channel, 93, args.chorus & 0x7F],
+    ]
+
+    with MidiLink(args.port) as link:
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not recording.")
+            return 1
+
+        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        prober = Prober(link, baseline={}, device_id=args.device_id)
+        prober.apply(gs_reset)
+        cents = _master_tune_cents(link, args.device_id)
+
+        for message in setup:
+            link.send(message)
+        time.sleep(0.3)
+
+        print(
+            f"\nprogram {args.program}, note {args.note}, velocity {args.velocity}, "
+            f"reverb {args.reverb}, chorus {args.chorus}"
+        )
+        takes = []
+        for index in range(args.takes):
+            recording = _record_note(
+                link,
+                device=args.audio,
+                channel=args.channel,
+                note=args.note,
+                velocity=args.velocity,
+                hold=args.hold,
+                seconds=args.seconds,
+                lead=args.lead,
+            )
+            print(f"  take {index + 1}: {recording.health_report()}")
+            if not recording.healthy:
+                print("  the capture was lossy, so nothing measured from it would mean anything")
+                return 1
+            takes.append(recording)
+            time.sleep(args.between)
+
+        index = _loudest_channel(takes[0])
+        signals = [t.channel(index) for t in takes]
+        rate = takes[0].sample_rate
+        rise = stability.signal_over_silence(signals[0], rate, before=args.lead * 0.8)
+        print(f"  channel {index} of {takes[0].device}: note {rise:.1f} dB over the lead-in")
+        if not rise > args.min_rise:
+            print(
+                f"\nThe note never rose {args.min_rise} dB above the silence before it, so this "
+                "take holds no sound from the unit. Name the right input with --audio before "
+                "reading anything into a residual."
+            )
+            return 1
+        if not _lead_in_ok([signals], rate, args.lead * 0.8, args.max_lead_in):
+            return 1
+        comparisons = [
+            stability.compare(signals[0], s, rate, silence_before=args.lead * 0.8)
+            for s in signals[1:]
+        ]
+        print()
+        print(stability.summarise(comparisons, label=f"program {args.program} note {args.note}"))
+
+        fits: dict[int, object] = {}
+        expected = None
+        if args.clock:
+            expected = 440.0 * 2 ** ((args.clock_note - 69) / 12.0)
+            if cents is not None:
+                expected *= 2 ** (cents / 1200.0)
+            print(
+                f"\nclock: note {args.clock_note}, {expected:.4f} Hz expected, "
+                f"master tune {cents:+.1f} cents"
+                if cents is not None
+                else f"\nclock: note {args.clock_note}, {expected:.4f} Hz expected"
+            )
+            # Several voices, because most are not a frequency reference: one
+            # that layers two detuned oscillators, or carries its own vibrato,
+            # wobbles regardless of what CC93 is set to, and its phase slope is a
+            # confident number about nothing.
+            #
+            # Each is asked for through the tone map's Asker rather than sent
+            # blind. A bank and program the unit does not have is discarded whole
+            # and leaves the previous voice playing, which would be measured and
+            # filed under the voice that was asked for.
+            asker = Asker(link, channel=args.channel, device_id=args.device_id)
+            asker.settle_on(0, 0)
+            for bank, program in args.clock_program:
+                if not asker.ask(bank, program):
+                    print(f"  bank {bank:3d} program {program:3d}: the unit does not have it")
+                    continue
+                link.send([0xB0 | args.channel, 7, 127])
+                link.send([0xB0 | args.channel, 11, 127])
+                link.send([0xB0 | args.channel, 91, 0])
+                link.send([0xB0 | args.channel, 93, 0])
+                time.sleep(0.3)
+                held = _record_note(
+                    link,
+                    device=args.audio,
+                    channel=args.channel,
+                    note=args.clock_note,
+                    velocity=100,
+                    hold=args.clock_seconds,
+                    seconds=args.clock_seconds + 1.5,
+                    lead=0.5,
+                )
+                fit = (
+                    stability.tone_frequency(
+                        held.channel(_loudest_channel(held)),
+                        held.sample_rate,
+                        expected=expected,
+                        skip=1.0,
+                        trim=0.5,
+                    )
+                    if held.healthy
+                    else None
+                )
+                if fit is None:
+                    print(f"  bank {bank:3d} program {program:3d}: no tone to read")
+                    continue
+                fits[(bank, program)] = fit
+                ppm = (fit.frequency / expected - 1.0) * 1e6
+                print(
+                    f"  bank {bank:3d} program {program:3d}: {fit.frequency:9.4f} Hz  "
+                    f"{ppm:+9.1f} ppm  wobble {fit.wobble_cycles:7.4f} cycles  "
+                    f"{'steady' if fit.steady else 'not steady'}"
+                )
+
+            if fits:
+                spread = [(f.frequency / expected - 1.0) * 1e6 for f in fits.values()]
+                calmest = min(f.wobble_cycles for f in fits.values())
+                steady = [k for k, f in fits.items() if f.steady]
+                print(
+                    f"  {len(fits)} voices span {min(spread):+.0f} to {max(spread):+.0f} ppm "
+                    f"off equal temperament, {len(steady)} of them steady"
+                )
+                # The chain carries every one of these takes, so it cannot be
+                # wobbling by more than the calmest voice does. That bounds it
+                # without a second instrument to check it against, and it is why
+                # a wobble common to all of them is still a fact about the
+                # voices rather than about the measurement.
+                bound = calmest / (fits[min(fits, key=lambda k: fits[k].wobble_cycles)].seconds)
+                print(
+                    f"  the calmest wobbles {calmest:.4f} cycles, so the chain's own wander is "
+                    f"under {bound / expected * 1e6:.0f} ppm and the rest is the voices"
+                )
+
+        prober.apply(gs_reset)
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "method": "The same note was played and captured several times, and every "
+                    "take after the first was aligned to it by cross correlation to a fraction "
+                    "of a sample, scaled by its best fitting level, and subtracted. What is "
+                    "left is reported next to the noise floor of the silence before the note, "
+                    "raised 3 dB because two takes carry that noise independently. A residual "
+                    "at the floor is the strongest claim this chain supports: not that the "
+                    "unit repeats exactly, but that it repeats to everything the chain can see.",
+                    "program": args.program,
+                    "note": args.note,
+                    "velocity": args.velocity,
+                    "reverb_send": args.reverb,
+                    "chorus_send": args.chorus,
+                    "takes": args.takes,
+                    "sample_rate": takes[0].sample_rate,
+                    "comparisons": [c.to_json() for c in comparisons],
+                    "master_tune_cents": cents,
+                    "pitch": None
+                    if not fits
+                    else {
+                        "note_asked": args.clock_note,
+                        "expected_hz": round(expected, 6),
+                        "caveat": "A departure here is the unit's tuning and the ratio of its "
+                        "sample clock to the converter's, together. Nothing measured here "
+                        "separates them. It is the correction a comparison against software "
+                        "rendered at exactly 48000 Hz needs; a comparison of two takes from "
+                        "this unit needs none of it, since both carry it equally. A program "
+                        "whose tone is not steady has no frequency to report and its number "
+                        "is recorded only so that the absence is visible.",
+                        "voices": {
+                            f"{bank}:{program}": {
+                                **fit.to_json(),
+                                "departure_ppm": round((fit.frequency / expected - 1.0) * 1e6, 1),
+                            }
+                            for (bank, program), fit in sorted(fits.items())
+                        },
+                    },
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0
+
+
 def cmd_alias_scan(args: argparse.Namespace) -> int:
     from .aliases import Scanner, Snapshotter, cc, control_change, control_run, summarise
 
@@ -898,6 +1301,95 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_alias_scan)
+
+    p = sub.add_parser(
+        "repeat",
+        help="find whether two takes of the same note can be compared, which every "
+        "difference measurement rests on",
+    )
+    p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
+    p.add_argument("--program", type=int, default=0)
+    p.add_argument("--note", type=int, default=60)
+    p.add_argument("--velocity", type=int, default=100)
+    p.add_argument("--takes", type=int, default=6)
+    p.add_argument("--hold", type=float, default=1.0, help="seconds the note is held")
+    p.add_argument("--seconds", type=float, default=3.0, help="length of each take")
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.6,
+        help="silence before the note; the noise floor is measured in it, so a residual "
+        "has something it could not have gone below",
+    )
+    p.add_argument("--between", type=float, default=0.8, help="seconds between takes")
+    p.add_argument("--reverb", type=int, default=0, help="CC91 send during the takes")
+    p.add_argument("--chorus", type=int, default=0, help="CC93 send during the takes")
+    p.add_argument(
+        "--clock",
+        action="store_true",
+        help="also hold one long note and read its frequency, which carries the unit's "
+        "tuning and the two sample clocks' ratio together",
+    )
+    p.add_argument(
+        "--clock-program",
+        type=_bank_program,
+        nargs="+",
+        default=[(0, 16), (0, 19), (0, 73), (0, 79), (0, 80), (8, 80), (8, 81)],
+        help="programs to hold; most voices are not a frequency reference, so several "
+        "are tried and the ones that wobble are reported as wobbling rather than read",
+    )
+    p.add_argument("--clock-note", type=int, default=69)
+    p.add_argument("--clock-seconds", type=float, default=20.0)
+    p.add_argument("--audio", help="substring of the audio input device name")
+    p.add_argument(
+        "--min-rise",
+        type=float,
+        default=12.0,
+        help="dB the note must rise above the silence before it; below this the take holds "
+        "no sound from the unit, which would otherwise read as the unit not repeating",
+    )
+    p.add_argument("--max-lead-in", type=float, default=-30.0, help=_LEAD_IN_HELP)
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_repeat)
+
+    p = sub.add_parser(
+        "contrast",
+        help="find whether changing one parameter changes the sound, measured against "
+        "how well the unit repeats itself",
+    )
+    target = p.add_mutually_exclusive_group(required=True)
+    target.add_argument("--cc", type=int, help="controller number to change")
+    target.add_argument("--address", help="three hex bytes to write instead, e.g. '40 01 30'")
+    p.add_argument(
+        "--values",
+        type=lambda s: tuple(int(v, 0) for v in s.split(",")),
+        default=(0, 127),
+        help="the two settings compared; both must be inside what the parameter accepts, "
+        "or a clamp answers them identically and reads as inaudible",
+    )
+    p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
+    p.add_argument("--program", type=int, default=0)
+    p.add_argument("--note", type=int, default=60)
+    p.add_argument("--velocity", type=int, default=100)
+    p.add_argument("--takes", type=int, default=4, help="takes per setting")
+    p.add_argument("--hold", type=float, default=1.0)
+    p.add_argument("--seconds", type=float, default=3.0)
+    p.add_argument("--lead", type=float, default=0.6)
+    p.add_argument("--between", type=float, default=0.8)
+    p.add_argument("--settle", type=float, default=0.4, help="seconds after changing the setting")
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=6.0,
+        help="dB the change must clear the unit's own repeatability by before it is called audible",
+    )
+    p.add_argument("--audio", help="substring of the audio input device name")
+    p.add_argument("--min-rise", type=float, default=12.0)
+    p.add_argument("--max-lead-in", type=float, default=-30.0, help=_LEAD_IN_HELP)
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_contrast)
 
     args = parser.parse_args(argv)
     return args.func(args)
