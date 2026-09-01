@@ -71,7 +71,7 @@ def cmd_identity(args: argparse.Namespace) -> int:
 
 
 def cmd_sweep(args: argparse.Namespace) -> int:
-    from .sweep import Sweeper, summarise
+    from .sweep import MidiCalibrationError, Sweeper, calibrate, summarise
 
     with MidiLink(args.port) as link:
         print(f"MIDI: {link.ports.output_name}")
@@ -82,9 +82,23 @@ def cmd_sweep(args: argparse.Namespace) -> int:
             print("\nSelftest failed. Not sweeping.")
             return 1
 
-        print(f"\nSweeping with a {args.timeout * 1000:.0f} ms probe timeout")
+        canary = tuple(int(b, 16) for b in args.canary.split())
+        try:
+            timing = calibrate(link, addresses=[canary], device_id=args.device_id, sizes=args.sizes)
+        except MidiCalibrationError as exc:
+            print(f"\nCannot calibrate a deadline: {exc}")
+            return 1
+        timing.margin = args.margin
+        # Level 1 only ever reads one byte; the bulk deadline is re-measured
+        # against addresses level 1 finds, which is the first point it can be.
+        print(f"\nLevel 1 timing: {timing.describe()}")
+
         sweeper = Sweeper(
-            link, device_id=args.device_id, timeout=args.timeout, ceiling=args.ceiling
+            link,
+            timing=timing,
+            device_id=args.device_id,
+            canary=canary,
+            ceiling=args.ceiling,
         )
         top = range(args.top_from, args.top_to + 1) if args.top_to is not None else None
         low = tuple(int(b, 16) for b in args.low.split(",")) if args.low else (0x00,)
@@ -98,7 +112,7 @@ def cmd_sweep(args: argparse.Namespace) -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(result.to_json(), indent=2) + "\n")
         print(f"\nwrote {path}")
-    return 0 if result.complete else 1
+    return 0 if result.complete and not result.lagged else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -126,10 +140,23 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("sweep", help="map the address space by asking the machine")
     p.add_argument(
-        "--timeout",
+        "--margin",
         type=float,
-        default=0.06,
-        help="per-probe timeout; misses cost this, hits cost the round trip",
+        default=3.0,
+        help="multiple of the measured reply time allowed before a probe is called a miss; "
+        "a reply that outruns it is not lost, it arrives while the next probe is listening",
+    )
+    p.add_argument(
+        "--canary",
+        default="40 01 30",
+        help="an address known to answer; used both to calibrate reply timing and to tell "
+        "a silent machine from a silent address",
+    )
+    p.add_argument(
+        "--sizes",
+        type=lambda s: tuple(int(x, 0) for x in s.split(",")),
+        default=(1, 16, 64),
+        help="request sizes the reply timing is fitted over",
     )
     p.add_argument(
         "--verify-reads",

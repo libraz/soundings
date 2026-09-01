@@ -74,16 +74,47 @@ class Dt1Reply:
         return len(self.data)
 
 
+def malformation(raw: list[int]) -> str | None:
+    """Say why these bytes are not one well formed SysEx message, or None if they are.
+
+    Checking the interior matters as much as checking the frame. A message that
+    begins with F0 and ends with F7 can still hold a second F0, or bytes with the
+    high bit set, which no legal SysEx contains. One arrived on this path 113
+    bytes long: an unterminated header for the requested address, thirty one
+    three byte groups led by EF, then the correct reply, all inside one frame.
+    Parsed without this check it reads as a 103 byte answer -- a plausible
+    number, wrong, and indistinguishable from data.
+
+    An empty buffer is not a malformation. Nothing arriving is an ordinary
+    outcome of probing an address that does not exist.
+    """
+    if not raw:
+        return None
+    if raw[0] != 0xF0:
+        return f"does not start with F0 (starts {raw[0]:02X})"
+    if raw[-1] != 0xF7:
+        return f"does not end with F7 (ends {raw[-1]:02X})"
+    inner = raw[1:-1]
+    extra = inner.count(0xF0)
+    if extra:
+        return f"holds {extra} further F0 inside one frame"
+    high = sorted({b for b in inner if b > 0x7F})
+    if high:
+        return "carries bytes with the high bit set: " + " ".join(f"{b:02X}" for b in high)
+    return None
+
+
 def parse_dt1(raw: list[int]) -> Dt1Reply | None:
     """Parse a DT1 reply, or return None if this is not a well-formed one.
 
     The checksum is reported rather than enforced. A bad checksum means the path
     corrupted the message, which is a finding about the measurement setup and
-    must not be silently discarded.
+    must not be silently discarded. A malformed frame is different and is
+    refused outright: its length is not a length, so there is no reply to report.
     """
-    if len(raw) < 11:
+    if len(raw) < 11 or malformation(raw) is not None:
         return None
-    if raw[0] != 0xF0 or raw[1] != ROLAND_ID or raw[4] != CMD_DT1 or raw[-1] != 0xF7:
+    if raw[1] != ROLAND_ID or raw[4] != CMD_DT1:
         return None
     body = raw[5:-2]
     if len(body) < 4:
