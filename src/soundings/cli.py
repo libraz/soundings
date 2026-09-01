@@ -165,6 +165,123 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
     return 0 if all(r.region_restored for r in done) else 1
 
 
+def _accepting_bytes(path: str) -> list[str]:
+    """Addresses the write probe found take any value and give it back.
+
+    A reset probe needs somewhere it can put a mark. An address that clamps or
+    refuses may keep what it had, and a byte that was never broken tells the
+    reset nothing.
+    """
+    data = json.loads(Path(path).read_text())
+    return [
+        b["address"]
+        for region in data["regions"]
+        for b in region["bytes"]
+        if b["classification"] == "accepts" and b["restored"]
+    ]
+
+
+def cmd_reset_probe(args: argparse.Namespace) -> int:
+    from .aliases import Snapshotter
+    from .resets import Prober, ResetResult, catalogue, compare, mode_set, summarise
+
+    captured = json.loads(Path(args.baseline).read_text())
+    baseline = {
+        tuple(int(b, 16) for b in a.split()): int(v, 16) for a, v in captured["values"].items()
+    }
+    regions = _regions_from_map(args.map, "")
+    targets = [
+        tuple(int(b, 16) for b in a.split())
+        for a in list(ALIASED_BYTES) + _accepting_bytes(args.write_probe)
+    ]
+    resets = catalogue(args.device_id)
+    if args.include_mode_set:
+        resets.append(mode_set(args.device_id))
+
+    print(f"baseline: {args.baseline}, {len(baseline)} bytes")
+    print(f"{len(targets)} addresses to mark, {len(regions)} regions read after each reset")
+
+    results = []
+    with MidiLink(args.port) as link:
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not resetting.")
+            return 1
+
+        prober = Prober(link, baseline=baseline, device_id=args.device_id, settle=args.settle)
+        shot = Snapshotter(link, regions, device_id=args.device_id)
+        # Put the unit back to a known state before each one, so the three
+        # numbers can be compared with each other rather than each being read
+        # against wherever the previous reset happened to leave things. The
+        # state chosen is the one this same probe measured as reproducing the
+        # power-on capture byte for byte.
+        opener = next(r for r in catalogue(args.device_id) if r.label == args.from_reset)
+        for reset in resets:
+            print(f"\n{reset.label}")
+            prober.apply(opener)
+            marked, refused = prober.mark(targets)
+            print(f"  marked {len(marked)} of {len(targets)} bytes")
+            before = shot.unread
+            prober.apply(reset)
+            after = shot.take()
+            result = ResetResult(
+                label=reset.label,
+                message=" ".join(f"{b:02X}" for b in reset.message),
+                note=reset.note,
+            )
+            result.marked = {f"{a[0]:02X} {a[1]:02X} {a[2]:02X}": v for a, v in marked.items()}
+            result.refused_the_mark = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a in refused]
+            result.regions_unread = shot.unread - before
+            compare(result, marked, after, baseline)
+            results.append(result)
+            print(
+                f"  {len(result.restored)} restored, {len(result.left_marked)} still marked, "
+                f"{len(result.differs_from_power_on)} bytes differ from power-on"
+            )
+
+        # Leave the unit on the reset that comes closest to the power-on state,
+        # so the next measurement does not start from whatever the last one
+        # under test left. Ranked on the whole map rather than on the marked
+        # bytes: every reset here restores those, and ranking on them alone
+        # picks whichever happened to be tried first.
+        best = min(results, key=lambda r: (len(r.differs_from_power_on), -len(r.restored)))
+        link.send(next(x for x in resets if x.label == best.label).message)
+        time.sleep(args.settle)
+        print(f"\nleft the unit on {best.label}")
+
+    print()
+    print(summarise(results))
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "baseline": args.baseline,
+                    "method": "Each reset was preceded by writing a mark into every address the "
+                    "write probe found accepts any value, so that a byte the reset leaves alone "
+                    "reads as the mark rather than as its default. Only bytes read back as "
+                    "holding the mark are counted.",
+                    "each_preceded_by": args.from_reset,
+                    "why_preceded": "So the three are comparable with each other rather than each "
+                    "being read against wherever the previous one left the unit. This same probe "
+                    "measured that reset as reproducing the power-on capture byte for byte, which "
+                    "is what makes it usable as a starting line.",
+                    "order": [r.label for r in results],
+                    "left_on": best.label,
+                    "resets": [r.to_json() for r in results],
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0
+
+
 def _part_block(family: int, channel: int) -> tuple[int, int, int]:
     """The per-part block for a channel, in one of the families of them.
 
@@ -588,6 +705,37 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_write_probe)
+
+    p = sub.add_parser(
+        "reset-probe",
+        help="find what each reset restores, by breaking the state first",
+    )
+    p.add_argument(
+        "--baseline",
+        default="data/units/roland-sc8850-01/power-on-state.json",
+        help="the power-on capture every reset is compared against",
+    )
+    p.add_argument("--map", default="data/units/roland-sc8850-01/address-map.json")
+    p.add_argument(
+        "--write-probe",
+        default="data/units/roland-sc8850-01/write-probe.json",
+        help="where the addresses that take any value are read from",
+    )
+    p.add_argument(
+        "--include-mode-set",
+        action="store_true",
+        help="also send System Mode Set, which reinitialises the unit rather than "
+        "resetting its parameters",
+    )
+    p.add_argument(
+        "--from-reset",
+        default="GS Reset",
+        help="sent before each reset under test, so all of them start from one state",
+    )
+    p.add_argument("--settle", type=float, default=0.6, help="pause after a reset before reading")
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_reset_probe)
 
     p = sub.add_parser(
         "alias-scan",
