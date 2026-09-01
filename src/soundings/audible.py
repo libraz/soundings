@@ -47,6 +47,26 @@ import numpy as np
 
 from .stability import Comparison, compare
 
+MODULATOR_ABOVE_DB = -20.0
+"""How badly a setting must fail to repeat before a modulator is claimed.
+
+A gap between the two settings is not enough on its own. Whatever fails to
+repeat in a voice scales with the voice, so a pure level change opens a gap
+without anything having been switched on. Set between the two things measured on
+this unit, both with CC7, whose 20 dB is nothing but level:
+
+- the real chorus, which does carry a modulator, sits at **-0.4 dB**
+- the worst artefact of a level change alone reached **-24.2 dB**, on a velocity
+  30 note at CC7 40, which is the lowest signal to noise in the whole set. What
+  fails to repeat is derived by subtracting the noise in power, and that
+  subtraction stops being reliable when there is barely more signal than noise
+
+**A genuine modulator weaker than -20 dB is missed.** That is the price of not
+reporting a level change as one, and it is the direction worth erring in: this
+channel exists for parameters no residual can measure, so a false positive here
+has nothing to contradict it.
+"""
+
 UNUSABLE_ABOVE_DB = -12.0
 """Above this, takes of one setting differ so much that no change could clear the yardstick.
 
@@ -75,14 +95,13 @@ class Verdict:
     stimulus_name: str = ""
 
     within_each_db: tuple[float, float] = (float("nan"), float("nan"))
-    """Each setting's repeatability as dB above its own noise floor.
+    """What fails to repeat in each setting, as dB below that setting's own signal.
 
-    Above its own floor, rather than below its own signal. A setting 20 dB
-    quieter has 20 dB less signal over the same converter noise, so its residual
-    is 20 dB worse for a reason that has nothing to do with the unit -- measured
-    here on CC7, where 40 against 127 differed by 19 dB of apparent
-    repeatability and by 20.09 dB of level. Distance to the floor cancels that
-    and leaves only what actually failed to repeat.
+    The noise is taken back out first, so this is the part that is a fact about
+    the machine. Two other forms were tried and both track level rather than the
+    unit: the raw residual, because a quieter setting has less signal over the
+    same converter noise, and the residual above the floor, because whatever
+    fails to repeat scales with the voice while the floor does not.
     """
 
     margin_db: float = 6.0
@@ -103,13 +122,16 @@ class Verdict:
     def changed_the_repeatability(self) -> bool:
         """One setting repeats far worse than the other, so something that moves came on.
 
-        Needs at least three takes per setting. With two there is one pair per
-        group, and a single pair cannot be told from an outlier.
+        Needs four takes per setting. Three gives two pairs, whose median is
+        their mean, and one pair that happens to agree then halves it: the same
+        synthetic chorus reads -25.2 dB over three takes and -8.6 over four.
         """
         first, second = self.within_each_db
         if np.isnan(first) or np.isnan(second):
             return False
-        return bool(abs(first - second) > self.margin_db * 2)
+        return bool(
+            abs(first - second) > self.margin_db * 2 and max(first, second) > MODULATOR_ABOVE_DB
+        )
 
     @property
     def audible(self) -> bool:
@@ -155,8 +177,8 @@ class Verdict:
         if self.changed_the_repeatability:
             first, second = self.within_each_db
             how.append(
-                f"repeatability, typically {first:.1f} dB against {second:.1f} dB over their "
-                "own noise -- something that moves came on, and no residual can measure it"
+                f"repeatability, what fails to repeat went from {first:.1f} to {second:.1f} dB "
+                "-- something that moves came on, and no residual can measure it"
             )
         return (
             f"{self.label}: audible -- {' and '.join(how)}. "
@@ -171,7 +193,7 @@ class Verdict:
             "stimulus_name": self.stimulus_name,
             "takes_per_setting": self.takes,
             "same_setting_residual_db": round(self.within_db, 2),
-            "each_setting_above_its_floor_db": [
+            "each_setting_unrepeatable_db": [
                 None if np.isnan(v) else round(v, 2) for v in self.within_each_db
             ],
             "across_setting_residual_db": round(self.across_db, 2),
@@ -199,8 +221,8 @@ def _worst(comparisons: list[Comparison]) -> tuple[float, float]:
     )
 
 
-def _typical_headroom(comparisons: list[Comparison]) -> float:
-    """Median residual above the noise floor, for the modulator channel.
+def _typical_unrepeatable(comparisons: list[Comparison]) -> float:
+    """Median of what fails to repeat, for the modulator channel.
 
     Median rather than worst, and the direction is the reason. Everywhere else
     the worst pair is the conservative choice, because it makes a change harder
@@ -212,10 +234,12 @@ def _typical_headroom(comparisons: list[Comparison]) -> float:
     A real modulator raises every pair in the group, so the median moves with it
     and a single bad take does not.
     """
-    if len(comparisons) < 2:
-        # One pair cannot say whether a value is typical or an outlier.
+    if len(comparisons) < 3:
+        # Two pairs make a mean, not a median, and one lucky pair then halves it.
+        # Three is the first count at which the middle value is a middle value,
+        # which is four takes of the setting.
         return float("nan")
-    return float(np.median([c.headroom_db for c in comparisons]))
+    return float(np.median([c.unrepeatable_db for c in comparisons]))
 
 
 def judge(
@@ -252,8 +276,8 @@ def judge(
         stimulus_name=stimulus_name,
         within_db=within_db,
         within_each_db=(
-            _typical_headroom(within_first),
-            _typical_headroom(within_second),
+            _typical_unrepeatable(within_first),
+            _typical_unrepeatable(within_second),
         ),
         across_db=across_db,
         within_level_db=within_level,
@@ -328,4 +352,4 @@ class Overall:
         }
 
 
-__all__ = ["UNUSABLE_ABOVE_DB", "Overall", "Verdict", "judge"]
+__all__ = ["MODULATOR_ABOVE_DB", "UNUSABLE_ABOVE_DB", "Overall", "Verdict", "judge"]

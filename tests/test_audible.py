@@ -47,7 +47,20 @@ def unrepeatable(seed: int) -> np.ndarray:
     return np.concatenate([lead, body])
 
 
-__all__ = ["SR", "judge", "note", "unrepeatable"]
+def modulated(phase: float, *, rate: float = 6.0, depth: float = 0.5) -> np.ndarray:
+    """A take whose amplitude is swept by an LFO starting at an arbitrary phase.
+
+    The rate matters as much as the depth. A slow sweep barely moves before a
+    struck note has decayed, so takes at different phases still resemble each
+    other and the result models a weak wobble rather than a chorus. A few Hz is
+    what a chorus actually runs at, and it is what the real one measured like.
+    """
+    base = note(seed=9)
+    t = np.arange(base.size) / SR
+    return base * (1.0 + depth * np.sin(2 * np.pi * rate * t + phase))
+
+
+__all__ = ["SR", "judge", "modulated", "note", "unrepeatable"]
 
 
 def test_the_same_setting_twice_is_not_audible() -> None:
@@ -117,13 +130,9 @@ def test_a_modulator_switching_on_is_audible_though_no_residual_can_show_it() ->
     itself created, so the collapse in repeatability has to be the evidence.
     """
     rng = np.random.default_rng(5)
-    steady = [note(seed=s) for s in (0, 1, 2)]
+    steady = [note(seed=s) for s in (0, 1, 2, 3)]
     # Each take modulated at its own phase, the way a free-running LFO leaves them.
-    moving = []
-    for phase in rng.uniform(0, 2 * np.pi, 3):
-        base = note(seed=9)
-        t = np.arange(base.size) / SR
-        moving.append(base * (1.0 + 0.5 * np.sin(2 * np.pi * 1.3 * t + phase)))
+    moving = [modulated(phase) for phase in rng.uniform(0, 2 * np.pi, 4)]
     verdict = judge(steady, moving)
     assert verdict.changed_the_repeatability
     assert verdict.audible
@@ -144,7 +153,7 @@ def test_one_disturbed_take_does_not_read_as_a_modulator() -> None:
     moves every pair, so the group is judged by its median instead.
     """
     rng = np.random.default_rng(21)
-    clean = [note(seed=s) for s in (0, 1, 2, 3)]
+    clean = [note(seed=s) for s in (0, 1, 2, 3, 8)]
     disturbed = [note(seed=s) for s in (4, 5, 6)]
     spoiled = note(seed=7)
     spoiled[int(0.9 * SR) : int(0.95 * SR)] += 0.05 * rng.standard_normal(int(0.05 * SR))
@@ -152,10 +161,10 @@ def test_one_disturbed_take_does_not_read_as_a_modulator() -> None:
     assert not judge(clean, disturbed).changed_the_repeatability
 
 
-def test_two_takes_per_setting_cannot_claim_a_modulator() -> None:
-    """One pair per group is a value with nothing to say whether it is typical."""
-    a = [note(seed=0), note(seed=1)]
-    b = [note(seed=2), note(seed=3)]
+def test_too_few_takes_per_setting_cannot_claim_a_modulator() -> None:
+    """Under four takes a group has at most two pairs, whose median is their mean."""
+    a = [note(seed=0), note(seed=1), note(seed=2)]
+    b = [note(seed=3), note(seed=4), note(seed=5)]
     verdict = judge(a, b)
     assert np.isnan(verdict.within_each_db[0])
     assert not verdict.changed_the_repeatability
@@ -175,12 +184,26 @@ def test_a_yardstick_nothing_could_clear_is_inconclusive_rather_than_a_null() ->
 def test_an_audible_verdict_is_never_called_inconclusive() -> None:
     """The chorus repeats terribly and is still measured, via the repeatability channel."""
     rng = np.random.default_rng(43)
-    steady = [note(seed=s) for s in (0, 1, 2)]
-    moving = []
-    for phase in rng.uniform(0, 2 * np.pi, 3):
-        base = note(seed=9)
-        t = np.arange(base.size) / SR
-        moving.append(base * (1.0 + 0.5 * np.sin(2 * np.pi * 1.3 * t + phase)))
+    steady = [note(seed=s) for s in (0, 1, 2, 3)]
+    moving = [modulated(phase) for phase in rng.uniform(0, 2 * np.pi, 4)]
     verdict = judge(steady, moving)
     assert verdict.audible
     assert not verdict.inconclusive
+
+
+def test_a_pure_level_change_on_an_imperfect_voice_is_not_a_modulator() -> None:
+    """Measured on CC7, whose 20 dB is nothing but level: the release tail and the
+    organ both opened a repeatability gap, because whatever fails to repeat in a
+    voice scales with the voice while the noise floor does not."""
+    rng = np.random.default_rng(53)
+
+    def wobbly(seed: int, gain: float) -> np.ndarray:
+        base = note(seed=0, noise=0.0) * gain
+        jitter = rng.standard_normal(base.size) * 0.01 * np.abs(base)
+        return base + jitter + 3e-4 * rng.standard_normal(base.size)
+
+    quiet = [wobbly(s, 0.1) for s in (0, 1, 2)]
+    loud = [wobbly(s, 1.0) for s in (3, 4, 5)]
+    verdict = judge(quiet, loud)
+    assert verdict.changed_the_level
+    assert not verdict.changed_the_repeatability
