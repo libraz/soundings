@@ -1,64 +1,47 @@
 {
   "unit_id": "roland-sc8850-01",
   "schema_version": 0,
-  "note": "Early measurements taken while establishing the measurement chain. Not a sweep; these are the addresses and behaviours probed by hand. Every entry is a value this unit returned.",
-  "addresses": [
+  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte.",
+  "withdrawn": {
+    "what": "An earlier hand measured table of addresses and region sizes.",
+    "why": "It was taken before the reply deadline was understood, so replies were running one request behind and its sizes and values were the previous probe's answer. Three of its rows were re-read cleanly and all three were wrong: 40 00 00 was recorded as 7 bytes reading 00 04 00 00 and is 4 bytes reading 00 00 04 07; 40 00 04 was recorded as readable holding 7F and does not answer at any size; 40 01 30 was recorded as returning 64 bytes and bounds at 24, refusing 64. The rest is not individually retracted because it was produced the same way and none of it is needed -- the sweep covers it.",
+    "see": "rq1-reply-latency-grows-with-length-and-varies-by-address"
+  },
+  "spot_checks": [
     {
       "address": "40 00 00",
-      "name": "MASTER TUNE",
-      "size_returned": 4,
-      "value_after_power_on": "00 04 00 00",
-      "readable": true
+      "largest_read_answered": 4,
+      "value": "00 00 04 07",
+      "note": "Refuses 16 and above. Re-read with a 1.5 s deadline after the sweep agreed."
     },
     {
       "address": "40 00 04",
-      "name": "MASTER VOLUME",
-      "size_returned": 1,
-      "value_after_power_on": "7F",
-      "readable": true
-    },
-    {
-      "address": "40 00 7F",
-      "name": "SYSTEM MODE SET",
       "readable": false,
-      "note": "No reply to RQ1 at any tested size. Write-only."
+      "note": "No reply at sizes 1, 4, 16, 24 or 64."
     },
     {
       "address": "40 01 30",
-      "name": "REVERB MACRO",
-      "size_returned": 1,
-      "value_after_power_on": "04",
-      "readable": true
+      "largest_read_answered": 24,
+      "value": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
+      "note": "Refuses 64. Used as the sweep's canary because it answers reliably."
     },
     {
-      "address": "40 01 33",
-      "name": "REVERB LEVEL",
-      "size_returned": 1,
-      "value_after_power_on": "40",
-      "readable": true
+      "address": "41 00 00",
+      "largest_read_answered": 12,
+      "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
+      "note": "ASCII 'STANDARD 1  ', space padded to 12."
     },
     {
-      "address": "40 01 38",
-      "name": "CHORUS MACRO",
-      "size_returned": 1,
-      "value_after_power_on": "02",
-      "readable": true
+      "address": "51 00 00",
+      "largest_read_answered": 12,
+      "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
+      "note": "The same text as 41 00 00. 51 00 01 returns 54, the second character, so the name is byte addressable."
     },
     {
-      "address": "40 11 00",
-      "size_returned": 1,
-      "value_after_power_on": "00",
-      "readable": true,
-      "note": "Answers a size-1 request but returns nothing for a size-64 request."
+      "address": "52 00 00",
+      "readable": false,
+      "note": "No reply, while 50 and 51 both answer. The space is not dense."
     }
-  ],
-  "region_probes": [
-    { "address": "40 00 00", "requested": 64, "returned": 7 },
-    { "address": "40 01 00", "requested": 64, "returned": 16 },
-    { "address": "40 01 30", "requested": 64, "returned": 64, "note": "region is at least 64 bytes; not bounded by this probe" },
-    { "address": "40 02 00", "requested": 64, "returned": 64, "note": "region is at least 64 bytes; not bounded by this probe" },
-    { "address": "40 03 00", "requested": 64, "returned": 30 },
-    { "address": "40 11 00", "requested": 64, "returned": 0, "note": "refused rather than truncated" }
   ],
   "behaviours": [
     {
@@ -73,7 +56,102 @@
         { "size": 256, "returned": null, "unit_alive_after": false }
       ],
       "boundary": "between 200 and 256; not narrowed further, because each test past the boundary costs a power cycle",
-      "note": "The failure is total and silent: Active Sensing stops, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
+      "note": "The failure is total and silent, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
+      "reproduced": true,
+      "not_established": [
+        "That recovery requires a power cycle. The unit was power cycled without first being left alone, so whether it would have recovered on its own was never tested.",
+        "That Active Sensing stops. The harness filters Active Sensing on receive, so no run so far could have observed it either way."
+      ],
+      "still_holds_after": "rq1-0c0000-is-a-command-not-a-read, which shows a probe can read another message's traffic and appear to answer. That failure mode would have made a busy unit read as alive rather than dead, so the silence recorded here is not explained by it."
+    },
+    {
+      "id": "rq1-0c0000-is-a-command-not-a-read",
+      "summary": "A one-byte RQ1 at 0C 00 00 is not a read. The unit replies about a different address and then keeps transmitting for 29 seconds, 286 messages in total.",
+      "method": "RQ1 at 0C 00 00 with size 1, then receive until the input has been quiet for 3 s. Isolated by probing every level-1 address from 00 00 00 upward with 1.2 s of silent listening after each: nothing arrived until this address, and it produced the stream immediately.",
+      "results": {
+        "messages": 286,
+        "seconds": 29.3,
+        "payload_sizes": [16, 24, 128],
+        "unparsable_or_bad_checksum": 0,
+        "blocks": [
+          { "top": "08", "messages": 2, "first": "08 00 00", "last": "08 01 00" },
+          { "top": "48", "messages": 39, "first": "48 1D 10", "last": "48 1D 00" },
+          { "top": "49", "messages": 32, "first": "49 00 00", "last": "49 1F 00" },
+          { "top": "58", "messages": 39, "first": "58 1D 10", "last": "58 1D 00" },
+          { "top": "59", "messages": 32, "first": "59 00 00", "last": "59 1F 00" },
+          { "top": "68", "messages": 39, "first": "68 1D 10", "last": "68 1D 00" },
+          { "top": "69", "messages": 32, "first": "69 00 00", "last": "69 1F 00" },
+          { "top": "78", "messages": 39, "first": "78 1D 10", "last": "78 1D 00" },
+          { "top": "79", "messages": 32, "first": "79 00 00", "last": "79 1F 00" }
+        ],
+        "structure": "2 + 4 x (39 + 32) = 286. Four identically shaped blocks at top byte pairs 48/49, 58/59, 68/69 and 78/79, after a two message preamble at 08.",
+        "spacing": "about 102 ms between messages"
+      },
+      "why_it_matters": "The address space cannot be assumed passive. A probe sent while this is running takes a dump message as its own answer, so a single address like this makes every address probed after it read as populated. This is what made a first sweep of this unit report 117 of 128 top bytes as answering. A probe that does not pair the reply against the address it asked for cannot see the difference.",
+      "not_established": [
+        "What the dumped blocks contain. Only their addresses, sizes and count were recorded here.",
+        "Whether other addresses in the 0C and 0D range are commands too. Only 0C 00 00 was isolated."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "rq1-reply-latency-grows-with-length-and-varies-by-address",
+      "summary": "A reply's arrival time grows with its length, but length does not determine it: two addresses that both return 64 bytes answer in 31 ms and 78 ms.",
+      "method": "RQ1 with a 2 s timeout, measuring from send to a complete SysEx. The size series is 12 reads per size at 40 02 00; the cross address series is 10 reads per size at nine addresses.",
+      "size_series_at_40_02_00": [
+        { "size": 1, "returned": 1, "median_ms": 10.2, "max_ms": 13.0 },
+        { "size": 2, "returned": 2, "median_ms": 10.2, "max_ms": 10.5 },
+        { "size": 4, "returned": 4, "median_ms": 10.5, "max_ms": 11.3 },
+        { "size": 8, "returned": 8, "median_ms": 15.2, "max_ms": 15.5 },
+        { "size": 16, "returned": 16, "median_ms": 24.1, "max_ms": 25.3 },
+        { "size": 24, "returned": 24, "median_ms": 32.9, "max_ms": 33.5 },
+        { "size": 32, "returned": 32, "median_ms": 41.8, "max_ms": 42.4 },
+        { "size": 40, "returned": 40, "median_ms": 51.3, "max_ms": 51.5 },
+        { "size": 48, "returned": 48, "median_ms": 60.1, "max_ms": 60.5 },
+        { "size": 56, "returned": 56, "median_ms": 68.7, "max_ms": 69.2 },
+        { "size": 64, "returned": 64, "median_ms": 77.7, "max_ms": 78.2 }
+      ],
+      "cross_address_series": [
+        { "address": "40 01 30", "size_1_ms": 9.5, "size_16": { "returned": 16, "median_ms": 14.7 }, "size_64": "no reply" },
+        { "address": "40 02 00", "size_1_ms": 9.5, "size_16": { "returned": 16, "median_ms": 23.9 }, "size_64": { "returned": 64, "median_ms": 77.8 } },
+        { "address": "40 00 00", "size_1_ms": 9.4, "size_16": "no reply", "size_64": "no reply" },
+        { "address": "20 00 00", "size_1_ms": 10.1, "size_16": { "returned": 16, "median_ms": 15.1 }, "size_64": { "returned": 64, "median_ms": 31.5 } },
+        { "address": "21 00 00", "size_1_ms": 10.1, "size_16": "no reply", "size_64": "no reply" },
+        { "address": "41 00 00", "size_1_ms": 9.1, "size_16": { "returned": 12, "median_ms": 13.6 }, "size_64": { "returned": 12, "median_ms": 13.8 } },
+        { "address": "50 00 00", "size_1_ms": 9.8, "size_16": "no reply", "size_64": "no reply" },
+        { "address": "51 00 00", "size_1_ms": 10.1, "size_16": { "returned": 12, "median_ms": 13.8 }, "size_64": { "returned": 12, "median_ms": 13.9 } },
+        { "address": "00 01 00", "size_1_ms": 10.1, "size_16": { "returned": 16, "median_ms": 15.1 }, "size_64": { "returned": 64, "median_ms": 31.6 } }
+      ],
+      "worst_observed_per_reply_length_ms": { "1": 11.2, "12": 14.0, "16": 26.3, "64": 81.1 },
+      "why_it_matters": "A probe deadline is a measurement, not a constant, and it has to bound the slowest address rather than the one it was taken on. A late reply is not lost: it arrives while the next probe is listening, and every reply after it is one request behind. Pairing a reply against the address asked for does not detect this, because a size bisection asks the same address every probe. A sweep run with a flat 60 ms deadline was destroyed by it, classifying 613 regions as returning a full 64 bytes; a probe by probe trace showed each read returning the previous request's answer -- 1 byte requested, 64 returned, then 32 requested and 1 returned.",
+      "not_established": [
+        "Why the slope is what it is. A 31250 baud line spends 0.32 ms on a byte, and the fastest addresses come close to that while 40 02 00 takes over three times as long per byte. Nothing here separates the module's own pacing from the interface or the host.",
+        "What distinguishes a fast address from a slow one. Both 20 00 00 and 00 01 00 return 64 bytes at about half the per byte cost of 40 02 00, and no reason for that was investigated."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "malformed-sysex-frames-on-the-measurement-path",
+      "summary": "About two probes in a hundred come back as one frame that starts with F0 and ends with F7 but is not one SysEx message: an unterminated header, then three byte groups led by EF, then the correct reply. Re-asking after the path goes quiet always produced a clean reply.",
+      "method": "Observed during address space sweeps and reproduced by replaying one top byte's level 2 loop. The frame was read back one rtmidi message at a time to establish that it arrives as a single delivery rather than being assembled by the harness.",
+      "example": {
+        "request": "RQ1 41 01 00 size 1",
+        "frame_bytes": 113,
+        "structure": "F0 41 10 42 12 41 01 00 00 | EF 10 01 EF 01 02 EF 00 1C EF 00 10 EF 00 45 ... EF 6C 77 | F0 41 10 42 12 41 01 00 00 3E F7",
+        "note": "The first nine bytes are a DT1 header for the requested address with no terminator. Then 31 three byte groups each led by EF. Then the correct 11 byte reply, which is what a clean probe of the same address returns. Byte values above 7F cannot occur inside a SysEx message."
+      },
+      "rates": {
+        "probes": 7420,
+        "malformed_frames": 150,
+        "by_reason": { "one further F0 inside the frame": 102, "four further F0": 42, "three further F0": 4, "two further F0": 2 },
+        "recovered_by_one_retry": 150
+      },
+      "why_it_matters": "Parsed without checking the interior, this frame reads as a 103 byte reply to a 1 byte request. The number is plausible and wrong, and there is nothing in it that looks like an error. A harness that only checks the F0 and F7 at the ends accepts it. It also caused a second, subtler failure: once frames like this were correctly refused, a liveness check that read 'did not parse' as 'said nothing' declared a live unit dead on its first probe.",
+      "not_established": [
+        "Where the frame comes from. Probing the same address in isolation always returns a clean 11 byte reply, so it depends on preceding traffic; nothing here separates the module, the interface and the host.",
+        "What the EF led groups are. EF is a channel status byte, but no interpretation of them was tested.",
+        "Whether a corruption that stays within legal SysEx values also occurs. It would pass this check and be caught only by the checksum, which was verified on every region of the completed sweep."
+      ],
       "reproduced": true
     },
     {
