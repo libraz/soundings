@@ -65,6 +65,8 @@ class Verdict:
     across_level_db: float
     """Level difference between the settings."""
 
+    stimulus_name: str = ""
+
     within_each_db: tuple[float, float] = (float("nan"), float("nan"))
     """Each setting's repeatability as dB above its own noise floor.
 
@@ -133,6 +135,7 @@ class Verdict:
         return {
             "label": self.label,
             "stimulus": self.stimulus,
+            "stimulus_name": self.stimulus_name,
             "takes_per_setting": self.takes,
             "same_setting_residual_db": round(self.within_db, 2),
             "each_setting_above_its_floor_db": [
@@ -175,6 +178,7 @@ def judge(
     label: str,
     stimulus: str,
     silence_before: float,
+    stimulus_name: str = "",
     margin_db: float = 6.0,
 ) -> Verdict:
     """Decide whether two settings sound different, using their own repeatability.
@@ -197,6 +201,7 @@ def judge(
     return Verdict(
         label=label,
         stimulus=stimulus,
+        stimulus_name=stimulus_name,
         within_db=within_db,
         within_each_db=(_worst_headroom(within_first), _worst_headroom(within_second)),
         across_db=across_db,
@@ -208,4 +213,49 @@ def judge(
     )
 
 
-__all__ = ["Verdict", "judge"]
+@dataclass
+class Overall:
+    """One parameter's verdict over every stimulus it was asked under."""
+
+    label: str
+    verdicts: list[Verdict] = field(default_factory=list)
+
+    @property
+    def audible(self) -> bool:
+        return any(v.audible for v in self.verdicts)
+
+    @property
+    def heard_by(self) -> list[str]:
+        return [v.stimulus_name for v in self.verdicts if v.audible]
+
+    @property
+    def deaf_to(self) -> list[str]:
+        return [v.stimulus_name for v in self.verdicts if not v.audible]
+
+    def describe(self) -> str:
+        if not self.verdicts:
+            return f"{self.label}: nothing was asked"
+        if self.audible:
+            missed = f"; {', '.join(self.deaf_to)} did not hear it" if self.deaf_to else ""
+            return f"{self.label}: AUDIBLE, heard by {', '.join(self.heard_by)}{missed}"
+        return (
+            f"{self.label}: not audible under {', '.join(self.deaf_to)}. "
+            "That is a statement about these notes, not about the parameter -- another "
+            "stimulus may still hear it."
+        )
+
+    def to_json(self) -> dict:
+        return {
+            "label": self.label,
+            "audible": self.audible,
+            "heard_by": self.heard_by,
+            "not_heard_by": self.deaf_to,
+            "verdict_rule": "Audible under any stimulus is audible: one note hearing the "
+            "change proves the parameter reaches the signal path, and the others failing "
+            "to hear it says only that they asked the wrong question. The reverse does not "
+            "hold, so a null carries the list of what was tried.",
+            "by_stimulus": [v.to_json() for v in self.verdicts],
+        }
+
+
+__all__ = ["Overall", "Verdict", "judge"]

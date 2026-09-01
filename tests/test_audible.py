@@ -32,6 +32,9 @@ def judge(first, second, **kw):
     )
 
 
+__all__ = ["SR", "judge", "note"]
+
+
 def test_the_same_setting_twice_is_not_audible() -> None:
     """The negative control. Takes differ by their noise, and that must not count."""
     a = [note(seed=s) for s in (0, 1, 2)]

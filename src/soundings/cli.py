@@ -12,6 +12,10 @@ from . import capture as cap
 from . import roland
 from .midi import MidiLink, list_ports
 from .selftest import midi_selftest, timeline_selftest
+from .stimuli import CATALOGUE as _STIMULUS_CATALOGUE
+from .stimuli import DEFAULT as _STIMULUS_DEFAULT
+
+_STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
 
 _LEAD_IN_HELP = (
     "dB the lead-in must sit below its own take; above this something was sounding before "
@@ -612,7 +616,7 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
 
 def cmd_contrast(args: argparse.Namespace) -> int:
     """Play the same note under two settings and say whether the unit sounded different."""
-    from . import audible, stability
+    from . import audible, stability, stimuli
     from .resets import Prober, catalogue
 
     def setting(value: int) -> list[list[int]]:
@@ -620,12 +624,15 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             return [[0xB0 | args.channel, args.cc & 0x7F, value & 0x7F]]
         return [roland.dt1(args.address, [value], device_id=args.device_id)]
 
+    try:
+        asked = stimuli.resolve(args.stimulus)
+    except KeyError as exc:
+        print(exc)
+        return 1
+
     where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
     label = f"{where} {args.values[0]} against {args.values[1]}"
-    stimulus = (
-        f"program {args.program}, note {args.note}, velocity {args.velocity}, "
-        f"held {args.hold:.1f} s, captured {args.seconds:.1f} s"
-    )
+    overall = audible.Overall(label=label)
 
     with MidiLink(args.port) as link:
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -637,66 +644,78 @@ def cmd_contrast(args: argparse.Namespace) -> int:
         gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
         prober = Prober(link, baseline={}, device_id=args.device_id)
         prober.apply(gs_reset)
-        for message in (
-            [0xC0 | args.channel, args.program & 0x7F],
-            [0xB0 | args.channel, 7, 127],
-            [0xB0 | args.channel, 11, 127],
-        ):
-            link.send(message)
-        time.sleep(0.3)
 
-        print(f"\n{label}\n  {stimulus}")
-        captured: list[list] = []
-        for value in args.values:
-            for message in setting(value):
+        print(f"\n{label}\n  {len(asked)} stimulus/stimuli: {', '.join(s.name for s in asked)}")
+        for stim in asked:
+            # Reset between stimuli, so a setting left by the previous one cannot
+            # follow the parameter into the next and be read as part of it.
+            prober.apply(gs_reset)
+            for message in (
+                [0xC0 | args.channel, stim.program & 0x7F],
+                [0xB0 | args.channel, 7, 127],
+                [0xB0 | args.channel, 11, 127],
+            ):
                 link.send(message)
-            time.sleep(args.settle)
-            takes = []
-            for _ in range(args.takes):
-                recording = _record_note(
-                    link,
-                    device=args.audio,
-                    channel=args.channel,
-                    note=args.note,
-                    velocity=args.velocity,
-                    hold=args.hold,
-                    seconds=args.seconds,
-                    lead=args.lead,
+            time.sleep(0.3)
+            print(f"\n  {stim.name}: {stim.describe()}")
+
+            captured: list[list] = []
+            for value in args.values:
+                for message in setting(value):
+                    link.send(message)
+                time.sleep(args.settle)
+                takes = []
+                for _ in range(args.takes):
+                    recording = _record_note(
+                        link,
+                        device=args.audio,
+                        channel=args.channel,
+                        note=stim.note,
+                        velocity=stim.velocity,
+                        hold=stim.hold,
+                        seconds=stim.seconds,
+                        lead=stim.lead,
+                    )
+                    if not recording.healthy:
+                        print(f"    lossy capture: {recording.health_report()}")
+                        return 1
+                    takes.append(recording)
+                    time.sleep(args.between)
+                print(f"    {where} = {value}: {len(takes)} takes")
+                captured.append(takes)
+
+            index = _loudest_channel(captured[0][0])
+            rate = captured[0][0].sample_rate
+            groups = [[t.channel(index) for t in takes] for takes in captured]
+            before = stim.lead * 0.8
+            rise = stability.signal_over_silence(groups[0][0], rate, before=before)
+            print(f"    channel {index}: note {rise:.1f} dB over the lead-in")
+            if not rise > args.min_rise:
+                print(
+                    f"\n    The note never rose {args.min_rise} dB above the silence before "
+                    "it, so these takes hold no sound from the unit. Name the right input "
+                    "with --audio."
                 )
-                if not recording.healthy:
-                    print(f"  lossy capture: {recording.health_report()}")
-                    return 1
-                takes.append(recording)
-                time.sleep(args.between)
-            print(f"  {where} = {value}: {len(takes)} takes")
-            captured.append(takes)
+                return 1
+            if not _lead_in_ok(groups, rate, before, args.max_lead_in):
+                return 1
+
+            verdict = audible.judge(
+                groups[0],
+                groups[1],
+                rate,
+                label=label,
+                stimulus=stim.describe(),
+                stimulus_name=stim.name,
+                silence_before=before,
+                margin_db=args.margin,
+            )
+            overall.verdicts.append(verdict)
+            print(f"    {verdict.describe()}")
         prober.apply(gs_reset)
 
-    index = _loudest_channel(captured[0][0])
-    rate = captured[0][0].sample_rate
-    groups = [[t.channel(index) for t in takes] for takes in captured]
-    rise = stability.signal_over_silence(groups[0][0], rate, before=args.lead * 0.8)
-    print(f"  channel {index} of {captured[0][0].device}: note {rise:.1f} dB over the lead-in")
-    if not rise > args.min_rise:
-        print(
-            f"\nThe note never rose {args.min_rise} dB above the silence before it, so these "
-            "takes hold no sound from the unit. Name the right input with --audio."
-        )
-        return 1
-
-    if not _lead_in_ok(groups, rate, args.lead * 0.8, args.max_lead_in):
-        return 1
-    verdict = audible.judge(
-        groups[0],
-        groups[1],
-        rate,
-        label=label,
-        stimulus=stimulus,
-        silence_before=args.lead * 0.8,
-        margin_db=args.margin,
-    )
     print()
-    print(verdict.describe())
+    print(overall.describe())
 
     if args.out:
         path = Path(args.out)
@@ -708,6 +727,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     "controller": args.cc,
                     "address": None if args.cc is not None else args.address,
                     "values": list(args.values),
+                    "stimuli": [stim.to_json() for stim in asked],
                     "method": "The same note was played several times under each setting. Takes "
                     "of one setting are compared with each other to measure what the unit fails "
                     "to repeat, and takes of the two settings are compared the same way to "
@@ -715,8 +735,10 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     "unit that repeats badly cannot be read as a parameter that does something. "
                     "Level is judged separately, because the alignment divides out the best "
                     "fitting gain and a parameter that only changes level would otherwise "
-                    "leave no trace.",
-                    **verdict.to_json(),
+                    "leave no trace. A parameter is asked under one or more named stimuli, "
+                    "because a null is a fact about the note as much as about the parameter, "
+                    "and the answer over a set of them is a union.",
+                    **overall.to_json(),
                 },
                 indent=2,
             )
@@ -1369,13 +1391,18 @@ def main(argv: list[str] | None = None) -> int:
         "or a clamp answers them identically and reads as inaudible",
     )
     p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
-    p.add_argument("--program", type=int, default=0)
-    p.add_argument("--note", type=int, default=60)
-    p.add_argument("--velocity", type=int, default=100)
-    p.add_argument("--takes", type=int, default=4, help="takes per setting")
-    p.add_argument("--hold", type=float, default=1.0)
-    p.add_argument("--seconds", type=float, default=3.0)
-    p.add_argument("--lead", type=float, default=0.6)
+    p.add_argument(
+        "--stimulus",
+        nargs="+",
+        default=list(_STIMULUS_DEFAULT),
+        metavar="NAME",
+        help="notes to ask the parameter under: "
+        + ", ".join(_STIMULUS_NAMES)
+        + ", plus 'broad' for the five that answer most parameters and 'all'. Audible under "
+        "any is audible; a null carries the list of what was tried, because an inaudible "
+        "result is as much a fact about the note as about the parameter",
+    )
+    p.add_argument("--takes", type=int, default=4, help="takes per setting per stimulus")
     p.add_argument("--between", type=float, default=0.8)
     p.add_argument("--settle", type=float, default=0.4, help="seconds after changing the setting")
     p.add_argument(
