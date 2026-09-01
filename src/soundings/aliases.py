@@ -1,31 +1,51 @@
-"""Find where a control change is stored, by watching the address space change.
+"""Find where a message is stored, by watching the address space change.
 
-The method is a difference: read a set of regions, send one message, read them
+The method is a difference: read a set of regions, send something, read them
 again, and see which bytes moved. What makes it a measurement rather than a
 coincidence is everything around that.
 
-**A control run first, with no message sent.** Two snapshots taken back to back
+**A control run first, with nothing sent.** Two snapshots taken back to back
 must be identical. Anything that moves on its own -- a running LFO, a counter, a
 level meter -- would otherwise be attributed to whichever message happened to be
 in flight, and the attribution would look exactly like a real one. Addresses
 that fail the control are excluded by name rather than by hope.
 
-**Two values, not one.** A byte is only attributed to a message if it moved for
-both values sent and moved to something different each time. A byte that changes
-once has changed; a byte that follows what it was told is storing it.
+**Primed, moved, and moved back.** The stimulus is sent three times: value A,
+then B, then A again, with the baseline snapshot taken after the first A. A byte
+is attributed only if it moved when B arrived and moved back when A returned.
+Priming is what makes the first send informative: comparing against whatever the
+unit happened to be holding drops every byte that already sat at A, and it drops
+it silently, as an absence. The return leg costs no extra reads and asks for
+more than a change -- a byte that merely drifted does not drift back on cue.
 
-**The value sent is compared with the value stored.** An address that ends up
-holding exactly what was transmitted is a different finding from one that holds
-something derived from it, and the pair is recorded so the difference survives.
+**What was sent is compared with what is stored.** An address that ends up
+holding exactly what was transmitted is a different finding from one holding
+something derived from it, and both readings are kept so the difference survives.
+
+**A stimulus is any list of messages parameterised by one value.** A control
+change is one. So are an NRPN or RPN triple, a bank select followed by a program
+change, and a SysEx write. That is deliberate: the question of whether two
+different messages reach one storage location is answered by running both
+through the same procedure and comparing the addresses, not by trusting that
+they were documented as the same parameter.
+
+**A whole kind falling silent is not a finding about the unit.** The control
+proves the snapshots and the diff work; it does not prove that an NRPN was
+received, because it is not an NRPN. When no stimulus of a kind is attributed,
+"the unit stores none of these" and "these never arrived" are the same
+observation, and the caller is told so rather than shown a table of zeroes.
 """
 
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from . import roland
 from .midi import MidiLink
+
+Address = tuple[int, int, int]
 
 
 @dataclass
@@ -38,23 +58,49 @@ class Change:
 
 
 @dataclass
+class Stimulus:
+    """Something that can be sent at a value, and asked about twice."""
+
+    label: str
+    kind: str
+    build: Callable[[int], list[list[int]]]
+    values: tuple[int, int] = (0x20, 0x60)
+    """The two values used. A stimulus whose parameter has a narrow range says so
+    here rather than being scanned with values outside it, which a clamping
+    address answers identically for both and so reads as storing nothing."""
+
+
+@dataclass
 class Attribution:
     label: str
-    sent: list[int]
-    """The two values transmitted, in order."""
+    kind: str
+    values: tuple[int, int]
 
-    per_byte: dict[str, list[int]] = field(default_factory=dict)
-    """Address -> what it read as after each value."""
+    readings: dict[str, list[tuple[int, int]]] = field(default_factory=dict)
+    """Address -> [(value sent, value read)] for the move and the move back."""
 
     verbatim: list[str] = field(default_factory=list)
-    """Addresses that ended up holding exactly what was sent, both times."""
+    """Addresses that held exactly what was sent, both on the way out and back."""
+
+    on_second_attempt: bool = False
+    """The first pass found nothing here and the retry did. Worth seeing: it means
+    a single pass of this scan can miss something that is there."""
+
+    @property
+    def addresses(self) -> list[str]:
+        return sorted(self.readings)
 
     def to_json(self) -> dict:
         return {
-            "control": self.label,
-            "sent": [f"{v:02X}" for v in self.sent],
-            "stores_verbatim": self.verbatim,
-            "bytes": {a: [f"{v:02X}" for v in vs] for a, vs in sorted(self.per_byte.items())},
+            "stimulus": self.label,
+            "kind": self.kind,
+            "primed_then_sent": [f"{self.values[0]:02X}", f"{self.values[1]:02X}"],
+            "found_only_on_the_second_attempt": self.on_second_attempt,
+            "stores_verbatim": sorted(self.verbatim),
+            "bytes": {
+                a: [[f"{s:02X}", f"{r:02X}"] for s, r in pairs]
+                for a, pairs in sorted(self.readings.items())
+            },
         }
 
 
@@ -64,7 +110,7 @@ class Snapshotter:
     def __init__(
         self,
         link: MidiLink,
-        regions: list[tuple[tuple[int, int, int], int]],
+        regions: list[tuple[Address, int]],
         *,
         device_id: int = roland.DEFAULT_DEVICE_ID,
         timeout: float = 0.4,
@@ -76,14 +122,14 @@ class Snapshotter:
         self.reads = 0
         self.unread = 0
 
-    def take(self) -> dict[tuple[int, int, int], int]:
+    def take(self) -> dict[Address, int]:
         """Read every region and flatten it to one byte per address.
 
         A region that fails to read is left out rather than recorded as zeros: an
         absent byte cannot differ from itself, which keeps a failed read from
         appearing as a change on the next comparison.
         """
-        out: dict[tuple[int, int, int], int] = {}
+        out: dict[Address, int] = {}
         for start, length in self.regions:
             self.reads += 1
             request = roland.rq1(start, length, device_id=self.device_id)
@@ -101,9 +147,7 @@ class Snapshotter:
         return out
 
 
-def differences(
-    before: dict[tuple[int, int, int], int], after: dict[tuple[int, int, int], int]
-) -> list[Change]:
+def differences(before: dict[Address, int], after: dict[Address, int]) -> list[Change]:
     """Bytes present in both snapshots that hold a different value in the second."""
     changed = []
     for address, old in before.items():
@@ -116,7 +160,7 @@ def differences(
 def control_run(shot: Snapshotter, *, rounds: int = 3, settle: float = 0.15) -> set[str]:
     """Names the addresses that change with nothing sent to them.
 
-    Run before anything is attributed. Its output is a exclusion list, and an
+    Run before anything is attributed. Its output is an exclusion list, and an
     empty one is the result worth having -- it is what makes a later difference
     mean the message caused it.
     """
@@ -131,54 +175,249 @@ def control_run(shot: Snapshotter, *, rounds: int = 3, settle: float = 0.15) -> 
 
 
 class Scanner:
-    def __init__(
-        self,
-        shot: Snapshotter,
-        *,
-        restless: set[str],
-        settle: float = 0.1,
-    ):
+    def __init__(self, shot: Snapshotter, *, restless: set[str], settle: float = 0.1):
         self.shot = shot
         self.restless = restless
         self.settle = settle
+        self.recovered: list[str] = []
+        """Stimuli a single pass missed and the retry found."""
 
-    def attribute(self, label: str, send: list[list[int]], values: list[int]) -> Attribution | None:
-        """Send each message in turn and keep the bytes that followed all of them.
+        self.residue: dict[str, list[str]] = {}
+        """Stimulus -> addresses it did not put back when its value returned.
 
-        Returns None when nothing followed, which is the common answer: most
-        control changes are not stored anywhere this can see.
-        """
-        result = Attribution(label=label, sent=values)
-        moved: dict[str, list[int]] = {}
-        before = self.shot.take()
-        for message in send:
+        Every stimulus ends on the value it started with, so the watched space
+        should end where it began. Anything left over is state carried into the
+        next stimulus, whose baseline then holds it. Reported rather than
+        corrected: which addresses a message fails to release is a fact about
+        the unit, and a scan that quietly repaired it would not have found the
+        bank latch."""
+
+    def _send(self, messages: list[list[int]]) -> None:
+        for message in messages:
             self.shot.link.send(message)
-            time.sleep(self.settle)
-            after = self.shot.take()
-            for change in differences(before, after):
-                if change.address in self.restless:
-                    continue
-                moved.setdefault(change.address, []).append(change.after)
-            before = after
+        time.sleep(self.settle)
 
-        for address, seen in moved.items():
-            if len(seen) == len(send) and len(set(seen)) == len(send):
-                result.per_byte[address] = seen
-                if seen == values:
+    def attribute(self, stimulus: Stimulus) -> Attribution | None:
+        """Attempt the stimulus, and attempt it again with the values swapped if
+        nothing followed.
+
+        A negative is the claim that needs the strength, so it is the one that is
+        retried; a positive is not re-run because there is nothing to strengthen.
+        The retry swaps the two values rather than choosing new ones, which keeps
+        it inside whatever range the pair was chosen for and closes a failure
+        this method has: if the unit already holds the value the stimulus primes
+        with, the prime moves nothing, and a byte that would have been seen is
+        instead absent. Sending them the other way round has the same byte
+        moving.
+
+        The retry was added after one program change went unattributed in a run
+        whose own control passed, and which four later tests could neither
+        reproduce nor explain. Message loss, storage latency and failed reads
+        were each measured and none of them accounts for it. What is recorded is
+        therefore that a single pass can miss, not why.
+        """
+        hit = self._attempt(stimulus, stimulus.values)
+        if hit is not None:
+            return hit
+        hit = self._attempt(stimulus, (stimulus.values[1], stimulus.values[0]))
+        if hit is not None:
+            hit.on_second_attempt = True
+            self.recovered.append(stimulus.label)
+        return hit
+
+    def _attempt(self, stimulus: Stimulus, values: tuple[int, int]) -> Attribution | None:
+        """Prime, move, move back, and keep the bytes that did all three."""
+        low, high = values
+        self._send(stimulus.build(low))
+        baseline = self.shot.take()
+
+        self._send(stimulus.build(high))
+        moved = self.shot.take()
+
+        self._send(stimulus.build(low))
+        returned = self.shot.take()
+
+        kept = self.residue.setdefault(stimulus.label, [])
+        for change in differences(baseline, returned):
+            if change.address not in self.restless and change.address not in kept:
+                kept.append(change.address)
+        if not kept:
+            del self.residue[stimulus.label]
+
+        result = Attribution(label=stimulus.label, kind=stimulus.kind, values=values)
+        out = {c.address: c.after for c in differences(baseline, moved)}
+        back = {c.address: c.after for c in differences(moved, returned)}
+        for address, went in out.items():
+            if address in self.restless or address not in back:
+                continue
+            came = back[address]
+            if came != went:
+                result.readings[address] = [(high, went), (low, came)]
+                if (went, came) == (high, low):
                     result.verbatim.append(address)
-        return result if result.per_byte else None
+        return result if result.readings else None
 
 
 def control_change(channel: int, controller: int, value: int) -> list[int]:
     return [0xB0 | (channel & 0x0F), controller & 0x7F, value & 0x7F]
 
 
+def cc(channel: int, controller: int, *, values: tuple[int, int] = (0x20, 0x60)) -> Stimulus:
+    return Stimulus(
+        label=f"CC{controller}",
+        kind="cc",
+        build=lambda v: [control_change(channel, controller, v)],
+        values=values,
+    )
+
+
+def nrpn(channel: int, msb: int, lsb: int, name: str = "") -> Stimulus:
+    """Select an NRPN and set its data entry MSB, as one indivisible stimulus.
+
+    The selector is re-sent for every value rather than once for the pair. A
+    selector left standing from an earlier stimulus is the classic way for a data
+    entry to land somewhere nobody named, and re-selecting costs two messages.
+    """
+    label = f"NRPN {msb:02X} {lsb:02X}" + (f" ({name})" if name else "")
+    return Stimulus(
+        label=label,
+        kind="nrpn",
+        build=lambda v: [
+            control_change(channel, 99, msb),
+            control_change(channel, 98, lsb),
+            control_change(channel, 6, v),
+        ],
+    )
+
+
+def rpn(channel: int, msb: int, lsb: int, name: str = "", values=(0x20, 0x60)) -> Stimulus:
+    label = f"RPN {msb:02X} {lsb:02X}" + (f" ({name})" if name else "")
+    return Stimulus(
+        label=label,
+        kind="rpn",
+        build=lambda v: [
+            control_change(channel, 101, msb),
+            control_change(channel, 100, lsb),
+            control_change(channel, 6, v),
+        ],
+        values=values,
+    )
+
+
+def program_change(channel: int, values: tuple[int, int] = (0x00, 0x30)) -> Stimulus:
+    return Stimulus(
+        label="program change",
+        kind="channel",
+        build=lambda v: [[0xC0 | (channel & 0x0F), v & 0x7F]],
+        values=values,
+    )
+
+
+def bank_then_program(
+    channel: int, controller: int, *, program: int = 0, values: tuple[int, int] = (0x00, 0x03)
+) -> Stimulus:
+    """A bank select followed by the program change that commits it.
+
+    Bank select alone is attributed to nothing, which is what a latch looks like:
+    the number is held somewhere no read reaches until a program change consumes
+    it. Pairing them separates "not stored" from "not stored yet".
+
+    **Both halves of the latch are driven every time, not just the one under
+    test.** The pair is accepted or rejected whole: a bank the program does not
+    exist in discards the program change entirely, and neither the bank byte nor
+    the program byte moves. So a value left in the other half by an earlier
+    stimulus does not merely add noise -- it silently switches off every program
+    change for the rest of the run, and nothing in the address space says so,
+    because the latch is not in the address space. That is what happened before
+    this was written: a run set CC0 to 3, and from then on program change and
+    map select both read as storing nothing, while the run's own control kept
+    passing.
+    """
+    return Stimulus(
+        label=f"CC{controller} then program change",
+        kind="channel",
+        build=lambda v: [
+            control_change(channel, 0, v if controller == 0 else 0),
+            control_change(channel, 32, v if controller == 32 else 0),
+            [0xC0 | (channel & 0x0F), program & 0x7F],
+        ],
+        values=values,
+    )
+
+
+def pitch_bend(channel: int, values: tuple[int, int] = (0x20, 0x60)) -> Stimulus:
+    return Stimulus(
+        label="pitch bend",
+        kind="channel",
+        build=lambda v: [[0xE0 | (channel & 0x0F), 0x00, v & 0x7F]],
+        values=values,
+    )
+
+
+def channel_pressure(channel: int, values: tuple[int, int] = (0x20, 0x60)) -> Stimulus:
+    return Stimulus(
+        label="channel pressure",
+        kind="channel",
+        build=lambda v: [[0xD0 | (channel & 0x0F), v & 0x7F]],
+        values=values,
+    )
+
+
+def address_write(
+    address: Address, *, device_id: int = roland.DEFAULT_DEVICE_ID, values=(0x20, 0x60)
+) -> Stimulus:
+    """Write one address by SysEx, to find every other address that follows it."""
+    return Stimulus(
+        label=f"DT1 {address[0]:02X} {address[1]:02X} {address[2]:02X}",
+        kind="address",
+        build=lambda v: [roland.dt1(address, [v], device_id=device_id)],
+        values=values,
+    )
+
+
+# The GS part parameters reachable as an NRPN. Names are the specification's;
+# whether this unit puts each one where the specification says is the question,
+# so nothing here is used to label an address that was found.
+GS_NRPN = (
+    (0x01, 0x08, "vibrato rate"),
+    (0x01, 0x09, "vibrato depth"),
+    (0x01, 0x0A, "vibrato delay"),
+    (0x01, 0x20, "TVF cutoff"),
+    (0x01, 0x21, "TVF resonance"),
+    (0x01, 0x63, "envelope attack"),
+    (0x01, 0x64, "envelope decay"),
+    (0x01, 0x66, "envelope release"),
+)
+
+# Addressed per drum note, so the note number is the low byte and these only
+# mean anything on a part in drum mode.
+GS_DRUM_NRPN = (
+    (0x18, "drum pitch coarse"),
+    (0x1A, "drum level"),
+    (0x1C, "drum panpot"),
+    (0x1D, "drum reverb send"),
+    (0x1E, "drum chorus send"),
+    (0x1F, "drum delay send"),
+)
+
+GS_RPN = (
+    (0x00, 0x00, "pitch bend sensitivity", (0x02, 0x0C)),
+    (0x00, 0x01, "master fine tune", (0x20, 0x60)),
+    (0x00, 0x02, "master coarse tune", (0x3C, 0x44)),
+    (0x00, 0x05, "modulation depth range", (0x01, 0x08)),
+)
+
+
 def summarise(found: list[Attribution], restless: set[str], unread: int) -> str:
-    lines = [f"{len(found)} controls were stored somewhere this could see"]
+    lines = [f"{len(found)} stimuli were stored somewhere this could see"]
     for a in found:
-        where = ", ".join(f"{k}={'/'.join(f'{v:02X}' for v in vs)}" for k, vs in a.per_byte.items())
+        where = ", ".join(
+            f"{addr}={'/'.join(f'{r:02X}' for _, r in pairs)}"
+            for addr, pairs in sorted(a.readings.items())
+        )
         mark = "  (verbatim)" if a.verbatim else ""
-        lines.append(f"  {a.label:28} -> {where}{mark}")
+        mark += "  [only on the second attempt]" if a.on_second_attempt else ""
+        lines.append(f"  {a.label:34} -> {where}{mark}")
     if restless:
         lines.append(
             f"  {len(restless)} addresses moved with nothing sent and were excluded: "
@@ -192,12 +431,24 @@ def summarise(found: list[Attribution], restless: set[str], unread: int) -> str:
 
 
 __all__ = [
+    "GS_DRUM_NRPN",
+    "GS_NRPN",
+    "GS_RPN",
     "Attribution",
     "Change",
     "Scanner",
     "Snapshotter",
+    "Stimulus",
+    "address_write",
+    "bank_then_program",
+    "cc",
+    "channel_pressure",
     "control_change",
     "control_run",
     "differences",
+    "nrpn",
+    "pitch_bend",
+    "program_change",
+    "rpn",
     "summarise",
 ]

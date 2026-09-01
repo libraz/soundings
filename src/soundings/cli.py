@@ -165,6 +165,61 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
     return 0 if all(r.region_restored for r in done) else 1
 
 
+def _part_block(family: int, channel: int) -> tuple[int, int, int]:
+    """The per-part block for a channel, in one of the families of them.
+
+    GS numbers the parts so that channel 10 comes first: 40 f0 is part 10, and
+    40 f1 through 40 fF are channels 1 to 9 and 11 to 16 in order. `family` is
+    the whole high nibble of the middle byte -- 0x10 for the part block that
+    holds the tone, 0x40 for the one CC32 writes into -- so passing 0x00 by
+    mistake addresses the patch common block instead, which answers, and which
+    holds something entirely unrelated.
+    """
+    index = 0 if channel == 9 else (channel + 1 if channel < 9 else channel)
+    return (0x40, family | index, 0x00)
+
+
+def _clear_bank_latch(link, channel: int, device_id: int) -> str:
+    """Put the bank select latch back where the scan found it.
+
+    Bank select is held without changing anything readable until a program
+    change commits the three of them together, and a pair the unit does not have
+    is discarded whole. So a scan that sends CC0 or CC32 on their own -- which a
+    controller sweep does, having no reason to send a program change -- ends with
+    a latch set to whatever it tried last, and every program change in the next
+    run is thrown away. Nothing in the address space says so.
+
+    The committing program change is the tone the part already holds, and the
+    bank halves are read back rather than assumed, so the commit puts the part
+    exactly where it was rather than somewhere tidy.
+    """
+    from . import roland as r
+
+    tone = _part_block(0x10, channel)
+
+    def read(address, size):
+        # Drain first: this runs straight after hundreds of request-and-reply
+        # pairs, and a reply still in flight is answered to whichever request
+        # asks next.
+        while link.receive(timeout=0.05):
+            pass
+        reply = r.parse_dt1(link.exchange(r.rq1(address, size, device_id=device_id), timeout=0.6))
+        return None if reply is None or reply.address != address else list(reply.data)
+
+    part = read(tone, 2)
+    mapped = read(_part_block(0x40, channel), 1)
+    if part is None or mapped is None:
+        return "could not be read back, so the bank latch was left as the scan left it"
+    link.send([0xB0 | (channel & 0x0F), 0, part[0]])
+    link.send([0xB0 | (channel & 0x0F), 32, mapped[0]])
+    link.send([0xC0 | (channel & 0x0F), part[1]])
+    time.sleep(0.25)
+    after = read(tone, 2)
+    if after != part:
+        return f"restoring it moved the part from {part} to {after}"
+    return f"committed bank {part[0]}, map {mapped[0]}, program {part[1]}"
+
+
 def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int], int]]:
     data = json.loads(Path(path).read_text())
     out = []
@@ -176,16 +231,50 @@ def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int]
     return out
 
 
+def _stimuli(args: argparse.Namespace) -> list:
+    """Build the list of things to send, for the kind asked for."""
+    from . import aliases as al
+
+    ch = args.channel
+    if args.kind == "cc":
+        numbers = (
+            list(range(0, 120))
+            if args.controllers is None
+            else [int(c, 0) for c in args.controllers]
+        )
+        return [al.cc(ch, n) for n in numbers]
+    if args.kind == "nrpn":
+        return [al.nrpn(ch, msb, lsb, name) for msb, lsb, name in al.GS_NRPN]
+    if args.kind == "drum-nrpn":
+        note = args.note
+        return [al.nrpn(ch, msb, note, f"{name} note {note}") for msb, name in al.GS_DRUM_NRPN]
+    if args.kind == "rpn":
+        return [al.rpn(ch, msb, lsb, name, values=v) for msb, lsb, name, v in al.GS_RPN]
+    if args.kind == "channel":
+        return [
+            al.program_change(ch),
+            # Bank MSB 8 rather than a low number: the pair is accepted or
+            # rejected whole, and program 0 does not exist in banks 1, 2 or 3, so
+            # those values measure the rejection instead of the storage.
+            al.bank_then_program(ch, 0, values=(0x00, 0x08)),
+            al.bank_then_program(ch, 32),
+            al.pitch_bend(ch),
+            al.channel_pressure(ch),
+        ]
+    raise ValueError(args.kind)
+
+
 def cmd_alias_scan(args: argparse.Namespace) -> int:
-    from .aliases import Scanner, Snapshotter, control_change, control_run, summarise
+    from .aliases import Scanner, Snapshotter, cc, control_change, control_run, summarise
 
     regions = _regions_from_map(args.map, args.prefix)
-    asked = (
-        list(range(0, 120)) if args.controllers is None else [int(c, 0) for c in args.controllers]
-    )
     # A run that finds nothing cannot say whether the unit stores nothing or the
-    # scan was broken, so one controller known to be stored is always included.
-    controllers = asked if args.control_cc in asked else [args.control_cc, *asked]
+    # scan was broken, so one control change known to be stored is always sent.
+    # Sent at both ends rather than once: a control that passes at the start says
+    # the reading worked at the start, and a run has been seen to miss something
+    # after that point.
+    control = cc(args.channel, args.control_cc)
+    stimuli = [control, *_stimuli(args), control]
     with MidiLink(args.port) as link:
         print(f"MIDI: {link.ports.output_name}")
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -197,8 +286,8 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         # Park the RPN and NRPN selectors before anything else, so a data entry
         # controller later in the scan writes to a known nothing rather than to
         # whatever parameter was last selected on this channel.
-        for cc, value in ((101, 127), (100, 127), (99, 127), (98, 127)):
-            link.send(control_change(args.channel, cc, value))
+        for number, value in ((101, 127), (100, 127), (99, 127), (98, 127)):
+            link.send(control_change(args.channel, number, value))
 
         shot = Snapshotter(link, regions, device_id=args.device_id)
         print(f"\n{len(regions)} regions under {args.prefix!r}, one snapshot each round")
@@ -212,20 +301,48 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
 
         scanner = Scanner(shot, restless=restless)
         found = []
-        for cc in controllers:
-            messages = [control_change(args.channel, cc, v) for v in args.values]
-            hit = scanner.attribute(f"CC{cc} ch{args.channel + 1}", messages, list(args.values))
+        control_passes = 0
+        control_hit = None
+        for stimulus in stimuli:
+            hit = scanner.attribute(stimulus)
+            if stimulus is control:
+                control_passes += hit is not None
+                control_hit = control_hit or hit
+                print(f"  control CC{args.control_cc}: {'seen' if hit else 'NOT SEEN'}")
+                continue
             if hit is not None:
                 found.append(hit)
-                print(f"  CC{cc}: {len(hit.per_byte)} bytes follow it")
+                print(f"  {stimulus.label}: {', '.join(hit.addresses)}")
 
-    control_hit = next((a for a in found if a.label.startswith(f"CC{args.control_cc} ")), None)
+        latch = _clear_bank_latch(link, args.channel, args.device_id)
+        print(f"  bank latch: {latch}")
+
+    # The control proves the snapshots and the diff work. It does not prove that
+    # a message of the kind under test was received, because it is not one of
+    # them, so a kind that lands nothing anywhere is reported as unreached
+    # rather than as absent.
+    reached = args.kind == "cc" or any(a.kind == args.kind for a in found)
+    bracketed = control_passes == 2
     print()
     print(summarise(found, restless, shot.unread))
-    if control_hit is None:
+    if scanner.recovered:
         print(
-            f"\n!! CC{args.control_cc} is known to be stored and this run did not see it. "
-            "Every negative above is a statement about the scan, not about the unit."
+            f"  !! {len(scanner.recovered)} stimuli were missed by the first pass and found by "
+            f"the retry: {', '.join(scanner.recovered)}"
+        )
+    for label, addresses in scanner.residue.items():
+        print(f"  !! {label} did not put back: {', '.join(addresses)}")
+    if not bracketed:
+        print(
+            f"\n!! CC{args.control_cc} is known to be stored and this run saw it "
+            f"{control_passes} of the 2 times it was sent. Every negative above is a statement "
+            "about the scan, not about the unit."
+        )
+    elif not reached:
+        print(
+            f"\n!! nothing of kind {args.kind!r} was attributed anywhere. The control was seen, so "
+            "the reading works; but no message of this kind landed, and 'the unit stores none of "
+            "these' cannot be told from 'these never arrived'."
         )
 
     if args.out:
@@ -236,32 +353,56 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 {
                     "device_id": f"{args.device_id:02X}",
                     "channel": args.channel + 1,
+                    "kind": args.kind,
                     "positive_control": {
                         "controller": args.control_cc,
-                        "detected": control_hit is not None,
-                        "at": sorted(control_hit.per_byte) if control_hit else [],
-                        "why": "Included in every run. Without it a scan that finds nothing "
-                        "cannot be told from a scan that cannot find anything.",
+                        "sent": 2,
+                        "detected": control_passes,
+                        "at": control_hit.addresses if control_hit else [],
+                        "why": "Sent before the first stimulus and after the last. Without it a "
+                        "scan that finds nothing cannot be told from a scan that cannot find "
+                        "anything; sent only once, it says nothing about the rest of the run.",
                     },
+                    "left_changed_afterwards": {
+                        "by_stimulus": scanner.residue,
+                        "why": "Every stimulus ends on the value it started with, so anything "
+                        "listed here is state one message carried into the next.",
+                    },
+                    "missed_by_the_first_pass": {
+                        "stimuli": scanner.recovered,
+                        "why": "Each stimulus that lands nothing is retried with its two values "
+                        "swapped. Anything listed here is something a single pass would have "
+                        "reported as absent.",
+                    },
+                    "kind_reached": {
+                        "value": reached,
+                        "why": "The control is a control change, so it cannot show that a "
+                        "message of another kind arrived. Where this is false, every negative "
+                        "in the run is about the path, not about the unit.",
+                    },
+                    "method": "Each stimulus was sent at its low value, snapshotted, sent at its "
+                    "high value, snapshotted, and sent at its low value again. A byte is listed "
+                    "only if it moved both times, to a different value each time.",
                     "region_prefix": args.prefix,
                     "regions_watched": len(regions),
+                    "stimuli_sent": [s.label for s in stimuli],
                     "restless_addresses": sorted(restless),
                     "region_reads_failed": shot.unread,
-                    "controllers_scanned": f"{min(controllers)}-{max(controllers)}",
                     "not_scanned": "Controllers 120 to 127 are channel mode messages. "
                     "Sending one resets the channel state every later attribution is measured "
                     "against, so they need a scan of their own.",
                     "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
-                    "note": "A byte listed here followed the control both times it was sent. "
-                    "That says where the value is kept, not that anything uses it.",
-                    "controls": [a.to_json() for a in found],
+                    "bank_latch_on_exit": latch,
+                    "note": "A byte listed here followed the stimulus out and back. That says "
+                    "where the value is kept, not that anything uses it.",
+                    "attributed": [a.to_json() for a in found],
                 },
                 indent=2,
             )
             + "\n"
         )
         print(f"\nwrote {path}")
-    return 0 if control_hit is not None else 1
+    return 0 if bracketed and reached else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -357,7 +498,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser(
         "alias-scan",
-        help="find where a control change is stored, by diffing the address space around it",
+        help="find where a message is stored, by diffing the address space around it",
     )
     p.add_argument(
         "--map",
@@ -367,10 +508,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--prefix", default="40 ", help="only watch regions whose address starts here")
     p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
     p.add_argument(
-        "--values",
-        type=lambda s: tuple(int(v, 0) for v in s.split(",")),
-        default=(0x20, 0x60),
-        help="the two values sent; a byte must follow both to be attributed",
+        "--kind",
+        default="cc",
+        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel"),
+        help="what to send; two kinds landing on one address is what makes them aliases",
+    )
+    p.add_argument(
+        "--note",
+        type=lambda s: int(s, 0),
+        default=36,
+        help="drum note the per-note NRPNs address, for --kind drum-nrpn",
     )
     p.add_argument("--controllers", nargs="*", help="controller numbers; default is 0 to 119")
     p.add_argument(
