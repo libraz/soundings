@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 from . import capture as cap
@@ -164,6 +165,105 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
     return 0 if all(r.region_restored for r in done) else 1
 
 
+def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int], int]]:
+    data = json.loads(Path(path).read_text())
+    out = []
+    for r in data["regions"]:
+        if not r["address"].startswith(prefix) or not r["size"]:
+            continue
+        start = tuple(int(b, 16) for b in r["address"].split())
+        out.append((start, r["size"]))
+    return out
+
+
+def cmd_alias_scan(args: argparse.Namespace) -> int:
+    from .aliases import Scanner, Snapshotter, control_change, control_run, summarise
+
+    regions = _regions_from_map(args.map, args.prefix)
+    asked = (
+        list(range(0, 120)) if args.controllers is None else [int(c, 0) for c in args.controllers]
+    )
+    # A run that finds nothing cannot say whether the unit stores nothing or the
+    # scan was broken, so one controller known to be stored is always included.
+    controllers = asked if args.control_cc in asked else [args.control_cc, *asked]
+    with MidiLink(args.port) as link:
+        print(f"MIDI: {link.ports.output_name}")
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not scanning.")
+            return 1
+
+        # Park the RPN and NRPN selectors before anything else, so a data entry
+        # controller later in the scan writes to a known nothing rather than to
+        # whatever parameter was last selected on this channel.
+        for cc, value in ((101, 127), (100, 127), (99, 127), (98, 127)):
+            link.send(control_change(args.channel, cc, value))
+
+        shot = Snapshotter(link, regions, device_id=args.device_id)
+        print(f"\n{len(regions)} regions under {args.prefix!r}, one snapshot each round")
+        print("Control round: reading twice over with nothing sent")
+        started = time.monotonic()
+        restless = control_run(shot)
+        print(
+            f"  {len(restless)} addresses moved on their own"
+            f" ({(time.monotonic() - started) / 4:.1f}s per snapshot)"
+        )
+
+        scanner = Scanner(shot, restless=restless)
+        found = []
+        for cc in controllers:
+            messages = [control_change(args.channel, cc, v) for v in args.values]
+            hit = scanner.attribute(f"CC{cc} ch{args.channel + 1}", messages, list(args.values))
+            if hit is not None:
+                found.append(hit)
+                print(f"  CC{cc}: {len(hit.per_byte)} bytes follow it")
+
+    control_hit = next((a for a in found if a.label.startswith(f"CC{args.control_cc} ")), None)
+    print()
+    print(summarise(found, restless, shot.unread))
+    if control_hit is None:
+        print(
+            f"\n!! CC{args.control_cc} is known to be stored and this run did not see it. "
+            "Every negative above is a statement about the scan, not about the unit."
+        )
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "channel": args.channel + 1,
+                    "positive_control": {
+                        "controller": args.control_cc,
+                        "detected": control_hit is not None,
+                        "at": sorted(control_hit.per_byte) if control_hit else [],
+                        "why": "Included in every run. Without it a scan that finds nothing "
+                        "cannot be told from a scan that cannot find anything.",
+                    },
+                    "region_prefix": args.prefix,
+                    "regions_watched": len(regions),
+                    "restless_addresses": sorted(restless),
+                    "region_reads_failed": shot.unread,
+                    "controllers_scanned": f"{min(controllers)}-{max(controllers)}",
+                    "not_scanned": "Controllers 120 to 127 are channel mode messages. "
+                    "Sending one resets the channel state every later attribution is measured "
+                    "against, so they need a scan of their own.",
+                    "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
+                    "note": "A byte listed here followed the control both times it was sent. "
+                    "That says where the value is kept, not that anything uses it.",
+                    "controls": [a.to_json() for a in found],
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0 if control_hit is not None else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="soundings", description=__doc__)
     parser.add_argument("--port", help="substring of the MIDI port name")
@@ -254,6 +354,35 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_write_probe)
+
+    p = sub.add_parser(
+        "alias-scan",
+        help="find where a control change is stored, by diffing the address space around it",
+    )
+    p.add_argument(
+        "--map",
+        default="data/units/roland-sc8850-01/address-map.json",
+        help="address map the watched regions are taken from",
+    )
+    p.add_argument("--prefix", default="40 ", help="only watch regions whose address starts here")
+    p.add_argument("--channel", type=int, default=0, help="zero based MIDI channel")
+    p.add_argument(
+        "--values",
+        type=lambda s: tuple(int(v, 0) for v in s.split(",")),
+        default=(0x20, 0x60),
+        help="the two values sent; a byte must follow both to be attributed",
+    )
+    p.add_argument("--controllers", nargs="*", help="controller numbers; default is 0 to 119")
+    p.add_argument(
+        "--control-cc",
+        type=int,
+        default=7,
+        help="a controller known to be stored, always scanned, so a run that finds nothing "
+        "can be told from a run that could not have found anything",
+    )
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_alias_scan)
 
     args = parser.parse_args(argv)
     return args.func(args)
