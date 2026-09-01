@@ -17,6 +17,12 @@ from .stimuli import DEFAULT as _STIMULUS_DEFAULT
 
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
 
+_SAVE_HELP = (
+    "directory to keep every take in, as float WAV with a manifest. Device time is the "
+    "scarce thing here and a verdict thrown away with its audio has to be re-recorded to "
+    "be asked anything else; kept takes can be measured again with the machine unplugged"
+)
+
 _LEAD_IN_HELP = (
     "dBFS the lead-in must stay under; above this something was sounding before the note and "
     "the noise floor, which is the yardstick for everything else, is wrong. Absolute rather "
@@ -581,6 +587,15 @@ def _record_note(
     return recording
 
 
+def _store(where: str | None):
+    """Open a directory for the takes, when the run was asked to keep them."""
+    if not where:
+        return None
+    from .takes import Store
+
+    return Store.open(where)
+
+
 def _loudest_channel(recording) -> int:
     import numpy as np
 
@@ -634,6 +649,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
     label = f"{where} {args.values[0]} against {args.values[1]}"
     overall = audible.Overall(label=label)
+    store = _store(args.save)
 
     with MidiLink(args.port) as link:
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -666,7 +682,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     link.send(message)
                 time.sleep(args.settle)
                 takes = []
-                for _ in range(args.takes):
+                for index in range(args.takes):
                     recording = _record_note(
                         link,
                         device=args.audio,
@@ -681,6 +697,8 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                         print(f"    lossy capture: {recording.health_report()}")
                         return 1
                     takes.append(recording)
+                    if store is not None:
+                        store.keep(recording, stimulus=stim.name, setting=str(value), take=index)
                     time.sleep(args.between)
                 print(f"    {where} = {value}: {len(takes)} takes")
                 captured.append(takes)
@@ -717,6 +735,17 @@ def cmd_contrast(args: argparse.Namespace) -> int:
 
     print()
     print(overall.describe())
+
+    if store is not None:
+        manifest = store.close(
+            label=label,
+            controller=args.cc,
+            address=None if args.cc is not None else args.address,
+            values=list(args.values),
+            channel=args.channel,
+            stimuli=[stim.to_json() for stim in asked],
+        )
+        print(f"\nkept {len(store.entries)} takes under {manifest.parent}")
 
     if args.out:
         path = Path(args.out)
@@ -767,6 +796,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
         [0xB0 | args.channel, 91, args.reverb & 0x7F],
         [0xB0 | args.channel, 93, args.chorus & 0x7F],
     ]
+    store = _store(args.save)
 
     with MidiLink(args.port) as link:
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -805,6 +835,13 @@ def cmd_repeat(args: argparse.Namespace) -> int:
                 print("  the capture was lossy, so nothing measured from it would mean anything")
                 return 1
             takes.append(recording)
+            if store is not None:
+                store.keep(
+                    recording,
+                    stimulus=f"p{args.program}n{args.note}",
+                    setting=f"rev{args.reverb}cho{args.chorus}",
+                    take=index,
+                )
             time.sleep(args.between)
 
         index = _loudest_channel(takes[0])
@@ -913,6 +950,17 @@ def cmd_repeat(args: argparse.Namespace) -> int:
 
         prober.apply(gs_reset)
 
+    if store is not None:
+        manifest = store.close(
+            program=args.program,
+            note=args.note,
+            velocity=args.velocity,
+            reverb_send=args.reverb,
+            chorus_send=args.chorus,
+            channel=args.channel,
+        )
+        print(f"\nkept {len(store.entries)} takes under {manifest.parent}")
+
     if args.out:
         path = Path(args.out)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -956,6 +1004,82 @@ def cmd_repeat(args: argparse.Namespace) -> int:
                             for (bank, program), fit in sorted(fits.items())
                         },
                     },
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0
+
+
+def _pair(dry_path: str, wet_path: str):
+    """Load two takes and hand back the loudest channel of each, plus the rate."""
+    from .takes import loudest, read
+
+    dry, dry_rate = read(dry_path)
+    wet, wet_rate = read(wet_path)
+    if dry_rate != wet_rate:
+        raise SystemExit(f"the two takes were captured at {dry_rate} and {wet_rate} Hz")
+    return loudest(dry), loudest(wet), dry_rate
+
+
+def cmd_motion(args: argparse.Namespace) -> int:
+    """Say what an effect does over time, from a dry and a wet take of the same note."""
+    from . import motion
+
+    dry, wet, rate = _pair(args.dry, args.wet)
+    found = motion.measure(
+        dry,
+        wet,
+        rate,
+        search_ms=(0.0, args.max_delay),
+        rate_range=(args.min_rate, args.max_rate),
+    )
+    print(f"{args.dry} against {args.wet}, {rate} Hz")
+    print(found.describe())
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "dry": str(args.dry),
+                    "wet": str(args.wet),
+                    "sample_rate": rate,
+                    "searched_rate_hz": [args.min_rate, args.max_rate],
+                    **found.to_json(),
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0
+
+
+def cmd_decay(args: argparse.Namespace) -> int:
+    """Say how long an effect's tail takes to die, per octave band."""
+    from . import decay as dec
+
+    dry, wet, rate = _pair(args.dry, args.wet)
+    tail, noise = dec.isolate_tail(dry, wet, rate, lead=args.lead)
+    found = dec.measure(tail, rate, noise=noise)
+    print(f"{args.dry} against {args.wet}, {rate} Hz")
+    print(found.describe())
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "dry": str(args.dry),
+                    "wet": str(args.wet),
+                    "sample_rate": rate,
+                    "lead_s": args.lead,
+                    **found.to_json(),
                 },
                 indent=2,
             )
@@ -1373,6 +1497,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--max-lead-in", type=float, default=-60.0, help=_LEAD_IN_HELP)
     p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--save", help=_SAVE_HELP)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_repeat)
 
@@ -1416,8 +1541,44 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--min-rise", type=float, default=12.0)
     p.add_argument("--max-lead-in", type=float, default=-60.0, help=_LEAD_IN_HELP)
     p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--save", help=_SAVE_HELP)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_contrast)
+
+    p = sub.add_parser(
+        "motion",
+        help="say what an effect does over time -- its modulation rate, depth and "
+        "shape -- from a dry and a wet take, with no machine attached",
+    )
+    p.add_argument("dry", help="a take with the effect off")
+    p.add_argument("wet", help="the same note with the effect on")
+    p.add_argument(
+        "--max-delay",
+        type=float,
+        default=60.0,
+        help="milliseconds of delay searched. A null is a fact about this range",
+    )
+    p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
+    p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_motion)
+
+    p = sub.add_parser(
+        "decay",
+        help="say how long an effect's tail takes to die in each octave band, from a "
+        "dry and a wet take, with no machine attached",
+    )
+    p.add_argument("dry", help="a take with the effect off")
+    p.add_argument("wet", help="the same note with the effect on")
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.5,
+        help="seconds of silence at the head of the take; the per-band noise floor is "
+        "measured in it, and it is what says where a tail stops being a tail",
+    )
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_decay)
 
     args = parser.parse_args(argv)
     return args.func(args)
