@@ -1,0 +1,228 @@
+"""Controls for the motion tracker, on effects whose settings are already known.
+
+Every failure mode here produces a number rather than an error, and each of those
+numbers would be published as a fact about a machine. A tracker that finds a rate
+in noise invents a modulator; one that reports no motion because the direct path
+swamped the return misses one; one biased toward zero delay by its own window
+reports every chorus as shallow. So each is given an effect it has to get right,
+and each null is given something it has to stay silent about.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from soundings import motion
+
+SR = 48000
+
+
+def source(seconds: float = 4.0, *, seed: int = 5, tonal: bool = False) -> np.ndarray:
+    """Broadband decaying material, which is what a delay can be measured against.
+
+    Noise by default: its autocorrelation has one peak, so a delay measured
+    against it is unique. `tonal` gives the periodic case instead, which is what
+    a held note actually is.
+    """
+    n = int(seconds * SR)
+    t = np.arange(n) / SR
+    if tonal:
+        return sum(np.sin(2 * np.pi * 261.6 * k * t + k) / k for k in (1, 2, 3, 4, 5))
+    rng = np.random.default_rng(seed)
+    noise = rng.standard_normal(n)
+    # Band-limit it, so linear interpolation in the delay line is not the thing
+    # under test.
+    spectrum = np.fft.rfft(noise)
+    spectrum[np.fft.rfftfreq(n, 1 / SR) > 6000] = 0
+    return np.fft.irfft(spectrum, n) * (0.3 + 0.7 * np.exp(-0.4 * t))
+
+
+def chorused(
+    dry: np.ndarray,
+    *,
+    rate: float,
+    depth_ms: float,
+    centre_ms: float = 20.0,
+    mix: float = 0.7,
+    shape: str = "sine",
+) -> np.ndarray:
+    """A send-return modulated delay: the dry signal plus a copy that moves."""
+    n = dry.size
+    t = np.arange(n) / SR
+    phase = 2 * np.pi * rate * t
+    swing = np.sin(phase) if shape == "sine" else 2 / np.pi * np.arcsin(np.sin(phase))
+    delay = (centre_ms + depth_ms / 2.0 * swing) / 1000.0 * SR
+    taps = np.arange(n) - delay
+    return dry + mix * np.interp(taps, np.arange(n), dry, left=0.0, right=0.0)
+
+
+def reverberated(dry: np.ndarray, *, seed: int = 9, seconds: float = 0.6) -> np.ndarray:
+    """A static effect: one fixed impulse response, nothing moving."""
+    rng = np.random.default_rng(seed)
+    n = int(seconds * SR)
+    tail = rng.standard_normal(n) * np.exp(-6.0 * np.arange(n) / SR)
+    return dry + 0.4 * np.convolve(dry, tail, mode="full")[: dry.size] / np.abs(tail).sum() * 8
+
+
+def test_a_chorus_gives_up_its_rate_and_its_depth() -> None:
+    dry = source()
+    wet = chorused(dry, rate=1.3, depth_ms=4.0)
+    found = motion.measure(dry, wet, SR)
+    assert found.delay is not None
+    assert found.delay.rate_hz == pytest.approx(1.3, abs=0.1)
+    assert found.delay.depth == pytest.approx(4.0, rel=0.15)
+    assert found.delay.sinusoidal
+
+
+def test_the_centre_delay_is_recovered_not_only_the_swing() -> None:
+    dry = source()
+    wet = chorused(dry, rate=0.8, depth_ms=3.0, centre_ms=25.0)
+    found = motion.measure(dry, wet, SR)
+    assert found.delay is not None
+    assert found.delay.centre == pytest.approx(25.0, abs=1.0)
+
+
+def test_a_deep_slow_swing_is_not_reported_as_a_shallow_one() -> None:
+    """The window-bias failure: a reference window that overlaps less and less as
+    the lag grows pulls every peak toward no delay, and every chorus reads shallow."""
+    dry = source(seconds=6.0)
+    wet = chorused(dry, rate=0.5, depth_ms=12.0, centre_ms=30.0)
+    found = motion.measure(dry, wet, SR)
+    assert found.delay is not None
+    assert found.delay.depth == pytest.approx(12.0, rel=0.15)
+
+
+def test_a_triangle_is_told_apart_from_a_sine_by_what_it_leaves() -> None:
+    dry = source(seconds=6.0)
+    sine = motion.measure(dry, chorused(dry, rate=1.0, depth_ms=6.0), SR)
+    triangle = motion.measure(dry, chorused(dry, rate=1.0, depth_ms=6.0, shape="triangle"), SR)
+    assert sine.delay is not None and triangle.delay is not None
+    assert sine.delay.sinusoidal
+    assert not triangle.delay.sinusoidal
+    assert triangle.delay.shape_error > sine.delay.shape_error * 3
+
+
+def test_a_static_effect_reports_no_motion_rather_than_a_rate() -> None:
+    """The negative control that matters most: a reverb is audible and moves nothing.
+
+    A tracker that finds a line here would publish a modulation rate for every
+    static effect on the machine.
+    """
+    dry = source()
+    found = motion.measure(dry, reverberated(dry), SR)
+    assert found.delay is None
+    assert not found.moves
+
+
+def test_two_takes_of_the_same_thing_have_no_motion_in_them() -> None:
+    dry = source()
+    rng = np.random.default_rng(21)
+    wet = dry + 1e-4 * rng.standard_normal(dry.size)
+    assert motion.measure(dry, wet, SR).delay is None
+
+
+def test_a_tremolo_is_found_in_the_level_when_the_delay_holds_still() -> None:
+    dry = source()
+    t = np.arange(dry.size) / SR
+    wet = dry * (1.0 + 0.5 * np.sin(2 * np.pi * 4.0 * t))
+    found = motion.measure(dry, wet, SR)
+    assert found.level is not None
+    assert found.level.rate_hz == pytest.approx(4.0, abs=0.1)
+    assert found.moves
+
+
+def test_a_decaying_note_is_not_a_slow_tremolo() -> None:
+    """The envelope's own decay is the largest slow thing in any take of a note."""
+    assert motion.level_lfo(source(), SR) is None
+
+
+def test_a_periodic_input_declares_the_period_a_delay_could_fold_into() -> None:
+    tonal = source(tonal=True)
+    track = motion.track_delay(tonal, chorused(tonal, rate=1.0, depth_ms=1.0), SR)
+    assert track.periodicity > 0.5
+    assert track.ambiguity_ms == pytest.approx(1000.0 / 261.6, rel=0.02)
+
+
+def test_broadband_material_is_not_flagged_as_ambiguous() -> None:
+    dry = source()
+    track = motion.track_delay(dry, chorused(dry, rate=1.0, depth_ms=4.0), SR)
+    assert track.periodicity < 0.5
+    assert not track.wraps
+
+
+def test_the_trigger_scatter_is_removed_before_the_delay_is_read() -> None:
+    """MIDI scatter is milliseconds; a chorus depth is milliseconds. Confusing the
+    two would put the trigger jitter into the effect's centre delay."""
+    dry = source()
+    wet = chorused(dry, rate=1.1, depth_ms=4.0, centre_ms=20.0)
+    late = np.concatenate([np.zeros(400), wet])[: wet.size]
+    found = motion.measure(dry, late, SR)
+    assert found.delay is not None
+    assert found.delay.centre == pytest.approx(20.0, abs=1.5)
+
+
+def test_a_silent_lead_in_does_not_flatten_the_depth() -> None:
+    """Every real take opens with silence to measure the floor in, and no frame in
+    it finds anything. Carrying the track across that gap fills a fifth of it with
+    a flat stretch the oscillator then has to account for, and the depth comes
+    back short."""
+    dry = source()
+    lead = np.zeros(int(0.5 * SR))
+    with_lead = np.concatenate([lead, dry])
+    wet = np.concatenate([lead, chorused(dry, rate=0.9, depth_ms=5.0, centre_ms=18.0)])
+    found = motion.measure(with_lead, wet, SR)
+    assert found.delay is not None
+    assert found.delay.depth == pytest.approx(5.0, rel=0.1)
+    assert found.delay.centre == pytest.approx(18.0, abs=0.5)
+    assert found.delay.sinusoidal
+
+
+def test_a_static_effect_moves_no_level_either() -> None:
+    """A reverb's level rattles, and the largest bin of a rattle clears the median
+    of the band as readily as a tremolo does. Only whether a sinusoid explains the
+    series tells the two apart."""
+    note = np.concatenate([np.zeros(int(0.5 * SR)), source()])
+    assert motion.measure(note, reverberated(note), SR).level is None
+
+
+def test_a_bend_in_a_trend_is_not_a_very_slow_oscillation() -> None:
+    """A note decaying and then flattening onto the noise is the commonest series
+    there is here, and no straight line removes its bend."""
+    n = int(4.0 * SR)
+    t = np.arange(n) / SR
+    rng = np.random.default_rng(17)
+    signal = rng.standard_normal(n) * (np.exp(-6.0 * t) + 1e-4)
+    assert motion.level_lfo(signal, SR) is None
+
+
+def test_a_track_of_pure_noise_produces_no_line() -> None:
+    """The line test's own negative control: any spectrum has a largest bin."""
+    rng = np.random.default_rng(4)
+    track = motion.DelayTrack(
+        times=np.arange(400) * 0.01,
+        delay_samples=rng.standard_normal(400) * 20 + 900,
+        confidence=np.ones(400),
+        sample_rate=SR,
+        hop=0.01,
+        searched_ms=(0.0, 60.0),
+        ambiguity_ms=float("nan"),
+        periodicity=0.0,
+        align_samples=0.0,
+    )
+    assert motion.fit_lfo(track) is None
+
+
+def test_a_track_that_found_almost_nothing_is_refused() -> None:
+    track = motion.DelayTrack(
+        times=np.arange(200) * 0.01,
+        delay_samples=np.where(np.arange(200) % 5 == 0, 900.0, np.nan),
+        confidence=np.zeros(200),
+        sample_rate=SR,
+        hop=0.01,
+        searched_ms=(0.0, 60.0),
+        ambiguity_ms=float("nan"),
+        periodicity=0.0,
+        align_samples=0.0,
+    )
+    assert motion.fit_lfo(track) is None
