@@ -662,6 +662,31 @@
         "What System Mode Set does. It reinitialises rather than resetting parameters and was not sent.",
         "That GS Reset reproduces power-on for anything unreadable. 37502 bytes of the 42064 the map spans were compared; the rest answer no read."
       ]
+    },
+    {
+      "id": "the-tone-map-is-what-the-unit-accepts-and-it-refuses-most-of-the-space",
+      "summary": "Asking for all 16384 bank and program combinations on map 0 finds 1710 tones in 53 banks. Bank 0 holds a full 128. The variation banks thin out from there, down to bank 47 holding one tone and bank 48 holding one. Banks 64, 65 and 127 accept every program and bank 126 accepts exactly 0 to 63.",
+      "method": "There is no query for whether a tone exists, so each was asked for: send the bank select and the program change that commits it, then read the part's own tone bytes. A combination the unit does not have is discarded whole and leaves the part where it was, so a part that moved to what was asked for is the tone existing. The part is moved somewhere else first whenever it already stands on what is about to be asked, since otherwise accepted and discarded read alike.",
+      "coverage": "Exhaustive: every one of the 128 banks was asked for all 128 programs, on map 0 and channel 1. No read failed.",
+      "results": {
+        "tones": 1710,
+        "banks_holding_at_least_one": 53,
+        "bank_0": "all 128",
+        "banks_1_to_48": "variation banks, thinning with the bank number but not monotonically; local peaks at 8, 16, 24, 32 and 40",
+        "banks_49_to_63": "empty",
+        "banks_64_and_65": "all 128 each",
+        "bank_126": "exactly 0 to 63",
+        "bank_127": "all 128",
+        "banks_66_to_125": "empty"
+      },
+      "the_unit_really_does_refuse": "Bank 126 accepts 0 to 63 and refuses 64 to 127, which is a boundary a unit that simply took every program change could not produce. So acceptance is a decision the unit makes rather than an artefact of the asking.",
+      "sampling_would_have_missed_it": "Sampling six programs spread across the range before sweeping a bank, which is the cheaper form of this survey, reported 33 banks and 1584 tones. It missed 20 banks and 126 tones, including two banks whose only tone is a single program. A bank that reads as empty from a sample is not a bank that is empty.",
+      "not_established": [
+        "That the 128 accepted programs in banks 64, 65 and 127 are 128 distinct tones. A bank that holds everything and a bank that validates nothing are the same answer to this method; only hearing them apart would separate the two.",
+        "Anything about maps other than 0, or about a part in drum mode. CC32 was held at 0 throughout and the survey ran on channel 1.",
+        "What any tone is. What was measured is which combinations the unit takes, not what comes out of them."
+      ],
+      "reproduced": "the sampled form twice with identical bank and program lists where the two overlap"
     }
   ]
 }
