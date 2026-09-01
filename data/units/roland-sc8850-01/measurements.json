@@ -49,11 +49,31 @@
       "summary": "An RQ1 request for 256 bytes stops the unit responding entirely, including its Active Sensing. Recovery needs a power cycle.",
       "method": "RQ1 at 40 01 30 with increasing sizes, checking after each that a known-good one-byte read still answers.",
       "results": [
-        { "size": 32, "returned": 32, "unit_alive_after": true },
-        { "size": 64, "returned": 64, "unit_alive_after": true },
-        { "size": 128, "returned": null, "unit_alive_after": true },
-        { "size": 200, "returned": null, "unit_alive_after": true },
-        { "size": 256, "returned": null, "unit_alive_after": false }
+        {
+          "size": 32,
+          "returned": 32,
+          "unit_alive_after": true
+        },
+        {
+          "size": 64,
+          "returned": 64,
+          "unit_alive_after": true
+        },
+        {
+          "size": 128,
+          "returned": null,
+          "unit_alive_after": true
+        },
+        {
+          "size": 200,
+          "returned": null,
+          "unit_alive_after": true
+        },
+        {
+          "size": 256,
+          "returned": null,
+          "unit_alive_after": false
+        }
       ],
       "boundary": "between 200 and 256; not narrowed further, because each test past the boundary costs a power cycle",
       "note": "The failure is total and silent, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
@@ -71,18 +91,67 @@
       "results": {
         "messages": 286,
         "seconds": 29.3,
-        "payload_sizes": [16, 24, 128],
+        "payload_sizes": [
+          16,
+          24,
+          128
+        ],
         "unparsable_or_bad_checksum": 0,
         "blocks": [
-          { "top": "08", "messages": 2, "first": "08 00 00", "last": "08 01 00" },
-          { "top": "48", "messages": 39, "first": "48 1D 10", "last": "48 1D 00" },
-          { "top": "49", "messages": 32, "first": "49 00 00", "last": "49 1F 00" },
-          { "top": "58", "messages": 39, "first": "58 1D 10", "last": "58 1D 00" },
-          { "top": "59", "messages": 32, "first": "59 00 00", "last": "59 1F 00" },
-          { "top": "68", "messages": 39, "first": "68 1D 10", "last": "68 1D 00" },
-          { "top": "69", "messages": 32, "first": "69 00 00", "last": "69 1F 00" },
-          { "top": "78", "messages": 39, "first": "78 1D 10", "last": "78 1D 00" },
-          { "top": "79", "messages": 32, "first": "79 00 00", "last": "79 1F 00" }
+          {
+            "top": "08",
+            "messages": 2,
+            "first": "08 00 00",
+            "last": "08 01 00"
+          },
+          {
+            "top": "48",
+            "messages": 39,
+            "first": "48 1D 10",
+            "last": "48 1D 00"
+          },
+          {
+            "top": "49",
+            "messages": 32,
+            "first": "49 00 00",
+            "last": "49 1F 00"
+          },
+          {
+            "top": "58",
+            "messages": 39,
+            "first": "58 1D 10",
+            "last": "58 1D 00"
+          },
+          {
+            "top": "59",
+            "messages": 32,
+            "first": "59 00 00",
+            "last": "59 1F 00"
+          },
+          {
+            "top": "68",
+            "messages": 39,
+            "first": "68 1D 10",
+            "last": "68 1D 00"
+          },
+          {
+            "top": "69",
+            "messages": 32,
+            "first": "69 00 00",
+            "last": "69 1F 00"
+          },
+          {
+            "top": "78",
+            "messages": 39,
+            "first": "78 1D 10",
+            "last": "78 1D 00"
+          },
+          {
+            "top": "79",
+            "messages": 32,
+            "first": "79 00 00",
+            "last": "79 1F 00"
+          }
         ],
         "structure": "2 + 4 x (39 + 32) = 286. Four identically shaped blocks at top byte pairs 48/49, 58/59, 68/69 and 78/79, after a two message preamble at 08.",
         "spacing": "about 102 ms between messages"
@@ -99,30 +168,168 @@
       "summary": "A reply's arrival time grows with its length, but length does not determine it: two addresses that both return 64 bytes answer in 31 ms and 78 ms.",
       "method": "RQ1 with a 2 s timeout, measuring from send to a complete SysEx. The size series is 12 reads per size at 40 02 00; the cross address series is 10 reads per size at nine addresses.",
       "size_series_at_40_02_00": [
-        { "size": 1, "returned": 1, "median_ms": 10.2, "max_ms": 13.0 },
-        { "size": 2, "returned": 2, "median_ms": 10.2, "max_ms": 10.5 },
-        { "size": 4, "returned": 4, "median_ms": 10.5, "max_ms": 11.3 },
-        { "size": 8, "returned": 8, "median_ms": 15.2, "max_ms": 15.5 },
-        { "size": 16, "returned": 16, "median_ms": 24.1, "max_ms": 25.3 },
-        { "size": 24, "returned": 24, "median_ms": 32.9, "max_ms": 33.5 },
-        { "size": 32, "returned": 32, "median_ms": 41.8, "max_ms": 42.4 },
-        { "size": 40, "returned": 40, "median_ms": 51.3, "max_ms": 51.5 },
-        { "size": 48, "returned": 48, "median_ms": 60.1, "max_ms": 60.5 },
-        { "size": 56, "returned": 56, "median_ms": 68.7, "max_ms": 69.2 },
-        { "size": 64, "returned": 64, "median_ms": 77.7, "max_ms": 78.2 }
+        {
+          "size": 1,
+          "returned": 1,
+          "median_ms": 10.2,
+          "max_ms": 13.0
+        },
+        {
+          "size": 2,
+          "returned": 2,
+          "median_ms": 10.2,
+          "max_ms": 10.5
+        },
+        {
+          "size": 4,
+          "returned": 4,
+          "median_ms": 10.5,
+          "max_ms": 11.3
+        },
+        {
+          "size": 8,
+          "returned": 8,
+          "median_ms": 15.2,
+          "max_ms": 15.5
+        },
+        {
+          "size": 16,
+          "returned": 16,
+          "median_ms": 24.1,
+          "max_ms": 25.3
+        },
+        {
+          "size": 24,
+          "returned": 24,
+          "median_ms": 32.9,
+          "max_ms": 33.5
+        },
+        {
+          "size": 32,
+          "returned": 32,
+          "median_ms": 41.8,
+          "max_ms": 42.4
+        },
+        {
+          "size": 40,
+          "returned": 40,
+          "median_ms": 51.3,
+          "max_ms": 51.5
+        },
+        {
+          "size": 48,
+          "returned": 48,
+          "median_ms": 60.1,
+          "max_ms": 60.5
+        },
+        {
+          "size": 56,
+          "returned": 56,
+          "median_ms": 68.7,
+          "max_ms": 69.2
+        },
+        {
+          "size": 64,
+          "returned": 64,
+          "median_ms": 77.7,
+          "max_ms": 78.2
+        }
       ],
       "cross_address_series": [
-        { "address": "40 01 30", "size_1_ms": 9.5, "size_16": { "returned": 16, "median_ms": 14.7 }, "size_64": "no reply" },
-        { "address": "40 02 00", "size_1_ms": 9.5, "size_16": { "returned": 16, "median_ms": 23.9 }, "size_64": { "returned": 64, "median_ms": 77.8 } },
-        { "address": "40 00 00", "size_1_ms": 9.4, "size_16": "no reply", "size_64": "no reply" },
-        { "address": "20 00 00", "size_1_ms": 10.1, "size_16": { "returned": 16, "median_ms": 15.1 }, "size_64": { "returned": 64, "median_ms": 31.5 } },
-        { "address": "21 00 00", "size_1_ms": 10.1, "size_16": "no reply", "size_64": "no reply" },
-        { "address": "41 00 00", "size_1_ms": 9.1, "size_16": { "returned": 12, "median_ms": 13.6 }, "size_64": { "returned": 12, "median_ms": 13.8 } },
-        { "address": "50 00 00", "size_1_ms": 9.8, "size_16": "no reply", "size_64": "no reply" },
-        { "address": "51 00 00", "size_1_ms": 10.1, "size_16": { "returned": 12, "median_ms": 13.8 }, "size_64": { "returned": 12, "median_ms": 13.9 } },
-        { "address": "00 01 00", "size_1_ms": 10.1, "size_16": { "returned": 16, "median_ms": 15.1 }, "size_64": { "returned": 64, "median_ms": 31.6 } }
+        {
+          "address": "40 01 30",
+          "size_1_ms": 9.5,
+          "size_16": {
+            "returned": 16,
+            "median_ms": 14.7
+          },
+          "size_64": "no reply"
+        },
+        {
+          "address": "40 02 00",
+          "size_1_ms": 9.5,
+          "size_16": {
+            "returned": 16,
+            "median_ms": 23.9
+          },
+          "size_64": {
+            "returned": 64,
+            "median_ms": 77.8
+          }
+        },
+        {
+          "address": "40 00 00",
+          "size_1_ms": 9.4,
+          "size_16": "no reply",
+          "size_64": "no reply"
+        },
+        {
+          "address": "20 00 00",
+          "size_1_ms": 10.1,
+          "size_16": {
+            "returned": 16,
+            "median_ms": 15.1
+          },
+          "size_64": {
+            "returned": 64,
+            "median_ms": 31.5
+          }
+        },
+        {
+          "address": "21 00 00",
+          "size_1_ms": 10.1,
+          "size_16": "no reply",
+          "size_64": "no reply"
+        },
+        {
+          "address": "41 00 00",
+          "size_1_ms": 9.1,
+          "size_16": {
+            "returned": 12,
+            "median_ms": 13.6
+          },
+          "size_64": {
+            "returned": 12,
+            "median_ms": 13.8
+          }
+        },
+        {
+          "address": "50 00 00",
+          "size_1_ms": 9.8,
+          "size_16": "no reply",
+          "size_64": "no reply"
+        },
+        {
+          "address": "51 00 00",
+          "size_1_ms": 10.1,
+          "size_16": {
+            "returned": 12,
+            "median_ms": 13.8
+          },
+          "size_64": {
+            "returned": 12,
+            "median_ms": 13.9
+          }
+        },
+        {
+          "address": "00 01 00",
+          "size_1_ms": 10.1,
+          "size_16": {
+            "returned": 16,
+            "median_ms": 15.1
+          },
+          "size_64": {
+            "returned": 64,
+            "median_ms": 31.6
+          }
+        }
       ],
-      "worst_observed_per_reply_length_ms": { "1": 11.2, "12": 14.0, "16": 26.3, "64": 81.1 },
+      "worst_observed_per_reply_length_ms": {
+        "1": 11.2,
+        "12": 14.0,
+        "16": 26.3,
+        "64": 81.1
+      },
       "why_it_matters": "A probe deadline is a measurement, not a constant, and it has to bound the slowest address rather than the one it was taken on. A late reply is not lost: it arrives while the next probe is listening, and every reply after it is one request behind. Pairing a reply against the address asked for does not detect this, because a size bisection asks the same address every probe. A sweep run with a flat 60 ms deadline was destroyed by it, classifying 613 regions as returning a full 64 bytes; a probe by probe trace showed each read returning the previous request's answer -- 1 byte requested, 64 returned, then 32 requested and 1 returned.",
       "not_established": [
         "Why the slope is what it is. A 31250 baud line spends 0.32 ms on a byte, and the fastest addresses come close to that while 40 02 00 takes over three times as long per byte. Nothing here separates the module's own pacing from the interface or the host.",
@@ -133,33 +340,90 @@
     {
       "id": "twelve-controllers-are-stored-in-the-part-block-and-the-rest-are-not-stored-anywhere-readable",
       "summary": "Twelve control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Eighteen others, including modulation, expression, hold and delay send, change nothing anywhere in the readable address space.",
-      "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is sent twice at 20 and 60, and a byte is attributed only if it followed both and held a different value each time. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular.",
+      "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is primed at 20, moved to 60 and returned to 20, and a byte is kept only if it moved both times and to a different value each time; a controller that lands nothing is sent again with the two values swapped. CC7 is sent before the first controller and after the last. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular, and the bank latch is committed back to the tone the part already held at the end.",
       "stored": {
-        "CC7": "40 11 19", "CC10": "40 11 1C", "CC71": "40 11 33", "CC72": "40 11 36",
-        "CC73": "40 11 34", "CC74": "40 11 32", "CC75": "40 11 35", "CC76": "40 11 30",
-        "CC77": "40 11 31", "CC78": "40 11 37", "CC91": "40 11 22", "CC93": "40 11 21"
+        "CC7": "40 11 19",
+        "CC10": "40 11 1C",
+        "CC71": "40 11 33",
+        "CC72": "40 11 36",
+        "CC73": "40 11 34",
+        "CC74": "40 11 32",
+        "CC75": "40 11 35",
+        "CC76": "40 11 30",
+        "CC77": "40 11 31",
+        "CC78": "40 11 37",
+        "CC91": "40 11 22",
+        "CC93": "40 11 21"
       },
-      "not_stored_anywhere_in_the_map": [1, 5, 6, 11, 32, 38, 64, 65, 66, 67, 84, 94, 95, 98, 99, 100, 101],
+      "not_stored_anywhere_in_the_map": [
+        1,
+        5,
+        6,
+        11,
+        32,
+        38,
+        64,
+        65,
+        66,
+        67,
+        84,
+        94,
+        95,
+        98,
+        99,
+        100,
+        101
+      ],
       "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
       "not_established": [
         "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
         "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
-        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own."
+        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
+        "That CC0 and CC32 are stored nowhere. They are stored, but only once a program change commits them, and only if the unit has that bank and program: see bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole. Sent on their own, which is how this scan sends them, they change nothing."
       ],
-      "reproduced": true
+      "reproduced": true,
+      "coverage": "The twelve addresses and the absence of the other seventeen were both reproduced over the 85 regions under 40, under the procedure above. The claim that the seventeen are stored nowhere in the whole 854 region map rests on an earlier run that watched all of them but primed only once and did not retry a negative. Re-running the whole map under the current procedure takes about two hours and has not been done."
     },
     {
       "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
       "summary": "Adjacent addresses with the same 0 to 7 range disagree on what happens outside it. 40 01 30, 31 and 38 leave their value untouched; 40 01 32 and 39 clamp to 07.",
       "method": "Write then read back one byte at a time, resetting the address to a known accepted value before each out of range test, so a refusal and a clamp read back differently. Six values above the range were tried on each address: 08, 0B, 0F, 1F, 3F and 7E. Every byte was restored and the whole region re-read afterwards.",
       "results": [
-        { "address": "40 01 30", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
-        { "address": "40 01 31", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
-        { "address": "40 01 32", "accepts": "00-07", "out_of_range": "clamped to 07" },
-        { "address": "40 01 38", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
-        { "address": "40 01 39", "accepts": "00-07", "out_of_range": "clamped to 07" },
-        { "address": "40 03 00", "accepts": "00 only", "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it" },
-        { "address": "40 03 1A", "accepts": "00 only", "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it" }
+        {
+          "address": "40 01 30",
+          "accepts": "00-07",
+          "out_of_range": "refused, value unchanged"
+        },
+        {
+          "address": "40 01 31",
+          "accepts": "00-07",
+          "out_of_range": "refused, value unchanged"
+        },
+        {
+          "address": "40 01 32",
+          "accepts": "00-07",
+          "out_of_range": "clamped to 07"
+        },
+        {
+          "address": "40 01 38",
+          "accepts": "00-07",
+          "out_of_range": "refused, value unchanged"
+        },
+        {
+          "address": "40 01 39",
+          "accepts": "00-07",
+          "out_of_range": "clamped to 07"
+        },
+        {
+          "address": "40 03 00",
+          "accepts": "00 only",
+          "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
+        },
+        {
+          "address": "40 03 1A",
+          "accepts": "00 only",
+          "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
+        }
       ],
       "other_bytes": "38 of the 45 bytes probed across 40 01 30 and 40 03 00 take the full 00 to 7F unchanged.",
       "why_the_reset_matters": "Probed in ascending order without one, a refusing address is indistinguishable from a clamping one: 07 is accepted, 08 is refused and reads back as 07, which is exactly what a clamp to 07 returns. A first run of this probe reported all five addresses as clamping for that reason.",
@@ -195,7 +459,12 @@
       "rates": {
         "probes": 7420,
         "malformed_frames": 150,
-        "by_reason": { "one further F0 inside the frame": 102, "four further F0": 42, "three further F0": 4, "two further F0": 2 },
+        "by_reason": {
+          "one further F0 inside the frame": 102,
+          "four further F0": 42,
+          "three further F0": 4,
+          "two further F0": 2
+        },
         "recovered_by_one_retry": 150
       },
       "why_it_matters": "Parsed without checking the interior, this frame reads as a 103 byte reply to a 1 byte request. The number is plausible and wrong, and there is nothing in it that looks like an error. A harness that only checks the F0 and F7 at the ends accepts it. It also caused a second, subtler failure: once frames like this were correctly refused, a liveness check that read 'did not parse' as 'said nothing' declared a live unit dead on its first probe.",
@@ -211,11 +480,119 @@
       "summary": "CC10 hard pan fully separates a mono patch but leaves a stereo patch's internal spread largely intact.",
       "method": "CC10=0 and CC10=127, note 84 at velocity 127, CC7=127, CC11=127, reverb and chorus sends at 0. Peak level per output channel over the sustained section.",
       "results": [
-        { "program": 56, "separation_db": 68.0, "detail": "opposite channel reached the measurement noise floor" },
-        { "program": 80, "separation_db": 27.1 },
-        { "program": 0, "separation_db": 4.1 }
+        {
+          "program": 56,
+          "separation_db": 68.0,
+          "detail": "opposite channel reached the measurement noise floor"
+        },
+        {
+          "program": 80,
+          "separation_db": 27.1
+        },
+        {
+          "program": 0,
+          "separation_db": 4.1
+        }
       ],
       "note": "Suggests pan is applied per part but does not override a patch's internal per-wave placement. The signal path itself has no measurable crosstalk, which is what the program 56 result establishes."
+    },
+    {
+      "id": "bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole",
+      "summary": "CC0 and CC32 change nothing readable on their own. A program change commits the three of them together, and only if that bank holds that program: otherwise the whole triple is discarded and the bank byte, the program byte and the map byte all keep the values they had. A bank left latched therefore switches off every later program change silently, because the latch itself is in no readable address.",
+      "method": "Send the bank halves and the program change one message at a time, reading 40 11 00 to 02 and 40 41 00 after each, over several combinations of bank MSB, map and program.",
+      "results": {
+        "CC0 alone": "nothing moves; the value is held, not stored",
+        "CC0=0 then PC 0": "40 11 00 = 00, 40 11 01 = 00  (accepted)",
+        "CC0=8 then PC 0": "40 11 00 = 08, 40 11 01 = 00  (accepted)",
+        "CC0=1, 2 or 3 then PC 0": "nothing moves at all  (discarded)",
+        "CC0=3 then PC 25": "nothing moves at all  (discarded)",
+        "CC32=0..4 with CC0=0, then PC 0": "40 41 00 takes 00, 01, 02, 03, 04 in turn  (accepted)",
+        "CC32=0 or 3 with CC0 left at 3, then PC 0": "nothing moves at all  (discarded)"
+      },
+      "note": "A discarded triple is indistinguishable from a message that was never sent: no byte moves, no reply is produced, and the part keeps playing what it played. This is what a difference based scan reads as 'the message is stored nowhere', and the reading is wrong in a way that spreads, because one such message poisons every program change after it.",
+      "found_by": "Chasing an attribution that appeared in two runs and then vanished for six. Message loss (0 in 300 control changes and 0 in 150 program changes), storage latency (median 12.6 ms, never above 14 ms) and failed region reads (0) were each measured and ruled out before the latch was found.",
+      "not_established": [
+        "Which bank and program pairs exist. Only the handful above were tried, and the boundary between accepted and discarded was not mapped.",
+        "Whether a discarded program change is audibly silent as well as invisible. Nothing here was heard.",
+        "Whether CC32 behaves as a map select in the sense the manual gives it. What is measured is that it reaches 40 41 00 and is kept there verbatim."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "eight-nrpns-reach-the-same-bytes-as-eight-control-changes",
+      "summary": "Every GS part NRPN this unit answers is stored in the same byte as a control change, verbatim on both routes. The pair is not merely two names for one parameter: it is one storage location with two ways in.",
+      "method": "The same difference scan run twice over the same 85 regions, once sending control changes and once sending an NRPN selector and data entry as one indivisible stimulus. Each stimulus is primed at one value, moved to a second and returned to the first, and a byte is kept only if it moved both times.",
+      "aliases": {
+        "40 11 30": [
+          "CC76",
+          "NRPN 01 08"
+        ],
+        "40 11 31": [
+          "CC77",
+          "NRPN 01 09"
+        ],
+        "40 11 32": [
+          "CC74",
+          "NRPN 01 20"
+        ],
+        "40 11 33": [
+          "CC71",
+          "NRPN 01 21"
+        ],
+        "40 11 34": [
+          "CC73",
+          "NRPN 01 63"
+        ],
+        "40 11 35": [
+          "CC75",
+          "NRPN 01 64"
+        ],
+        "40 11 36": [
+          "CC72",
+          "NRPN 01 66"
+        ],
+        "40 11 37": [
+          "CC78",
+          "NRPN 01 0A"
+        ]
+      },
+      "note": "The NRPN selector is re-sent with every value rather than once per pair. A selector left standing from an earlier stimulus is the ordinary way for a data entry to land somewhere nobody named.",
+      "not_established": [
+        "That writing the byte by SysEx is a third way into the same location. It was not tried from that direction.",
+        "That the two routes are equivalent in anything but the value stored. Rate of change, resolution and audible result were not compared.",
+        "Anything about the per-note drum NRPNs, which only mean something on a part in drum mode."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "rpn-modulation-depth-range-is-stored-scaled-and-clamped-not-verbatim",
+      "summary": "RPN 00 05 is kept at 40 21 04 as floor(sent * 127 / 6), saturating at 127. It is the only one of the four GS RPNs that reaches any readable address, and the only alias so far that is not verbatim.",
+      "method": "Send the RPN selector and data entry MSB at each value from 0 to 8 and at 12, 24 and 127, reading 40 21 00 to 0A after each.",
+      "results": {
+        "0": 0,
+        "1": 21,
+        "2": 42,
+        "3": 63,
+        "4": 84,
+        "5": 105,
+        "6": 127,
+        "7": 127,
+        "8": 127,
+        "12": 127,
+        "24": 127,
+        "127": 127
+      },
+      "fit": "floor(v * 127 / 6) reproduces all six unsaturated points exactly, including 3 -> 63 where rounding would give 64.",
+      "rpns_that_reached_nothing": [
+        "00 00 pitch bend sensitivity",
+        "00 01 master fine tune",
+        "00 02 master coarse tune"
+      ],
+      "not_established": [
+        "Where the other three RPNs are kept. They changed no byte of the readable space; whether they are held somewhere unaddressable or not held at all is not decided by this.",
+        "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported."
+      ],
+      "reproduced": true
     }
   ]
 }
