@@ -1,0 +1,1523 @@
+{
+  "global": [
+    {
+      "option_strings": [
+        "-h",
+        "--help"
+      ],
+      "dest": "help",
+      "nargs": 0,
+      "default": "'==SUPPRESS=='",
+      "required": false,
+      "help": "show this help message and exit",
+      "metavar": null,
+      "choices": null,
+      "class": "_HelpAction"
+    },
+    {
+      "option_strings": [
+        "--port"
+      ],
+      "dest": "port",
+      "nargs": null,
+      "default": "None",
+      "required": false,
+      "help": "substring of the MIDI port name",
+      "metavar": null,
+      "choices": null,
+      "class": "_StoreAction"
+    },
+    {
+      "option_strings": [
+        "--device-id"
+      ],
+      "dest": "device_id",
+      "nargs": null,
+      "default": "16",
+      "required": false,
+      "help": null,
+      "metavar": null,
+      "choices": null,
+      "class": "_StoreAction"
+    }
+  ],
+  "order": [
+    "devices",
+    "selftest",
+    "read",
+    "identity",
+    "sweep",
+    "write-probe",
+    "tone-map",
+    "reset-probe",
+    "alias-scan",
+    "repeat",
+    "contrast",
+    "motion",
+    "decay"
+  ],
+  "commands": {
+    "devices": {
+      "help": "list MIDI and audio devices",
+      "handler": "cmd_devices",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        }
+      ]
+    },
+    "selftest": {
+      "help": "prove the measurement path before trusting it",
+      "handler": "cmd_selftest",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--repeats"
+          ],
+          "dest": "repeats",
+          "nargs": null,
+          "default": "100",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--ticks"
+          ],
+          "dest": "ticks",
+          "nargs": null,
+          "default": "10",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--audio"
+          ],
+          "dest": "audio",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "substring of the audio input device name",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--no-audio"
+          ],
+          "dest": "no_audio",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "MIDI checks only",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        }
+      ]
+    },
+    "read": {
+      "help": "read one address with RQ1",
+      "handler": "cmd_read",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "address",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "three hex bytes, e.g. '40 01 30'",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "size",
+          "nargs": "?",
+          "default": "1",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--timeout"
+          ],
+          "dest": "timeout",
+          "nargs": null,
+          "default": "1.0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "identity": {
+      "help": "send an Identity Request",
+      "handler": "cmd_identity",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        }
+      ]
+    },
+    "sweep": {
+      "help": "map the address space by asking the machine",
+      "handler": "cmd_sweep",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "3.0",
+          "required": false,
+          "help": "multiple of the measured reply time allowed before a probe is called a miss; a reply that outruns it is not lost, it arrives while the next probe is listening",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--canary"
+          ],
+          "dest": "canary",
+          "nargs": null,
+          "default": "'40 01 30'",
+          "required": false,
+          "help": "an address known to answer; used both to calibrate reply timing and to tell a silent machine from a silent address",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--sizes"
+          ],
+          "dest": "sizes",
+          "nargs": null,
+          "default": "(1, 16, 64)",
+          "required": false,
+          "help": "request sizes the reply timing is fitted over",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "30",
+          "required": false,
+          "help": "repeat reads in the selftest that gates the sweep",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--ceiling"
+          ],
+          "dest": "ceiling",
+          "nargs": null,
+          "default": "64",
+          "required": false,
+          "help": "largest size requested when bounding a region; a request far larger than any real region asks the machine for something no file would",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--low"
+          ],
+          "dest": "low",
+          "nargs": null,
+          "default": "'00,30'",
+          "required": false,
+          "help": "comma-separated third bytes to try under each pair; a region need not begin at 00",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--top-from"
+          ],
+          "dest": "top_from",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--top-to"
+          ],
+          "dest": "top_to",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "restrict the top-byte range; default is the whole space",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "write-probe": {
+      "help": "find what an address accepts by writing to it and reading it back",
+      "handler": "cmd_write_probe",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "regions",
+          "nargs": "+",
+          "default": "None",
+          "required": true,
+          "help": "'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
+          "metavar": "ADDR:COUNT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.02",
+          "required": false,
+          "help": "pause between a write and the read back that checks it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "tone-map": {
+      "help": "find which tones exist, by asking for each and seeing whether it was taken",
+      "handler": "cmd_tone_map",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map-select"
+          ],
+          "dest": "map_select",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "the CC32 value held for the whole survey",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--exhaustive"
+          ],
+          "dest": "exhaustive",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "ask every bank for all 128 programs instead of sampling first; three times the cost and the only form with nothing to caveat",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--banks-from"
+          ],
+          "dest": "banks_from",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--banks-to"
+          ],
+          "dest": "banks_to",
+          "nargs": null,
+          "default": "127",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.04",
+          "required": false,
+          "help": "pause after a program change before reading the part back; the tone was measured to reach the part block in a median 12.6 ms",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "reset-probe": {
+      "help": "find what each reset restores, by breaking the state first",
+      "handler": "cmd_reset_probe",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--baseline"
+          ],
+          "dest": "baseline",
+          "nargs": null,
+          "default": "'data/units/roland-sc8850-01/power-on-state.json'",
+          "required": false,
+          "help": "the power-on capture every reset is compared against",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "'data/units/roland-sc8850-01/address-map.json'",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--write-probe"
+          ],
+          "dest": "write_probe",
+          "nargs": null,
+          "default": "'data/units/roland-sc8850-01/write-probe.json'",
+          "required": false,
+          "help": "where the addresses that take any value are read from",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--include-mode-set"
+          ],
+          "dest": "include_mode_set",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "also send System Mode Set, which reinitialises the unit rather than resetting its parameters",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--from-reset"
+          ],
+          "dest": "from_reset",
+          "nargs": null,
+          "default": "'GS Reset'",
+          "required": false,
+          "help": "sent before each reset under test, so all of them start from one state",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "pause after a reset before reading",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "alias-scan": {
+      "help": "find where a message is stored, by diffing the address space around it",
+      "handler": "cmd_alias_scan",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "'data/units/roland-sc8850-01/address-map.json'",
+          "required": false,
+          "help": "address map the watched regions are taken from",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prefix"
+          ],
+          "dest": "prefix",
+          "nargs": null,
+          "default": "'40 '",
+          "required": false,
+          "help": "only watch regions whose address starts here",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--kind"
+          ],
+          "dest": "kind",
+          "nargs": null,
+          "default": "'cc'",
+          "required": false,
+          "help": "what to send; two kinds landing on one address is what makes them aliases",
+          "metavar": null,
+          "choices": [
+            "cc",
+            "nrpn",
+            "drum-nrpn",
+            "rpn",
+            "channel",
+            "address"
+          ],
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--addresses"
+          ],
+          "dest": "addresses",
+          "nargs": "*",
+          "default": "None",
+          "required": false,
+          "help": "for --kind address: bytes to write, default being the ones a control change and an NRPN were both measured to reach",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--values"
+          ],
+          "dest": "values",
+          "nargs": null,
+          "default": "(32, 96)",
+          "required": false,
+          "help": "for --kind address: the two values written; both must be inside what the address accepts, or a clamp answers them identically and reads as storing nothing",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--note"
+          ],
+          "dest": "note",
+          "nargs": null,
+          "default": "36",
+          "required": false,
+          "help": "drum note the per-note NRPNs address, for --kind drum-nrpn",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--controllers"
+          ],
+          "dest": "controllers",
+          "nargs": "*",
+          "default": "None",
+          "required": false,
+          "help": "controller numbers; default is 0 to 119",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--control-cc"
+          ],
+          "dest": "control_cc",
+          "nargs": null,
+          "default": "7",
+          "required": false,
+          "help": "a controller known to be stored, always scanned, so a run that finds nothing can be told from a run that could not have found anything",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "repeat": {
+      "help": "find whether two takes of the same note can be compared, which every difference measurement rests on",
+      "handler": "cmd_repeat",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--program"
+          ],
+          "dest": "program",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--note"
+          ],
+          "dest": "note",
+          "nargs": null,
+          "default": "60",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--velocity"
+          ],
+          "dest": "velocity",
+          "nargs": null,
+          "default": "100",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--takes"
+          ],
+          "dest": "takes",
+          "nargs": null,
+          "default": "6",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--hold"
+          ],
+          "dest": "hold",
+          "nargs": null,
+          "default": "1.0",
+          "required": false,
+          "help": "seconds the note is held",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--seconds"
+          ],
+          "dest": "seconds",
+          "nargs": null,
+          "default": "3.0",
+          "required": false,
+          "help": "length of each take",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "silence before the note; the noise floor is measured in it, so a residual has something it could not have gone below",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--between"
+          ],
+          "dest": "between",
+          "nargs": null,
+          "default": "0.8",
+          "required": false,
+          "help": "seconds between takes",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--reverb"
+          ],
+          "dest": "reverb",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "CC91 send during the takes",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--chorus"
+          ],
+          "dest": "chorus",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "CC93 send during the takes",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--clock"
+          ],
+          "dest": "clock",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "also hold one long note and read its frequency, which carries the unit's tuning and the two sample clocks' ratio together",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--clock-program"
+          ],
+          "dest": "clock_program",
+          "nargs": "+",
+          "default": "[(0, 16), (0, 19), (0, 73), (0, 79), (0, 80), (8, 80), (8, 81)]",
+          "required": false,
+          "help": "programs to hold; most voices are not a frequency reference, so several are tried and the ones that wobble are reported as wobbling rather than read",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--clock-note"
+          ],
+          "dest": "clock_note",
+          "nargs": null,
+          "default": "69",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--clock-seconds"
+          ],
+          "dest": "clock_seconds",
+          "nargs": null,
+          "default": "20.0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--audio"
+          ],
+          "dest": "audio",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "substring of the audio input device name",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rise"
+          ],
+          "dest": "min_rise",
+          "nargs": null,
+          "default": "12.0",
+          "required": false,
+          "help": "dB the note must rise above the silence before it; below this the take holds no sound from the unit, which would otherwise read as the unit not repeating",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-lead-in"
+          ],
+          "dest": "max_lead_in",
+          "nargs": null,
+          "default": "-60.0",
+          "required": false,
+          "help": "dBFS the lead-in must stay under; above this something was sounding before the note and the noise floor, which is the yardstick for everything else, is wrong. Absolute rather than relative to the take, or a quiet stimulus reads the same as a contaminated one",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--save"
+          ],
+          "dest": "save",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "directory to keep every take in, as float WAV with a manifest. Device time is the scarce thing here and a verdict thrown away with its audio has to be re-recorded to be asked anything else; kept takes can be measured again with the machine unplugged",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "contrast": {
+      "help": "find whether changing one parameter changes the sound, measured against how well the unit repeats itself",
+      "handler": "cmd_contrast",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--cc"
+          ],
+          "dest": "cc",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "controller number to change",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--address"
+          ],
+          "dest": "address",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "three hex bytes to write instead, e.g. '40 01 30'",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--values"
+          ],
+          "dest": "values",
+          "nargs": null,
+          "default": "(0, 127)",
+          "required": false,
+          "help": "the two settings compared; both must be inside what the parameter accepts, or a clamp answers them identically and reads as inaudible",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--stimulus"
+          ],
+          "dest": "stimulus",
+          "nargs": "+",
+          "default": "['struck']",
+          "required": false,
+          "help": "notes to ask the parameter under: struck, released, sustained, soft, loud, low, high, plus 'broad' for the five that answer most parameters and 'all'. Audible under any is audible; a null carries the list of what was tried, because an inaudible result is as much a fact about the note as about the parameter",
+          "metavar": "NAME",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--takes"
+          ],
+          "dest": "takes",
+          "nargs": null,
+          "default": "4",
+          "required": false,
+          "help": "takes per setting per stimulus",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--between"
+          ],
+          "dest": "between",
+          "nargs": null,
+          "default": "0.8",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.4",
+          "required": false,
+          "help": "seconds after changing the setting",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "6.0",
+          "required": false,
+          "help": "dB the change must clear the unit's own repeatability by before it is called audible",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--audio"
+          ],
+          "dest": "audio",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "substring of the audio input device name",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rise"
+          ],
+          "dest": "min_rise",
+          "nargs": null,
+          "default": "12.0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-lead-in"
+          ],
+          "dest": "max_lead_in",
+          "nargs": null,
+          "default": "-60.0",
+          "required": false,
+          "help": "dBFS the lead-in must stay under; above this something was sounding before the note and the noise floor, which is the yardstick for everything else, is wrong. Absolute rather than relative to the take, or a quiet stimulus reads the same as a contaminated one",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--save"
+          ],
+          "dest": "save",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "directory to keep every take in, as float WAV with a manifest. Device time is the scarce thing here and a verdict thrown away with its audio has to be re-recorded to be asked anything else; kept takes can be measured again with the machine unplugged",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "motion": {
+      "help": "say what an effect does over time -- its modulation rate, depth and shape -- from a dry and a wet take, with no machine attached",
+      "handler": "cmd_motion",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "dry",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a take with the effect off",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "wet",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the same note with the effect on",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-delay"
+          ],
+          "dest": "max_delay",
+          "nargs": null,
+          "default": "60.0",
+          "required": false,
+          "help": "milliseconds of delay searched. A null is a fact about this range",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rate"
+          ],
+          "dest": "min_rate",
+          "nargs": null,
+          "default": "0.05",
+          "required": false,
+          "help": "slowest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-rate"
+          ],
+          "dest": "max_rate",
+          "nargs": null,
+          "default": "20.0",
+          "required": false,
+          "help": "fastest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "decay": {
+      "help": "say how long an effect's tail takes to die in each octave band, from a dry and a wet take, with no machine attached",
+      "handler": "cmd_decay",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "dry",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a take with the effect off",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "wet",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the same note with the effect on",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.5",
+          "required": false,
+          "help": "seconds of silence at the head of the take; the per-band noise floor is measured in it, and it is what says where a tail stops being a tail",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    }
+  }
+}

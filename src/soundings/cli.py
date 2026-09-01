@@ -1248,7 +1248,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
     return 0 if bracketed and reached else 1
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="soundings", description=__doc__)
     parser.add_argument("--port", help="substring of the MIDI port name")
     parser.add_argument("--device-id", type=lambda s: int(s, 0), default=roland.DEFAULT_DEVICE_ID)
@@ -1580,7 +1580,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_decay)
 
-    args = parser.parse_args(argv)
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     return args.func(args)
 
 
