@@ -131,6 +131,24 @@
       "reproduced": true
     },
     {
+      "id": "twelve-controllers-are-stored-in-the-part-block-and-the-rest-are-not-stored-anywhere-readable",
+      "summary": "Twelve control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Eighteen others, including modulation, expression, hold and delay send, change nothing anywhere in the readable address space.",
+      "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is sent twice at 20 and 60, and a byte is attributed only if it followed both and held a different value each time. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular.",
+      "stored": {
+        "CC7": "40 11 19", "CC10": "40 11 1C", "CC71": "40 11 33", "CC72": "40 11 36",
+        "CC73": "40 11 34", "CC74": "40 11 32", "CC75": "40 11 35", "CC76": "40 11 30",
+        "CC77": "40 11 31", "CC78": "40 11 37", "CC91": "40 11 22", "CC93": "40 11 21"
+      },
+      "not_stored_anywhere_in_the_map": [1, 5, 6, 11, 32, 38, 64, 65, 66, 67, 84, 94, 95, 98, 99, 100, 101],
+      "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
+      "not_established": [
+        "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
+        "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
+        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own."
+      ],
+      "reproduced": true
+    },
+    {
       "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
       "summary": "Adjacent addresses with the same 0 to 7 range disagree on what happens outside it. 40 01 30, 31 and 38 leave their value untouched; 40 01 32 and 39 clamp to 07.",
       "method": "Write then read back one byte at a time, resetting the address to a known accepted value before each out of range test, so a refusal and a clamp read back differently. Six values above the range were tried on each address: 08, 0B, 0F, 1F, 3F and 7E. Every byte was restored and the whole region re-read afterwards.",
