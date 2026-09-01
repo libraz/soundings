@@ -131,6 +131,40 @@
       "reproduced": true
     },
     {
+      "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
+      "summary": "Adjacent addresses with the same 0 to 7 range disagree on what happens outside it. 40 01 30, 31 and 38 leave their value untouched; 40 01 32 and 39 clamp to 07.",
+      "method": "Write then read back one byte at a time, resetting the address to a known accepted value before each out of range test, so a refusal and a clamp read back differently. Six values above the range were tried on each address: 08, 0B, 0F, 1F, 3F and 7E. Every byte was restored and the whole region re-read afterwards.",
+      "results": [
+        { "address": "40 01 30", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
+        { "address": "40 01 31", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
+        { "address": "40 01 32", "accepts": "00-07", "out_of_range": "clamped to 07" },
+        { "address": "40 01 38", "accepts": "00-07", "out_of_range": "refused, value unchanged" },
+        { "address": "40 01 39", "accepts": "00-07", "out_of_range": "clamped to 07" },
+        { "address": "40 03 00", "accepts": "00 only", "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it" },
+        { "address": "40 03 1A", "accepts": "00 only", "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it" }
+      ],
+      "other_bytes": "38 of the 45 bytes probed across 40 01 30 and 40 03 00 take the full 00 to 7F unchanged.",
+      "why_the_reset_matters": "Probed in ascending order without one, a refusing address is indistinguishable from a clamping one: 07 is accepted, 08 is refused and reads back as 07, which is exactly what a clamp to 07 returns. A first run of this probe reported all five addresses as clamping for that reason.",
+      "not_established": [
+        "Whether any of these values changes what the unit sounds like. A read back says an address stores a value, not that anything uses it.",
+        "Whether the accepted set is contiguous above the values tried. The ladder is a list of points, not a proof of a range."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "single-byte-reads-do-not-reach-every-byte-of-a-readable-block",
+      "summary": "40 01 41 through 47 return nothing to an RQ1 addressed at them, yet their contents come back in a read that starts earlier.",
+      "method": "RQ1 at 40 01 30 for 24 bytes, at 40 01 40 for 8 bytes, and at 40 01 41 for 1 and 4 bytes, each with a 1.5 s deadline.",
+      "results": {
+        "40 01 30 size 24": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
+        "40 01 40 size 8": "00 00 00 61 01 01 00 46",
+        "40 01 41 size 1": "no reply",
+        "40 01 41 size 4": "no reply"
+      },
+      "note": "The two block reads agree on the contents of 41 to 47. So an address that answers nothing is not thereby an address that holds nothing, and a probe that only ever reads one byte will under-report a region.",
+      "reproduced": true
+    },
+    {
       "id": "malformed-sysex-frames-on-the-measurement-path",
       "summary": "About two probes in a hundred come back as one frame that starts with F0 and ends with F7 but is not one SysEx message: an unterminated header, then three byte groups led by EF, then the correct reply. Re-asking after the path goes quiet always produced a clean reply.",
       "method": "Observed during address space sweeps and reproduced by replaying one top byte's level 2 loop. The frame was read back one rtmidi message at a time to establish that it arrives as a single delivery rather than being assembled by the harness.",
