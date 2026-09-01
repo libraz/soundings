@@ -115,6 +115,55 @@ def cmd_sweep(args: argparse.Namespace) -> int:
     return 0 if result.complete and not result.lagged else 1
 
 
+def cmd_write_probe(args: argparse.Namespace) -> int:
+    from .writeback import RestoreFailed, Writer, summarise
+
+    regions = [
+        (tuple(int(b, 16) for b in spec.split(":")[0].split()), int(spec.split(":")[1], 0))
+        for spec in args.regions
+    ]
+    with MidiLink(args.port) as link:
+        print(f"MIDI: {link.ports.output_name}")
+        print("Verifying the path before writing (a write is never acknowledged)")
+        report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
+        print(report)
+        if not report.passed:
+            print("\nSelftest failed. Not writing.")
+            return 1
+
+        writer = Writer(link, device_id=args.device_id, settle=args.settle)
+        done = []
+        try:
+            for start, length in regions:
+                done.append(writer.probe_region(start, length, progress=lambda m: print(f"  {m}")))
+        except RestoreFailed as exc:
+            print(f"\nSTOPPED: {exc}")
+            return 1
+
+    print()
+    print(summarise(done))
+    print(f"  {writer.writes} writes, {writer.reads} reads")
+
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "device_id": f"{args.device_id:02X}",
+                    "settle_s": args.settle,
+                    "note": "Classifications describe what an address stores, not what it does. "
+                    "Nothing here was heard.",
+                    "regions": [r.to_json() for r in done],
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nwrote {path}")
+    return 0 if all(r.region_restored for r in done) else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="soundings", description=__doc__)
     parser.add_argument("--port", help="substring of the MIDI port name")
@@ -185,6 +234,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_sweep)
+
+    p = sub.add_parser(
+        "write-probe",
+        help="find what an address accepts by writing to it and reading it back",
+    )
+    p.add_argument(
+        "regions",
+        nargs="+",
+        metavar="ADDR:COUNT",
+        help="'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
+    )
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.02,
+        help="pause between a write and the read back that checks it",
+    )
+    p.add_argument("--verify-reads", type=int, default=20)
+    p.add_argument("--out", help="write the result as JSON")
+    p.set_defaults(func=cmd_write_probe)
 
     args = parser.parse_args(argv)
     return args.func(args)
