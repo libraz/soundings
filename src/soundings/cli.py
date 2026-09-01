@@ -220,6 +220,40 @@ def _clear_bank_latch(link, channel: int, device_id: int) -> str:
     return f"committed bank {part[0]}, map {mapped[0]}, program {part[1]}"
 
 
+def _read_bytes(link, addresses, device_id) -> dict[tuple[int, int, int], int]:
+    """Read one byte at each address, leaving out any that will not answer."""
+    from . import roland as r
+
+    out = {}
+    for address in addresses:
+        while link.receive(timeout=0.05):
+            pass
+        reply = r.parse_dt1(link.exchange(r.rq1(address, 1, device_id=device_id), timeout=0.6))
+        if reply is not None and reply.address == address and reply.size == 1:
+            out[address] = reply.data[0]
+    return out
+
+
+def _restore_bytes(link, originals, device_id) -> str:
+    """Put back every byte the scan wrote, and say so only after re-reading it.
+
+    A scan that writes has to end where it started or the next measurement is
+    taken from a state nobody chose. Which addresses could be read at all was
+    settled before anything was written, so a byte with no original here was
+    never written either.
+    """
+    from . import roland as r
+
+    for address, value in originals.items():
+        link.send(r.dt1(address, [value], device_id=device_id))
+    time.sleep(0.2)
+    after = _read_bytes(link, list(originals), device_id)
+    wrong = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a, v in originals.items() if after.get(a) != v]
+    if wrong:
+        return f"NOT restored: {', '.join(wrong)}"
+    return f"{len(originals)} bytes put back and re-read"
+
+
 def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int], int]]:
     data = json.loads(Path(path).read_text())
     out = []
@@ -228,6 +262,42 @@ def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int]
             continue
         start = tuple(int(b, 16) for b in r["address"].split())
         out.append((start, r["size"]))
+    return out
+
+
+# The bytes a control change and an NRPN were both measured to reach. Writing
+# them by SysEx asks whether the location has a third way in, and -- because the
+# whole watched space is diffed, not just the byte written -- whether the value
+# is also kept anywhere else.
+ALIASED_BYTES = (
+    "40 11 19",
+    "40 11 1C",
+    "40 11 21",
+    "40 11 22",
+    "40 11 30",
+    "40 11 31",
+    "40 11 32",
+    "40 11 33",
+    "40 11 34",
+    "40 11 35",
+    "40 11 36",
+    "40 11 37",
+    "40 21 04",
+)
+
+
+def _addresses(args: argparse.Namespace) -> list[tuple[int, int, int]]:
+    from .writeback import NEVER_WRITE
+
+    given = args.addresses or list(ALIASED_BYTES)
+    out = []
+    for spec in given:
+        address = tuple(int(b, 16) for b in spec.split())
+        if len(address) != 3:
+            raise SystemExit(f"an address is three hex bytes, not {spec!r}")
+        if address in NEVER_WRITE:
+            raise SystemExit(f"{spec} is on the never-write list")
+        out.append(address)
     return out
 
 
@@ -250,6 +320,11 @@ def _stimuli(args: argparse.Namespace) -> list:
         return [al.nrpn(ch, msb, note, f"{name} note {note}") for msb, name in al.GS_DRUM_NRPN]
     if args.kind == "rpn":
         return [al.rpn(ch, msb, lsb, name, values=v) for msb, lsb, name, v in al.GS_RPN]
+    if args.kind == "address":
+        return [
+            al.address_write(a, device_id=args.device_id, values=args.values)
+            for a in _addresses(args)
+        ]
     if args.kind == "channel":
         return [
             al.program_change(ch),
@@ -274,7 +349,6 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
     # the reading worked at the start, and a run has been seen to miss something
     # after that point.
     control = cc(args.channel, args.control_cc)
-    stimuli = [control, *_stimuli(args), control]
     with MidiLink(args.port) as link:
         print(f"MIDI: {link.ports.output_name}")
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -288,6 +362,19 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         # whatever parameter was last selected on this channel.
         for number, value in ((101, 127), (100, 127), (99, 127), (98, 127)):
             link.send(control_change(args.channel, number, value))
+
+        # Read every byte the scan will write before anything is written, and
+        # drop from the run any that would not answer: a byte with no original
+        # is one there would be nothing to put back for.
+        originals = {}
+        if args.kind == "address":
+            wanted = _addresses(args)
+            originals = _read_bytes(link, wanted, args.device_id)
+            args.addresses = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a in originals]
+            print(
+                f"\n{len(originals)} of {len(wanted)} target bytes read, so writable and restorable"
+            )
+        stimuli = [control, *_stimuli(args), control]
 
         shot = Snapshotter(link, regions, device_id=args.device_id)
         print(f"\n{len(regions)} regions under {args.prefix!r}, one snapshot each round")
@@ -314,6 +401,11 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 found.append(hit)
                 print(f"  {stimulus.label}: {', '.join(hit.addresses)}")
 
+        restored = (
+            _restore_bytes(link, originals, args.device_id) if originals else "nothing written"
+        )
+        if originals:
+            print(f"  restore: {restored}")
         latch = _clear_bank_latch(link, args.channel, args.device_id)
         print(f"  bank latch: {latch}")
 
@@ -393,6 +485,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                     "against, so they need a scan of their own.",
                     "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
                     "bank_latch_on_exit": latch,
+                    "written_bytes_restored": restored,
                     "note": "A byte listed here followed the stimulus out and back. That says "
                     "where the value is kept, not that anything uses it.",
                     "attributed": [a.to_json() for a in found],
@@ -510,8 +603,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--kind",
         default="cc",
-        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel"),
+        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel", "address"),
         help="what to send; two kinds landing on one address is what makes them aliases",
+    )
+    p.add_argument(
+        "--addresses",
+        nargs="*",
+        metavar="ADDR",
+        help="for --kind address: bytes to write, default being the ones a control change "
+        "and an NRPN were both measured to reach",
+    )
+    p.add_argument(
+        "--values",
+        type=lambda s: tuple(int(v, 0) for v in s.split(",")),
+        default=(0x20, 0x60),
+        help="for --kind address: the two values written; both must be inside what the "
+        "address accepts, or a clamp answers them identically and reads as storing nothing",
     )
     p.add_argument(
         "--note",
