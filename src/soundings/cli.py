@@ -133,7 +133,7 @@ def cmd_sweep(args: argparse.Namespace) -> int:
 
 
 def cmd_write_probe(args: argparse.Namespace) -> int:
-    from .writeback import RestoreFailed, Writer, summarise
+    from .writeback import NOTE, RestoreFailed, Writer, summarise
 
     regions = [
         (tuple(int(b, 16) for b in spec.split(":")[0].split()), int(spec.split(":")[1], 0))
@@ -169,8 +169,7 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
                 {
                     "device_id": f"{args.device_id:02X}",
                     "settle_s": args.settle,
-                    "note": "Classifications describe what an address stores, not what it does. "
-                    "Nothing here was heard.",
+                    "note": NOTE,
                     "regions": [r.to_json() for r in done],
                 },
                 indent=2,
@@ -183,7 +182,17 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
 
 def cmd_reset_probe(args: argparse.Namespace) -> int:
     from .aliases import Snapshotter
-    from .resets import Prober, ResetResult, catalogue, compare, mode_set, named, summarise
+    from .resets import (
+        METHOD,
+        WHY_PRECEDED,
+        Prober,
+        ResetResult,
+        catalogue,
+        compare,
+        mode_set,
+        named,
+        summarise,
+    )
 
     captured = json.loads(Path(args.baseline).read_text())
     baseline = {
@@ -261,15 +270,9 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
                 {
                     "device_id": f"{args.device_id:02X}",
                     "baseline": args.baseline,
-                    "method": "Each reset was preceded by writing a mark into every address the "
-                    "write probe found accepts any value, so that a byte the reset leaves alone "
-                    "reads as the mark rather than as its default. Only bytes read back as "
-                    "holding the mark are counted.",
+                    "method": METHOD,
                     "each_preceded_by": args.from_reset,
-                    "why_preceded": "So the three are comparable with each other rather than each "
-                    "being read against wherever the previous one left the unit. This same probe "
-                    "measured that reset as reproducing the power-on capture byte for byte, which "
-                    "is what makes it usable as a starting line.",
+                    "why_preceded": WHY_PRECEDED,
                     "order": [r.label for r in results],
                     "left_on": best.label,
                     "resets": [r.to_json() for r in results],
@@ -284,7 +287,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
 
 def cmd_tone_map(args: argparse.Namespace) -> int:
     from .resets import Prober, named
-    from .tonemap import SAMPLE_PROGRAMS, Asker, summarise, survey
+    from .tonemap import METHOD, SAMPLE_PROGRAMS, Asker, sampling_caveat, summarise, survey
 
     with MidiLink(args.port) as link:
         report = midi_selftest(link, repeats=args.verify_reads, device_id=args.device_id)
@@ -339,20 +342,9 @@ def cmd_tone_map(args: argparse.Namespace) -> int:
                     "device_id": f"{args.device_id:02X}",
                     "channel": args.channel + 1,
                     "map_select": args.map_select,
-                    "method": "Each tone was asked for by sending its bank select and a program "
-                    "change, then reading the part's own tone bytes back. The unit discards a "
-                    "combination it does not have and leaves the part where it was, so a part "
-                    "that moved to what was asked for is the tone existing. The part is moved "
-                    "away first whenever it already stands on what is about to be asked.",
+                    "method": METHOD,
                     "sampled_before_sweeping": None if args.exhaustive else list(SAMPLE_PROGRAMS),
-                    "sampling_caveat": (
-                        "Every bank was asked for all 128 programs, so a bank absent here "
-                        "answered none of them."
-                        if args.exhaustive
-                        else "A bank that answered none of the sampled programs was not swept "
-                        "and is absent here. A bank whose only tones sit between them would "
-                        "read as empty."
-                    ),
+                    "sampling_caveat": sampling_caveat(args.exhaustive),
                     "requests": asker.asks,
                     "reads_unusable": asker.unread,
                     "banks": [b.to_json() for b in found],
@@ -571,16 +563,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     "address": None if args.cc is not None else args.address,
                     "values": list(args.values),
                     "stimuli": [stim.to_json() for stim in asked],
-                    "method": "The same note was played several times under each setting. Takes "
-                    "of one setting are compared with each other to measure what the unit fails "
-                    "to repeat, and takes of the two settings are compared the same way to "
-                    "measure the change. The second must clear the first by the margin, so a "
-                    "unit that repeats badly cannot be read as a parameter that does something. "
-                    "Level is judged separately, because the alignment divides out the best "
-                    "fitting gain and a parameter that only changes level would otherwise "
-                    "leave no trace. A parameter is asked under one or more named stimuli, "
-                    "because a null is a fact about the note as much as about the parameter, "
-                    "and the answer over a set of them is a union.",
+                    "method": audible.METHOD,
                     **overall.to_json(),
                 },
                 indent=2,
@@ -718,13 +701,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
             json.dumps(
                 {
                     "device_id": f"{args.device_id:02X}",
-                    "method": "The same note was played and captured several times, and every "
-                    "take after the first was aligned to it by cross correlation to a fraction "
-                    "of a sample, scaled by its best fitting level, and subtracted. What is "
-                    "left is reported next to the noise floor of the silence before the note, "
-                    "raised 3 dB because two takes carry that noise independently. A residual "
-                    "at the floor is the strongest claim this chain supports: not that the "
-                    "unit repeats exactly, but that it repeats to everything the chain can see.",
+                    "method": stability.METHOD,
                     "program": args.program,
                     "note": args.note,
                     "velocity": args.velocity,
@@ -821,7 +798,22 @@ def cmd_decay(args: argparse.Namespace) -> int:
 
 
 def cmd_alias_scan(args: argparse.Namespace) -> int:
-    from .aliases import Scanner, Snapshotter, cc, control_change, control_run, summarise
+    from .aliases import (
+        METHOD,
+        NOT_SCANNED,
+        NOTE,
+        RPN_PARKED,
+        WHY_CONTROL,
+        WHY_KIND_REACHED,
+        WHY_RECOVERED,
+        WHY_RESIDUE,
+        Scanner,
+        Snapshotter,
+        cc,
+        control_change,
+        control_run,
+        summarise,
+    )
 
     regions = archive.regions(args.map, args.prefix)
     # A run that finds nothing cannot say whether the unit stores nothing or the
@@ -931,43 +923,31 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                         "sent": 2,
                         "detected": control_passes,
                         "at": control_hit.addresses if control_hit else [],
-                        "why": "Sent before the first stimulus and after the last. Without it a "
-                        "scan that finds nothing cannot be told from a scan that cannot find "
-                        "anything; sent only once, it says nothing about the rest of the run.",
+                        "why": WHY_CONTROL,
                     },
                     "left_changed_afterwards": {
                         "by_stimulus": scanner.residue,
-                        "why": "Every stimulus ends on the value it started with, so anything "
-                        "listed here is state one message carried into the next.",
+                        "why": WHY_RESIDUE,
                     },
                     "missed_by_the_first_pass": {
                         "stimuli": scanner.recovered,
-                        "why": "Each stimulus that lands nothing is retried with its two values "
-                        "swapped. Anything listed here is something a single pass would have "
-                        "reported as absent.",
+                        "why": WHY_RECOVERED,
                     },
                     "kind_reached": {
                         "value": reached,
-                        "why": "The control is a control change, so it cannot show that a "
-                        "message of another kind arrived. Where this is false, every negative "
-                        "in the run is about the path, not about the unit.",
+                        "why": WHY_KIND_REACHED,
                     },
-                    "method": "Each stimulus was sent at its low value, snapshotted, sent at its "
-                    "high value, snapshotted, and sent at its low value again. A byte is listed "
-                    "only if it moved both times, to a different value each time.",
+                    "method": METHOD,
                     "region_prefix": args.prefix,
                     "regions_watched": len(regions),
                     "stimuli_sent": [s.label for s in stimuli],
                     "restless_addresses": sorted(restless),
                     "region_reads_failed": shot.unread,
-                    "not_scanned": "Controllers 120 to 127 are channel mode messages. "
-                    "Sending one resets the channel state every later attribution is measured "
-                    "against, so they need a scan of their own.",
-                    "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
+                    "not_scanned": NOT_SCANNED,
+                    "rpn_parked": RPN_PARKED,
                     "bank_latch_on_exit": latch,
                     "written_bytes_restored": restored,
-                    "note": "A byte listed here followed the stimulus out and back. That says "
-                    "where the value is kept, not that anything uses it.",
+                    "note": NOTE,
                     "attributed": [a.to_json() for a in found],
                 },
                 indent=2,

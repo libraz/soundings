@@ -38,6 +38,18 @@ Address = tuple[int, int, int]
 # which is the whole signal.
 MARKS = (0x2A, 0x55)
 
+METHOD = (
+    "Each reset was preceded by writing a mark into every address the write probe found "
+    "accepts any value, so that a byte the reset leaves alone reads as the mark rather than "
+    "as its default. Only bytes read back as holding the mark are counted."
+)
+
+WHY_PRECEDED = (
+    "So the three are comparable with each other rather than each being read against wherever "
+    "the previous one left the unit. This same probe measured that reset as reproducing the "
+    "power-on capture byte for byte, which is what makes it usable as a starting line."
+)
+
 
 @dataclass
 class Reset:

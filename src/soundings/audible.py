@@ -47,6 +47,17 @@ import numpy as np
 
 from .stability import Comparison, compare
 
+METHOD = (
+    "The same note was played several times under each setting. Takes of one setting are "
+    "compared with each other to measure what the unit fails to repeat, and takes of the two "
+    "settings are compared the same way to measure the change. The second must clear the first "
+    "by the margin, so a unit that repeats badly cannot be read as a parameter that does "
+    "something. Level is judged separately, because the alignment divides out the best fitting "
+    "gain and a parameter that only changes level would otherwise leave no trace. A parameter "
+    "is asked under one or more named stimuli, because a null is a fact about the note as much "
+    "as about the parameter, and the answer over a set of them is a union."
+)
+
 MODULATOR_ABOVE_DB = -20.0
 """How badly a setting must fail to repeat before a modulator is claimed.
 

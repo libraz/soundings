@@ -37,6 +37,15 @@ from dataclasses import dataclass
 
 import numpy as np
 
+METHOD = (
+    "The same note was played and captured several times, and every take after the first was "
+    "aligned to it by cross correlation to a fraction of a sample, scaled by its best fitting "
+    "level, and subtracted. What is left is reported next to the noise floor of the silence "
+    "before the note, raised 3 dB because two takes carry that noise independently. A residual "
+    "at the floor is the strongest claim this chain supports: not that the unit repeats "
+    "exactly, but that it repeats to everything the chain can see."
+)
+
 
 @dataclass
 class Comparison:

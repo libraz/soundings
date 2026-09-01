@@ -34,6 +34,31 @@ Address = tuple[int, int, int]
 # few tones tends to hold them where the GM set puts that family.
 SAMPLE_PROGRAMS = (0, 24, 48, 73, 100, 127)
 
+METHOD = (
+    "Each tone was asked for by sending its bank select and a program change, then reading the "
+    "part's own tone bytes back. The unit discards a combination it does not have and leaves "
+    "the part where it was, so a part that moved to what was asked for is the tone existing. "
+    "The part is moved away first whenever it already stands on what is about to be asked."
+)
+
+
+def sampling_caveat(exhaustive: bool) -> str:
+    """What a bank's absence from the result is allowed to mean.
+
+    A sampled survey cannot tell an empty bank from one whose only tones sit
+    between the sampled programs, and saying so is the difference between a
+    result and a claim.
+    """
+    if exhaustive:
+        return (
+            "Every bank was asked for all 128 programs, so a bank absent here answered none of "
+            "them."
+        )
+    return (
+        "A bank that answered none of the sampled programs was not swept and is absent here. A "
+        "bank whose only tones sit between them would read as empty."
+    )
+
 
 @dataclass
 class Probe:

@@ -45,6 +45,45 @@ from dataclasses import dataclass, field
 from . import roland
 from .midi import MidiLink
 
+METHOD = (
+    "Each stimulus was sent at its low value, snapshotted, sent at its high value, snapshotted, "
+    "and sent at its low value again. A byte is listed only if it moved both times, to a "
+    "different value each time."
+)
+
+NOTE = (
+    "A byte listed here followed the stimulus out and back. That says where the value is kept, "
+    "not that anything uses it."
+)
+
+WHY_CONTROL = (
+    "Sent before the first stimulus and after the last. Without it a scan that finds nothing "
+    "cannot be told from a scan that cannot find anything; sent only once, it says nothing "
+    "about the rest of the run."
+)
+
+WHY_RESIDUE = (
+    "Every stimulus ends on the value it started with, so anything listed here is state one "
+    "message carried into the next."
+)
+
+WHY_RECOVERED = (
+    "Each stimulus that lands nothing is retried with its two values swapped. Anything listed "
+    "here is something a single pass would have reported as absent."
+)
+
+WHY_KIND_REACHED = (
+    "The control is a control change, so it cannot show that a message of another kind arrived. "
+    "Where this is false, every negative in the run is about the path, not about the unit."
+)
+
+NOT_SCANNED = (
+    "Controllers 120 to 127 are channel mode messages. Sending one resets the channel state "
+    "every later attribution is measured against, so they need a scan of their own."
+)
+
+RPN_PARKED = "RPN and NRPN were set to 7F 7F before the scan."
+
 Address = tuple[int, int, int]
 
 

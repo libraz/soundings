@@ -41,6 +41,11 @@ from .midi import MidiLink
 
 # Writing here is not a parameter change. SYSTEM MODE SET reinitialises the unit,
 # which would discard the very state this module is in the middle of restoring.
+NOTE = (
+    "Classifications describe what an address stores, not what it does. "
+    "Nothing here was heard."
+)
+
 NEVER_WRITE = {
     (0x40, 0x00, 0x7F),
 }
