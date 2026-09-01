@@ -687,6 +687,89 @@
         "What any tone is. What was measured is which combinations the unit takes, not what comes out of them."
       ],
       "reproduced": "the sampled form twice with identical bank and program lists where the two overlap"
+    },
+    {
+      "id": "one-note-played-twice-comes-back-the-same-to-the-noise-floor",
+      "summary": "Two takes of the same note, aligned to a fraction of a sample and levelled, differ by 54 dB less than the note itself, which is 0.1 to 2.3 dB above what the converter noise alone would leave. What actually fails to repeat is -58 dB down. The level agrees to under 0.001 dB. The trigger arrives within a 4 ms window, so the alignment is doing real work rather than confirming a timing that was already good.",
+      "method": "The same note is played several times with silence before it, each take cross correlated against the first, shifted by the fractional lag the correlation peak interpolates to, scaled by its best fitting gain, and subtracted. The noise floor is measured from the silence in the same take and raised 3 dB, because two takes carry that noise independently and their difference holds twice its power. The residual is reported as its distance from that floor, and the noise is taken back out in power to leave the part that is a fact about the machine.",
+      "results": {
+        "residual below the note": "-56.7 to -54.5 dB",
+        "noise floor for two takes": "-56.8 dB",
+        "residual above that floor": "0.1 to 2.3 dB",
+        "what does not repeat": "-58 dB, after the noise is removed in power",
+        "level agreement": "under 0.001 dB",
+        "trigger scatter": "-3.1 to +1.2 ms",
+        "worst correlation": 0.9998
+      },
+      "note": "This is the gate every difference measurement rests on. Averaging takes to get under the noise, and subtracting one setting from another to see what a parameter changed, both need it and neither can be checked afterwards from the data they produce. It holds for a struck piano note with no effect switched on; the chorus breaks it completely, which is recorded separately.",
+      "found_by": "Standing the measurement up before using it. Two setup faults were caught first and both produced healthy looking captures: the default input device was the machine's own microphone, giving silent takes that read as a unit failing to repeat, and the audio device takes 650 ms to open, so a note triggered on a timer started alongside the recorder sounded before a single sample was captured and only its tail was recorded.",
+      "not_established": [
+        "Whether other voices repeat as well as this one. Only program 0 was measured this way.",
+        "Whether the first 50 ms repeats as well as the whole take. The residual is dominated by the loud early part but was not measured separately.",
+        "Whether repeatability holds across a power cycle. Every take here came from one session."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "cc7-volume-is-a-square-law-and-changes-nothing-but-the-level",
+      "summary": "CC7 at 40 against 127 changes the level by 20.09 dB and leaves the shape of the note otherwise untouched. A square law, amplitude proportional to the square of the value, predicts 40 log10(127/40) = 20.07 dB. The two agree to 0.02 dB.",
+      "method": "Four takes of the same note at each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings the same way to measure the change. The comparison divides out the best fitting gain, so a change that is purely level leaves no residual at all and is read from the gain instead.",
+      "results": {
+        "level change": "+20.09 dB",
+        "square law prediction": "+20.07 dB",
+        "residual after levelling": "-38.6 dB, against -35.6 dB for two takes of one setting",
+        "shape verdict": "unchanged; the residual does not clear the repeatability by the 6 dB margin"
+      },
+      "note": "Reproduced at +20.09 dB on three separate runs. The prediction is an exact power of the ratio and nothing was fitted to reach it, so this is the volume curve rather than an approximation of it.",
+      "found_by": "Used as the positive control for the audibility method, since a volume control has to come out audible or the method is not measuring anything.",
+      "not_established": [
+        "Whether the square law holds over the whole range. Only 40 and 127 were compared, and two points cannot separate a square law from any other curve through them.",
+        "Whether it is a square law in amplitude or a decibel table that happens to pass through both points.",
+        "Whether the curve is the same for other patches or at other velocities."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "the-reverb-is-audible-and-stands-still-while-the-chorus-moves",
+      "summary": "CC91 at 0 against 100 changes the sound by 48 dB more than two takes of one setting differ, and takes with the reverb on still repeat as well as dry ones. So the reverb reaches the signal path and holds no moving part. CC93 at 0 against 100 does the opposite: it leaves no measurable residual at all, and instead destroys repeatability, from 1.6 dB above the noise floor dry to 58.8 dB with it on. The chorus carries a modulator that is at a different phase each time the note is struck.",
+      "method": "The same contrast for both, four takes per setting. Each setting's own repeatability is kept separately and measured as distance above its own noise floor, so that a setting which is merely quieter is not mistaken for one that moves.",
+      "results": {
+        "CC91 0 against 100": "shape changed, 48.1 dB clear of the yardstick",
+        "CC91 repeatability with reverb on": "-59 dB, indistinguishable from dry",
+        "CC93 0 against 100": "no residual clears the yardstick; -2.6 dB against -2.2 dB",
+        "CC93 repeatability dry": "1.6 dB above its own noise floor",
+        "CC93 repeatability with chorus on": "58.8 dB above its own noise floor",
+        "chorus takes, worst correlation": 0.6665
+      },
+      "note": "The chorus is why a difference method needs a second kind of evidence. Once a free running modulator is on, the yardstick swallows any change, and the parameter that caused it would read as inaudible however large its effect. The collapse in repeatability is the measurement in that case, and it is only readable because each setting's repeatability is kept apart from the other's.",
+      "found_by": "Checking whether reverb on takes still repeated, then noticing that the same test called CC93 inaudible while the unit had visibly stopped repeating.",
+      "not_established": [
+        "The chorus modulation rate and depth. Only that a modulator is present and free running relative to note-on.",
+        "Whether the reverb tank is truly static or merely modulated far below what one struck note reveals.",
+        "Whether either holds at other send values. Only 0 against 100 was compared."
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "no-voice-in-the-bank-holds-a-steady-enough-tone-to-read-a-clock-from",
+      "summary": "Seven voices were held for 20 seconds each at A above middle C and their frequency taken from the slope of the unwrapped phase. All seven wobble: the phase departs from a straight line by 0.09 to 2.8 cycles, so none is a frequency reference. Their pitches span 466 ppm flat to 2842 ppm sharp of equal temperament at A440, with master tune at its default, so the spread is the voices rather than the tuning.",
+      "method": "One sustained note per voice, the band around the expected fundamental isolated so the phase belongs to the fundamental alone, then a straight line fitted to the unwrapped phase. The departure from that line is kept beside the slope, because a wobbling tone still yields a confident slope and the departure is the only thing that says the slope means nothing. Each voice was asked for through the bank latch and confirmed taken before it was recorded.",
+      "results": {
+        "voices tried": 7,
+        "steady": 0,
+        "phase departure": "0.0884 to 2.7646 cycles over 20 s",
+        "pitch spread": "-466 to +2842 ppm off equal temperament",
+        "calmest voice": "program 80, 0.0884 cycles, +2842.0 ppm reproduced to 0.1 ppm on three runs",
+        "master tune": "default, 0.0 cents"
+      },
+      "note": "The calmest voice bounds the measurement chain rather than the unit: every take passed through the same converters, so the chain cannot be wandering by more than the least wobbly voice does, which puts it under 10 ppm over 20 seconds. The rest is the voices. A departure measured this way is in any case the unit's tuning and the ratio of its sample clock to the converter's, together, and nothing here separates them. It is the correction a comparison against software rendered at exactly 48000 Hz would need; a comparison of two takes from this unit needs none of it, since both carry it equally.",
+      "found_by": "Trying to read the sample clock, and finding that the instrument stands in the way of it.",
+      "not_established": [
+        "The clock ratio on its own. It cannot be separated from the voices' tuning without a source whose pitch is known independently.",
+        "Whether any voice anywhere in the 1710 tone map is steady. Seven were tried, chosen for being plausibly simple.",
+        "Whether the wobble is vibrato, layered detuning, or an unstable oscillator. Only that the tone is not steady."
+      ],
+      "reproduced": true
     }
   ]
 }
