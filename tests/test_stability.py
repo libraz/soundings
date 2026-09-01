@@ -136,3 +136,27 @@ def test_silence_has_no_frequency() -> None:
 def test_too_short_to_measure_reports_nothing_rather_than_a_number() -> None:
     t = np.arange(int(0.4 * SR)) / SR
     assert stability.tone_frequency(np.sin(2 * np.pi * 440 * t), SR, expected=440.0) is None
+
+
+def test_a_quiet_stimulus_is_not_mistaken_for_a_contaminated_lead_in() -> None:
+    """Measured on hardware: a velocity 30 note was refused by a relative check.
+
+    Contamination raises the lead-in in absolute terms. A quiet note lowers the
+    note instead and leaves the lead-in on the converter's own floor.
+    """
+    rng = np.random.default_rng(31)
+    floor = 3e-4
+    quiet = burst() * 0.05
+    quiet[: int(0.3 * SR)] = floor * rng.standard_normal(int(0.3 * SR))
+    loud = burst()
+    loud[: int(0.3 * SR)] = floor * rng.standard_normal(int(0.3 * SR))
+    quiet_lead = stability.loudest_lead_in([quiet], SR, before=0.25)
+    loud_lead = stability.loudest_lead_in([loud], SR, before=0.25)
+    assert abs(quiet_lead - loud_lead) < 1.0
+    assert quiet_lead < -60.0
+
+
+def test_a_contaminated_lead_in_reads_loud_in_absolute_terms() -> None:
+    signal = burst()
+    signal[: int(0.3 * SR)] += 0.05 * np.sin(2 * np.pi * 300 * np.arange(int(0.3 * SR)) / SR)
+    assert stability.loudest_lead_in([signal], SR, before=0.25) > -40.0

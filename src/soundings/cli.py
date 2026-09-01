@@ -18,8 +18,9 @@ from .stimuli import DEFAULT as _STIMULUS_DEFAULT
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
 
 _LEAD_IN_HELP = (
-    "dB the lead-in must sit below its own take; above this something was sounding before "
-    "the note and the noise floor, which is the yardstick for everything else, is wrong"
+    "dBFS the lead-in must stay under; above this something was sounding before the note and "
+    "the noise floor, which is the yardstick for everything else, is wrong. Absolute rather "
+    "than relative to the take, or a quiet stimulus reads the same as a contaminated one"
 )
 
 
@@ -602,14 +603,14 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
     """Refuse a run whose lead-in was not silent, naming why it matters."""
     from . import stability
 
-    worst = stability.quietest_lead_in([t for g in groups for t in g], rate, before=before)
+    worst = stability.loudest_lead_in([t for g in groups for t in g], rate, before=before)
     if worst <= limit:
         return True
     print(
-        f"\nThe quietest lead-in is only {worst:.1f} dB below its take, against {limit:.0f} dB "
-        "asked for. Something was sounding before the note: the tail of the take before it, or "
-        "another process driving the same unit. The noise floor sets the yardstick every number "
-        "here is judged against, so nothing measured from these takes would mean anything."
+        f"\nThe loudest lead-in sits at {worst:.1f} dBFS, against {limit:.0f} dBFS asked for. "
+        "Something was sounding before the note: the tail of the take before it, or another "
+        "process driving the same unit. The noise floor sets the yardstick every number here "
+        "is judged against, so nothing measured from these takes would mean anything."
     )
     return False
 
@@ -1370,7 +1371,7 @@ def main(argv: list[str] | None = None) -> int:
         help="dB the note must rise above the silence before it; below this the take holds "
         "no sound from the unit, which would otherwise read as the unit not repeating",
     )
-    p.add_argument("--max-lead-in", type=float, default=-30.0, help=_LEAD_IN_HELP)
+    p.add_argument("--max-lead-in", type=float, default=-60.0, help=_LEAD_IN_HELP)
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_repeat)
@@ -1413,7 +1414,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--audio", help="substring of the audio input device name")
     p.add_argument("--min-rise", type=float, default=12.0)
-    p.add_argument("--max-lead-in", type=float, default=-30.0, help=_LEAD_IN_HELP)
+    p.add_argument("--max-lead-in", type=float, default=-60.0, help=_LEAD_IN_HELP)
     p.add_argument("--verify-reads", type=int, default=20)
     p.add_argument("--out", help="write the result as JSON")
     p.set_defaults(func=cmd_contrast)

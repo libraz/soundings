@@ -47,6 +47,13 @@ import numpy as np
 
 from .stability import Comparison, compare
 
+UNUSABLE_ABOVE_DB = -12.0
+"""Above this, takes of one setting differ so much that no change could clear the yardstick.
+
+Set below the worst yardstick a healthy stimulus has produced on this chain: the
+quiet 'soft' note, at -16.4 dB, whose verdict was sound.
+"""
+
 
 @dataclass
 class Verdict:
@@ -94,7 +101,11 @@ class Verdict:
 
     @property
     def changed_the_repeatability(self) -> bool:
-        """One setting repeats far worse than the other, so something that moves came on."""
+        """One setting repeats far worse than the other, so something that moves came on.
+
+        Needs at least three takes per setting. With two there is one pair per
+        group, and a single pair cannot be told from an outlier.
+        """
         first, second = self.within_each_db
         if np.isnan(first) or np.isnan(second):
             return False
@@ -106,7 +117,29 @@ class Verdict:
             self.changed_the_shape or self.changed_the_level or self.changed_the_repeatability
         )
 
+    @property
+    def inconclusive(self) -> bool:
+        """A null nothing could have cleared, which is not the same as a null.
+
+        When takes of one setting barely resemble each other, the yardstick is
+        most of the signal and no change however large can get over it. Reporting
+        that as "inaudible" states a fact about the parameter on the strength of
+        a measurement that had no power to find one. Seen once on hardware: a
+        disturbed take left a stimulus with a 0.0 dB yardstick, and the parameter
+        it was asked about was a volume control.
+
+        An audible verdict is kept regardless -- something was found, so the
+        measurement plainly had the power to find it.
+        """
+        return bool(not self.audible and self.within_db > UNUSABLE_ABOVE_DB)
+
     def describe(self) -> str:
+        if self.inconclusive:
+            return (
+                f"{self.label}: inconclusive. Takes of one setting differ by "
+                f"{self.within_db:.1f} dB, so the yardstick is most of the signal and no "
+                "change could have cleared it. This says nothing about the parameter."
+            )
         if not self.audible:
             return (
                 f"{self.label}: nothing above the noise. Takes of one setting differ by "
@@ -122,8 +155,8 @@ class Verdict:
         if self.changed_the_repeatability:
             first, second = self.within_each_db
             how.append(
-                f"repeatability, {first:.1f} dB against {second:.1f} dB over their own noise "
-                "-- something that moves came on, and no residual can measure it"
+                f"repeatability, typically {first:.1f} dB against {second:.1f} dB over their "
+                "own noise -- something that moves came on, and no residual can measure it"
             )
         return (
             f"{self.label}: audible -- {' and '.join(how)}. "
@@ -150,6 +183,7 @@ class Verdict:
             "changed_the_repeatability": self.changed_the_repeatability,
             "changed_the_level": self.changed_the_level,
             "audible": self.audible,
+            "inconclusive": self.inconclusive,
             "caveat": "A null is about this stimulus. A parameter heard only on a longer "
             "note, at another velocity, or after note-off would read as inaudible here.",
         }
@@ -165,9 +199,23 @@ def _worst(comparisons: list[Comparison]) -> tuple[float, float]:
     )
 
 
-def _worst_headroom(comparisons: list[Comparison]) -> float:
-    """Worst residual measured from its own noise floor, so level cannot skew it."""
-    return max((c.headroom_db for c in comparisons), default=float("nan"))
+def _typical_headroom(comparisons: list[Comparison]) -> float:
+    """Median residual above the noise floor, for the modulator channel.
+
+    Median rather than worst, and the direction is the reason. Everywhere else
+    the worst pair is the conservative choice, because it makes a change harder
+    to claim. Here it is the opposite: one disturbed take raises the worst pair
+    of its own group and that alone reads as a modulator switching on. Measured:
+    the same reverb contrast ran at 15.5 dB over three takes and 1.4 dB over
+    four, on a unit that does repeat with the reverb on.
+
+    A real modulator raises every pair in the group, so the median moves with it
+    and a single bad take does not.
+    """
+    if len(comparisons) < 2:
+        # One pair cannot say whether a value is typical or an outlier.
+        return float("nan")
+    return float(np.median([c.headroom_db for c in comparisons]))
 
 
 def judge(
@@ -203,7 +251,10 @@ def judge(
         stimulus=stimulus,
         stimulus_name=stimulus_name,
         within_db=within_db,
-        within_each_db=(_worst_headroom(within_first), _worst_headroom(within_second)),
+        within_each_db=(
+            _typical_headroom(within_first),
+            _typical_headroom(within_second),
+        ),
         across_db=across_db,
         within_level_db=within_level,
         across_level_db=across_level,
@@ -230,16 +281,31 @@ class Overall:
 
     @property
     def deaf_to(self) -> list[str]:
-        return [v.stimulus_name for v in self.verdicts if not v.audible]
+        return [v.stimulus_name for v in self.verdicts if not v.audible and not v.inconclusive]
+
+    @property
+    def inconclusive_under(self) -> list[str]:
+        return [v.stimulus_name for v in self.verdicts if v.inconclusive]
 
     def describe(self) -> str:
         if not self.verdicts:
             return f"{self.label}: nothing was asked"
+        unusable = (
+            f"; {', '.join(self.inconclusive_under)} could not measure it"
+            if self.inconclusive_under
+            else ""
+        )
         if self.audible:
             missed = f"; {', '.join(self.deaf_to)} did not hear it" if self.deaf_to else ""
-            return f"{self.label}: AUDIBLE, heard by {', '.join(self.heard_by)}{missed}"
+            return f"{self.label}: AUDIBLE, heard by {', '.join(self.heard_by)}{missed}{unusable}"
+        if not self.deaf_to:
+            return (
+                f"{self.label}: INCONCLUSIVE. Every stimulus tried "
+                f"({', '.join(self.inconclusive_under)}) had a yardstick nothing could clear, "
+                "so this is not a null and must be asked again."
+            )
         return (
-            f"{self.label}: not audible under {', '.join(self.deaf_to)}. "
+            f"{self.label}: not audible under {', '.join(self.deaf_to)}{unusable}. "
             "That is a statement about these notes, not about the parameter -- another "
             "stimulus may still hear it."
         )
@@ -250,12 +316,16 @@ class Overall:
             "audible": self.audible,
             "heard_by": self.heard_by,
             "not_heard_by": self.deaf_to,
+            "inconclusive_under": self.inconclusive_under,
+            "conclusive": bool(self.audible or self.deaf_to),
             "verdict_rule": "Audible under any stimulus is audible: one note hearing the "
             "change proves the parameter reaches the signal path, and the others failing "
             "to hear it says only that they asked the wrong question. The reverse does not "
-            "hold, so a null carries the list of what was tried.",
+            "hold, so a null carries the list of what was tried. A stimulus whose takes of "
+            "one setting barely resemble each other is reported as inconclusive rather than "
+            "as a null, since no change could have cleared that yardstick.",
             "by_stimulus": [v.to_json() for v in self.verdicts],
         }
 
 
-__all__ = ["Overall", "Verdict", "judge"]
+__all__ = ["UNUSABLE_ABOVE_DB", "Overall", "Verdict", "judge"]

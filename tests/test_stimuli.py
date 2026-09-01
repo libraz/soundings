@@ -6,7 +6,7 @@ import pytest
 
 from soundings import audible, stimuli
 
-from .test_audible import judge, note
+from .test_audible import judge, note, unrepeatable
 
 
 def test_every_catalogue_entry_says_what_it_cannot_see() -> None:
@@ -67,3 +67,14 @@ def test_nothing_asked_is_not_a_null() -> None:
     overall = audible.Overall(label="test")
     assert not overall.audible
     assert "nothing was asked" in overall.describe()
+
+
+def test_an_all_inconclusive_result_is_not_reported_as_a_null() -> None:
+    takes = [unrepeatable(s) for s in range(6)]
+    bad = judge(takes[:3], takes[3:], stimulus_name="struck")
+    overall = audible.Overall(label="test", verdicts=[bad])
+    assert not overall.audible
+    assert overall.inconclusive_under == ["struck"]
+    assert overall.deaf_to == []
+    assert "INCONCLUSIVE" in overall.describe()
+    assert not overall.to_json()["conclusive"]

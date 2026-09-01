@@ -12,6 +12,12 @@ that comes back inaudible is inaudible *under the stimuli it was tried with* --
 which is a claim that can be extended by trying another, rather than a fact that
 has to be overturned.
 
+**A stimulus is only as good as its voice repeats.** The yardstick is what two
+takes of one setting differ by, so a voice that does not repeat cannot detect
+anything at all, however large the change. Every sustaining voice on this unit
+is 20 to 58 dB worse than the struck piano note, which is why `struck` is the
+default and why a sustained result carries a much weaker claim.
+
 **Audible under any is audible.** The verdict over a set of stimuli is a union,
 never an average: one note hearing the change is proof the parameter reaches the
 signal path, and the others failing to hear it says only that they asked the
@@ -98,8 +104,12 @@ CATALOGUE: dict[str, Stimulus] = {
         seconds=4.0,
         lead=0.6,
         sees="filters, amplitude shaping and modulation on a note that does not decay",
-        blind_to="attack shaping. The voice is an organ, which does not repeat as "
-        "tightly as a struck piano note, so the yardstick here is looser",
+        blind_to="attack shaping, and anything smaller than a yardstick 20 to 29 dB "
+        "above the noise. No sustaining voice on this unit repeats the way a struck "
+        "piano note does -- measured, holding one note for 2.5 s: church organ 21 to "
+        "29 dB above its floor, drawbar organ 33 to 40, square lead 32 to 50, flute 57 "
+        "to 58, against 0.1 to 2.3 for the piano. The church organ is the best of them "
+        "and is what this uses",
     ),
     "soft": Stimulus(
         name="soft",

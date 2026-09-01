@@ -165,20 +165,30 @@ def noise_floor(signal: np.ndarray, sample_rate: int, *, before: float) -> float
     return _db(_rms(lead), _rms(signal))
 
 
-def quietest_lead_in(signals: list[np.ndarray], sample_rate: int, *, before: float) -> float:
-    """The worst lead-in among a set of takes, as dB below each take's own signal.
+def loudest_lead_in(signals: list[np.ndarray], sample_rate: int, *, before: float) -> float:
+    """The loudest lead-in among a set of takes, in dBFS.
 
     The lead-in is what the noise floor is measured from, and everything here is
     judged against that floor. Anything sounding during it -- the tail of the
-    take before, or another process driving the same unit -- raises the floor,
-    which raises the yardstick, which makes a real difference read as noise.
+    take before, or another process driving the same unit -- raises it, which
+    raises the yardstick, which makes a real difference read as noise. None of
+    the other checks can see that: the capture is the right length, dropped no
+    samples, and the note still rises clear of a lead-in that is merely louder
+    than it should be.
 
-    None of the other checks can see it. The capture is the right length, no
-    samples were dropped, and the note still rises well clear of a lead-in that
-    is merely louder than it should be. So it is checked on its own.
+    **Absolute, not relative to the take.** Contamination raises the lead-in in
+    absolute terms. A quiet stimulus lowers the note instead and leaves the
+    lead-in sitting on the converter's own floor, which is not a fault and must
+    not be refused: measured against the take, a velocity 30 note reads the same
+    as a contaminated one.
     """
-    floors = [noise_floor(s, sample_rate, before=before) for s in signals]
-    return max(floors) if floors else float("nan")
+    levels = []
+    for signal in signals:
+        lead = signal[: int(before * sample_rate)]
+        if lead.size < sample_rate // 100:
+            continue
+        levels.append(_db(_rms(lead), 1.0))
+    return max(levels) if levels else float("nan")
 
 
 def signal_over_silence(signal: np.ndarray, sample_rate: int, *, before: float) -> float:

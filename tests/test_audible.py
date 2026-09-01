@@ -32,7 +32,22 @@ def judge(first, second, **kw):
     )
 
 
-__all__ = ["SR", "judge", "note"]
+def unrepeatable(seed: int) -> np.ndarray:
+    """A take with a proper silent lead-in whose body never repeats.
+
+    The shape a voice with free-running modulation actually has: the level is
+    the same take to take, so the gain fit lands on 0 dB and the residual is the
+    whole signal. Pure noise with no lead-in models it badly -- the level fit
+    then has nothing to lock to and wanders by enough to trip on its own.
+    """
+    rng = np.random.default_rng(seed)
+    lead = 3e-4 * rng.standard_normal(int(0.3 * SR))
+    t = np.arange(int(1.5 * SR)) / SR
+    body = rng.standard_normal(t.size) * np.exp(-2.5 * t) * 0.4
+    return np.concatenate([lead, body])
+
+
+__all__ = ["SR", "judge", "note", "unrepeatable"]
 
 
 def test_the_same_setting_twice_is_not_audible() -> None:
@@ -119,3 +134,53 @@ def test_two_equally_repeatable_settings_are_not_called_audible_by_repeatability
     a = [note(seed=s) for s in (0, 1, 2)]
     b = [note(seed=s) for s in (3, 4, 5)]
     assert not judge(a, b).changed_the_repeatability
+
+
+def test_one_disturbed_take_does_not_read_as_a_modulator() -> None:
+    """Measured on hardware: the same reverb contrast flagged a modulator over
+    three takes and not over four, on a unit that does repeat with reverb on.
+
+    The worst pair in a group moves with a single bad take. A real modulator
+    moves every pair, so the group is judged by its median instead.
+    """
+    rng = np.random.default_rng(21)
+    clean = [note(seed=s) for s in (0, 1, 2, 3)]
+    disturbed = [note(seed=s) for s in (4, 5, 6)]
+    spoiled = note(seed=7)
+    spoiled[int(0.9 * SR) : int(0.95 * SR)] += 0.05 * rng.standard_normal(int(0.05 * SR))
+    disturbed.append(spoiled)
+    assert not judge(clean, disturbed).changed_the_repeatability
+
+
+def test_two_takes_per_setting_cannot_claim_a_modulator() -> None:
+    """One pair per group is a value with nothing to say whether it is typical."""
+    a = [note(seed=0), note(seed=1)]
+    b = [note(seed=2), note(seed=3)]
+    verdict = judge(a, b)
+    assert np.isnan(verdict.within_each_db[0])
+    assert not verdict.changed_the_repeatability
+
+
+def test_a_yardstick_nothing_could_clear_is_inconclusive_rather_than_a_null() -> None:
+    """Seen on hardware: a disturbed take left a stimulus unable to measure anything,
+    and it reported the volume control it was asked about as inaudible."""
+    takes = [unrepeatable(s) for s in range(6)]
+    verdict = judge(takes[:3], takes[3:])
+    assert not verdict.audible
+    assert verdict.inconclusive
+    assert "inconclusive" in verdict.describe()
+    assert "says nothing about the parameter" in verdict.describe()
+
+
+def test_an_audible_verdict_is_never_called_inconclusive() -> None:
+    """The chorus repeats terribly and is still measured, via the repeatability channel."""
+    rng = np.random.default_rng(43)
+    steady = [note(seed=s) for s in (0, 1, 2)]
+    moving = []
+    for phase in rng.uniform(0, 2 * np.pi, 3):
+        base = note(seed=9)
+        t = np.arange(base.size) / SR
+        moving.append(base * (1.0 + 0.5 * np.sin(2 * np.pi * 1.3 * t + phase)))
+    verdict = judge(steady, moving)
+    assert verdict.audible
+    assert not verdict.inconclusive
