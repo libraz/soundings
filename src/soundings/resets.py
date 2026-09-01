@@ -69,6 +69,21 @@ def catalogue(device_id: int) -> list[Reset]:
     ]
 
 
+def named(label: str, device_id: int) -> Reset:
+    """One reset out of the catalogue, by the label it is published under.
+
+    A reset is used two ways: as a subject, and as the starting line a subject is
+    measured from. The second wants it by name, and wants the same object the
+    first will report, so that the state a run began in is the one the archive
+    says it began in.
+    """
+    for reset in catalogue(device_id):
+        if reset.label == label:
+            return reset
+    known = ", ".join(r.label for r in catalogue(device_id))
+    raise KeyError(f"no reset called {label!r}; the catalogue holds {known}")
+
+
 def mode_set(device_id: int, mode: int = 0x00) -> Reset:
     """System Mode Set, which reinitialises rather than resetting parameters.
 

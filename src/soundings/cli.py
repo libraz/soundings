@@ -8,8 +8,8 @@ import sys
 import time
 from pathlib import Path
 
+from . import archive, clock, parts, perform, roland
 from . import capture as cap
-from . import roland
 from .midi import MidiLink, list_ports
 from .selftest import midi_selftest, timeline_selftest
 from .stimuli import CATALOGUE as _STIMULUS_CATALOGUE
@@ -181,34 +181,18 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
     return 0 if all(r.region_restored for r in done) else 1
 
 
-def _accepting_bytes(path: str) -> list[str]:
-    """Addresses the write probe found take any value and give it back.
-
-    A reset probe needs somewhere it can put a mark. An address that clamps or
-    refuses may keep what it had, and a byte that was never broken tells the
-    reset nothing.
-    """
-    data = json.loads(Path(path).read_text())
-    return [
-        b["address"]
-        for region in data["regions"]
-        for b in region["bytes"]
-        if b["classification"] == "accepts" and b["restored"]
-    ]
-
-
 def cmd_reset_probe(args: argparse.Namespace) -> int:
     from .aliases import Snapshotter
-    from .resets import Prober, ResetResult, catalogue, compare, mode_set, summarise
+    from .resets import Prober, ResetResult, catalogue, compare, mode_set, named, summarise
 
     captured = json.loads(Path(args.baseline).read_text())
     baseline = {
         tuple(int(b, 16) for b in a.split()): int(v, 16) for a, v in captured["values"].items()
     }
-    regions = _regions_from_map(args.map, "")
+    regions = archive.regions(args.map)
     targets = [
         tuple(int(b, 16) for b in a.split())
-        for a in list(ALIASED_BYTES) + _accepting_bytes(args.write_probe)
+        for a in list(archive.ALIASED_BYTES) + archive.accepting_bytes(args.write_probe)
     ]
     resets = catalogue(args.device_id)
     if args.include_mode_set:
@@ -232,7 +216,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         # against wherever the previous reset happened to leave things. The
         # state chosen is the one this same probe measured as reproducing the
         # power-on capture byte for byte.
-        opener = next(r for r in catalogue(args.device_id) if r.label == args.from_reset)
+        opener = named(args.from_reset, args.device_id)
         for reset in resets:
             print(f"\n{reset.label}")
             prober.apply(opener)
@@ -299,7 +283,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
 
 
 def cmd_tone_map(args: argparse.Namespace) -> int:
-    from .resets import Prober, catalogue
+    from .resets import Prober, named
     from .tonemap import SAMPLE_PROGRAMS, Asker, summarise, survey
 
     with MidiLink(args.port) as link:
@@ -309,7 +293,7 @@ def cmd_tone_map(args: argparse.Namespace) -> int:
             print("\nSelftest failed. Not asking.")
             return 1
 
-        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        gs_reset = named("GS Reset", args.device_id)
         prober = Prober(link, baseline={}, device_id=args.device_id)
         prober.apply(gs_reset)
 
@@ -381,131 +365,10 @@ def cmd_tone_map(args: argparse.Namespace) -> int:
     return 0 if not asker.unread else 1
 
 
-def _part_block(family: int, channel: int) -> tuple[int, int, int]:
-    """The per-part block for a channel, in one of the families of them.
-
-    GS numbers the parts so that channel 10 comes first: 40 f0 is part 10, and
-    40 f1 through 40 fF are channels 1 to 9 and 11 to 16 in order. `family` is
-    the whole high nibble of the middle byte -- 0x10 for the part block that
-    holds the tone, 0x40 for the one CC32 writes into -- so passing 0x00 by
-    mistake addresses the patch common block instead, which answers, and which
-    holds something entirely unrelated.
-    """
-    index = 0 if channel == 9 else (channel + 1 if channel < 9 else channel)
-    return (0x40, family | index, 0x00)
-
-
-def _clear_bank_latch(link, channel: int, device_id: int) -> str:
-    """Put the bank select latch back where the scan found it.
-
-    Bank select is held without changing anything readable until a program
-    change commits the three of them together, and a pair the unit does not have
-    is discarded whole. So a scan that sends CC0 or CC32 on their own -- which a
-    controller sweep does, having no reason to send a program change -- ends with
-    a latch set to whatever it tried last, and every program change in the next
-    run is thrown away. Nothing in the address space says so.
-
-    The committing program change is the tone the part already holds, and the
-    bank halves are read back rather than assumed, so the commit puts the part
-    exactly where it was rather than somewhere tidy.
-    """
-    from . import roland as r
-
-    tone = _part_block(0x10, channel)
-
-    def read(address, size):
-        # Drain first: this runs straight after hundreds of request-and-reply
-        # pairs, and a reply still in flight is answered to whichever request
-        # asks next.
-        while link.receive(timeout=0.05):
-            pass
-        reply = r.parse_dt1(link.exchange(r.rq1(address, size, device_id=device_id), timeout=0.6))
-        return None if reply is None or reply.address != address else list(reply.data)
-
-    part = read(tone, 2)
-    mapped = read(_part_block(0x40, channel), 1)
-    if part is None or mapped is None:
-        return "could not be read back, so the bank latch was left as the scan left it"
-    link.send([0xB0 | (channel & 0x0F), 0, part[0]])
-    link.send([0xB0 | (channel & 0x0F), 32, mapped[0]])
-    link.send([0xC0 | (channel & 0x0F), part[1]])
-    time.sleep(0.25)
-    after = read(tone, 2)
-    if after != part:
-        return f"restoring it moved the part from {part} to {after}"
-    return f"committed bank {part[0]}, map {mapped[0]}, program {part[1]}"
-
-
-def _read_bytes(link, addresses, device_id) -> dict[tuple[int, int, int], int]:
-    """Read one byte at each address, leaving out any that will not answer."""
-    from . import roland as r
-
-    out = {}
-    for address in addresses:
-        while link.receive(timeout=0.05):
-            pass
-        reply = r.parse_dt1(link.exchange(r.rq1(address, 1, device_id=device_id), timeout=0.6))
-        if reply is not None and reply.address == address and reply.size == 1:
-            out[address] = reply.data[0]
-    return out
-
-
-def _restore_bytes(link, originals, device_id) -> str:
-    """Put back every byte the scan wrote, and say so only after re-reading it.
-
-    A scan that writes has to end where it started or the next measurement is
-    taken from a state nobody chose. Which addresses could be read at all was
-    settled before anything was written, so a byte with no original here was
-    never written either.
-    """
-    from . import roland as r
-
-    for address, value in originals.items():
-        link.send(r.dt1(address, [value], device_id=device_id))
-    time.sleep(0.2)
-    after = _read_bytes(link, list(originals), device_id)
-    wrong = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a, v in originals.items() if after.get(a) != v]
-    if wrong:
-        return f"NOT restored: {', '.join(wrong)}"
-    return f"{len(originals)} bytes put back and re-read"
-
-
-def _regions_from_map(path: str, prefix: str) -> list[tuple[tuple[int, int, int], int]]:
-    data = json.loads(Path(path).read_text())
-    out = []
-    for r in data["regions"]:
-        if not r["address"].startswith(prefix) or not r["size"]:
-            continue
-        start = tuple(int(b, 16) for b in r["address"].split())
-        out.append((start, r["size"]))
-    return out
-
-
-# The bytes a control change and an NRPN were both measured to reach. Writing
-# them by SysEx asks whether the location has a third way in, and -- because the
-# whole watched space is diffed, not just the byte written -- whether the value
-# is also kept anywhere else.
-ALIASED_BYTES = (
-    "40 11 19",
-    "40 11 1C",
-    "40 11 21",
-    "40 11 22",
-    "40 11 30",
-    "40 11 31",
-    "40 11 32",
-    "40 11 33",
-    "40 11 34",
-    "40 11 35",
-    "40 11 36",
-    "40 11 37",
-    "40 21 04",
-)
-
-
 def _addresses(args: argparse.Namespace) -> list[tuple[int, int, int]]:
     from .writeback import NEVER_WRITE
 
-    given = args.addresses or list(ALIASED_BYTES)
+    given = args.addresses or list(archive.ALIASED_BYTES)
     out = []
     for spec in given:
         address = tuple(int(b, 16) for b in spec.split())
@@ -555,38 +418,6 @@ def _stimuli(args: argparse.Namespace) -> list:
     raise ValueError(args.kind)
 
 
-def _record_note(
-    link: MidiLink,
-    *,
-    device: str | None,
-    channel: int,
-    note: int,
-    velocity: int,
-    hold: float,
-    seconds: float,
-    lead: float,
-):
-    """Record while one note is played, with silence before it to measure the floor."""
-    import threading
-
-    ready = threading.Event()
-
-    def play() -> None:
-        # Wait for audio to be flowing, not merely for the recorder to have been
-        # called. Opening the device outlasts any lead-in worth having.
-        ready.wait(timeout=30.0)
-        time.sleep(lead)
-        link.send([0x90 | (channel & 0x0F), note & 0x7F, velocity & 0x7F])
-        time.sleep(hold)
-        link.send([0x80 | (channel & 0x0F), note & 0x7F, 0])
-
-    thread = threading.Thread(target=play, daemon=True)
-    thread.start()
-    recording = cap.record(seconds, device=device, ready=ready)
-    thread.join(timeout=hold + lead + 1.0)
-    return recording
-
-
 def _store(where: str | None):
     """Open a directory for the takes, when the run was asked to keep them."""
     if not where:
@@ -594,24 +425,6 @@ def _store(where: str | None):
     from .takes import Store
 
     return Store.open(where)
-
-
-def _loudest_channel(recording) -> int:
-    import numpy as np
-
-    peaks = [float(abs(recording.samples[:, c]).max()) for c in range(recording.samples.shape[1])]
-    return int(np.argmax(peaks))
-
-
-def _master_tune_cents(link: MidiLink, device_id: int) -> float | None:
-    """MASTER TUNE as cents off A440, from the four nibbles the unit stores it in."""
-    reply = roland.parse_dt1(link.exchange(roland.rq1((0x40, 0x00, 0x00), 4, device_id=device_id)))
-    if reply is None or reply.size != 4:
-        return None
-    packed = 0
-    for nibble in reply.data:
-        packed = (packed << 4) | (nibble & 0x0F)
-    return (packed - 0x400) / 10.0
 
 
 def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
@@ -633,7 +446,7 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
 def cmd_contrast(args: argparse.Namespace) -> int:
     """Play the same note under two settings and say whether the unit sounded different."""
     from . import audible, stability, stimuli
-    from .resets import Prober, catalogue
+    from .resets import Prober, named
 
     def setting(value: int) -> list[list[int]]:
         if args.cc is not None:
@@ -658,7 +471,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             print("\nSelftest failed. Not recording.")
             return 1
 
-        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        gs_reset = named("GS Reset", args.device_id)
         prober = Prober(link, baseline={}, device_id=args.device_id)
         prober.apply(gs_reset)
 
@@ -683,7 +496,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 time.sleep(args.settle)
                 takes = []
                 for index in range(args.takes):
-                    recording = _record_note(
+                    recording = perform.record_note(
                         link,
                         device=args.audio,
                         channel=args.channel,
@@ -703,7 +516,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 print(f"    {where} = {value}: {len(takes)} takes")
                 captured.append(takes)
 
-            index = _loudest_channel(captured[0][0])
+            index = perform.loudest_channel(captured[0][0])
             rate = captured[0][0].sample_rate
             groups = [[t.channel(index) for t in takes] for takes in captured]
             before = stim.lead * 0.8
@@ -786,8 +599,7 @@ def _bank_program(spec: str) -> tuple[int, int]:
 
 def cmd_repeat(args: argparse.Namespace) -> int:
     from . import stability
-    from .resets import Prober, catalogue
-    from .tonemap import Asker
+    from .resets import Prober, named
 
     setup = [
         [0xC0 | args.channel, args.program & 0x7F],
@@ -805,10 +617,10 @@ def cmd_repeat(args: argparse.Namespace) -> int:
             print("\nSelftest failed. Not recording.")
             return 1
 
-        gs_reset = next(r for r in catalogue(args.device_id) if r.label == "GS Reset")
+        gs_reset = named("GS Reset", args.device_id)
         prober = Prober(link, baseline={}, device_id=args.device_id)
         prober.apply(gs_reset)
-        cents = _master_tune_cents(link, args.device_id)
+        cents = parts.master_tune_cents(link, device_id=args.device_id)
 
         for message in setup:
             link.send(message)
@@ -820,7 +632,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
         )
         takes = []
         for index in range(args.takes):
-            recording = _record_note(
+            recording = perform.record_note(
                 link,
                 device=args.audio,
                 channel=args.channel,
@@ -844,7 +656,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
                 )
             time.sleep(args.between)
 
-        index = _loudest_channel(takes[0])
+        index = perform.loudest_channel(takes[0])
         signals = [t.channel(index) for t in takes]
         rate = takes[0].sample_rate
         rise = stability.signal_over_silence(signals[0], rate, before=args.lead * 0.8)
@@ -865,88 +677,26 @@ def cmd_repeat(args: argparse.Namespace) -> int:
         print()
         print(stability.summarise(comparisons, label=f"program {args.program} note {args.note}"))
 
-        fits: dict[int, object] = {}
-        expected = None
+        pitch = None
         if args.clock:
-            expected = 440.0 * 2 ** ((args.clock_note - 69) / 12.0)
-            if cents is not None:
-                expected *= 2 ** (cents / 1200.0)
+            expected = clock.equal_temperament(args.clock_note, cents)
             print(
                 f"\nclock: note {args.clock_note}, {expected:.4f} Hz expected, "
                 f"master tune {cents:+.1f} cents"
                 if cents is not None
                 else f"\nclock: note {args.clock_note}, {expected:.4f} Hz expected"
             )
-            # Several voices, because most are not a frequency reference: one
-            # that layers two detuned oscillators, or carries its own vibrato,
-            # wobbles regardless of what CC93 is set to, and its phase slope is a
-            # confident number about nothing.
-            #
-            # Each is asked for through the tone map's Asker rather than sent
-            # blind. A bank and program the unit does not have is discarded whole
-            # and leaves the previous voice playing, which would be measured and
-            # filed under the voice that was asked for.
-            asker = Asker(link, channel=args.channel, device_id=args.device_id)
-            asker.settle_on(0, 0)
-            for bank, program in args.clock_program:
-                if not asker.ask(bank, program):
-                    print(f"  bank {bank:3d} program {program:3d}: the unit does not have it")
-                    continue
-                link.send([0xB0 | args.channel, 7, 127])
-                link.send([0xB0 | args.channel, 11, 127])
-                link.send([0xB0 | args.channel, 91, 0])
-                link.send([0xB0 | args.channel, 93, 0])
-                time.sleep(0.3)
-                held = _record_note(
-                    link,
-                    device=args.audio,
-                    channel=args.channel,
-                    note=args.clock_note,
-                    velocity=100,
-                    hold=args.clock_seconds,
-                    seconds=args.clock_seconds + 1.5,
-                    lead=0.5,
-                )
-                fit = (
-                    stability.tone_frequency(
-                        held.channel(_loudest_channel(held)),
-                        held.sample_rate,
-                        expected=expected,
-                        skip=1.0,
-                        trim=0.5,
-                    )
-                    if held.healthy
-                    else None
-                )
-                if fit is None:
-                    print(f"  bank {bank:3d} program {program:3d}: no tone to read")
-                    continue
-                fits[(bank, program)] = fit
-                ppm = (fit.frequency / expected - 1.0) * 1e6
-                print(
-                    f"  bank {bank:3d} program {program:3d}: {fit.frequency:9.4f} Hz  "
-                    f"{ppm:+9.1f} ppm  wobble {fit.wobble_cycles:7.4f} cycles  "
-                    f"{'steady' if fit.steady else 'not steady'}"
-                )
-
-            if fits:
-                spread = [(f.frequency / expected - 1.0) * 1e6 for f in fits.values()]
-                calmest = min(f.wobble_cycles for f in fits.values())
-                steady = [k for k, f in fits.items() if f.steady]
-                print(
-                    f"  {len(fits)} voices span {min(spread):+.0f} to {max(spread):+.0f} ppm "
-                    f"off equal temperament, {len(steady)} of them steady"
-                )
-                # The chain carries every one of these takes, so it cannot be
-                # wobbling by more than the calmest voice does. That bounds it
-                # without a second instrument to check it against, and it is why
-                # a wobble common to all of them is still a fact about the
-                # voices rather than about the measurement.
-                bound = calmest / (fits[min(fits, key=lambda k: fits[k].wobble_cycles)].seconds)
-                print(
-                    f"  the calmest wobbles {calmest:.4f} cycles, so the chain's own wander is "
-                    f"under {bound / expected * 1e6:.0f} ppm and the rest is the voices"
-                )
+            pitch = clock.measure(
+                link,
+                programs=args.clock_program,
+                expected_hz=expected,
+                note=args.clock_note,
+                seconds=args.clock_seconds,
+                channel=args.channel,
+                device_id=args.device_id,
+                audio=args.audio,
+                progress=lambda m: print(f"  {m}"),
+            )
 
         prober.apply(gs_reset)
 
@@ -984,26 +734,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
                     "sample_rate": takes[0].sample_rate,
                     "comparisons": [c.to_json() for c in comparisons],
                     "master_tune_cents": cents,
-                    "pitch": None
-                    if not fits
-                    else {
-                        "note_asked": args.clock_note,
-                        "expected_hz": round(expected, 6),
-                        "caveat": "A departure here is the unit's tuning and the ratio of its "
-                        "sample clock to the converter's, together. Nothing measured here "
-                        "separates them. It is the correction a comparison against software "
-                        "rendered at exactly 48000 Hz needs; a comparison of two takes from "
-                        "this unit needs none of it, since both carry it equally. A program "
-                        "whose tone is not steady has no frequency to report and its number "
-                        "is recorded only so that the absence is visible.",
-                        "voices": {
-                            f"{bank}:{program}": {
-                                **fit.to_json(),
-                                "departure_ppm": round((fit.frequency / expected - 1.0) * 1e6, 1),
-                            }
-                            for (bank, program), fit in sorted(fits.items())
-                        },
-                    },
+                    "pitch": pitch.to_json() if pitch is not None else None,
                 },
                 indent=2,
             )
@@ -1092,7 +823,7 @@ def cmd_decay(args: argparse.Namespace) -> int:
 def cmd_alias_scan(args: argparse.Namespace) -> int:
     from .aliases import Scanner, Snapshotter, cc, control_change, control_run, summarise
 
-    regions = _regions_from_map(args.map, args.prefix)
+    regions = archive.regions(args.map, args.prefix)
     # A run that finds nothing cannot say whether the unit stores nothing or the
     # scan was broken, so one control change known to be stored is always sent.
     # Sent at both ends rather than once: a control that passes at the start says
@@ -1116,10 +847,11 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         # Read every byte the scan will write before anything is written, and
         # drop from the run any that would not answer: a byte with no original
         # is one there would be nothing to put back for.
+        restorer = parts.Restorer(link, device_id=args.device_id)
         originals = {}
         if args.kind == "address":
             wanted = _addresses(args)
-            originals = _read_bytes(link, wanted, args.device_id)
+            originals = restorer.remember(wanted)
             args.addresses = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a in originals]
             print(
                 f"\n{len(originals)} of {len(wanted)} target bytes read, so writable and restorable"
@@ -1151,12 +883,10 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 found.append(hit)
                 print(f"  {stimulus.label}: {', '.join(hit.addresses)}")
 
-        restored = (
-            _restore_bytes(link, originals, args.device_id) if originals else "nothing written"
-        )
+        restored = restorer.put_back(originals) if originals else "nothing written"
         if originals:
             print(f"  restore: {restored}")
-        latch = _clear_bank_latch(link, args.channel, args.device_id)
+        latch = restorer.clear_bank_latch(args.channel)
         print(f"  bank latch: {latch}")
 
     # The control proves the snapshots and the diff work. It does not prove that

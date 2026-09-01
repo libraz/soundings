@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from . import capture as cap
-from . import roland
+from . import perform, roland
 from .midi import MidiLink
 
 
@@ -166,8 +166,7 @@ def timeline_selftest(
         return report
 
     if channel_index is None:
-        peaks = [float(np.abs(rec.samples[:, c]).max()) for c in range(rec.samples.shape[1])]
-        channel_index = int(np.argmax(peaks))
+        channel_index = perform.loudest_channel(rec)
 
     signal = rec.channel(channel_index)
     found = cap.onsets(signal, rec.sample_rate, min_gap=interval * 0.3)

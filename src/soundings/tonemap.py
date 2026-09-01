@@ -25,7 +25,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 
-from . import roland
+from . import parts, roland
 from .midi import MidiLink
 
 Address = tuple[int, int, int]
@@ -75,8 +75,7 @@ class Asker:
         self.map_select = map_select
         self.device_id = device_id
         self.settle = settle
-        index = 0 if channel == 9 else (channel + 1 if channel < 9 else channel)
-        self.tone_block: Address = (0x40, 0x10 | index, 0x00)
+        self.tone_block: Address = parts.part_block(parts.TONE, channel)
         self.current: tuple[int, int] | None = None
         self.asks = 0
         self.unread = 0
