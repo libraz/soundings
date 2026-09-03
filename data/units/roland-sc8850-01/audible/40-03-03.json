@@ -1,0 +1,105 @@
+{
+  "device_id": "10",
+  "controller": null,
+  "address": "40 03 03",
+  "values": [
+    0,
+    127
+  ],
+  "prepared": [
+    {
+      "address": "40 41 22",
+      "bytes": "01"
+    },
+    {
+      "address": "40 03 00",
+      "bytes": "01 00"
+    }
+  ],
+  "prepared_caveat": "Everything here was measured with the unit put in the state above, and a null is about that state as much as about the address. A parameter the prepared state does not reach -- an insertion effect parameter its loaded type has no use for, say -- reads as inaudible here while another state may hear it. The state also holds every controller still except the one under test, so a parameter that does nothing but scale what a moving controller does has nothing here to scale.",
+  "stimuli": [
+    {
+      "name": "struck",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "hold_s": 1.0,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "level, timbre, and anything an effect does to a decaying note",
+      "blind_to": "what happens after note-off, since the note is still held for most of the take, and anything needing a steady tone"
+    },
+    {
+      "name": "released",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "hold_s": 0.15,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "release and the tail after note-off, which is nearly the whole take",
+      "blind_to": "anything shaping a held note, and anything too quiet to clear the floor once the note has let go"
+    }
+  ],
+  "method": "The same note was played several times under each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings are compared the same way to measure the change. The second must clear the first by the margin, so a unit that repeats badly cannot be read as a parameter that does something. Level is judged separately, because the alignment divides out the best fitting gain and a parameter that only changes level would otherwise leave no trace. A parameter is asked under one or more named stimuli, because a null is a fact about the note as much as about the parameter, and the answer over a set of them is a union.",
+  "label": "address 40 03 03 0 against 127",
+  "audible": false,
+  "heard_by": [],
+  "not_heard_by": [
+    "struck",
+    "released"
+  ],
+  "inconclusive_under": [],
+  "conclusive": true,
+  "verdict_rule": "Audible under any stimulus is audible: one note hearing the change proves the parameter reaches the signal path, and the others failing to hear it says only that they asked the wrong question. The reverse does not hold, so a null carries the list of what was tried. A stimulus whose takes of one setting barely resemble each other is reported as inconclusive rather than as a null, since no change could have cleared that yardstick.",
+  "by_stimulus": [
+    {
+      "label": "address 40 03 03 0 against 127",
+      "stimulus": "program 0, note 60, velocity 100, held 1.00 s, captured 3.0 s",
+      "stimulus_name": "struck",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -53.15,
+      "each_setting_unrepeatable_db": [
+        -61.06,
+        -63.81
+      ],
+      "across_setting_residual_db": -53.75,
+      "same_setting_level_db": 0.0,
+      "across_setting_level_db": 0.0,
+      "margin_db": 6.0,
+      "noise_floor_db": -55.27,
+      "changed_the_shape": false,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": false,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    },
+    {
+      "label": "address 40 03 03 0 against 127",
+      "stimulus": "program 0, note 60, velocity 100, held 0.15 s, captured 3.0 s",
+      "stimulus_name": "released",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -30.46,
+      "each_setting_unrepeatable_db": [
+        -41.77,
+        -33.68
+      ],
+      "across_setting_residual_db": -31.27,
+      "same_setting_level_db": 0.118,
+      "across_setting_level_db": 0.1,
+      "margin_db": 6.0,
+      "noise_floor_db": -53.76,
+      "changed_the_shape": false,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": false,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    }
+  ]
+}
