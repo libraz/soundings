@@ -226,3 +226,58 @@ def test_a_track_that_found_almost_nothing_is_refused() -> None:
         align_samples=0.0,
     )
     assert motion.fit_lfo(track) is None
+
+
+# A null and an unanswerable question look identical coming out of the tracker:
+# both are an absent LfoFit. Only the wrap flag separates them, and the verdict
+# is where that separation has to land, since the verdict is what gets read.
+
+
+def test_a_wrapped_track_with_no_line_is_not_a_finding_of_no_motion() -> None:
+    """A pitched note folds a wide modulation into its own period, and the folded
+    track has no line left in it. Reporting that as an effect standing still
+    inverts the answer -- and invites averaging the one signal that cannot be
+    averaged."""
+    tonal = source(tonal=True)
+    found = motion.measure(tonal, chorused(tonal, rate=0.9, depth_ms=12.0, centre_ms=25.0), SR)
+    assert found.track.wraps
+    assert not found.delay_answered
+    assert not found.moves
+    assert not found.answered
+    assert "no answer" in found.describe()
+    assert "nothing moves" not in found.describe()
+    assert found.to_json()["conclusive"] is False
+
+
+def test_a_wrapped_track_can_fit_a_rate_that_is_simply_wrong() -> None:
+    """Why the wrap withholds a fit and not only a null. The fold puts a line in
+    the track at a rate the modulator never ran at, deep enough to clear the
+    threshold and smooth enough to pass the shape gate."""
+    tonal = source(tonal=True)
+    found = motion.measure(tonal, chorused(tonal, rate=0.9, depth_ms=12.0, centre_ms=25.0), SR)
+    assert found.delay is not None
+    assert found.delay.rate_hz > 1.5
+    assert found.delay.depth > 30.0
+    assert "withheld" in found.describe()
+
+
+def test_a_static_effect_on_broadband_material_still_answers() -> None:
+    """The other side of it: the guard must not swallow the negative control, or
+    no effect could ever be called static again."""
+    dry = source()
+    found = motion.measure(dry, reverberated(dry), SR)
+    assert not found.track.wraps
+    assert found.delay_answered
+    assert found.answered
+    assert "nothing moves" in found.describe()
+    assert found.to_json()["conclusive"] is True
+
+
+def test_a_rate_read_off_a_wrapped_track_still_counts_as_an_answer() -> None:
+    """Wrapping says a null would be empty, not that a line found in spite of it
+    is worthless. A shallow modulation on a pitched note is still readable."""
+    tonal = source(tonal=True)
+    found = motion.measure(tonal, chorused(tonal, rate=1.0, depth_ms=1.0, centre_ms=20.0), SR)
+    if found.track.wraps and found.delay is not None:
+        assert found.delay_answered
+        assert found.answered

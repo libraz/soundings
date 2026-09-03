@@ -515,8 +515,27 @@ class Motion:
     level: LfoFit | None
 
     @property
+    def delay_answered(self) -> bool:
+        """Whether anything this delay track says is worth reading.
+
+        Not once it has wrapped. A swing wider than half the input's own period
+        correlates as well at the wrong lag as the right one, and the damage runs
+        both ways: the line can vanish, which reads as an effect standing still,
+        or one can survive at the wrong place. Measured on a chorus folded into a
+        3.8 ms period, the tracker returned 1.80 Hz for a true 0.90 and 46 ms of
+        depth for a true 12, and the shape gate passed it. A fit is no safer here
+        than a null, so both are withheld.
+        """
+        return not self.track.wraps
+
+    @property
     def moves(self) -> bool:
-        return self.delay is not None or self.level is not None
+        return (self.delay is not None and self.delay_answered) or self.level is not None
+
+    @property
+    def answered(self) -> bool:
+        """Whether "nothing moves" is something this pair of takes can support."""
+        return self.moves or self.delay_answered
 
     def describe(self) -> str:
         lines = [
@@ -528,17 +547,32 @@ class Motion:
                 f"  the input repeats every {self.track.ambiguity_ms:.2f} ms and the swing "
                 "is wider than half of that, so the delay may have folded"
             )
-        lines.append(
-            f"  delay: {self.delay.describe()}" if self.delay else "  delay: no periodic motion"
-        )
+        if self.delay is not None and self.delay_answered:
+            lines.append(f"  delay: {self.delay.describe()}")
+        elif self.delay is not None:
+            # Shown rather than dropped: the number exists, and a reader who is
+            # told it was withheld can go and get a source that would confirm it.
+            lines.append(f"  delay: withheld -- the wrapped track fits {self.delay.describe()}")
+        elif self.delay_answered:
+            lines.append("  delay: no periodic motion")
+        else:
+            lines.append("  delay: not asked -- the track wrapped, so nothing it says holds")
         lines.append(
             f"  level: {self.level.describe()}" if self.level else "  level: no periodic motion"
         )
-        if not self.moves:
+        if self.moves:
+            pass
+        elif self.answered:
             lines.append(
                 "  => nothing moves. An effect that is audible and does not move here has "
                 "no free-running modulator, which is what makes its response measurable "
                 "by averaging"
+            )
+        else:
+            lines.append(
+                "  => no answer. The delay could not be read at all, so this is not the "
+                "effect standing still; it is these takes being unable to say. A source "
+                "with no period of its own is what would answer it"
             )
         return "\n".join(lines)
 
@@ -548,12 +582,16 @@ class Motion:
             "delay_lfo": self.delay.to_json() if self.delay else None,
             "level_lfo": self.level.to_json() if self.level else None,
             "moves": self.moves,
+            "delay_answered": self.delay_answered,
+            "conclusive": self.answered,
             "method": "The wet take is aligned to the dry take as a whole, the best scalar "
             "copy of the dry take is subtracted to leave the effect's return alone, and the "
             "return's delay against the dry signal is measured in independent frames. A "
             "periodic motion is a line in that track's spectrum standing clear of the rest "
             "of the searched band. Level is searched the same way, for effects that move no "
-            "delay. A null names the rates and delays that were looked in.",
+            "delay. A null names the rates and delays that were looked in, and is withheld "
+            "for the delay when the input's own period folded the track, since a search that "
+            "could not have found a line reports the same emptiness as one that looked.",
         }
 
 
