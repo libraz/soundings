@@ -252,9 +252,23 @@ def _still_to_do(
     Start and length together, not start alone: the same address probed for a
     different number of bytes is a different measurement, and taking it as done
     would leave the tail of the longer one silently unprobed.
+
+    Only a region that read back whole counts as done. The region a run stopped
+    in is written out for its evidence, but it stopped part way through, and
+    treating the entry as coverage would leave the rest of it unprobed for good.
     """
-    seen = {(r["start"], r["length"]) for r in kept}
+    seen = {(r["start"], r["length"]) for r in kept if r["region_restored"]}
     return [(s, n) for s, n in regions if (" ".join(f"{b:02X}" for b in s), n) not in seen]
+
+
+def _superseded(kept: list[dict], regions: list[tuple[tuple[int, ...], int]]) -> list[dict]:
+    """What to carry forward, with any region about to be measured again dropped.
+
+    A region is re-probed whole, so keeping the partial entry beside the new one
+    would put the same address in the file twice with two different answers.
+    """
+    redo = {(" ".join(f"{b:02X}" for b in s), n) for s, n in regions}
+    return [r for r in kept if (r["start"], r["length"]) not in redo]
 
 
 def cmd_write_probe(args: argparse.Namespace) -> int:
@@ -267,6 +281,7 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
         kept = json.loads(Path(args.out).read_text())["regions"]
         before = len(regions)
         regions = _still_to_do(regions, kept)
+        kept = _superseded(kept, regions)
         print(f"resuming: {len(kept)} regions already measured, {before - len(regions)} skipped")
 
     canary = tuple(int(b, 16) for b in args.canary.split())
@@ -307,6 +322,11 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
                     print(f"\nSTOPPED: {args.canary} stopped answering")
                     break
         except RestoreFailed as exc:
+            # The region it happened in is kept: the bytes before the failure
+            # were measured and restored like any others, and they are the only
+            # record of what led up to it.
+            if exc.region is not None:
+                done.append(exc.region)
             stopped = str(exc)
             print(f"\nSTOPPED: {exc}")
         finally:

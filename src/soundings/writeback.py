@@ -64,7 +64,16 @@ NEVER_WRITE = {
 
 
 class RestoreFailed(RuntimeError):
-    """An address would not take its original value back, so the unit is not as it was."""
+    """An address would not take its original value back, so the unit is not as it was.
+
+    Carries the region it happened in, so the bytes measured before it survive.
+    They were measured and restored like any others, and throwing them away with
+    the failure would discard the only record of what led up to it.
+    """
+
+    def __init__(self, message: str, region: RegionProbe | None = None):
+        super().__init__(message)
+        self.region = region
 
 
 @dataclass
@@ -82,6 +91,16 @@ class ByteProbe:
 
     classification: str = ""
     restored: bool = False
+
+    restore_tries: int = 1
+    """Writes it took to put the original back. Recorded when it took more than one.
+
+    Measured over a whole address space: one write in 213328 did not arrive, and
+    the address held the last value that did -- long enough after to be read back
+    five times. That is a fact about the link under sustained traffic, not about
+    the address, so it is kept where a reader can weigh it rather than smoothed
+    away by the retry that recovers from it.
+    """
 
     @property
     def accepted(self) -> list[int]:
@@ -106,6 +125,7 @@ class ByteProbe:
             "range": self.range,
             "classification": self.classification,
             "restored": self.restored,
+            **({} if self.restore_tries == 1 else {"restore_tries": self.restore_tries}),
         }
 
 
@@ -229,9 +249,33 @@ class Writer:
             if (low, high) != (0x00, 0x7F):
                 self._ladder(address, probe, low)
 
-        self.write_byte(address, original)
-        probe.restored = self.read_byte(address) == original
+        probe.restore_tries = self.restore(address, original)
+        probe.restored = probe.restore_tries > 0
         return probe
+
+    RESTORE_TRIES = 3
+
+    def restore(self, address: tuple[int, int, int], original: int) -> int:
+        """Put a byte back, and say how many writes it took. 0 means it would not go.
+
+        Retried because a lost message is not a fact about the address, and with
+        one attempt it stops the run as though it were. Measured: over 213328
+        writes exactly one failed to arrive, and what it looked like afterwards
+        was an address holding a value it had been given several writes earlier,
+        with everything sent since gone. A second write, sent after longer, put
+        it back at once.
+
+        The later tries wait longer rather than repeating the same thing faster.
+        The one failure came in the middle of sustained traffic, which is when a
+        link coalesces or drops frames, so what the retry has to give it is time.
+        """
+        for attempt in range(1, self.RESTORE_TRIES + 1):
+            if attempt > 1:
+                time.sleep(self.settle * 10)
+            self.write_byte(address, original)
+            if self.read_byte(address) == original:
+                return attempt
+        return 0
 
     LADDER = (1, 2, 3, 4, 5, 6, 7, 8, 11, 15, 31, 63, 126)
 
@@ -333,8 +377,10 @@ class Writer:
             result.bytes.append(probe)
             if not probe.restored:
                 raise RestoreFailed(
-                    f"{probe.address} would not take back its original {original:02X}; "
-                    f"stopping so nothing is measured from a state nobody chose"
+                    f"{probe.address} would not take back its original {original:02X} "
+                    f"in {self.RESTORE_TRIES} tries; stopping so nothing is measured "
+                    f"from a state nobody chose",
+                    result,
                 )
 
         result.region_restored = all(self.read_byte(a) == v for a, v in snapshot.items())
