@@ -53,6 +53,7 @@
     "alias-scan",
     "repeat",
     "contrast",
+    "transfer",
     "motion",
     "decay"
   ],
@@ -1325,6 +1326,195 @@
           "default": "20",
           "required": false,
           "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--save"
+          ],
+          "dest": "save",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "directory to keep every take in, as float WAV with a manifest. Device time is the scarce thing here and a verdict thrown away with its audio has to be re-recorded to be asked anything else; kept takes can be measured again with the machine unplugged",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "transfer": {
+      "help": "play a swept sine into the machine's analogue input and measure what the path did to it, distortion separated from response",
+      "handler": "cmd_transfer",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--audio"
+          ],
+          "dest": "audio",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "substring of the audio input device name",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out-channels"
+          ],
+          "dest": "out_channels",
+          "nargs": "+",
+          "default": "[3, 4]",
+          "required": false,
+          "help": "interface outputs the sweep is sent on, counting from 1",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--in-channels"
+          ],
+          "dest": "in_channels",
+          "nargs": "+",
+          "default": "[3, 4]",
+          "required": false,
+          "help": "interface inputs the return is captured on, counting from 1",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--seconds"
+          ],
+          "dest": "seconds",
+          "nargs": null,
+          "default": "3.0",
+          "required": false,
+          "help": "length of the sweep",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--low"
+          ],
+          "dest": "low",
+          "nargs": null,
+          "default": "20.0",
+          "required": false,
+          "help": "lowest frequency swept",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--high"
+          ],
+          "dest": "high",
+          "nargs": null,
+          "default": "20000.0",
+          "required": false,
+          "help": "highest frequency swept",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--pad"
+          ],
+          "dest": "pad",
+          "nargs": null,
+          "default": "2.0",
+          "required": false,
+          "help": "silence recorded after the sweep, for the response to decay into. Too short and a reverb's tail wraps onto the start of its own impulse response",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--level"
+          ],
+          "dest": "level",
+          "nargs": null,
+          "default": "0.5",
+          "required": false,
+          "help": "peak amplitude sent, 0 to 1. Half scale asks the input stage about its linear response; driving it to the rails measures its clipping instead, which is worth a run of its own at a stated level rather than by accident",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--rate"
+          ],
+          "dest": "rate",
+          "nargs": null,
+          "default": "48000",
+          "required": false,
+          "help": "sample rate for both directions",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--loopback"
+          ],
+          "dest": "loopback",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "the cable goes straight from output back to input, with the machine not in the path. Says so in the result, so a reference cannot be mistaken for a measurement of the machine",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--reference"
+          ],
+          "dest": "reference",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a WAV kept from a --loopback run, divided out of this one so what is left is the machine rather than the machine and the converters in series",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

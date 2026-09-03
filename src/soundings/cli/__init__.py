@@ -5,16 +5,16 @@ from __future__ import annotations
 import argparse
 
 from .. import roland
-from . import offline, scan, sound, space, wire
+from . import inject, offline, scan, sound, space, wire
 from .session import Refused
 
-COMMANDS = (wire, space, scan, sound, offline)
+COMMANDS = (wire, space, scan, sound, inject, offline)
 """The modules that hold the subcommands, in the order --help lists them.
 
 Each registers its own parsers and carries the handlers for them, so a flag and
 the code that reads it stay in one file. Grouped by what a command needs to run:
-the cable, the address space, a scan that writes, an audio interface, and
-nothing at all.
+the cable, the address space, a scan that writes, an audio interface, an audio
+interface alone, and nothing at all.
 """
 
 
