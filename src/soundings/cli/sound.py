@@ -100,6 +100,19 @@ def register(sub) -> None:
         "any is audible; a null carries the list of what was tried, because an inaudible "
         "result is as much a fact about the note as about the parameter",
     )
+    p.add_argument(
+        "--prepare",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="state the parameter needs before it can be heard at all, written after "
+        "each reset and read back to prove it took: '40 41 22=01' routes part 1 through "
+        "the insertion effect, '40 03 00=02 01' selects one. An effect parameter asked "
+        "with nothing routed to the effect answers inaudible every time, and that is a "
+        "verdict on the routing wearing the parameter's name. Recorded with the result, "
+        "since the verdict only holds in the state it was taken in",
+    )
     p.add_argument("--takes", type=int, default=4, help="takes per setting per stimulus")
     p.add_argument("--between", type=float, default=0.8)
     p.add_argument("--settle", type=float, default=0.4, help="seconds after changing the setting")
@@ -141,6 +154,31 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
         "is judged against, so nothing measured from these takes would mean anything."
     )
     return False
+
+
+def _prepare(link, args) -> bool:
+    """Put the unit in the state the parameter needs, and prove each write took.
+
+    Unverified, a preparation that the unit ignored is indistinguishable from one
+    it obeyed: both leave a run that records an inaudible parameter. Reading each
+    address back turns that silent failure into a refusal.
+    """
+    for address, values in args.prepare:
+        link.send(roland.dt1(address, list(values), device_id=args.device_id))
+        time.sleep(args.settle)
+        reply = link.exchange(roland.rq1(address, len(values), device_id=args.device_id))
+        parsed = roland.parse_dt1(reply)
+        got = None if parsed is None else list(parsed.data)
+        if got != list(values):
+            wanted = " ".join(f"{v:02X}" for v in values)
+            found = "no reply" if got is None else " ".join(f"{v:02X}" for v in got)
+            print(
+                f"\n    {address} was set to {wanted} and reads back {found}. The state this "
+                "run needs is not there, so an inaudible verdict would be about the state "
+                "rather than about the parameter."
+            )
+            return False
+    return True
 
 
 def cmd_contrast(args: argparse.Namespace) -> int:
@@ -185,6 +223,8 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             # Reset between stimuli, so a setting left by the previous one cannot
             # follow the parameter into the next and be read as part of it.
             prober.apply(gs_reset)
+            if not _prepare(link, args):
+                return 1
             channel = stim.on(args.channel)
             for where, value in stim.writes:
                 link.send(roland.dt1(where, [value], device_id=args.device_id))
@@ -275,6 +315,9 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             "controller": args.cc,
             "address": None if args.cc is not None else args.address,
             "values": list(args.values),
+            "prepared": [
+                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
+            ],
             "stimuli": [stim.to_json() for stim in asked],
             "method": audible.METHOD,
             **overall.to_json(),

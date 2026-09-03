@@ -49,6 +49,7 @@
     "sweep",
     "write-probe",
     "tone-map",
+    "efx-map",
     "reset-probe",
     "alias-scan",
     "repeat",
@@ -524,6 +525,65 @@
           "default": "0.04",
           "required": false,
           "help": "pause after a program change before reading the part back; the tone was measured to reach the part block in a median 12.6 ms",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-map": {
+      "help": "find which insertion effects exist, by asking for each type and reading it back with the settings it loads",
+      "handler": "cmd_efx_map",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.02",
+          "required": false,
+          "help": "pause after selecting a type before reading it back",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
@@ -1225,6 +1285,19 @@
           "metavar": "NAME",
           "choices": null,
           "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prepare"
+          ],
+          "dest": "prepare",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "state the parameter needs before it can be heard at all, written after each reset and read back to prove it took: '40 41 22=01' routes part 1 through the insertion effect, '40 03 00=02 01' selects one. An effect parameter asked with nothing routed to the effect answers inaudible every time, and that is a verdict on the routing wearing the parameter's name. Recorded with the result, since the verdict only holds in the state it was taken in",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
         },
         {
           "option_strings": [

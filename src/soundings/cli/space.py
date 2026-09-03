@@ -114,6 +114,21 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_tone_map)
 
     p = sub.add_parser(
+        "efx-map",
+        help="find which insertion effects exist, by asking for each type and reading "
+        "it back with the settings it loads",
+    )
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.02,
+        help="pause after selecting a type before reading it back",
+    )
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_efx_map)
+
+    p = sub.add_parser(
         "reset-probe",
         help="find what each reset restores, by breaking the state first",
     )
@@ -277,6 +292,38 @@ def cmd_tone_map(args: argparse.Namespace) -> int:
         },
     )
     return 0 if not asker.unread else 1
+
+
+def cmd_efx_map(args: argparse.Namespace) -> int:
+    from ..efxmap import METHOD, Asker, summarise, survey
+    from ..resets import Prober, named
+
+    with verified_link(args, refusing="asking") as link:
+        gs_reset = named("GS Reset", args.device_id)
+        prober = Prober(link, baseline={}, device_id=args.device_id)
+        prober.apply(gs_reset)
+
+        asker = Asker(link, device_id=args.device_id, settle=args.settle)
+        print("\nasking for all 16384 insertion effect type numbers")
+        found = survey(asker, progress=lambda m: print(f"  {m}"))
+        # The type is left where the sweep ended otherwise, so the next thing to
+        # touch the unit would inherit an effect nobody selected.
+        prober.apply(gs_reset)
+
+    print()
+    print(summarise(found))
+    print(f"  {asker.writes} writes, {asker.reads} reads")
+
+    report.write_json(
+        args.out,
+        {
+            "device_id": f"{args.device_id:02X}",
+            "settle_s": args.settle,
+            "method": METHOD,
+            **found.to_json(),
+        },
+    )
+    return 0 if not found.unread else 1
 
 
 def cmd_reset_probe(args: argparse.Namespace) -> int:

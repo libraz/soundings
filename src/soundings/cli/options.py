@@ -33,6 +33,21 @@ def pair(text: str) -> tuple[int, ...]:
     return tuple(int(v, 0) for v in text.split(","))
 
 
+def write_spec(text: str) -> tuple[str, tuple[int, ...]]:
+    """'40 41 22=01' or '40 03 00=02 01' -- an address and the bytes to put there.
+
+    Several bytes because a parameter wider than one is not reachable a byte at
+    a time: the insertion effect's type ignores a single byte outright, and a
+    preparation that quietly did nothing turns the run it was setting up into a
+    null about the parameter instead of about the state.
+    """
+    address, _, values = text.partition("=")
+    address = address.strip()
+    if not address or not values.strip():
+        raise argparse.ArgumentTypeError(f"expected 'ADDRESS=BYTE [BYTE...]', got {text!r}")
+    return address, tuple(int(v, 16) for v in values.split())
+
+
 def bank_program(spec: str) -> tuple[int, int]:
     """'80' or '8:80' -- a bare number is the GM bank, which is bank 0."""
     bank, _, program = spec.rpartition(":")
