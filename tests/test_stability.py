@@ -160,3 +160,34 @@ def test_a_contaminated_lead_in_reads_loud_in_absolute_terms() -> None:
     signal = burst()
     signal[: int(0.3 * SR)] += 0.05 * np.sin(2 * np.pi * 300 * np.arange(int(0.3 * SR)) / SR)
     assert stability.loudest_lead_in([signal], SR, before=0.25) > -40.0
+
+
+def test_a_muted_take_does_not_get_a_level_read_off_its_noise() -> None:
+    """The fitted gain is a projection, and against silence both of its terms are
+    noise. Measured on the SC-8850: a parameter that took the note from -49.3 to
+    -108.8 dBFS was fitted at 28.07 dB, a number tracking nothing but how the
+    noise happened to correlate."""
+    rng = np.random.default_rng(7)
+    # A converter's own noise in the lead-in, because the floor this is judged
+    # against is measured there and digital silence would put it at -inf.
+    signal = burst() + 3e-6 * rng.standard_normal(burst().size)
+    muted = 3e-6 * rng.standard_normal(signal.size)
+
+    result = stability.compare(signal, muted, SR)
+    assert result.level_at_floor
+    # The plain ratio of the two RMS values, which needs no alignment.
+    expected = 20 * np.log10(np.sqrt(np.mean(muted**2)) / np.sqrt(np.mean(signal**2)))
+    assert result.gain_db == pytest.approx(expected, abs=0.1)
+    assert result.gain_db < -60
+
+
+def test_a_take_that_still_holds_signal_keeps_the_fitted_level() -> None:
+    """The control the case above needs. A quiet setting is not a muted one, and
+    swapping the fit for a bare ratio everywhere would throw away the alignment
+    that makes a level readable under a delay."""
+    signal = burst()
+    quieter = signal * 0.1
+
+    result = stability.compare(signal, quieter, SR)
+    assert not result.level_at_floor
+    assert result.gain_db == pytest.approx(-20.0, abs=0.1)

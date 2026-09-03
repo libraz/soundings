@@ -58,6 +58,22 @@ METHOD = (
     "as about the parameter, and the answer over a set of them is a union."
 )
 
+PREPARED_CAVEAT = (
+    "Everything here was measured with the unit put in the state above, and a null is about "
+    "that state as much as about the address. A parameter the prepared state does not reach "
+    "-- an insertion effect parameter its loaded type has no use for, say -- reads as "
+    "inaudible here while another state may hear it. The state also holds every controller "
+    "still except the one under test, so a parameter that does nothing but scale what a "
+    "moving controller does has nothing here to scale."
+)
+"""What a preparation costs the null it makes possible.
+
+A parameter reached only from a prepared state cannot be asked without one --
+after a GS Reset no part is routed to the insertion effect, so every one of its
+parameters would answer for the routing under its own name. The preparation buys
+the question and narrows what the answer covers, and both belong in the record.
+"""
+
 MODULATOR_ABOVE_DB = -20.0
 """How badly a setting must fail to repeat before a modulator is claimed.
 
@@ -104,6 +120,15 @@ class Verdict:
     """Level difference between the settings."""
 
     stimulus_name: str = ""
+
+    level_at_floor: bool = False
+    """Whether the quieter setting reached the noise floor, making the level a lower bound.
+
+    A parameter that mutes its part takes the take under the floor, and from
+    there the chain cannot say how much further it went. The change is still
+    audible -- more certainly so than any smaller one -- but its size is only
+    ever "at least this much".
+    """
 
     within_each_db: tuple[float, float] = (float("nan"), float("nan"))
     """What fails to repeat in each setting, as dB below that setting's own signal.
@@ -183,7 +208,13 @@ class Verdict:
         how = []
         if self.changed_the_shape:
             how.append(f"shape, {self.across_db - self.within_db:+.1f} dB over the yardstick")
-        if self.changed_the_level:
+        if self.changed_the_level and self.level_at_floor:
+            how.append(
+                f"level, at least {abs(self.across_level_db):.2f} dB -- the quieter setting "
+                "reached the noise floor, so how much further it went is below what this "
+                "chain can see"
+            )
+        elif self.changed_the_level:
             how.append(f"level, {self.across_level_db:+.2f} dB")
         if self.changed_the_repeatability:
             first, second = self.within_each_db
@@ -210,6 +241,7 @@ class Verdict:
             "across_setting_residual_db": round(self.across_db, 2),
             "same_setting_level_db": round(self.within_level_db, 3),
             "across_setting_level_db": round(self.across_level_db, 3),
+            "across_setting_level_is_a_lower_bound": self.level_at_floor,
             "margin_db": self.margin_db,
             "noise_floor_db": None if np.isnan(self.floor_db) else round(self.floor_db, 2),
             "changed_the_shape": self.changed_the_shape,
@@ -222,13 +254,20 @@ class Verdict:
         }
 
 
-def _worst(comparisons: list[Comparison]) -> tuple[float, float]:
-    """Worst residual and widest level departure across a set of comparisons."""
+def _worst(comparisons: list[Comparison]) -> tuple[float, float, bool]:
+    """Worst residual and widest level departure across a set of comparisons.
+
+    The widest level carries whether it was read off a take that held no signal,
+    because such a reading is a lower bound and saying so is the difference
+    between a measurement and a number.
+    """
     if not comparisons:
-        return float("-inf"), 0.0
+        return float("-inf"), 0.0, False
+    widest = max(comparisons, key=lambda c: abs(c.gain_db))
     return (
         max(c.residual_db for c in comparisons),
-        max((c.gain_db for c in comparisons), key=abs),
+        widest.gain_db,
+        widest.level_at_floor,
     )
 
 
@@ -279,8 +318,8 @@ def judge(
     ]
     across = [compare(first[0], t, sample_rate, silence_before=silence_before) for t in second]
 
-    within_db, within_level = _worst(within_first + within_second)
-    across_db, across_level = _worst(across)
+    within_db, within_level, _ = _worst(within_first + within_second)
+    across_db, across_level, across_at_floor = _worst(across)
     return Verdict(
         label=label,
         stimulus=stimulus,
@@ -293,6 +332,7 @@ def judge(
         across_db=across_db,
         within_level_db=within_level,
         across_level_db=across_level,
+        level_at_floor=across_at_floor,
         margin_db=margin_db,
         floor_db=across[0].floor_db if across else float("nan"),
         takes=min(len(first), len(second)),

@@ -207,3 +207,29 @@ def test_a_pure_level_change_on_an_imperfect_voice_is_not_a_modulator() -> None:
     verdict = judge(quiet, loud)
     assert verdict.changed_the_level
     assert not verdict.changed_the_repeatability
+
+
+def test_a_level_that_reached_the_floor_is_reported_as_a_lower_bound() -> None:
+    """A parameter that mutes its part is audible, and by more than the chain can
+    measure. Reporting the reading as the size of the change states a number the
+    takes cannot support."""
+    rng = np.random.default_rng(11)
+    sounding = [note(seed=s) for s in (0, 1, 2, 3)]
+    muted = [3e-6 * rng.standard_normal(sounding[0].size) for _ in range(4)]
+
+    verdict = judge(sounding, muted)
+    assert verdict.audible
+    assert verdict.changed_the_level
+    assert verdict.level_at_floor
+    assert "at least" in verdict.describe()
+    assert verdict.to_json()["across_setting_level_is_a_lower_bound"]
+
+
+def test_an_ordinary_level_change_is_not_called_a_lower_bound() -> None:
+    quiet = [note(seed=s) * 0.1 for s in (0, 1, 2, 3)]
+    loud = [note(seed=s) for s in (4, 5, 6, 7)]
+
+    verdict = judge(loud, quiet)
+    assert verdict.changed_the_level
+    assert not verdict.level_at_floor
+    assert "at least" not in verdict.describe()

@@ -68,6 +68,22 @@ class Comparison:
 
     sample_rate: int
 
+    level_at_floor: bool = False
+    """Whether the take held no signal, so its level is a lower bound rather than a fit.
+
+    The fitted gain is a projection of the take onto the reference, and with a
+    silent take both the numerator and the denominator are noise. It is a ratio
+    of two small numbers, and what it returns is how the noise happened to
+    correlate. Measured: a parameter that took a note from -49.3 to -108.8 dBFS
+    -- a 59.5 dB change, into the converter's floor -- was fitted at 28.07 dB.
+    The number was not merely imprecise; nothing about it tracked the levels.
+
+    So when the take sits at or under the floor the projection is dropped for
+    the plain ratio of the two takes' RMS, which needs no alignment because
+    there is nothing to align. That is a lower bound: the setting reached the
+    floor, and how much further it went is below what this chain can see.
+    """
+
     @property
     def headroom_db(self) -> float:
         """Residual above the floor. 0 means as repeatable as this chain can see."""
@@ -97,6 +113,7 @@ class Comparison:
             "delay_samples": round(self.delay_samples, 3),
             "correlation": round(self.correlation, 6),
             "gain_db": round(self.gain_db, 4),
+            "level_at_floor": self.level_at_floor,
             "residual_db": round(self.residual_db, 2),
             "noise_floor_db": round(self.floor_db, 2),
             "residual_above_floor_db": round(self.headroom_db, 2),
@@ -279,20 +296,31 @@ def compare(
 ) -> Comparison:
     """Align a take to a reference, level it, subtract, and report what is left."""
     reference = np.asarray(reference, dtype=np.float64)
-    reference = reference[: min(reference.size, np.asarray(take).size)]
+    take = np.asarray(take, dtype=np.float64)
+    length = min(reference.size, take.size)
+    reference, take = reference[:length], take[:length]
     apart = isolate(reference, take, guard=guard)
     a, gain, residual = apart.reference, apart.gain, apart.residual
     delay, correlation = apart.delay_samples, apart.correlation
 
+    # Two takes each carry this noise independently, so their difference
+    # holds twice its power -- 3 dB more than one take's floor.
+    floor_db = noise_floor(reference, sample_rate, before=silence_before) + 3.01
+    # Off the whole takes rather than the aligned overlap: a level ratio needs no
+    # alignment, and the case this stands in for is the one where the alignment
+    # is noise against noise and can land anywhere, including past the end.
+    ratio_db = _db(_rms(take), _rms(reference))
+    at_floor = bool(ratio_db <= floor_db)
+    fitted_db = -_db(gain, 1.0) if gain > 0 else float("-inf")
+
     return Comparison(
         delay_samples=delay,
         correlation=correlation,
-        gain_db=-_db(gain, 1.0) if gain > 0 else float("-inf"),
+        gain_db=ratio_db if at_floor else fitted_db,
         residual_db=_db(_rms(residual), _rms(a)),
-        # Two takes each carry this noise independently, so their difference
-        # holds twice its power -- 3 dB more than one take's floor.
-        floor_db=noise_floor(reference, sample_rate, before=silence_before) + 3.01,
+        floor_db=floor_db,
         sample_rate=sample_rate,
+        level_at_floor=at_floor,
     )
 
 

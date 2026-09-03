@@ -318,6 +318,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             "prepared": [
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],
+            **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
             "stimuli": [stim.to_json() for stim in asked],
             "method": audible.METHOD,
             **overall.to_json(),
