@@ -50,9 +50,33 @@ class Stimulus:
     sees: str
     blind_to: str
 
+    channel: int | None = None
+    """Zero-based MIDI channel, when the stimulus needs one of its own.
+
+    None means the channel the command was given. A drum stimulus overrides it,
+    because an unpitched sound lives on channel 10 and nowhere else -- the same
+    note on any other channel is a pitched voice, which is the thing it exists
+    not to be.
+    """
+
+    writes: tuple[tuple[str, int], ...] = ()
+    """Addresses set after the reset and before the note, for a stimulus that needs them.
+
+    A stimulus is normally a note under power-on defaults, and that is the right
+    default: the fewer things a run changes, the fewer it has to put back. But a
+    part's *kind* is set by an address rather than by a note, and putting an
+    unpitched voice on a melodic part is the only way to ask an effect a question
+    a pitched note cannot carry. What is written here is undone by the reset the
+    next stimulus begins with.
+    """
+
+    def on(self, default: int) -> int:
+        return default if self.channel is None else self.channel
+
     def describe(self) -> str:
+        where = "" if self.channel is None else f"channel {self.channel + 1}, "
         return (
-            f"program {self.program}, note {self.note}, velocity {self.velocity}, "
+            f"{where}program {self.program}, note {self.note}, velocity {self.velocity}, "
             f"held {self.hold:.2f} s, captured {self.seconds:.1f} s"
         )
 
@@ -62,6 +86,8 @@ class Stimulus:
             "program": self.program,
             "note": self.note,
             "velocity": self.velocity,
+            "channel": self.channel,
+            "writes": [[a, v] for a, v in self.writes],
             "hold_s": self.hold,
             "captured_s": self.seconds,
             "lead_s": self.lead,
@@ -135,6 +161,95 @@ CATALOGUE: dict[str, Stimulus] = {
         blind_to="what a curve does between the ends. Two velocities cannot separate "
         "a curve from any other passing through both",
     ),
+    # The two below are what an *effect* has to be asked with. Every stimulus
+    # above is a pitched note, and a pitched note repeats: middle C repeats every
+    # 3.8 ms, so a delay of 3.8 ms correlates exactly as well as no delay, and a
+    # modulated delay wider than half of that folds. Measured on this unit, the
+    # chorus at CC93 100: the track swung 59 ms across a 3.81 ms period and no
+    # rate could be read. The same harmonic structure starves a decay
+    # measurement, since only the partials falling inside a band excite it, and
+    # the reverb's octaves scattered 1.41 to 2.44 s against bounds of 5 to 11
+    # percent -- a spread that is the piano's line spectrum, not the reverb.
+    "unpitched": Stimulus(
+        name="unpitched",
+        program=0,
+        note=38,
+        velocity=100,
+        hold=0.15,
+        seconds=3.0,
+        lead=0.6,
+        channel=9,
+        sees="a decay, because a snare is broadband and dies in a fifth of a second, "
+        "so a tail measured after it is the effect's rather than the note's",
+        blind_to="anything keyed to pitch, and anything needing the sound to still be "
+        "there after a moment",
+    ),
+    "wash": Stimulus(
+        name="wash",
+        program=0,
+        note=49,
+        velocity=100,
+        hold=0.15,
+        seconds=4.0,
+        lead=0.6,
+        channel=9,
+        sees="a modulation, being broadband and lasting seconds: its autocorrelation "
+        "has one peak, so a delay measured against it is a delay rather than a delay "
+        "modulo something",
+        blind_to="anything keyed to pitch, and a decay -- a crash rings longer than "
+        "most rooms, and the slower of the two is what a tail measures",
+    ),
+    # A low note is the third way out of the folding problem, and the only one that
+    # keeps a melodic part: the ambiguity is the note's own period, so dropping two
+    # octaves doubles then doubles again what a delay can swing before it wraps.
+    # Note 24 repeats every 30.6 ms against middle C's 3.8. The voice that has to
+    # supply it is the piano, since it is the only one on this unit that repeats.
+    #
+    # The two obvious alternatives were tried and do not work. The rhythm part is
+    # unpitched but its chorus send stores without sounding, and GM 126 applause is
+    # unpitched on a melodic part but is noise-driven and does not repeat at all --
+    # measured, two takes of it differ by 0.1 dB, so the yardstick is the whole
+    # signal and nothing could ever clear it.
+    "deep": Stimulus(
+        name="deep",
+        program=0,
+        note=24,
+        velocity=110,
+        hold=2.0,
+        seconds=4.0,
+        lead=0.6,
+        sees="a modulated delay on a melodic part, by being slow enough not to fold "
+        "one: 30.6 ms between repeats, against 3.8 at middle C",
+        blind_to="anything the bottom two octaves do not excite, and any delay wider "
+        "than 15 ms, which folds here as surely as a shorter one folds higher up",
+    ),
+    # The crash a melodic part can play. `wash` is the same sound on the rhythm
+    # part, where this unit's chorus send stores without sounding; putting part 2
+    # into rhythm mode gives the same unpitched broadband source on a part whose
+    # sends do work, and the difference between the two says whether the exclusion
+    # is about part 10 or about being a rhythm part at all.
+    #
+    # It exists because nothing else on this unit has all three properties a
+    # modulated delay has to be asked with. A pitched note folds the delay into
+    # its own period; a low note has a long enough period but at 32.7 Hz a delay
+    # of tens of milliseconds is a fraction of a cycle, so the correlation peak
+    # is too broad to place -- measured, it filled whatever range it was given.
+    # Applause is unpitched on a melodic part and does not repeat at all.
+    "struck_kit": Stimulus(
+        name="struck_kit",
+        program=0,
+        note=49,
+        velocity=100,
+        hold=0.15,
+        seconds=4.0,
+        lead=0.6,
+        channel=1,
+        writes=(("40 12 15", 1),),
+        sees="a modulated delay, being broadband, aperiodic and on a melodic part all "
+        "at once, which nothing else here manages",
+        blind_to="anything keyed to pitch, and anything a rhythm part is excluded from "
+        "-- which is the thing it is partly there to find out",
+    ),
     "low": Stimulus(
         name="low",
         program=0,
@@ -168,6 +283,11 @@ DEFAULT = ("struck",)
 # earn their place for something already suspected of tracking pitch.
 BROAD = ("struck", "released", "sustained", "soft", "loud")
 
+# What an effect is asked with, as opposed to a parameter. Neither repeats, so a
+# delay measured against them is unambiguous and a band is excited across its
+# width rather than at a few partials.
+EFFECT = ("unpitched", "wash", "deep", "struck_kit")
+
 
 def resolve(names) -> list[Stimulus]:
     """Look up names, refusing an unknown one rather than silently dropping it."""
@@ -175,12 +295,17 @@ def resolve(names) -> list[Stimulus]:
     for name in names:
         if name == "broad":
             chosen.extend(CATALOGUE[n] for n in BROAD)
+        elif name == "effect":
+            chosen.extend(CATALOGUE[n] for n in EFFECT)
         elif name == "all":
             chosen.extend(CATALOGUE.values())
         elif name in CATALOGUE:
             chosen.append(CATALOGUE[name])
         else:
-            raise KeyError(f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, broad, all")
+            raise KeyError(
+                f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, "
+                "broad, effect, all"
+            )
     seen, unique = set(), []
     for s in chosen:
         if s.name not in seen:
@@ -189,4 +314,4 @@ def resolve(names) -> list[Stimulus]:
     return unique
 
 
-__all__ = ["BROAD", "CATALOGUE", "DEFAULT", "Stimulus", "resolve"]
+__all__ = ["BROAD", "CATALOGUE", "DEFAULT", "EFFECT", "Stimulus", "resolve"]

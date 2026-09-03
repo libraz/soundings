@@ -78,3 +78,39 @@ def test_an_all_inconclusive_result_is_not_reported_as_a_null() -> None:
     assert overall.deaf_to == []
     assert "INCONCLUSIVE" in overall.describe()
     assert not overall.to_json()["conclusive"]
+
+
+def test_a_drum_stimulus_carries_its_own_channel() -> None:
+    """An unpitched sound lives on channel 10 and nowhere else; the same note on
+    any other channel is a pitched voice, which is what it exists not to be."""
+    for name in ("unpitched", "wash"):
+        assert stimuli.CATALOGUE[name].on(0) == 9, name
+    assert stimuli.CATALOGUE["struck"].on(0) == 0
+    assert stimuli.CATALOGUE["struck"].on(5) == 5
+
+
+def test_a_stimulus_that_needs_a_part_set_up_says_which_address() -> None:
+    """Written after the reset and before the note, and undone by the next reset."""
+    kit = stimuli.CATALOGUE["struck_kit"]
+    assert kit.writes == (("40 12 15", 1),)
+    assert kit.on(0) == 1, "the part written to and the part played must be the same one"
+    assert all(s.writes == () for s in stimuli.CATALOGUE.values() if s.name != "struck_kit")
+
+
+def test_the_effect_set_holds_only_stimuli_a_delay_can_be_measured_against() -> None:
+    """Every one of them is either unpitched or slow enough not to fold a delay
+    into its own period. A pitched note at middle C repeats every 3.8 ms."""
+    for name in stimuli.EFFECT:
+        stimulus = stimuli.CATALOGUE[name]
+        unpitched = stimulus.channel == 9 or stimulus.writes
+        assert unpitched or stimulus.note <= 24, name
+
+
+def test_effect_expands_like_broad_does() -> None:
+    assert [s.name for s in stimuli.resolve(["effect"])] == list(stimuli.EFFECT)
+    assert stimuli.resolve(["effect", "struck"])[-1].name == "struck"
+
+
+def test_a_stimulus_describes_the_channel_only_when_it_overrides_one() -> None:
+    assert "channel 10" in stimuli.CATALOGUE["wash"].describe()
+    assert "channel" not in stimuli.CATALOGUE["struck"].describe()

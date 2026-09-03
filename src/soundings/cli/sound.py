@@ -148,9 +148,20 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     from .. import audible, stability, stimuli
     from ..resets import Prober, named
 
-    def setting(value: int) -> list[list[int]]:
+    def setting(value: int, channel: int) -> list[list[int]]:
+        """The messages that put the parameter at `value`, on the stimulus's channel.
+
+        The channel is the stimulus's, not the command's: a drum stimulus sounds
+        on channel 10, and a controller sent to the command's channel would
+        change a part that is not the one being listened to. That fails as a
+        null -- the parameter reads inaudible -- rather than as an error.
+
+        An address carries its own part number and cannot follow the stimulus
+        that way, so an address run has to be given a stimulus on the part the
+        address addresses.
+        """
         if args.cc is not None:
-            return [[0xB0 | args.channel, args.cc & 0x7F, value & 0x7F]]
+            return [[0xB0 | channel, args.cc & 0x7F, value & 0x7F]]
         return [roland.dt1(args.address, [value], device_id=args.device_id)]
 
     try:
@@ -174,10 +185,13 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             # Reset between stimuli, so a setting left by the previous one cannot
             # follow the parameter into the next and be read as part of it.
             prober.apply(gs_reset)
+            channel = stim.on(args.channel)
+            for where, value in stim.writes:
+                link.send(roland.dt1(where, [value], device_id=args.device_id))
             for message in (
-                [0xC0 | args.channel, stim.program & 0x7F],
-                [0xB0 | args.channel, 7, 127],
-                [0xB0 | args.channel, 11, 127],
+                [0xC0 | channel, stim.program & 0x7F],
+                [0xB0 | channel, 7, 127],
+                [0xB0 | channel, 11, 127],
             ):
                 link.send(message)
             time.sleep(0.3)
@@ -185,7 +199,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
 
             captured: list[list] = []
             for value in args.values:
-                for message in setting(value):
+                for message in setting(value, channel):
                     link.send(message)
                 time.sleep(args.settle)
                 takes = []
@@ -193,7 +207,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     recording = perform.record_note(
                         link,
                         device=args.audio,
-                        channel=args.channel,
+                        channel=channel,
                         note=stim.note,
                         velocity=stim.velocity,
                         hold=stim.hold,
