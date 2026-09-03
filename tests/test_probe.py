@@ -166,3 +166,58 @@ def test_a_sweep_starts_and_ends_without_a_step() -> None:
 def test_the_sweep_stays_inside_nyquist_whatever_is_asked_for() -> None:
     sweep = probe.make_sweep(SR, seconds=1.0, low_hz=20.0, high_hz=40000.0)
     assert sweep.high_hz < SR / 2
+
+
+# `octave_levels` is the only thing the transfer command prints as a shape, and
+# it had no control of its own: every test above reads a raw spectrum instead,
+# so a tilt living in the band summary alone survived all of them.
+
+
+def test_octave_levels_are_flat_for_a_path_that_does_nothing() -> None:
+    """An octave band is as wide as its centre, so summing energy per band and
+    not per hertz reports a delta as rising 3 dB an octave -- 21 dB of invented
+    brightness over the eight bands, in the direction that reads as a bright
+    machine."""
+    sweep = sent()
+    found = probe.deconvolve(through(sweep, np.array([1.0])), sweep)
+    levels = probe.octave_levels(found.around(), SR)
+    assert max(abs(v) for v in levels.values()) < 1.0
+
+
+def test_a_delta_and_a_flat_measured_path_agree_band_for_band() -> None:
+    """The arithmetic control and the signal control have to give one answer."""
+    sweep = sent()
+    found = probe.deconvolve(through(sweep, np.array([1.0])), sweep)
+    delta = np.zeros(1 << 15)
+    delta[delta.size // 2] = 1.0
+    measured = probe.octave_levels(found.around(), SR)
+    ideal = probe.octave_levels(delta, SR)
+    for centre in measured:
+        assert measured[centre] == pytest.approx(ideal[centre], abs=1.0)
+
+
+def test_octave_levels_follow_a_filter_that_is_really_there() -> None:
+    """Flat has to be flat *and* a real slope has to survive, or the fix for one
+    is a way of reporting nothing."""
+    from scipy import signal as dsp
+
+    sweep = sent()
+    sos = dsp.butter(4, 1000.0 / (SR / 2), btype="low", output="sos")
+    impulse = dsp.sosfilt(sos, np.concatenate([[1.0], np.zeros(4095)]))
+    levels = probe.octave_levels(probe.deconvolve(through(sweep, impulse), sweep).around(), SR)
+    assert levels[500] > -3.0
+    assert levels[4000] < -20.0
+    assert levels[8000] < levels[4000]
+
+
+def test_reading_the_shape_from_the_peak_invents_a_slope() -> None:
+    """Why the transfer command windows with `around`. A band-limited impulse is
+    symmetric about its peak, so half its low-frequency energy sits before the
+    arrival; cutting there loses the bottom of the band and the loss grows
+    downwards, which reads as the path having no bass."""
+    sweep = sent()
+    found = probe.deconvolve(through(sweep, np.array([1.0])), sweep)
+    windowed = probe.octave_levels(found.around(), SR)
+    from_peak = probe.octave_levels(found.linear, SR)
+    assert max(abs(v) for v in windowed.values()) < 1.0
+    assert from_peak[63] - from_peak[8000] > 15.0

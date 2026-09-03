@@ -139,21 +139,22 @@ def cmd_transfer(args: argparse.Namespace) -> int:
         entry = {"channel": channel, **found.to_json()}
 
         if found.usable:
-            impulse = found.linear
+            # `around`, not `linear`: a band-limited impulse is symmetric about
+            # its peak and the half before it is the band limit rather than the
+            # path, so cutting there costs the bottom of the band a spectrum it
+            # never gets back. `divide_out` already windows that way.
+            impulse = found.around()
             if reference is not None and reference.usable:
                 impulse = probe.divide_out(found, reference, length=min(1.0, args.pad))
                 print("    with the measurement chain divided out:")
             shape = probe.octave_levels(impulse, args.rate)
             print(
                 "    "
-                + "  ".join(
-                    f"{c:.0f}Hz {v:+.1f}" for c, v in shape.items() if np.isfinite(v)
-                )
+                + "  ".join(f"{c:.0f}Hz {v:+.1f}" for c, v in shape.items() if np.isfinite(v))
                 + "  dB relative to the 1 kHz band"
             )
             entry["octave_levels_db"] = {
-                str(int(c)): None if not np.isfinite(v) else round(v, 2)
-                for c, v in shape.items()
+                str(int(c)): None if not np.isfinite(v) else round(v, 2) for c, v in shape.items()
             }
             entry["chain_divided_out"] = reference is not None and reference.usable
         results.append(entry)

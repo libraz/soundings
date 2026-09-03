@@ -254,16 +254,14 @@ def deconvolve(recorded: np.ndarray, sweep: Sweep, *, orders: int = 5) -> Respon
     """Collapse a recording of the sweep back to the path's impulse response."""
     recorded = np.asarray(recorded, dtype=np.float64)
     size = 1 << int(np.ceil(np.log2(recorded.size + sweep.inverse.size)))
-    impulse = np.fft.irfft(
-        np.fft.rfft(recorded, size) * np.fft.rfft(sweep.inverse, size), size
-    )[: recorded.size + sweep.inverse.size - 1]
+    impulse = np.fft.irfft(np.fft.rfft(recorded, size) * np.fft.rfft(sweep.inverse, size), size)[
+        : recorded.size + sweep.inverse.size - 1
+    ]
 
     # Normalise so a path that does nothing gives a peak of one. The inverse
     # filter's own scaling depends on the sweep's length and range, so it is
     # measured here rather than derived.
-    unity = np.fft.irfft(
-        np.fft.rfft(sweep.signal, size) * np.fft.rfft(sweep.inverse, size), size
-    )
+    unity = np.fft.irfft(np.fft.rfft(sweep.signal, size) * np.fft.rfft(sweep.inverse, size), size)
     scale = float(np.abs(unity).max())
     origin = int(np.argmax(np.abs(unity)))
     if scale > 0:
@@ -362,18 +360,33 @@ def octave_levels(
     Relative rather than absolute, because the absolute level of a deconvolved
     impulse depends on the send level and the input trim, neither of which is a
     property of the path. What the path did to the *shape* survives that.
+
+    **Per hertz, not per band.** An octave band is as wide as its centre, so a
+    path that does nothing at all puts twice the energy in each band as in the
+    one below and reads as 3 dB per octave of rise -- 21 dB of invented
+    brightness across the eight bands. Dividing by the band's own width removes
+    it, and a flat path then reads flat, which is what makes a departure from
+    flat mean something. Measured against a delta and against an interface's
+    digital loopback: both come back within 0.01 dB of level after this.
     """
     from .decay import OCTAVE_CENTRES, band_limit
 
+    nyquist = sample_rate / 2.0
+    root_two = np.sqrt(2.0)
     levels = {}
     for centre in OCTAVE_CENTRES:
         band = band_limit(np.asarray(impulse, dtype=np.float64), sample_rate, centre)
-        levels[centre] = float(np.sqrt(np.mean(np.square(band))))
+        # The width the filter actually passed, so the top band is still right
+        # when the sample rate has clipped it.
+        low, high = centre / root_two, min(centre * root_two, nyquist * 0.99)
+        width = max(high - low, 0.0)
+        power = float(np.mean(np.square(band)))
+        levels[centre] = power / width if width > 0 else 0.0
     anchor = min(levels, key=lambda c: abs(np.log(c / reference_hz)))
     base = levels[anchor]
     if base <= 0:
         return dict.fromkeys(levels, float("-inf"))
-    return {c: 20.0 * np.log10(v / base) if v > 0 else float("-inf") for c, v in levels.items()}
+    return {c: 10.0 * np.log10(v / base) if v > 0 else float("-inf") for c, v in levels.items()}
 
 
 def play_and_record(
