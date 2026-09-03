@@ -731,15 +731,15 @@
     },
     {
       "id": "the-reverb-is-audible-and-stands-still-while-the-chorus-moves",
-      "summary": "CC91 at 0 against 100 changes the sound by 48 dB more than two takes of one setting differ, and takes with the reverb on still repeat as well as dry ones. So the reverb reaches the signal path and holds no moving part. CC93 at 0 against 100 does the opposite: it leaves no measurable residual at all, and instead destroys repeatability, from 1.6 dB above the noise floor dry to 58.8 dB with it on. The chorus carries a modulator that is at a different phase each time the note is struck.",
-      "method": "The same contrast for both, four takes per setting. Each setting's own repeatability is kept separately and measured as distance above its own noise floor, so that a setting which is merely quieter is not mistaken for one that moves.",
+      "summary": "CC91 at 0 against 100 changes the sound by 26 to 50 dB more than two takes of one setting differ, under all five stimuli, and takes with the reverb on repeat as well as dry ones. So the reverb reaches the signal path and holds no moving part. CC93 at 0 against 100 does the opposite: it leaves no residual that clears the yardstick, and instead destroys repeatability. What fails to repeat rises from between -41.6 and -63.3 dB dry to between -1.9 and -3.9 dB with the chorus on, under every one of the five. The chorus carries a modulator at a different phase each time the note is struck.",
+      "method": "The same contrast for both, four takes per setting, under five stimuli. Each setting's own repeatability is kept separately and reported as what fails to repeat with the noise taken back out, rather than as distance to the noise floor: whatever fails to repeat scales with the signal while the converter noise does not, so distance to the floor grows with level and a change that is nothing but level opens a gap with no modulator behind it. Four takes a setting, because the statistic is the median pair and three takes give two pairs, whose median is their mean.",
       "results": {
-        "CC91 0 against 100": "shape changed, 48.1 dB clear of the yardstick",
-        "CC91 repeatability with reverb on": "-59 dB, indistinguishable from dry",
-        "CC93 0 against 100": "no residual clears the yardstick; -2.6 dB against -2.2 dB",
-        "CC93 repeatability dry": "1.6 dB above its own noise floor",
-        "CC93 repeatability with chorus on": "58.8 dB above its own noise floor",
-        "chorus takes, worst correlation": 0.6665
+        "CC91, five stimuli": "shape changed, 25.7 to 49.8 dB clear of the yardstick",
+        "CC91 modulator flagged": "none of five",
+        "CC93 residual": "never clears the yardstick; the settings differ by less than the takes do",
+        "CC93 what fails to repeat, dry": "-41.6 to -63.3 dB",
+        "CC93 what fails to repeat, chorus on": "-1.9 to -3.9 dB",
+        "CC93 modulator flagged": "five of five"
       },
       "note": "The chorus is why a difference method needs a second kind of evidence. Once a free running modulator is on, the yardstick swallows any change, and the parameter that caused it would read as inaudible however large its effect. The collapse in repeatability is the measurement in that case, and it is only readable because each setting's repeatability is kept apart from the other's.",
       "found_by": "Checking whether reverb on takes still repeated, then noticing that the same test called CC93 inaudible while the unit had visibly stopped repeating.",
@@ -748,7 +748,7 @@
         "Whether the reverb tank is truly static or merely modulated far below what one struck note reveals.",
         "Whether either holds at other send values. Only 0 against 100 was compared."
       ],
-      "reproduced": true
+      "reproduced": "Re-measured 2026-09-03 under the current statistic, with every take kept. The conclusion is the one first recorded; the numbers are on a different scale because the statistic changed."
     },
     {
       "id": "no-voice-in-the-bank-holds-a-steady-enough-tone-to-read-a-clock-from",
@@ -770,6 +770,58 @@
         "Whether the wobble is vibrato, layered detuning, or an unstable oscillator. Only that the tone is not steady."
       ],
       "reproduced": true
+    },
+    {
+      "id": "a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it",
+      "summary": "A part switched to rhythm mode accepts a chorus send, stores it verbatim and reads it back, and sounds no different for it. The reverb send on the same part in the same run is plainly audible. This is a property of rhythm mode rather than of part 10: part 2 hears the chorus while it is melodic and stops hearing it once USE FOR RHYTHM PART is set, with nothing else changed.",
+      "method": "CC93 0 against 100 and CC91 0 against 100, four takes a setting, on a broadband unpitched note. Run on part 10 with the standard kit at notes 38 and 49, and on part 2 with USE FOR RHYTHM PART written to 1 at note 49. The reverb is the positive control in every cell: it shares the channel, the kit, the note and the protocol, so a cell where the reverb is audible and the chorus is not cannot be explained by the message failing to arrive. Storage was read back with RQ1 after the controller was sent.",
+      "results": {
+        "part 1, melodic, CC93": "audible; what fails to repeat rises from -62.2 to -2.2 dB",
+        "part 2, melodic, CC93": "audible; -63.1 to -0.6 dB",
+        "part 2, rhythm, CC93": "inaudible; settings differ by -46.2 dB against takes at -43.6",
+        "part 2, rhythm, CC91": "audible, 23.2 dB clear of the yardstick",
+        "part 10, rhythm, CC93": "inaudible; -40.6 and -38.5 dB under two notes",
+        "part 10, rhythm, CC91": "audible, 26.2 and 24.1 dB clear",
+        "stored at 40 10 21 after CC93 100 on channel 10": 100,
+        "stored at 40 12 21 after CC93 100 on channel 2": 100,
+        "stored at 40 12 15 after the rhythm mode write": 1
+      },
+      "note": "The chorus send on a rhythm part is state and not audio. Both readings are needed to say that: the address answers, holds what it was given and survives a read, so a scan that only writes and reads back would file it as working. Only a recording says it does nothing. The same address on a melodic part is audible, so the level belongs to the part's mode rather than to the address.",
+      "found_by": "Looking for an unpitched note to measure the chorus's modulation with, since a pitched one folds a delay into its own period, and finding that the chorus was not there.",
+      "not_established": [
+        "Why. Whether the send is ignored, the part is off the chorus bus, or the return is muted for rhythm parts is not separated by anything measured here.",
+        "Whether it holds for kits other than the standard one, or for map 2.",
+        "Whether the same is true of the other sends. Only the chorus and the reverb were asked.",
+        "Whether an insertion effect reaches a rhythm part. Not asked."
+      ],
+      "reproduced": "Four cells, two parts, three notes, with the reverb as a control in each."
+    },
+    {
+      "id": "the-reverb-is-a-damped-network-and-a-pitched-note-cannot-read-it",
+      "summary": "Excited with a broadband unpitched note, the reverb's decay falls smoothly from 2.10 s at 63 Hz to 1.03 s at 8 kHz, the top decaying 2.04 times faster than the bottom. Every band is straight, departing from its fitted line by 0.17 to 0.89 dB. Excited with a piano note instead, the same reverb reads 1.69, 2.09, 1.41, 2.44, 1.62, 1.90, 1.52 and 0.87 s -- a scatter several times wider than each band's own bound, in no order.",
+      "method": "The dry take was aligned to the wet one, scaled by its best fitting level and subtracted, leaving the reverb's return over the whole take rather than only after the note stopped. Each octave band's energy was then integrated from the end of the usable tail backwards, after the noise floor's own contribution was removed and the tail truncated where it reaches that floor. A straight line was fitted to the integrated curve between -5 and -25 dB and extrapolated to 60 dB. The departure from that line is reported with every time, since a tail that is two decays in sequence yields a slope as readily as one decay does. A snare was used because the isolated return is the note convolved with the effect and falls at the slower of the two.",
+      "results": {
+        "63 Hz": "2.098 s, bound 18%",
+        "125 Hz": "2.220 s, bound 12%",
+        "250 Hz": "2.048 s, bound 9%",
+        "500 Hz": "2.061 s, bound 6%",
+        "1 kHz": "1.878 s, bound 5%",
+        "2 kHz": "1.733 s, bound 3%",
+        "4 kHz": "1.331 s, bound 3%",
+        "8 kHz": "1.027 s, bound 2%",
+        "bottom over top": 2.04,
+        "curvature": "0.17 to 0.89 dB",
+        "same reverb on a piano note": "1.41 to 2.44 s across the bands, unordered"
+      },
+      "note": "The bound on each band comes from its bandwidth times the fitted duration, which counts how many independent samples the estimate had. It assumes the band was excited across its width. A harmonic note does not do that -- only the partials that fall inside a band excite it -- so under a piano the true count is far lower than the bound assumes and the scatter is the note's line spectrum rather than the reverb. The stated bound is honest only for a broadband source, which is why the number to read is the snare's.",
+      "found_by": "Measuring the reverb through a piano note first, and finding a spread that no bound allowed for.",
+      "not_established": [
+        "The reverb's type or topology. A decay per band says a delay network is damped in the loop; it does not say how many delays, of what lengths, or in what arrangement.",
+        "Anything about settings other than CC91 at 100 with every reverb parameter at its power-on default.",
+        "The predelay, the early reflections, or the density. None was asked for.",
+        "Whether the decay is the same for a part other than the rhythm part."
+      ],
+      "reproduced": "One capture per stimulus. The two stimuli disagree, and the note explains why."
     }
   ]
 }
