@@ -220,8 +220,12 @@ CATALOGUE: dict[str, Stimulus] = {
         lead=0.6,
         sees="a modulated delay on a melodic part, by being slow enough not to fold "
         "one: 30.6 ms between repeats, against 3.8 at middle C",
-        blind_to="anything the bottom two octaves do not excite, and any delay wider "
-        "than 15 ms, which folds here as surely as a shorter one folds higher up",
+        blind_to="anything the bottom two octaves do not excite, and -- measured -- a "
+        "delay of any length. Dropping to 32.7 Hz stops a delay folding, and stops it "
+        "being locatable in the same move: tens of milliseconds is a fraction of one "
+        "cycle down here, so the correlation peak is broad enough to fill whatever "
+        "range it is given. It is here for what a long slow note can carry, not for a "
+        "delay",
     ),
     # The crash a melodic part can play. `wash` is the same sound on the rhythm
     # part, where this unit's chorus send stores without sounding; putting part 2
