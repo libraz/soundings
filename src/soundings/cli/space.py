@@ -69,9 +69,37 @@ def register(sub) -> None:
     )
     p.add_argument(
         "regions",
-        nargs="+",
+        nargs="*",
         metavar="ADDR:COUNT",
         help="'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
+    )
+    p.add_argument(
+        "--map",
+        help="probe every region an address map found, instead of naming them. The map is "
+        "what the unit answered when it was asked, so this covers what exists rather than "
+        "what a manual lists",
+    )
+    p.add_argument(
+        "--prefix",
+        nargs="*",
+        default=[],
+        help="for --map: keep only regions whose address starts with one of these, in the "
+        "order given. A run long enough to be interrupted should meet the blocks that "
+        "differ from each other before the ones that repeat",
+    )
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help="skip regions already in --out and add to it. A region is written as soon as "
+        "it is finished, so an interrupted run resumes from the last whole region rather "
+        "than from the start",
+    )
+    p.add_argument(
+        "--canary",
+        default="40 01 30",
+        help="an address known to answer, asked between regions. A unit that stops talking "
+        "reads as a map of unreadable bytes, which is skipped rather than written to, so "
+        "without this the probe finishes cleanly having measured nothing",
     )
     p.add_argument(
         "--settle",
@@ -197,13 +225,68 @@ def cmd_sweep(args: argparse.Namespace) -> int:
     return 0 if result.complete and not result.lagged else 1
 
 
-def cmd_write_probe(args: argparse.Namespace) -> int:
-    from ..writeback import NOTE, RestoreFailed, Writer, summarise
+def _probe_regions(args: argparse.Namespace) -> list[tuple[tuple[int, ...], int]]:
+    """The regions to probe, named on the command line or taken from a map.
 
-    regions = [
+    A prefix list orders as well as filters, because which regions get measured
+    first is the whole of what an interrupted run leaves behind.
+    """
+    named = [
         (tuple(int(b, 16) for b in spec.split(":")[0].split()), int(spec.split(":")[1], 0))
         for spec in args.regions
     ]
+    if not args.map:
+        if not named:
+            raise SystemExit("name at least one ADDR:COUNT, or pass --map")
+        return named
+    if args.prefix:
+        return named + [r for p in args.prefix for r in archive.regions(args.map, p)]
+    return named + archive.regions(args.map)
+
+
+def _still_to_do(
+    regions: list[tuple[tuple[int, ...], int]], kept: list[dict]
+) -> list[tuple[tuple[int, ...], int]]:
+    """The regions a resumed run has left, matched the way the file writes them.
+
+    Start and length together, not start alone: the same address probed for a
+    different number of bytes is a different measurement, and taking it as done
+    would leave the tail of the longer one silently unprobed.
+    """
+    seen = {(r["start"], r["length"]) for r in kept}
+    return [(s, n) for s, n in regions if (" ".join(f"{b:02X}" for b in s), n) not in seen]
+
+
+def cmd_write_probe(args: argparse.Namespace) -> int:
+    from ..writeback import NOTE, SINGLE_BYTE_LIMIT, WENT_DEAF, RestoreFailed, Writer, summarise
+
+    regions = _probe_regions(args)
+    done: list = []
+    kept: list[dict] = []
+    if args.resume and args.out and Path(args.out).exists():
+        kept = json.loads(Path(args.out).read_text())["regions"]
+        before = len(regions)
+        regions = _still_to_do(regions, kept)
+        print(f"resuming: {len(kept)} regions already measured, {before - len(regions)} skipped")
+
+    canary = tuple(int(b, 16) for b in args.canary.split())
+    stopped: str | None = None
+    print(f"{len(regions)} regions, {sum(n for _, n in regions)} bytes to probe")
+
+    def write_out() -> None:
+        report.write_json(
+            args.out,
+            {
+                "device_id": f"{args.device_id:02X}",
+                "settle_s": args.settle,
+                "note": NOTE,
+                "single_byte_limit": SINGLE_BYTE_LIMIT,
+                "complete": stopped is None and not regions,
+                "stopped": stopped,
+                "regions": kept + [r.to_json() for r in done],
+            },
+        )
+
     with verified_link(
         args,
         refusing="writing",
@@ -211,28 +294,29 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
         announce="Verifying the path before writing (a write is never acknowledged)",
     ) as link:
         writer = Writer(link, device_id=args.device_id, settle=args.settle)
-        done = []
+        remaining = list(regions)
         try:
             for start, length in regions:
                 done.append(writer.probe_region(start, length, progress=lambda m: print(f"  {m}")))
+                remaining.pop(0)
+                # Written per region rather than at the end: a run this long is
+                # interrupted by things that do not come back to close a file.
+                write_out()
+                if not writer.answering(canary):
+                    stopped = WENT_DEAF
+                    print(f"\nSTOPPED: {args.canary} stopped answering")
+                    break
         except RestoreFailed as exc:
+            stopped = str(exc)
             print(f"\nSTOPPED: {exc}")
-            return 1
+        finally:
+            regions = remaining
 
     print()
     print(summarise(done))
     print(f"  {writer.writes} writes, {writer.reads} reads")
-
-    report.write_json(
-        args.out,
-        {
-            "device_id": f"{args.device_id:02X}",
-            "settle_s": args.settle,
-            "note": NOTE,
-            "regions": [r.to_json() for r in done],
-        },
-    )
-    return 0 if all(r.region_restored for r in done) else 1
+    write_out()
+    return 0 if stopped is None and all(r.region_restored for r in done) else 1
 
 
 def cmd_tone_map(args: argparse.Namespace) -> int:

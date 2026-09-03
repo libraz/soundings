@@ -384,11 +384,63 @@
         {
           "option_strings": [],
           "dest": "regions",
-          "nargs": "+",
+          "nargs": "*",
           "default": "None",
           "required": true,
           "help": "'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
           "metavar": "ADDR:COUNT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "probe every region an address map found, instead of naming them. The map is what the unit answered when it was asked, so this covers what exists rather than what a manual lists",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prefix"
+          ],
+          "dest": "prefix",
+          "nargs": "*",
+          "default": "[]",
+          "required": false,
+          "help": "for --map: keep only regions whose address starts with one of these, in the order given. A run long enough to be interrupted should meet the blocks that differ from each other before the ones that repeat",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--resume"
+          ],
+          "dest": "resume",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "skip regions already in --out and add to it. A region is written as soon as it is finished, so an interrupted run resumes from the last whole region rather than from the start",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--canary"
+          ],
+          "dest": "canary",
+          "nargs": null,
+          "default": "'40 01 30'",
+          "required": false,
+          "help": "an address known to answer, asked between regions. A unit that stops talking reads as a map of unreadable bytes, which is skipped rather than written to, so without this the probe finishes cleanly having measured nothing",
+          "metavar": null,
           "choices": null,
           "class": "_StoreAction"
         },

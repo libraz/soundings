@@ -41,9 +41,21 @@ from .midi import MidiLink
 
 # Writing here is not a parameter change. SYSTEM MODE SET reinitialises the unit,
 # which would discard the very state this module is in the middle of restoring.
-NOTE = (
-    "Classifications describe what an address stores, not what it does. "
-    "Nothing here was heard."
+NOTE = "Classifications describe what an address stores, not what it does. Nothing here was heard."
+
+SINGLE_BYTE_LIMIT = (
+    "Each byte was written on its own, and a byte the unit would not answer a one byte "
+    "request for was never written to, since there would have been nothing to put back. "
+    "Those are listed as skipped. So this describes the addresses that answer singly, and "
+    "a parameter reachable only as a whole falls outside it. Which of the skipped bytes are "
+    "that, rather than simply undefined, is not settled here."
+)
+
+WENT_DEAF = (
+    "An address that had been answering stopped, so the unit was no longer talking and "
+    "nothing read after that point would have been about an address. The run stopped there "
+    "and kept what it had already measured; the regions it never reached are absent rather "
+    "than empty."
 )
 
 NEVER_WRITE = {
@@ -150,6 +162,18 @@ class Writer:
         if reply is None or reply.address != address or reply.size != 1:
             return None
         return reply.data[0]
+
+    def answering(self, address: tuple[int, int, int]) -> bool:
+        """Whether an address that was answering still is.
+
+        A long run needs this because a unit that stops talking does not look
+        like anything going wrong: every byte then reads as unreadable, which is
+        skipped rather than written to, so the probe walks the rest of the map
+        producing empty regions and a clean exit. Asked between regions against
+        an address already known to answer, it separates a map of silent
+        addresses from a silent machine.
+        """
+        return self.read_byte(address) is not None
 
     def write_byte(self, address: tuple[int, int, int], value: int) -> None:
         if tuple(address) in NEVER_WRITE:
