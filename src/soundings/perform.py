@@ -48,6 +48,11 @@ def record_note(
     return recording
 
 
+def peak(recording: Recording) -> float:
+    """The largest sample in any channel, for choosing between whole takes."""
+    return float(np.abs(recording.samples).max())
+
+
 def loudest_channel(recording: Recording) -> int:
     """Which input channel the unit actually arrived on.
 

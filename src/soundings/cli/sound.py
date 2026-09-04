@@ -226,8 +226,11 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             if not _prepare(link, args):
                 return 1
             channel = stim.on(args.channel)
-            for where, value in stim.writes:
-                link.send(roland.dt1(where, [value], device_id=args.device_id))
+            # Not `where`: that names the parameter under test, and rebinding it
+            # here made every later line report the stimulus's own preparation
+            # address as the thing being set.
+            for prepared, value in stim.writes:
+                link.send(roland.dt1(prepared, [value], device_id=args.device_id))
             for message in (
                 [0xC0 | channel, stim.program & 0x7F],
                 [0xB0 | channel, 7, 127],
@@ -264,17 +267,25 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 print(f"    {where} = {value}: {len(takes)} takes")
                 captured.append(takes)
 
-            index = perform.loudest_channel(captured[0][0])
+            # Which input the unit arrived on, and whether it arrived at all, are
+            # both asked of the setting that sounded loudest rather than of the
+            # first one. A parameter that silences the note at one of its two
+            # values is the strongest audible result there is, and asking the
+            # first setting alone read that as a dead input and threw the takes
+            # away -- while choosing the channel from a silent take picks
+            # whichever input carried the most noise.
             rate = captured[0][0].sample_rate
-            groups = [[t.channel(index) for t in takes] for takes in captured]
             before = stim.lead * 0.8
-            rise = stability.signal_over_silence(groups[0][0], rate, before=before)
-            print(f"    channel {index}: note {rise:.1f} dB over the lead-in")
-            if not rise > args.min_rise:
+            index = perform.loudest_channel(max((t[0] for t in captured), key=perform.peak))
+            groups = [[t.channel(index) for t in takes] for takes in captured]
+            rises = [stability.signal_over_silence(g[0], rate, before=before) for g in groups]
+            shown = ", ".join(f"{v} at {r:.1f} dB" for v, r in zip(args.values, rises, strict=True))
+            print(f"    channel {index}: note over the lead-in, {shown}")
+            if not max(rises) > args.min_rise:
                 print(
                     f"\n    The note never rose {args.min_rise} dB above the silence before "
-                    "it, so these takes hold no sound from the unit. Name the right input "
-                    "with --audio."
+                    "it at either setting, so these takes hold no sound from the unit. Name "
+                    "the right input with --audio."
                 )
                 return 1
             if not _lead_in_ok(groups, rate, before, args.max_lead_in):
