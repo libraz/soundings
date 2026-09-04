@@ -137,9 +137,7 @@ def test_a_directory_without_a_manifest_is_passed_over(tmp_path):
     assert [f.type_id for f in efxmotion.survey(tmp_path)] == ["01 00"]
 
 
-def test_a_wrapped_track_is_not_sorted_as_static_even_if_its_control_passes(
-    tmp_path, monkeypatch
-):
+def test_a_wrapped_track_is_not_sorted_as_static_even_if_its_control_passes(tmp_path, monkeypatch):
     """A swing wider than half the input's own period folds, and a folded line can
     vanish -- which is the shape standing still has, so such a pair cannot carry a
     null whatever its control did.

@@ -143,6 +143,7 @@ def left_unmarked(*, confined_to: list[str], skipped: list[str], addresses: int)
         "why": WHY_BOUNDED if confined_to else WHY_SKIPPED,
     }
 
+
 CHANNEL_MODE_NOTE = (
     "A channel mode message rather than a reset, and addressed to one channel rather than to "
     "the unit. It is measured the same way because the question is the same one -- what does "
