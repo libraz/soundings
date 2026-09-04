@@ -397,6 +397,15 @@ EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 # plain note cannot ask at all.
 SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
 
+# The three that move, without the plain note. A gesture is a rescue for a null:
+# it asks a much narrower question, in a state the verdict then only holds in, so
+# it is worth its device time on an address the plain note could not hear and
+# nothing on one it could. Asking a block in two passes rather than one costs
+# only what the second pass covers, which is the addresses that came back
+# inaudible -- measured on this unit, 2 minutes 39 seconds an address against 40
+# seconds.
+GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato")
+
 
 def resolve(names) -> list[Stimulus]:
     """Look up names, refusing an unknown one rather than silently dropping it."""
@@ -408,6 +417,8 @@ def resolve(names) -> list[Stimulus]:
             chosen.extend(CATALOGUE[n] for n in EFFECT)
         elif name == "switch":
             chosen.extend(CATALOGUE[n] for n in SWITCH)
+        elif name == "gesture":
+            chosen.extend(CATALOGUE[n] for n in GESTURE)
         elif name == "all":
             chosen.extend(CATALOGUE.values())
         elif name in CATALOGUE:
@@ -415,7 +426,7 @@ def resolve(names) -> list[Stimulus]:
         else:
             raise KeyError(
                 f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, "
-                "broad, effect, switch, all"
+                "broad, effect, switch, gesture, all"
             )
     seen, unique = set(), []
     for s in chosen:
@@ -425,4 +436,13 @@ def resolve(names) -> list[Stimulus]:
     return unique
 
 
-__all__ = ["BROAD", "CATALOGUE", "DEFAULT", "EFFECT", "SWITCH", "Stimulus", "resolve"]
+__all__ = [
+    "BROAD",
+    "CATALOGUE",
+    "DEFAULT",
+    "EFFECT",
+    "GESTURE",
+    "SWITCH",
+    "Stimulus",
+    "resolve",
+]

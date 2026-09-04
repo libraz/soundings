@@ -162,6 +162,21 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(func=cmd_plan)
 
+    p = sub.add_parser(
+        "block",
+        help="read a directory of per-address contrast records into one verdict per "
+        "address, counted against the plan the block was asked from",
+    )
+    p.add_argument("plan", help="the plan the block was asked from, which says how many")
+    p.add_argument("plain", help="records from the pass that asked the plain note")
+    p.add_argument(
+        "--gesture",
+        help="records from the pass that moved messages after the setting. A gesture "
+        "is a rescue for a null, so it answers only where the plain note could not",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_block)
+
 
 def _pair(dry_path: str, wet_path: str):
     """Load two takes and hand back the loudest channel of each, plus the rate."""
@@ -370,6 +385,44 @@ def cmd_plan(args: argparse.Namespace) -> int:
             "method": plan.METHOD,
             "ask": [a.to_json() for a in asks],
             "cannot_be_asked": [s.to_json() for s in skipped],
+        },
+    )
+    return 0
+
+
+def cmd_block(args: argparse.Namespace) -> int:
+    """Read a block's per-address records into one answer about the block."""
+    import json
+    from pathlib import Path
+
+    from .. import block
+
+    planned = json.loads(Path(args.plan).read_text())
+    plain = block.survey(args.plain)
+    gesture = block.survey(args.gesture) if args.gesture else {}
+    if not plain and not gesture:
+        print(f"no contrast records under {args.plain}")
+        return 1
+
+    found = [f for f in block.join(plain, gesture) if f is not None]
+    coverage = block.against_plan(found, planned)
+    print(block.summarise(found, coverage))
+    # Named rather than counted: an address left to try is the next run's list,
+    # and a number is not a list.
+    open_still = [f.address for f in found if f.still_open]
+    if open_still:
+        print(f"\nstill open: {' | '.join(open_still)}")
+
+    report.write_json(
+        args.out,
+        {
+            "block": planned.get("block"),
+            "method": block.METHOD,
+            "two_passes": block.WHY_TWO_PASSES,
+            "chose_the_values": planned.get("method"),
+            "coverage": coverage,
+            "still_open": open_still,
+            "addresses": [f.to_json() for f in found],
         },
     )
     return 0
