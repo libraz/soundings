@@ -455,6 +455,78 @@ GS_RPN = (
 )
 
 
+def universal(
+    label: str,
+    head: tuple[int, ...],
+    *,
+    realtime: bool = True,
+    values: tuple[int, int] = (0x20, 0x60),
+) -> Stimulus:
+    """A universal system exclusive whose last byte before the terminator varies.
+
+    Addressed to 7F, every device, rather than to this unit's identifier. These
+    are defined for any instrument that answers them at all, and a unit ignoring
+    its own broadcast form would itself be the finding.
+    """
+    kind = 0x7F if realtime else 0x7E
+    return Stimulus(
+        label=label,
+        kind="universal",
+        build=lambda v: [[0xF0, kind, 0x7F, *head, v & 0x7F, 0xF7]],
+        values=values,
+    )
+
+
+def universal_stimuli(channel: int, note: int) -> list[Stimulus]:
+    """The GM and GM2 universal messages, none of which this project had sent.
+
+    Names are the specification's. Where each one lands, and whether it lands at
+    all, is what the scan is for -- a device is free to answer any of them by
+    doing nothing, and several are defined only for a device that claims GM2.
+
+    The key-based control is the one that addresses a single drum note, so it is
+    given the note the caller names rather than a fixed one, and it is the only
+    member whose target changes with the note.
+    """
+    return [
+        # Sub id 04, device control. The byte varied is the MSB of each pair,
+        # since the LSB alone is finer than several of these are documented to
+        # resolve, and a stimulus that moves nothing readable is a null about
+        # the resolution wearing the parameter's name.
+        universal("master volume", (0x04, 0x01, 0x00), values=(0x20, 0x7F)),
+        universal("master balance", (0x04, 0x02, 0x00)),
+        universal("master fine tuning", (0x04, 0x03, 0x00)),
+        universal("master coarse tuning", (0x04, 0x04, 0x00), values=(0x3C, 0x44)),
+        # Sub id 04 05, global parameter control: the slot path comes first and
+        # the value last, so only the tail varies as it does for the rest.
+        universal(
+            "global parameter control, reverb type",
+            (0x04, 0x05, 0x01, 0x01, 0x01, 0x01, 0x00),
+            values=(0x00, 0x04),
+        ),
+        universal(
+            "global parameter control, chorus type",
+            (0x04, 0x05, 0x01, 0x01, 0x01, 0x02, 0x00),
+            values=(0x00, 0x04),
+        ),
+        # Sub id 0A 01, key-based instrument control: the only universal message
+        # shaped like the per-note planes this unit holds, and so the only one
+        # that could land in a block nothing else has reached.
+        *(
+            universal(
+                f"key-based control, {name} on note {note}",
+                (0x0A, 0x01, channel & 0x0F, note & 0x7F, controller),
+            )
+            for controller, name in (
+                (0x07, "level"),
+                (0x0A, "panpot"),
+                (0x5B, "reverb send"),
+                (0x5D, "chorus send"),
+            )
+        ),
+    ]
+
+
 def landed_outside_its_own_block(found: list[Attribution]) -> dict[str, list[str]]:
     """For each address write, the addresses it reached under some other top byte.
 

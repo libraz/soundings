@@ -37,7 +37,7 @@ def register(sub) -> None:
     p.add_argument(
         "--kind",
         default="cc",
-        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel", "address"),
+        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel", "address", "universal"),
         help="what to send; two kinds landing on one address is what makes them aliases",
     )
     p.add_argument(
@@ -66,7 +66,8 @@ def register(sub) -> None:
         "--note",
         type=options.number,
         default=36,
-        help="drum note the per-note NRPNs address, for --kind drum-nrpn",
+        help="drum note addressed one note at a time, for --kind drum-nrpn and for the "
+        "key-based controls of --kind universal",
     )
     p.add_argument("--controllers", nargs="*", help="controller numbers; default is 0 to 119")
     p.add_argument(
@@ -130,6 +131,8 @@ def _stimuli(args: argparse.Namespace) -> list:
             al.address_write(a, device_id=args.device_id, values=args.values)
             for a in _addresses(args)
         ]
+    if args.kind == "universal":
+        return al.universal_stimuli(ch, args.note)
     if args.kind == "channel":
         return [
             al.program_change(ch),

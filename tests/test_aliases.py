@@ -291,6 +291,54 @@ def test_a_family_that_landed_nothing_is_still_reported_as_unreached():
     assert _kind_reached("cc", stimuli, [])
 
 
+def test_every_universal_message_is_a_well_formed_exclusive():
+    """A byte over 7F inside a system exclusive ends the message early, so the
+    unit receives something shorter than what was meant and the stimulus is a
+    null about a message that was never sent."""
+    from soundings.aliases import universal_stimuli
+
+    for stimulus in universal_stimuli(9, 36):
+        for value in stimulus.values:
+            (message,) = stimulus.build(value)
+            assert message[0] == 0xF0 and message[-1] == 0xF7, stimulus.label
+            assert all(b < 0x80 for b in message[1:-1]), stimulus.label
+            assert message[1] in (0x7E, 0x7F), stimulus.label
+            assert message[2] == 0x7F, "addressed to every device"
+
+
+def test_the_byte_that_varies_is_the_last_one_before_the_terminator():
+    """Which byte moves is the whole stimulus. A global parameter control puts
+    its slot path first for exactly this reason, and getting it wrong varies a
+    slot index while reporting a parameter."""
+    from soundings.aliases import universal_stimuli
+
+    for stimulus in universal_stimuli(9, 36):
+        low, high = (stimulus.build(v)[0] for v in stimulus.values)
+        assert low[-2] != high[-2], stimulus.label
+        assert low[:-2] == high[:-2], stimulus.label
+
+
+def test_a_stimulus_whose_two_values_are_equal_could_detect_nothing():
+    from soundings.aliases import universal_stimuli
+
+    for stimulus in universal_stimuli(9, 36):
+        assert stimulus.values[0] != stimulus.values[1], stimulus.label
+
+
+def test_the_key_based_controls_carry_the_channel_and_note_they_were_given():
+    """The only universal message that addresses one drum note, and so the only
+    one whose target moves with the caller's arguments rather than being fixed."""
+    from soundings.aliases import universal_stimuli
+
+    keyed = [s for s in universal_stimuli(9, 0x31) if s.label.startswith("key-based")]
+    assert len(keyed) == 4
+    for stimulus in keyed:
+        message = stimulus.build(0x20)[0]
+        assert message[3:5] == [0x0A, 0x01], stimulus.label
+        assert message[5] == 9 and message[6] == 0x31, stimulus.label
+        assert "note 49" in stimulus.label
+
+
 def _write_hit(label: str, *addresses: str) -> Attribution:
     return Attribution(
         label=label, kind="address", values=(0x20, 0x60), readings=dict.fromkeys(addresses, [])
