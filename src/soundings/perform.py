@@ -95,6 +95,54 @@ def record_note(
     )
 
 
+QUIET_LISTEN_S = 0.3
+"""How much is listened to at a time while waiting for a tail to die."""
+
+QUIET_TIMEOUT_S = 8.0
+"""How long the wait gives up after, so a parameter that never goes quiet is a
+finding rather than a hang. Whatever it leaves behind is still caught by the
+lead-in check the takes are judged against."""
+
+WHY_WAIT_FOR_QUIET = (
+    "Each take waited for the room to go quiet before it was recorded, rather than starting on a "
+    "timer. The lead-in is where the noise floor is measured and the floor is the yardstick every "
+    "figure is judged against, so a tail from the take before it does not merely add noise -- it "
+    "raises the bar the parameter then fails to clear, and the run reads as a parameter that does "
+    "nothing. How long each wait took is kept, since a setting that takes longer to go quiet than "
+    "its pair is itself a difference between the two."
+)
+
+
+def wait_until_quiet(
+    *,
+    device: str | None,
+    below_dbfs: float,
+    listen_s: float = QUIET_LISTEN_S,
+    timeout_s: float = QUIET_TIMEOUT_S,
+) -> tuple[float, float, bool]:
+    """Listen until nothing is sounding, and say how long that took.
+
+    Returns the seconds waited, the level it ended at, and whether it got under
+    the line before giving up. A timeout is not an error here: an address that
+    leaves something sounding for longer than this is a fact about the address,
+    and it is the lead-in check on the takes themselves that refuses to measure
+    through it.
+    """
+    waited = 0.0
+    level = float("inf")
+    while waited < timeout_s:
+        heard = cap.record(listen_s, device=device)
+        level = (
+            20.0 * np.log10(float(np.abs(heard.samples).max()))
+            if heard.samples.size and np.abs(heard.samples).max() > 0
+            else float("-inf")
+        )
+        if level <= below_dbfs:
+            return waited, level, True
+        waited += listen_s
+    return waited, level, False
+
+
 def peak(recording: Recording) -> float:
     """The largest sample in any channel, for choosing between whole takes."""
     return float(np.abs(recording.samples).max())

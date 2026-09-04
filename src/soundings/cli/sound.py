@@ -15,8 +15,8 @@ from .. import clock, gestures, parts, perform, roland
 from ..stimuli import CATALOGUE as _STIMULUS_CATALOGUE
 from ..stimuli import DEFAULT as _STIMULUS_DEFAULT
 from . import options, report
+from .session import holds as setting_holds
 from .session import prepared as prepare_state
-from .session import took as setting_took
 from .session import verified_link
 
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
@@ -28,6 +28,15 @@ WHY_READ_BACK = (
     "with nothing in the record to tell them apart. An address that answers no one-byte read is "
     "recorded as unchecked rather than refused, since some are readable only as part of a wider "
     "region and refusing them would drop them from the sweep for being unreadable."
+)
+
+WHY_AS_HELD = (
+    "What the two settings are is what the unit holds after each write, not what the run asked "
+    "for. An address that clamps, or that rounds to what it has, still answers the question as "
+    "long as the two land somewhere different -- refusing it because a byte came back changed "
+    "would drop a measurable parameter for being narrower than the plan guessed, and the plan's "
+    "range is itself derived rather than given. Only a pair that collapses to one byte is "
+    "refused, since there the two sets of takes are takes of the same setting."
 )
 
 
@@ -231,11 +240,34 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     sent: list = []
     left_out: dict[str, list] = {}
     read_back: list[dict] = []
+    rests: list[dict] = []
+    as_held: list[int | None] = []
 
     with verified_link(args, refusing="recording") as link:
         gs_reset = named("GS Reset", args.device_id)
         prober = Prober(link, baseline={}, device_id=args.device_id)
         prober.apply(gs_reset)
+
+        # What the pair actually lands on, before any of it is played. An address
+        # that clamps still answers as long as the two land apart, and where they
+        # land is what the label has to say.
+        if args.address:
+            for value in args.values:
+                link.send(roland.dt1(args.address, [value], device_id=args.device_id))
+                time.sleep(args.settle)
+                as_held.append(setting_holds(link, args.address, device_id=args.device_id))
+            if as_held[0] is not None and as_held[0] == as_held[1]:
+                print(
+                    f"\n{args.address} was asked at {args.values[0]} and {args.values[1]} and "
+                    f"holds {as_held[0]:02X} after both. The two sets of takes would be takes of "
+                    "one setting, so nothing measured from them would be about the parameter."
+                )
+                return 1
+            if any(h is not None and h != v for h, v in zip(as_held, args.values, strict=False)):
+                landed = " and ".join("unreadable" if h is None else f"{h:02X}" for h in as_held)
+                label = f"{where} {args.values[0]} against {args.values[1]}, holding {landed}"
+                overall = audible.Overall(label=label)
+                print(f"\n{args.address} lands on {landed}, not on what was asked. {WHY_AS_HELD}")
 
         print(f"\n{label}\n  {len(asked)} stimulus/stimuli: {', '.join(s.name for s in asked)}")
         for stim in asked:
@@ -274,19 +306,22 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 for message in setting(value, channel):
                     link.send(message)
                 time.sleep(args.settle)
-                # Read the setting back, as the preparation already is. An
-                # address that takes the write and keeps what it had leaves both
-                # sets of takes at one setting, and that reads as a parameter
-                # that does nothing -- a null with nothing in the record to tell
-                # it from a real one.
+                # Read the setting back, as the preparation already is. Against
+                # what the pre-flight measured the write to land on rather than
+                # against what was asked: an address that clamps lands somewhere
+                # else every time and is still a setting, while one that has
+                # drifted from where it landed is not the setting being asked.
                 if args.address:
-                    ok, held = setting_took(link, args.address, value, device_id=args.device_id)
-                    read_back.append({"setting": value, "reads": held, "took": ok})
+                    expected = as_held[args.values.index(value)]
+                    now = setting_holds(link, args.address, device_id=args.device_id)
+                    shown = "unreadable" if now is None else f"{now:02X}"
+                    ok = now is None or expected is None or now == expected
+                    read_back.append({"setting": value, "reads": shown, "took": ok})
                     if not ok:
                         print(
-                            f"\n    {args.address} was set to {value} and reads back {held}. "
-                            "Both settings would be takes of whatever it does hold, so nothing "
-                            "measured from them would be about the parameter."
+                            f"\n    {args.address} was set to {value}, landed on {expected:02X} "
+                            f"before the run and reads back {shown} now. The setting moved under "
+                            "the run, so the takes are not all of one setting."
                         )
                         return 1
                 takes = []
@@ -300,6 +335,25 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                             link.send(message)
                     if stim.moves:
                         time.sleep(0.15)
+                    # Wait for whatever is still sounding to die before the take
+                    # rather than measuring through it. The lead-in is where the
+                    # floor comes from and the floor is the yardstick, so a tail
+                    # left by the take before does not add noise to the answer --
+                    # it raises the bar the parameter is then asked to clear.
+                    waited, at_db, quiet = perform.wait_until_quiet(
+                        device=args.audio, below_dbfs=args.max_lead_in
+                    )
+                    if waited or not quiet:
+                        rests.append(
+                            {
+                                "stimulus": stim.name,
+                                "setting": value,
+                                "take": index,
+                                "waited_s": round(waited, 2),
+                                "reached_dbfs": None if at_db == float("-inf") else round(at_db, 1),
+                                "went_quiet": quiet,
+                            }
+                        )
                     recording = perform.record_notes(
                         link,
                         device=args.audio,
@@ -377,6 +431,14 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             "controller": args.cc,
             "address": None if args.cc is not None else args.address,
             "values": list(args.values),
+            **(
+                {
+                    "values_as_held": [None if h is None else f"{h:02X}" for h in as_held],
+                    "why_values_as_held": WHY_AS_HELD,
+                }
+                if any(h is not None and h != v for h, v in zip(as_held, args.values, strict=False))
+                else {}
+            ),
             "prepared": [
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],
@@ -385,6 +447,11 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             **(
                 {"setting_read_back": read_back, "why_read_back": WHY_READ_BACK}
                 if read_back
+                else {}
+            ),
+            **(
+                {"waited_for_quiet": rests, "why_waited_for_quiet": perform.WHY_WAIT_FOR_QUIET}
+                if rests
                 else {}
             ),
             **(

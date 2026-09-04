@@ -62,6 +62,11 @@ def prepared(link: MidiLink, specs, *, device_id: int, settle: float) -> bool:
     one it ignored. A parameter wider than a byte is the common case: the unit
     takes the write, keeps what it had, and the run goes on measuring the state it
     meant to leave behind.
+
+    A DT1 says which address it is for, and a reply for another one is not an
+    answer to this read: the sweeps all check it and this did not, which is how a
+    read of an address that answers none at all came back holding a neighbour's
+    byte.
     """
     import time
 
@@ -72,7 +77,10 @@ def prepared(link: MidiLink, specs, *, device_id: int, settle: float) -> bool:
         time.sleep(settle)
         reply = link.exchange(roland.rq1(address, len(values), device_id=device_id))
         parsed = roland.parse_dt1(reply)
-        got = None if parsed is None else list(parsed.data)
+        for_this_address = parsed is not None and tuple(parsed.address) == tuple(
+            roland.address_bytes(address)
+        )
+        got = list(parsed.data) if for_this_address else None
         if got != list(values):
             wanted = " ".join(f"{v:02X}" for v in values)
             found = "no reply" if got is None else " ".join(f"{v:02X}" for v in got)
@@ -85,8 +93,8 @@ def prepared(link: MidiLink, specs, *, device_id: int, settle: float) -> bool:
     return True
 
 
-def took(link: MidiLink, address: str, value: int, *, device_id: int) -> tuple[bool, str]:
-    """Whether the address holds what was just written to it, and what it holds.
+def holds(link: MidiLink, address: str, *, device_id: int) -> int | None:
+    """The byte an address holds, or None when it answers no one-byte read.
 
     The preparation is read back and the setting under test was not, which is the
     same failure at the other end of the run: an address that took the write and
@@ -94,17 +102,28 @@ def took(link: MidiLink, address: str, value: int, *, device_id: int) -> tuple[b
     them reads as a parameter that does nothing. That null is indistinguishable
     from a real one and there is nothing in the record to tell them apart.
 
-    An address that answers no one-byte read cannot be checked this way, and that
-    is reported as unverified rather than as a failure -- two addresses in a part
-    block are readable only as part of a wider region, and refusing them would
-    drop them from the sweep for being unreadable rather than measuring them.
+    What comes back is the byte rather than a verdict on it. An address that
+    clamps a write, or rounds it to something it has, is still answering the
+    question as long as the two settings land apart, so the comparison is between
+    the two readings and not between a reading and what was asked.
+
+    An address that answers no one-byte read is None rather than a failure -- two
+    in a part block are readable only as part of a wider region, and refusing
+    them would drop them from the sweep for being unreadable.
+
+    **The reply's own address is checked against the one asked for.** A DT1 is
+    self-describing and nothing here forced the two to agree, so a reply left
+    over from an earlier exchange satisfied a read of an address that answers
+    none at all -- measured on this unit, a one-byte read of an address readable
+    only inside a wider region came back holding a neighbour's byte, and the run
+    refused a measurable address on the strength of it.
     """
     from .. import roland
 
     while link.receive(timeout=0.02):
         pass
+    wanted = roland.address_bytes(address)
     parsed = roland.parse_dt1(link.exchange(roland.rq1(address, 1, device_id=device_id)))
-    if parsed is None or len(parsed.data) != 1:
-        return True, "no reply to a one byte read, so the write could not be checked"
-    got = parsed.data[0]
-    return got == (value & 0x7F), f"{got:02X}"
+    if parsed is None or len(parsed.data) != 1 or tuple(parsed.address) != tuple(wanted):
+        return None
+    return int(parsed.data[0])
