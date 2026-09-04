@@ -94,6 +94,16 @@ channel exists for parameters no residual can measure, so a false positive here
 has nothing to contradict it.
 """
 
+LEVEL_ARTEFACT_REACHED_DB = -24.2
+"""The worst a level change alone has made a setting fail to repeat on this chain.
+
+The lower end of the band `MODULATOR_ABOVE_DB` was set inside, kept as a number
+rather than only as prose above it, so anything reading a reading against the
+calibration can see where the calibration stops separating the two explanations.
+A setting landing between this and the bar is not evidence either way: a shallow
+modulator and a level change at a poor signal to noise both reach it.
+"""
+
 UNUSABLE_ABOVE_DB = -12.0
 """Above this, takes of one setting differ so much that no change could clear the yardstick.
 

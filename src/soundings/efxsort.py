@@ -29,6 +29,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .audible import LEVEL_ARTEFACT_REACHED_DB, MODULATOR_ABOVE_DB
+
 METHOD = (
     "Each insertion effect type was recorded four times with the part routed through it and four "
     "times with it bypassed, and the two sets were compared against each other and against "
@@ -50,6 +52,15 @@ WHY_ASYMMETRY = (
     "sounding different. A modulator makes the difference method blind -- with it on, two takes "
     "of one note disagree about nearly everything -- so the yardstick swallows the change and no "
     "residual can show it. The blindness is the evidence."
+)
+
+WHY_INSIDE_THE_GAP = (
+    "These types opened a gap between the two settings' repeatability, but the setting that "
+    "repeated worse landed between the worst a level change alone has produced on this chain and "
+    "the bar a modulator is claimed above. Inside that band the calibration does not separate the "
+    "two explanations: a shallow modulator and a level change at a poor signal to noise both "
+    "reach it. They are reported here rather than in either pile, because the bar has to fall "
+    "somewhere and a reading just under it is not the same fact as a reading far under it."
 )
 
 WHY_TWO_ROUTES = (
@@ -78,8 +89,25 @@ class TypeSort:
     """Which of the audible module's three grounds carried the verdict."""
 
     @property
+    def inside_the_gap(self) -> bool:
+        """Whether the asymmetry is real but lands where the calibration cannot read it.
+
+        The modulator bar was set between a real chorus and the worst a pure level
+        change reached, and a setting inside that band is evidence for neither. It
+        clears the asymmetry test and fails the bar, so without this it would be
+        filed as standing still on the strength of a number nobody can interpret.
+        """
+        if len(self.unrepeatable_db) != 2 or self.moves:
+            return False
+        first, second = self.unrepeatable_db
+        worse = max(first, second)
+        return bool(
+            abs(first - second) > 12.0 and LEVEL_ARTEFACT_REACHED_DB < worse <= MODULATOR_ABOVE_DB
+        )
+
+    @property
     def verdict(self) -> str:
-        if self.inconclusive or not self.audible:
+        if self.inconclusive or not self.audible or self.inside_the_gap:
             return "could not say"
         return "moves" if self.moves else "static"
 
@@ -91,6 +119,7 @@ class TypeSort:
             "audible": self.audible,
             "inconclusive": self.inconclusive,
             "unrepeatable_db": self.unrepeatable_db,
+            "inside_the_calibration_gap": self.inside_the_gap,
             "audible_by": self.heard_by,
         }
 
@@ -147,6 +176,17 @@ def partition(found: list[TypeSort]) -> dict[str, list[str]]:
     }
 
 
+def inside_the_gap(found: list[TypeSort]) -> list[str]:
+    """Which of the undecided types are undecided for the calibration's own reason.
+
+    Not a fourth pile: these are inside `could_not_say`, and this says which of
+    the ways of being undecided they took. A type here differs from one that
+    reached nothing -- it plainly did something, and the number it did it by is
+    one the bar cannot read.
+    """
+    return [f.type_id for f in found if f.inside_the_gap]
+
+
 def disagreements(sorted_here: list[TypeSort], tracked: list) -> list[dict]:
     """Types the two routes reached different verdicts for, neither overruled.
 
@@ -188,10 +228,12 @@ def summarise(found: list[TypeSort]) -> str:
 __all__ = [
     "METHOD",
     "WHY_ASYMMETRY",
+    "WHY_INSIDE_THE_GAP",
     "WHY_NOT_AUDIBLE",
     "WHY_TWO_ROUTES",
     "TypeSort",
     "disagreements",
+    "inside_the_gap",
     "partition",
     "sort_one",
     "summarise",

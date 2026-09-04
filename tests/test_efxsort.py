@@ -159,3 +159,46 @@ def test_every_verdict_survives_the_json_round_trip(verdict: str) -> None:
     }[verdict]
 
     assert efxsort.sort_one(made, "07 00").to_json()["verdict"] == verdict
+
+
+def test_a_reading_inside_the_calibration_gap_is_not_filed_as_standing_still() -> None:
+    """The modulator bar sits between a real chorus and the worst a pure level
+    change reached on this chain. A setting landing between those two is evidence
+    for neither, and filing it as static would state a fact about the effect on
+    the strength of a number nobody can interpret."""
+    found = efxsort.sort_one(record(unrepeatable=[-50.1, -21.0]), "01 25")
+
+    assert found is not None
+    assert found.inside_the_gap
+    assert found.verdict == "could not say"
+
+
+def test_a_reading_far_under_the_bar_is_still_static() -> None:
+    """The gap has to have an outside, or every asymmetric reading becomes
+    undecided and the static pile empties."""
+    found = efxsort.sort_one(record(unrepeatable=[-50.1, -32.8]), "01 02")
+
+    assert found is not None and not found.inside_the_gap
+    assert found.verdict == "static"
+
+
+def test_a_type_that_moved_is_not_reconsidered_against_the_gap() -> None:
+    """It cleared the bar, so the band below the bar says nothing about it."""
+    found = efxsort.sort_one(record(repeatability=True, unrepeatable=[-41.5, -1.7]), "01 20")
+
+    assert found is not None and not found.inside_the_gap
+    assert found.verdict == "moves"
+
+
+def test_the_gap_is_a_reason_inside_could_not_say_and_not_a_fourth_pile() -> None:
+    """A type in the gap has to be counted exactly once, or the piles stop
+    accounting for the types."""
+    found = [
+        efxsort.sort_one(record(unrepeatable=[-50.1, -21.0]), "01 25"),
+        efxsort.sort_one(record(audible=False, shape=False), "03 00"),
+    ]
+    piles = efxsort.partition(found)
+
+    assert sum(len(v) for v in piles.values()) == len(found)
+    assert efxsort.inside_the_gap(found) == ["01 25"]
+    assert set(efxsort.inside_the_gap(found)) <= set(piles["could_not_say"])

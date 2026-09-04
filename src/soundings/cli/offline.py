@@ -350,6 +350,12 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
     print()
     print(efxsort.summarise(found))
     piles = efxsort.partition(found)
+    gap = efxsort.inside_the_gap(found)
+    if gap:
+        print(
+            f"  of those, {len(gap)} plainly did something and did it by a number the bar "
+            f"cannot read: {gap}"
+        )
 
     unsurveyed: list[str] = []
     if args.types_from:
@@ -382,6 +388,10 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
             "could_not_say": {
                 "types": piles["could_not_say"],
                 "why": efxsort.WHY_NOT_AUDIBLE,
+                "inside_the_calibration_gap": {
+                    "types": efxsort.inside_the_gap(found),
+                    "why": efxsort.WHY_INSIDE_THE_GAP,
+                },
             },
             **(
                 {
