@@ -31,6 +31,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from . import gestures
+
 
 @dataclass(frozen=True)
 class Stimulus:
@@ -70,6 +72,16 @@ class Stimulus:
     next stimulus begins with.
     """
 
+    moves: tuple[gestures.Move, ...] = ()
+    """Messages sent after the setting is written and before each take.
+
+    The other side of `writes`, and the difference is the order. A stimulus's
+    writes go in before the parameter under test, so they are the state it is
+    asked in; these go in after it, so they are something for it to act on. A
+    parameter that decides whether an incoming message is received has nothing
+    to receive without them, and reads as inaudible.
+    """
+
     def on(self, default: int) -> int:
         return default if self.channel is None else self.channel
 
@@ -81,9 +93,14 @@ class Stimulus:
         # as the same condition in every verdict either of them produced.
         where = "" if self.channel is None else f"channel {self.channel + 1}, "
         prepared = "".join(f", {a} = {v}" for a, v in self.writes)
+        # The moves belong in the description for the same reason: a note played
+        # after six controllers have been moved is a different question from the
+        # same note played under power-on defaults, and a verdict that did not
+        # say so would read as the plain note's.
+        moved = f", moved: {gestures.describe(self.moves)}" if self.moves else ""
         return (
             f"{where}program {self.program}, note {self.note}, velocity {self.velocity}, "
-            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}"
+            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}{moved}"
         )
 
     def to_json(self) -> dict:
@@ -94,6 +111,7 @@ class Stimulus:
             "velocity": self.velocity,
             "channel": self.channel,
             "writes": [[a, v] for a, v in self.writes],
+            "moves": [m.to_json() for m in self.moves],
             "hold_s": self.hold,
             "captured_s": self.seconds,
             "lead_s": self.lead,
@@ -280,6 +298,62 @@ CATALOGUE: dict[str, Stimulus] = {
         blind_to="everything the first-map form is blind to, and additionally anything "
         "the two maps happen to agree on, which at power-on is most of them",
     ),
+    # The two below are what a *switch* has to be asked with. Everything above
+    # plays its note under whatever the setting left, which is the right question
+    # for a parameter that shapes a voice and no question at all for one that
+    # decides whether an incoming message is acted on: the harness sends its
+    # volume and its expression before it writes the setting, so a switch turned
+    # off afterwards has nothing left to gate. These play the same struck piano
+    # note with a handful of messages sent after the setting instead.
+    "struck_moved": Stimulus(
+        name="struck_moved",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.0,
+        lead=0.6,
+        moves=gestures.MOVED,
+        sees="whether the part still acted on a controller, a pedal or channel pressure "
+        "after the setting was written -- something in the list reached the voice, or "
+        "nothing did",
+        blind_to="which of them it was, since they move together; " + gestures.CANNOT_ASK,
+    ),
+    "struck_retuned": Stimulus(
+        name="struck_retuned",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.0,
+        lead=0.6,
+        moves=gestures.RETUNED,
+        sees="whether the part still acted on a bank select, a program change, a "
+        "registered or non-registered parameter or a bend after the setting was written",
+        blind_to="which of them it was; " + gestures.CANNOT_ASK + ". The program change "
+        "also decides what voice everything else here is heard through, so a switch that "
+        "gates it hides the rest behind itself",
+    ),
+    # Modulation on its own, because it cannot share a gesture with anything: it
+    # is a free-running LFO, so it stops the takes repeating rather than changing
+    # what they hold, and the yardstick it leaves is one no change clears. Under
+    # it every switch but the one gating modulation answers inconclusive, which
+    # is the right answer -- the run had no power to find anything.
+    "struck_vibrato": Stimulus(
+        name="struck_vibrato",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.0,
+        lead=0.6,
+        moves=gestures.VIBRATO,
+        sees="a switch that gates modulation, which shows as one setting's takes "
+        "repeating far worse than the other's rather than as a difference between them",
+        blind_to="everything else, and not by omission: the modulation raises the "
+        "yardstick to where no change of any size clears it, so anything not gating the "
+        "modulation itself answers inconclusive here",
+    ),
     "low": Stimulus(
         name="low",
         program=0,
@@ -318,6 +392,11 @@ BROAD = ("struck", "released", "sustained", "soft", "loud")
 # width rather than at a few partials.
 EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 
+# What a byte with two values is asked with. The plain note answers a parameter
+# that shapes the voice; the other two answer one that gates a message, which the
+# plain note cannot ask at all.
+SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
+
 
 def resolve(names) -> list[Stimulus]:
     """Look up names, refusing an unknown one rather than silently dropping it."""
@@ -327,13 +406,16 @@ def resolve(names) -> list[Stimulus]:
             chosen.extend(CATALOGUE[n] for n in BROAD)
         elif name == "effect":
             chosen.extend(CATALOGUE[n] for n in EFFECT)
+        elif name == "switch":
+            chosen.extend(CATALOGUE[n] for n in SWITCH)
         elif name == "all":
             chosen.extend(CATALOGUE.values())
         elif name in CATALOGUE:
             chosen.append(CATALOGUE[name])
         else:
             raise KeyError(
-                f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, broad, effect, all"
+                f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, "
+                "broad, effect, switch, all"
             )
     seen, unique = set(), []
     for s in chosen:
@@ -343,4 +425,4 @@ def resolve(names) -> list[Stimulus]:
     return unique
 
 
-__all__ = ["BROAD", "CATALOGUE", "DEFAULT", "EFFECT", "Stimulus", "resolve"]
+__all__ = ["BROAD", "CATALOGUE", "DEFAULT", "EFFECT", "SWITCH", "Stimulus", "resolve"]

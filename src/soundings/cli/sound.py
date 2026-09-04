@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import time
 
-from .. import clock, parts, perform, roland
+from .. import clock, gestures, parts, perform, roland
 from ..stimuli import CATALOGUE as _STIMULUS_CATALOGUE
 from ..stimuli import DEFAULT as _STIMULUS_DEFAULT
 from . import options, report
@@ -97,9 +97,10 @@ def register(sub) -> None:
         metavar="NAME",
         help="notes to ask the parameter under: "
         + ", ".join(_STIMULUS_NAMES)
-        + ", plus 'broad' for the five that answer most parameters and 'all'. Audible under "
-        "any is audible; a null carries the list of what was tried, because an inaudible "
-        "result is as much a fact about the note as about the parameter",
+        + ", plus 'broad' for the five that answer most parameters, 'switch' for the four "
+        "a byte with two values needs, and 'all'. Audible under any is audible; a null "
+        "carries the list of what was tried, because an inaudible result is as much a fact "
+        "about the note as about the parameter",
     )
     p.add_argument(
         "--prepare",
@@ -157,6 +158,33 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
     return False
 
 
+def _part_offset(args: argparse.Namespace, channel: int) -> int | None:
+    """The offset in this channel's part block the run is writing, if it is writing one.
+
+    A controller run writes no address, and an address outside the part block --
+    an effect parameter, a drum setup byte -- is nothing a gesture here touches.
+    Both come back None, which takes nothing out of the gesture.
+    """
+    if args.cc is not None or not args.address:
+        return None
+    try:
+        top, middle, low = (int(b, 16) for b in args.address.split())
+    except ValueError:
+        return None
+    block = parts.part_block(parts.TONE, channel)
+    return low if (top, middle) == block[:2] else None
+
+
+def _without_the_address(stim, args: argparse.Namespace):
+    """The stimulus with any move that writes the address under test taken out."""
+    import dataclasses
+
+    kept, dropped = gestures.without(stim.moves, _part_offset(args, stim.on(args.channel)))
+    if not dropped:
+        return stim, []
+    return dataclasses.replace(stim, moves=kept), dropped
+
+
 def cmd_contrast(args: argparse.Namespace) -> int:
     """Play the same note under two settings and say whether the unit sounded different."""
     from .. import audible, stability, stimuli
@@ -188,6 +216,10 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     label = f"{where} {args.values[0]} against {args.values[1]}"
     overall = audible.Overall(label=label)
     store = _store(args.save)
+    # What was actually sent, which is what the record has to carry: a gesture
+    # one message short is a different question from the whole one.
+    sent: list = []
+    left_out: dict[str, list] = {}
 
     with verified_link(args, refusing="recording") as link:
         gs_reset = named("GS Reset", args.device_id)
@@ -202,6 +234,16 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             if not prepare_state(link, args.prepare, device_id=args.device_id, settle=args.settle):
                 return 1
             channel = stim.on(args.channel)
+            # A gesture that writes the address under test would put both
+            # settings at its own value, so the run would measure the gesture.
+            stim, dropped = _without_the_address(stim, args)
+            if dropped:
+                print(
+                    f"  {stim.name}: left out of the gesture, it writes the address under "
+                    f"test -- {gestures.describe(tuple(dropped))}"
+                )
+                left_out.setdefault(stim.name, []).extend(m.to_json() for m in dropped)
+            sent.append(stim)
             # Not `where`: that names the parameter under test, and rebinding it
             # here made every later line report the stimulus's own preparation
             # address as the thing being set.
@@ -223,6 +265,15 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 time.sleep(args.settle)
                 takes = []
                 for index in range(args.takes):
+                    # After the setting, and before every take rather than once
+                    # per setting: a note-off is the one thing between two takes,
+                    # and whether it clears a pressure or a pedal is exactly the
+                    # sort of thing this is here to find out rather than assume.
+                    for move in stim.moves:
+                        for message in move.messages(channel):
+                            link.send(message)
+                    if stim.moves:
+                        time.sleep(0.15)
                     recording = perform.record_note(
                         link,
                         device=args.audio,
@@ -291,7 +342,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             address=None if args.cc is not None else args.address,
             values=list(args.values),
             channel=args.channel,
-            stimuli=[stim.to_json() for stim in asked],
+            stimuli=[stim.to_json() for stim in sent],
         )
         print(f"\nkept {len(store.entries)} takes under {manifest.parent}")
 
@@ -306,7 +357,12 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],
             **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
-            "stimuli": [stim.to_json() for stim in asked],
+            "stimuli": [stim.to_json() for stim in sent],
+            **(
+                {"left_out_of_the_gesture": left_out, "why_left_out": gestures.WHY_DROPPED}
+                if left_out
+                else {}
+            ),
             "method": audible.METHOD,
             **overall.to_json(),
         },

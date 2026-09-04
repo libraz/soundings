@@ -101,7 +101,6 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(func=cmd_efx_motion)
 
-
     p = sub.add_parser(
         "efx-sort",
         help="sort a unit's insertion effects into the ones that move and the ones "
@@ -149,6 +148,19 @@ def register(sub) -> None:
     )
     options.add_out(p)
     p.set_defaults(func=cmd_verdict)
+
+    p = sub.add_parser(
+        "plan",
+        help="say what pair of values each address in a block should be asked at, "
+        "from what the write probe measured it to accept",
+    )
+    p.add_argument("write_probe", help="a write-probe record covering the block")
+    p.add_argument(
+        "block",
+        help="the leading bytes of the addresses to plan, e.g. '40 11' for part 1",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_plan)
 
 
 def _pair(dry_path: str, wet_path: str):
@@ -331,6 +343,33 @@ def cmd_verdict(args: argparse.Namespace) -> int:
             "method": audible.METHOD,
             "judged_offline": rejudge.METHOD_SUFFIX,
             **overall.to_json(),
+        },
+    )
+    return 0
+
+
+def cmd_plan(args: argparse.Namespace) -> int:
+    """Turn a write probe's measured ranges into the pair each address is asked at."""
+    import json
+    from pathlib import Path
+
+    from .. import plan
+
+    record = json.loads(Path(args.write_probe).read_text())
+    asks, skipped = plan.plan_block(record, args.block)
+    if not asks and not skipped:
+        print(f"no address under {args.block!r} in {args.write_probe}")
+        return 1
+    print(plan.summarise(asks, skipped))
+
+    report.write_json(
+        args.out,
+        {
+            "block": args.block,
+            "from": str(args.write_probe),
+            "method": plan.METHOD,
+            "ask": [a.to_json() for a in asks],
+            "cannot_be_asked": [s.to_json() for s in skipped],
         },
     )
     return 0
