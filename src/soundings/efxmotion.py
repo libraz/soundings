@@ -132,6 +132,7 @@ def measure_type(
     wet_path: Path,
     *,
     stimulus: str,
+    lead_s: float = 0.0,
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
     depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
@@ -143,7 +144,9 @@ def measure_type(
         raise ValueError(f"{type_id}: takes at {dry_rate} and {wet_rate} Hz")
     dry, wet = loudest(dry), loudest(wet)
 
-    found = motion.measure(dry, wet, dry_rate, search_ms=search_ms, rate_range=rate_range)
+    found = motion.measure(
+        dry, wet, dry_rate, search_ms=search_ms, rate_range=rate_range, lead_s=lead_s
+    )
     # Only where the type stood still. A control sweeps the take's own return, so
     # on a type that already moves it adds a motion to a motion and recovers a
     # line either way -- an answer that means nothing, bought at seven more
@@ -158,6 +161,7 @@ def measure_type(
             depths_ms=depths_ms,
             search_ms=search_ms,
             rate_range=rate_range,
+            lead_s=lead_s,
         )
     )
 
@@ -204,6 +208,7 @@ def survey(
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
     depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
+    lead_s: float = 0.0,
     progress=None,
 ) -> list[TypeMotion]:
     """Sort every type whose takes are under this directory, one subdirectory each."""
@@ -221,6 +226,7 @@ def survey(
             directory.name.replace("-", " ").upper(),
             *paths,
             stimulus=stimulus,
+            lead_s=lead_from(manifest, stimulus, lead_s),
             search_ms=search_ms,
             rate_range=rate_range,
             depths_ms=depths_ms,
@@ -229,6 +235,20 @@ def survey(
         if progress:
             progress(found)
     return out
+
+
+def lead_from(manifest: dict, stimulus: str, fallback: float = 0.0) -> float:
+    """How much silence the takes were recorded with, from the capture's own record.
+
+    The lead is what the noise floor is measured in, and every stimulus declares
+    its own. Reading it from the manifest rather than taking it as an argument
+    keeps a directory of takes captured under several stimuli readable, and stops
+    a figure typed on the command line from standing in for one the capture knows.
+    """
+    for entry in manifest.get("stimuli", []):
+        if entry.get("name") == stimulus and entry.get("lead_s") is not None:
+            return float(entry["lead_s"])
+    return fallback
 
 
 def accepted_types(path: str | Path) -> list[str]:
@@ -283,6 +303,7 @@ __all__ = [
     "WHY_ONE_PAIR",
     "TypeMotion",
     "accepted_types",
+    "lead_from",
     "measure_type",
     "missing",
     "pair_from",

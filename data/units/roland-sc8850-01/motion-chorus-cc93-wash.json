@@ -6,6 +6,7 @@
     0.05,
     20.0
   ],
+  "lead_s": 0.6,
   "positive_control": {
     "injected_rate_hz": 1.3,
     "injected_depths_ms": [
@@ -72,18 +73,21 @@
   "control_failed": "No injected swing was recovered at any depth on the ladder, so this pair of takes was never shown able to report a modulation at all. Nothing here is a finding about the effect: an effect that moves and an effect that stands still would both be reported as standing still.",
   "track": {
     "frames": 786,
-    "frames_found": 611,
-    "coverage": 0.777,
+    "frames_found": 353,
+    "coverage": 0.449,
     "frame_rate_hz": 200.0,
     "searched_ms": [
       0.0,
       60.0
     ],
-    "excursion_ms": 59.698,
+    "excursion_ms": 59.628,
     "input_repeats_every_ms": 0.233,
     "input_periodicity": 0.249,
     "may_have_wrapped": false,
-    "trigger_scatter_ms": 0.108
+    "trigger_scatter_ms": 0.108,
+    "noise_floor_db": -109.94,
+    "frames_below_floor": 298,
+    "frames_gated_on_level": "Frames were dropped for holding no signal as well as for finding no peak. The per-frame correlation is normalised, so it says how well two frames match and not how much sound was in them, and a frame of the recorder's own noise matches itself: it clears the confidence gate and reports a delay at whatever lag that noise happened to peak. A take that decays into silence is mostly such frames, and their delays are scattered across the whole searched range, which is enough to bury a real line. Each frame is therefore also required to stand over the noise floor measured in this take's own silent lead-in."
   },
   "delay_lfo": null,
   "level_lfo": null,

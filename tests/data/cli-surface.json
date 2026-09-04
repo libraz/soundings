@@ -2315,6 +2315,19 @@
         },
         {
           "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of the take. The noise floor is measured in it, and a frame that does not stand over that floor is dropped: a normalised correlation cannot tell silence from sound, so an untracked frame of noise otherwise reports a confident delay at whatever lag its noise peaked at. Every stimulus in the catalogue records 0.6",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
             "--out"
           ],
           "dest": "out",
@@ -2499,6 +2512,19 @@
           "default": "20.0",
           "required": false,
           "help": "fastest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take, for any manifest that does not record its stimulus's own. The noise floor is measured in it and frames below that floor are dropped, without which a take that decays into silence cannot recover its own control",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

@@ -29,6 +29,16 @@ def register(sub) -> None:
     )
     p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.6,
+        help="seconds of silence at the head of the take. The noise floor is measured "
+        "in it, and a frame that does not stand over that floor is dropped: a normalised "
+        "correlation cannot tell silence from sound, so an untracked frame of noise "
+        "otherwise reports a confident delay at whatever lag its noise peaked at. Every "
+        "stimulus in the catalogue records 0.6",
+    )
     options.add_out(p)
     p.set_defaults(func=cmd_motion)
 
@@ -79,6 +89,15 @@ def register(sub) -> None:
     p.add_argument("--max-delay", type=float, default=60.0, help="milliseconds of delay searched")
     p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.6,
+        help="seconds of silence at the head of a take, for any manifest that does not "
+        "record its stimulus's own. The noise floor is measured in it and frames below "
+        "that floor are dropped, without which a take that decays into silence cannot "
+        "recover its own control",
+    )
     options.add_out(p)
     p.set_defaults(func=cmd_efx_motion)
 
@@ -101,11 +120,11 @@ def cmd_motion(args: argparse.Namespace) -> int:
     dry, wet, rate = _pair(args.dry, args.wet)
     span = (0.0, args.max_delay)
     rates = (args.min_rate, args.max_rate)
-    found = motion.measure(dry, wet, rate, search_ms=span, rate_range=rates)
+    found = motion.measure(dry, wet, rate, search_ms=span, rate_range=rates, lead_s=args.lead)
     # Always, not only when the answer is a null. A run that reports motion is
     # not excused the control either: knowing the tracker works on this material
     # is what says a recovered rate is the effect's and not the search's.
-    vouched = motion.control(dry, wet, rate, search_ms=span, rate_range=rates)
+    vouched = motion.control(dry, wet, rate, search_ms=span, rate_range=rates, lead_s=args.lead)
 
     print(f"{args.dry} against {args.wet}, {rate} Hz")
     print(found.describe())
@@ -136,6 +155,7 @@ def cmd_motion(args: argparse.Namespace) -> int:
             "wet": str(args.wet),
             "sample_rate": rate,
             "searched_rate_hz": [args.min_rate, args.max_rate],
+            "lead_s": args.lead,
             "positive_control": vouched,
             **(
                 {"control_failed": motion.CONTROL_FAILED}
@@ -184,6 +204,7 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
         wet=args.routed,
         search_ms=(0.0, args.max_delay),
         rate_range=(args.min_rate, args.max_rate),
+        lead_s=args.lead,
         progress=said,
     )
     if not found:

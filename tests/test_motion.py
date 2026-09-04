@@ -373,3 +373,67 @@ def test_a_modulated_copy_swings_by_the_depth_it_was_given() -> None:
 
     assert fit is not None
     assert abs(fit.depth - 4.0) < 1.0
+
+
+def decaying_into_silence(
+    *, lead: float = 0.6, seconds: float = 4.0, floor: float = 1e-5, seed: int = 11
+) -> tuple[np.ndarray, np.ndarray]:
+    """A pair of struck takes shaped like real ones: silence, a hit, a decay that
+    reaches the recorder's own floor well before the take ends, and a floor that
+    is each take's own rather than shared.
+
+    Both properties are needed to show what the gate does. A source that never
+    goes quiet -- which every other fixture here is -- has no silent frames to
+    mistrack; and one built by adding to the dry take shares its noise, so its
+    silent frames correlate cleanly at one lag instead of scattering. Two takes
+    off a machine have neither. Measured on a real crash take from this unit:
+    peak -31 dBFS, fallen to -102 by the last second.
+    """
+    n = int(seconds * SR)
+    index = np.arange(n)
+    rng = np.random.default_rng(seed)
+    body = source(seconds=seconds) * np.where(
+        index < lead * SR, 0.0, np.exp(-3.0 * (index / SR - lead))
+    )
+    wet = body + 0.5 * np.roll(body, int(0.02 * SR))
+    return body + rng.standard_normal(n) * floor, wet + rng.standard_normal(n) * floor
+
+
+def test_frames_holding_only_the_noise_floor_are_not_tracked() -> None:
+    """A normalised correlation says how well two frames match, not how much sound
+    was in them, and noise matches itself. Without the level gate those frames
+    report a confident delay at whatever lag their noise peaked at, and the track
+    ends up swinging across most of the range that was searched."""
+    dry, wet = decaying_into_silence()
+
+    ungated = motion.track_delay(dry, wet, SR)
+    gated = motion.track_delay(dry, wet, SR, lead_s=0.6)
+
+    assert ungated.frames_below_floor == 0 and np.isnan(ungated.floor_db)
+    assert gated.frames_below_floor > gated.delay_samples.size // 4
+    assert ungated.excursion_ms > 10.0
+    assert gated.excursion_ms < 1.0
+
+
+def test_the_floor_gate_is_what_lets_a_decaying_take_carry_a_control() -> None:
+    """The measurement this was found by, and the reason it blocked anything else.
+    On a real crash take the control recovered nothing at any depth until the
+    silent frames stopped contributing; with them gone it recovered four rungs.
+    Every take of a struck note has this shape, so without the gate no such pair
+    could vouch for its own null."""
+    dry, wet = decaying_into_silence()
+
+    assert motion.control(dry, wet, SR)["detectable_ms"] is None
+    assert motion.control(dry, wet, SR, lead_s=0.6)["detectable_ms"] is not None
+
+
+def test_a_take_with_no_lead_in_declared_is_left_ungated() -> None:
+    """A floor guessed from the take itself would be right for one that decays
+    into silence and would throw away most of one that does not, so an absent
+    lead-in leaves the track as it was rather than gated against a guess."""
+    dry = source(seconds=1.0)
+    track = motion.track_delay(dry, dry + 0.5 * np.roll(dry, 400), SR, lead_s=0.0)
+
+    assert np.isnan(track.floor_db)
+    assert track.to_json()["noise_floor_db"] is None
+    assert "frames_gated_on_level" not in track.to_json()

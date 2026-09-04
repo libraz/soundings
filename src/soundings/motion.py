@@ -32,6 +32,17 @@ rather than assumed: the dry take's own autocorrelation says how periodic it is
 and at what spacing, and the result carries both so a wrapped track is not read
 as a shallow one.
 
+**A frame with no signal in it cannot carry a delay, and the correlation cannot
+say so.** The per-frame peak is normalised, which is what makes one frame's
+confidence comparable with another's -- and normalising divides out exactly the
+level that would have told silence from sound. Measured on a real crash take: it
+peaks at -31 dBFS and has fallen to -108 by its last second, and every frame of
+that silence cleared the confidence gate and contributed a delay drawn from
+wherever the noise happened to peak. Over half the frames were noise, the swing
+filled the whole searched range, and no line survived. So a frame is also gated
+on its own level against the take's own noise floor, measured in the silence
+before the note.
+
 **A null is a fact about the search.** No line in the delay track's spectrum
 means no periodic motion was found within the rates and depths looked in, and
 those bounds travel with the result.
@@ -53,6 +64,24 @@ construction. Ten dB over the median of the band is roughly where a track of pur
 noise stops producing one.
 """
 
+FRAME_OVER_FLOOR_DB = 12.0
+"""How far a frame must stand over the take's own noise floor to be tracked.
+
+The same figure the capture commands require of a whole note before they will
+read anything into it, applied per frame. Below it a frame holds the recorder
+rather than the unit, and a normalised correlation cannot tell the difference:
+noise correlates with noise, so a silent frame reports a confident delay at
+whatever lag its noise happened to peak at.
+"""
+
+LEAD_MEASURED_IN = 0.8
+"""Fraction of the declared lead-in the floor is measured in.
+
+Not all of it. The note's own onset scatters by a millisecond or two between
+takes, and a floor measured up to the declared boundary would include the head of
+the note on the takes where it arrived early.
+"""
+
 EXPLAINS_THE_SERIES = 0.7
 """How much of a track a sinusoid at the found rate has to account for.
 
@@ -68,6 +97,16 @@ and a chorus were reported as having a level modulation on that evidence, at
 shape errors of 6.8 and 23.9 -- lines that a sinusoid explained essentially none
 of.
 """
+
+WHY_FLOOR_GATE = (
+    "Frames were dropped for holding no signal as well as for finding no peak. The per-frame "
+    "correlation is normalised, so it says how well two frames match and not how much sound was "
+    "in them, and a frame of the recorder's own noise matches itself: it clears the confidence "
+    "gate and reports a delay at whatever lag that noise happened to peak. A take that decays "
+    "into silence is mostly such frames, and their delays are scattered across the whole searched "
+    "range, which is enough to bury a real line. Each frame is therefore also required to stand "
+    "over the noise floor measured in this take's own silent lead-in."
+)
 
 FRAME_CONFIDENCE = 0.2
 """Normalised correlation a frame must reach before its delay is believed.
@@ -102,6 +141,21 @@ class DelayTrack:
 
     align_samples: float
     """Trigger scatter removed before tracking; delays are relative to the dry path."""
+
+    floor_db: float = float("nan")
+    """The take's own noise floor, measured in the silence before the note.
+
+    NaN when no lead-in was declared, in which case no frame was gated on level
+    and the track carries whatever the silent parts of the take reported.
+    """
+
+    frames_below_floor: int = 0
+    """Frames dropped for holding the recorder rather than the unit.
+
+    Dropped by writing NaN into `delay_samples`, not by masking here: the fit
+    reads the delays and their NaNs directly, and a mask that only reached
+    `usable` would have kept every gated frame inside the interpolated interior.
+    """
 
     @property
     def frame_rate(self) -> float:
@@ -145,6 +199,9 @@ class DelayTrack:
             "input_periodicity": round(self.periodicity, 3),
             "may_have_wrapped": self.wraps,
             "trigger_scatter_ms": round(self.align_samples / self.sample_rate * 1000.0, 3),
+            "noise_floor_db": None if np.isnan(self.floor_db) else round(self.floor_db, 2),
+            "frames_below_floor": self.frames_below_floor,
+            **({} if np.isnan(self.floor_db) else {"frames_gated_on_level": WHY_FLOOR_GATE}),
         }
 
 
@@ -267,6 +324,26 @@ def periodicity(
     return lag / sample_rate * 1000.0, height
 
 
+def _rms_db(frame: np.ndarray) -> float:
+    return 20.0 * np.log10(float(np.sqrt(np.mean(frame * frame))) + 1e-15)
+
+
+def _noise_floor_db(dry: np.ndarray, sample_rate: int, lead_s: float, guard: int = 0) -> float:
+    """The take's own floor, measured in the silence before the note.
+
+    NaN when no lead-in was declared or none of it survived the alignment trim,
+    which leaves the track ungated rather than gated against a guess. A floor
+    invented from the quietest part of an arbitrary take would be right for one
+    that decays into silence and would throw away most of one that does not.
+    """
+    if lead_s <= 0:
+        return float("nan")
+    end = int(lead_s * LEAD_MEASURED_IN * sample_rate) - guard
+    if end < sample_rate // 100:
+        return float("nan")
+    return _rms_db(dry[:end])
+
+
 def separate_return(
     dry: np.ndarray, wet: np.ndarray, *, subtract_direct: bool = True
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
@@ -307,6 +384,7 @@ def track_delay(
     hop: float = 0.005,
     search_ms: tuple[float, float] = (0.0, 60.0),
     subtract_direct: bool = True,
+    lead_s: float = 0.0,
 ) -> DelayTrack:
     """Measure, frame by frame, how far the wet take's return lags the dry take.
 
@@ -333,14 +411,24 @@ def track_delay(
     lo = int(search_ms[0] / 1000.0 * sample_rate)
     span = int(search_ms[1] / 1000.0 * sample_rate)
 
+    floor_db = _noise_floor_db(dry, sample_rate, lead_s, guard=256 + int(np.ceil(abs(align))))
+    gate = float("nan") if np.isnan(floor_db) else floor_db + FRAME_OVER_FLOOR_DB
+
     times, delays, confidences = [], [], []
+    below = 0
     start = 0
     while start + n + span <= dry.size:
-        curve = _normalised_lags(dry[start : start + n], target[start : start + n + span], span)
+        frame = dry[start : start + n]
+        curve = _normalised_lags(frame, target[start : start + n + span], span)
         lag, height = _peak(curve, lo)
         times.append(start / sample_rate)
         confidences.append(height)
-        delays.append(lag if height >= FRAME_CONFIDENCE else float("nan"))
+        # Level first, because the confidence cannot answer it. A frame of
+        # silence correlates with a frame of silence, so it clears the gate and
+        # reports a delay drawn from wherever its noise peaked.
+        quiet = not np.isnan(gate) and _rms_db(frame) < gate
+        below += quiet
+        delays.append(float("nan") if quiet or height < FRAME_CONFIDENCE else lag)
         start += step
 
     spacing, strength = periodicity(dry, sample_rate)
@@ -348,6 +436,8 @@ def track_delay(
         times=np.array(times),
         delay_samples=np.array(delays),
         confidence=np.array(confidences),
+        floor_db=floor_db,
+        frames_below_floor=int(below),
         sample_rate=sample_rate,
         hop=hop,
         searched_ms=search_ms,
@@ -615,9 +705,10 @@ def measure(
     *,
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
+    lead_s: float = 0.0,
 ) -> Motion:
     """Track an effect's motion in both delay and level, and report both nulls."""
-    track = track_delay(dry, wet, sample_rate, search_ms=search_ms)
+    track = track_delay(dry, wet, sample_rate, search_ms=search_ms, lead_s=lead_s)
     return Motion(
         track=track,
         delay=fit_lfo(track, rate_range=rate_range),
@@ -732,6 +823,7 @@ def _attempt(
     depth_ms: float,
     search_ms: tuple[float, float],
     rate_range: tuple[float, float],
+    lead_s: float,
 ) -> dict:
     """Set the take's own return moving, and see whether the tracker follows it.
 
@@ -758,7 +850,12 @@ def _attempt(
         residual, sample_rate, rate_hz=rate_hz, depth_ms=depth_ms, centre_ms=depth_ms / 2.0
     )
     found = measure(
-        reference, direct + swept, sample_rate, search_ms=search_ms, rate_range=rate_range
+        reference,
+        direct + swept,
+        sample_rate,
+        search_ms=search_ms,
+        rate_range=rate_range,
+        lead_s=lead_s,
     )
     fit = found.delay if found.delay_answered else None
     return {
@@ -780,6 +877,7 @@ def control(
     depths_ms: tuple[float, ...] = CONTROL_DEPTHS_MS,
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
+    lead_s: float = 0.0,
 ) -> dict:
     """How shallow a modulation this pair of takes could have shown, asked of itself.
 
@@ -821,6 +919,7 @@ def control(
                 depth_ms=depth,
                 search_ms=search_ms,
                 rate_range=rate_range,
+                lead_s=lead_s,
             )
             for depth in ladder
         ]
@@ -848,10 +947,12 @@ __all__ = [
     "CONTROL_TOLERANCE",
     "EXPLAINS_THE_SERIES",
     "FRAME_CONFIDENCE",
+    "FRAME_OVER_FLOOR_DB",
     "LINE_ABOVE_DB",
     "NO_RETURN_BELOW_DB",
     "WHY_DETECTABLE",
     "WHY_CONTROL",
+    "WHY_FLOOR_GATE",
     "DelayTrack",
     "LfoFit",
     "Motion",
