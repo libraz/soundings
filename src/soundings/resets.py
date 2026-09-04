@@ -307,13 +307,97 @@ def summarise(results: list[ResetResult]) -> str:
     return "\n".join(lines)
 
 
+POWER_ON_NOTE = (
+    "Read twice over. Nothing that writes was sent -- an Identity Request and RQ1 reads only "
+    "-- so this is the state the unit powers up in rather than the state a run left behind. "
+    "Addresses where the two reads disagreed are listed rather than resolved."
+)
+
+WHY_READ_TWICE = (
+    "A byte read once has nothing to check it against. This is the baseline every reset is "
+    "measured against, so a byte recorded here wrongly is credited to, or withheld from, "
+    "every reset afterwards -- and the capture cannot be taken again without another power "
+    "cycle. Reading the whole space a second time separates what the unit holds from what "
+    "one read got wrong, at the cost of doubling a run that is only reads."
+)
+
+CAPTURED_IS_ASSERTED = (
+    "That the unit had just been powered on is asserted by whoever ran this, not shown by the "
+    "run. Nothing here can tell a unit fresh from the mains switch from one an earlier run "
+    "wrote to, because both answer a read the same way. What the run can say is that it wrote "
+    "nothing itself."
+)
+
+
+def agreed_bytes(
+    first: dict[Address, int], second: dict[Address, int]
+) -> tuple[dict[Address, int], list[Address], list[Address]]:
+    """Split two reads of the same space into what they agree on and what they do not.
+
+    A byte the two reads disagree about is left out of the baseline rather than
+    resolved to either value. Deciding between them would need a third read, and
+    a wrong decision here is invisible afterwards: the byte simply reads as
+    having been changed by whichever reset is measured next.
+    """
+    agreed: dict[Address, int] = {}
+    disagreed: list[Address] = []
+    for address, value in first.items():
+        if address not in second:
+            continue
+        if second[address] == value:
+            agreed[address] = value
+        else:
+            disagreed.append(address)
+    once = [a for a in first if a not in second] + [a for a in second if a not in first]
+    return agreed, sorted(disagreed), sorted(once)
+
+
+def power_on_record(
+    first: dict[Address, int],
+    second: dict[Address, int],
+    *,
+    unit_id: str,
+    identity_reply: str,
+    captured: str,
+    regions_read: int,
+    regions_unread: int,
+) -> dict:
+    """The capture a power-on run leaves, with what it rests on stated in it.
+
+    Assembled here rather than where the run is driven, so a capture cannot be
+    written without the two things a later reader has no way to recover: that
+    the power cycle is an assertion rather than a measurement, and that a byte
+    the two reads disagreed about was dropped rather than decided.
+    """
+    agreed, disagreed, once = agreed_bytes(first, second)
+    return {
+        "unit_id": unit_id,
+        "captured": captured,
+        "captured_is_asserted_not_measured": CAPTURED_IS_ASSERTED,
+        "identity_reply": identity_reply,
+        "note": POWER_ON_NOTE,
+        "why_read_twice": WHY_READ_TWICE,
+        "regions_read": regions_read,
+        "regions_unread": regions_unread,
+        "read_disagreed_at": [_address_text(a) for a in disagreed],
+        "read_only_once": [_address_text(a) for a in once],
+        "values": {_address_text(a): f"{v:02X}" for a, v in sorted(agreed.items())},
+    }
+
+
+def _address_text(address: Address) -> str:
+    return " ".join(f"{b:02X}" for b in address)
+
+
 __all__ = [
     "MARKS",
     "Prober",
     "Reset",
     "ResetResult",
+    "agreed_bytes",
     "catalogue",
     "compare",
     "mode_set",
+    "power_on_record",
     "summarise",
 ]

@@ -263,6 +263,33 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(func=cmd_reset_probe)
 
+    p = sub.add_parser(
+        "power-on",
+        help="capture the state the unit powers up in, which is available only until "
+        "something writes to it",
+    )
+    p.add_argument(
+        "--map",
+        required=True,
+        help="address map the regions are read from. Required rather than defaulted: a "
+        "capture read through another unit's map is a baseline for a space this unit was "
+        "never asked about",
+    )
+    p.add_argument(
+        "--unit-id",
+        required=True,
+        help="the unit this is a capture of, as its directory names it",
+    )
+    p.add_argument(
+        "--captured",
+        default="immediately after a power cycle, before anything was sent to the unit",
+        help="what was done before this run, in the words of whoever did it. The run cannot "
+        "check it and records it as a claim",
+    )
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_power_on)
+
 
 def cmd_sweep(args: argparse.Namespace) -> int:
     from ..sweep import MidiCalibrationError, Sweeper, calibrate, summarise
@@ -621,6 +648,47 @@ def cmd_efx_map(args: argparse.Namespace) -> int:
         },
     )
     return 0 if not found.unread else 1
+
+
+def cmd_power_on(args: argparse.Namespace) -> int:
+    """Read the whole map twice, writing nothing, and keep what both reads agreed on."""
+    from .. import roland
+    from ..aliases import Snapshotter
+    from ..resets import power_on_record
+
+    regions = archive.regions(args.map)
+    print(f"{len(regions)} regions from {args.map}, read twice with nothing written")
+
+    with verified_link(
+        args,
+        refusing="capturing",
+        show_port=True,
+        announce="Reading only. A capture taken after anything writes is not a power-on state",
+    ) as link:
+        identity = link.exchange(roland.IDENTITY_REQUEST, timeout=1.0)
+        shot = Snapshotter(link, regions, device_id=args.device_id)
+        first = shot.take()
+        print(f"  first read: {len(first)} bytes, {shot.unread} regions unread")
+        unread_after_first = shot.unread
+        second = shot.take()
+        print(f"  second read: {len(second)} bytes, {shot.unread - unread_after_first} unread")
+
+    record = power_on_record(
+        first,
+        second,
+        unit_id=args.unit_id,
+        identity_reply=" ".join(f"{b:02X}" for b in identity) if identity else "no reply",
+        captured=args.captured,
+        regions_read=shot.reads,
+        regions_unread=shot.unread,
+    )
+    print()
+    print(f"  {len(record['values'])} bytes both reads agreed on")
+    print(f"  {len(record['read_disagreed_at'])} disagreed and were left out")
+    print(f"  {len(record['read_only_once'])} were answered by one read only")
+
+    report.write_json(args.out, record)
+    return 0 if not record["read_disagreed_at"] and not shot.unread else 1
 
 
 def cmd_reset_probe(args: argparse.Namespace) -> int:

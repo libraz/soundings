@@ -89,3 +89,55 @@ def test_a_run_that_accounted_for_everything_reports_no_shortfall():
         ]
     }
     assert read_gap_again(payload) == {"GS Reset": 0}
+
+
+def test_a_byte_the_two_reads_disagreed_about_is_left_out_rather_than_picked():
+    """Deciding between them needs a third read, and a wrong decision is
+    invisible afterwards: the byte reads as having been changed by whichever
+    reset is measured against this capture next."""
+    from soundings.resets import agreed_bytes
+
+    first = {(0x40, 0x00, 0x00): 0x10, (0x40, 0x00, 0x01): 0x20}
+    second = {(0x40, 0x00, 0x00): 0x10, (0x40, 0x00, 0x01): 0x7F}
+
+    agreed, disagreed, once = agreed_bytes(first, second)
+
+    assert agreed == {(0x40, 0x00, 0x00): 0x10}
+    assert disagreed == [(0x40, 0x00, 0x01)]
+    assert once == []
+
+
+def test_a_byte_only_one_read_answered_is_neither_agreed_nor_disagreed():
+    """A region that failed to read once has not been shown to differ from
+    itself. Counting it as a disagreement would report a lost reply as a unit
+    that moved on its own."""
+    from soundings.resets import agreed_bytes
+
+    agreed, disagreed, once = agreed_bytes({(0x40, 0x00, 0x00): 0x10}, {})
+
+    assert agreed == {}
+    assert disagreed == []
+    assert once == [(0x40, 0x00, 0x00)]
+
+
+def test_a_capture_says_that_the_power_cycle_is_a_claim_and_not_a_measurement():
+    """Nothing in the run can tell a unit fresh from the mains switch from one
+    an earlier run wrote to, and a later reader has no way to recover which it
+    was. The record carries the assertion as an assertion."""
+    from soundings.resets import CAPTURED_IS_ASSERTED, power_on_record
+
+    record = power_on_record(
+        {(0x40, 0x00, 0x00): 0x10},
+        {(0x40, 0x00, 0x00): 0x10},
+        unit_id="roland-sc88pro-01",
+        identity_reply="F0 7E 10 06 02 F7",
+        captured="immediately after a power cycle",
+        regions_read=2,
+        regions_unread=0,
+    )
+
+    assert record["captured_is_asserted_not_measured"] == CAPTURED_IS_ASSERTED
+    assert record["captured"] == "immediately after a power cycle"
+    assert record["unit_id"] == "roland-sc88pro-01"
+    assert record["values"] == {"40 00 00": "10"}
+    assert record["read_disagreed_at"] == []

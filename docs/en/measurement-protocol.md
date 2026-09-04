@@ -42,17 +42,7 @@ Records what the unit answers to an Identity Request. The reply goes into
 chain, and the unit's settings. Everything measured afterwards is scoped to that
 record.
 
-### 2. Power-on state
-
-Captured before anything writes to the unit, by reading the space twice over
-with nothing but RQ1 sent. What this produces is the state the unit powers up
-in; once a stage has written to the unit, that state is no longer available
-until the next power cycle.
-
-Addresses where the two reads disagreed are listed rather than resolved. Every
-later reset measurement is compared against this file.
-
-### 3. Address map
+### 2. Address map
 
 ```sh
 rye run soundings sweep --out data/units/<unit-id>/address-map.json
@@ -61,6 +51,33 @@ rye run soundings sweep --out data/units/<unit-id>/address-map.json
 Asks the unit which addresses answer. The map is what the unit answered, not
 what a document lists, and it is what the following stages are aimed at. A
 region absent from the map is absent from everything measured afterwards.
+
+### 3. Power-on state
+
+```sh
+rye run soundings power-on --map data/units/<unit-id>/address-map.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on-state.json
+```
+
+Reads the space twice over and writes nothing. What this produces is the state
+the unit powers up in.
+
+**This is the last stage that may be run before a stage that writes.** Stages 1
+to 3 send reads only, so the capture is still a power-on capture when it is
+taken after the sweep. From stage 4 onwards the unit is written to, and the
+power-on state is then unavailable until the next power cycle. A map costs a
+sweep to rebuild; this capture cannot be rebuilt at all.
+
+The run cannot tell a unit fresh from the mains switch from one an earlier run
+wrote to, because both answer a read the same way. What it records is therefore
+the operator's statement of what was done beforehand, marked as a claim, beside
+the one thing the run can say: that it wrote nothing itself.
+
+Addresses where the two reads disagreed are listed rather than resolved.
+Deciding between them would need a third read, and a wrong decision is invisible
+afterwards -- the byte simply reads as having been changed by whichever reset is
+measured against this capture next. Every later reset measurement is compared
+against this file.
 
 ### 4. Windows
 

@@ -53,6 +53,7 @@
     "tone-map",
     "efx-map",
     "reset-probe",
+    "power-on",
     "alias-scan",
     "repeat",
     "contrast",
@@ -999,6 +1000,91 @@
         }
       ]
     },
+    "power-on": {
+      "help": "capture the state the unit powers up in, which is available only until something writes to it",
+      "handler": "cmd_power_on",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "address map the regions are read from. Required rather than defaulted: a capture read through another unit's map is a baseline for a space this unit was never asked about",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--unit-id"
+          ],
+          "dest": "unit_id",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the unit this is a capture of, as its directory names it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--captured"
+          ],
+          "dest": "captured",
+          "nargs": null,
+          "default": "'immediately after a power cycle, before anything was sent to the unit'",
+          "required": false,
+          "help": "what was done before this run, in the words of whoever did it. The run cannot check it and records it as a claim",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
     "alias-scan": {
       "help": "find where a message is stored, by diffing the address space around it",
       "handler": "cmd_alias_scan",
@@ -1540,7 +1626,7 @@
           "nargs": "+",
           "default": "['struck']",
           "required": false,
-          "help": "notes to ask the parameter under: struck, released, sustained, soft, loud, unpitched, wash, deep, struck_kit, low, high, plus 'broad' for the five that answer most parameters and 'all'. Audible under any is audible; a null carries the list of what was tried, because an inaudible result is as much a fact about the note as about the parameter",
+          "help": "notes to ask the parameter under: struck, released, sustained, soft, loud, unpitched, wash, deep, struck_kit, struck_kit_map2, low, high, plus 'broad' for the five that answer most parameters and 'all'. Audible under any is audible; a null carries the list of what was tried, because an inaudible result is as much a fact about the note as about the parameter",
           "metavar": "NAME",
           "choices": null,
           "class": "_StoreAction"
