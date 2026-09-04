@@ -249,6 +249,7 @@ KEPT_ITS_OWN = "every address answered differently from its neighbours"
 ONE_VALUE_BETWEEN_THEM = "every address answered the same, so at most one of them holds anything"
 SOME_INDISTINGUISHABLE = "some neighbouring addresses could not be told apart"
 NOTHING_READABLE = "no address here would answer"
+TOO_FEW_TO_COMPARE = "only one address here would answer, so there was nothing to compare it with"
 
 HOLD_METHOD = (
     "Neighbouring addresses are given different values before any of them is read, and then "
@@ -257,6 +258,15 @@ HOLD_METHOD = (
     "address answers with what it was just given and looks like a store. Written apart from "
     "read, a window can only show the value it was given last, and a run of them all answers "
     "the same."
+)
+
+DOES_NOT_SEE_A_MIRRORED_BLOCK = (
+    "This does not find a block that mirrors another block. The window at 42 through 4F "
+    "redirects the block and keeps the offset, so 42 04 20 and 42 04 21 reach two different "
+    "cells of the store they point at -- neighbours there really are distinct, and every one "
+    "of those 504 regions passes this as holding independently. What it finds is the other "
+    "shape: a run of addresses backed by one cell. The two questions are separate and neither "
+    "answer covers the other; window-probe is what asks the first."
 )
 
 HOLD_CAVEAT = (
@@ -301,6 +311,36 @@ class Held:
         }
 
 
+def hold_verdict(read_back: list[str]) -> tuple[str, int]:
+    """The verdict and the count of neighbouring pairs that answered alike.
+
+    A pure reading of the row, so a run already made can be read again when the
+    rule changes. Kept beside `hold_probe`, which calls it, because a second
+    implementation of a rule is a second rule.
+    """
+    pairs = list(zip(read_back, read_back[1:], strict=False))
+    alike = sum(1 for a, b in pairs if a == b)
+    if len(read_back) < 2:
+        return (TOO_FEW_TO_COMPARE if read_back else NOTHING_READABLE), alike
+    if len(set(read_back)) <= 1:
+        return ONE_VALUE_BETWEEN_THEM, alike
+    if alike:
+        return SOME_INDISTINGUISHABLE, alike
+    return KEPT_ITS_OWN, alike
+
+
+def read_hold_verdicts_again(payload: dict) -> int:
+    """Apply the current rule to a saved run, and say how many verdicts moved."""
+    moved = 0
+    for region in payload["regions"]:
+        verdict, alike = hold_verdict(list(region["read_back"].values()))
+        if verdict != region["verdict"]:
+            region["verdict"] = verdict
+            moved += 1
+        region["neighbouring_pairs_that_answered_alike"] = alike
+    return moved
+
+
 def hold_probe(prober: Prober, start: Address, length: int, *, progress=None) -> Held:
     """Give a run of addresses different values, then read them all, then put them back.
 
@@ -340,15 +380,7 @@ def hold_probe(prober: Prober, start: Address, length: int, *, progress=None) ->
     # exactly what it was given. An address that clamps answers with its own
     # bound rather than with the extreme it was written, which is a fact about
     # its range and says nothing about whose storage it is.
-    answers = list(result.read_back.values())
-    pairs = list(zip(answers, answers[1:], strict=False))
-    if result.distinct <= 1:
-        result.verdict = ONE_VALUE_BETWEEN_THEM
-    elif all(a != b for a, b in pairs):
-        result.verdict = KEPT_ITS_OWN
-    else:
-        result.verdict = SOME_INDISTINGUISHABLE
-    result.indistinguishable_pairs = sum(1 for a, b in pairs if a == b)
+    result.verdict, result.indistinguishable_pairs = hold_verdict(list(result.read_back.values()))
 
     for address, value in originals.items():
         prober.write(address, value)

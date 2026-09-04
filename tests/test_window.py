@@ -217,3 +217,26 @@ def test_a_clamped_neighbour_is_called_indistinguishable_and_not_shared() -> Non
     assert result.verdict == window.SOME_INDISTINGUISHABLE
     assert result.indistinguishable_pairs == 1
     assert result.distinct > 1
+
+
+def test_one_readable_address_is_not_a_finding_about_sharing() -> None:
+    """A region where only one address answers has no neighbours, so it cannot be
+    told whether it shares anything. Reporting it as every address answering the
+    same is true and reads as a result, which is worse than saying nothing."""
+    verdict, alike = window.hold_verdict(["40"])
+    assert verdict == window.TOO_FEW_TO_COMPARE
+    assert alike == 0
+    assert window.hold_verdict([])[0] == window.NOTHING_READABLE
+
+
+def test_a_saved_run_is_read_again_through_the_same_rule() -> None:
+    payload = {
+        "regions": [
+            {"verdict": "something stale", "read_back": {"40 00 00": "40"}},
+            {"verdict": "something stale", "read_back": {"a": "00", "b": "7F", "c": "00"}},
+        ]
+    }
+    assert window.read_hold_verdicts_again(payload) == 2
+    assert payload["regions"][0]["verdict"] == window.TOO_FEW_TO_COMPARE
+    assert payload["regions"][1]["verdict"] == window.KEPT_ITS_OWN
+    assert window.read_hold_verdicts_again(payload) == 0
