@@ -141,3 +141,33 @@ def test_a_capture_says_that_the_power_cycle_is_a_claim_and_not_a_measurement():
     assert record["unit_id"] == "roland-sc88pro-01"
     assert record["values"] == {"40 00 00": "10"}
     assert record["read_disagreed_at"] == []
+
+
+def test_a_channel_mode_message_is_addressed_to_a_part_and_says_so():
+    """Every other subject is addressed to the unit. A label that did not carry
+    the channel would put three runs on three different parts under one name."""
+    from soundings.resets import channel_mode
+
+    subject = channel_mode("Reset All Controllers", 9, 121)
+
+    assert subject.message == [0xB9, 121, 0x00]
+    assert subject.label == "Reset All Controllers on channel 10"
+
+
+def test_the_channel_mode_subjects_are_the_three_with_no_opposite():
+    """122, 124, 125, 126 and 127 name states, and a state is what the alias scan
+    can measure. Sending them here as well would measure them twice by the
+    weaker of the two methods."""
+    from soundings.resets import channel_mode_catalogue
+
+    controllers = {r.message[1] for r in channel_mode_catalogue(0)}
+    assert controllers == {120, 121, 123}
+
+
+def test_a_channel_mode_subject_carries_what_the_mark_does_not_cover():
+    """The specification defines these over controller values and the mark is
+    written by SysEx, so a message that restores an internal value never written
+    back into the address space reads here as restoring nothing."""
+    from soundings.resets import CHANNEL_MODE_NOTE, channel_mode_catalogue
+
+    assert all(r.note == CHANNEL_MODE_NOTE for r in channel_mode_catalogue(0))

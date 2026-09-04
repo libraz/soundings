@@ -249,6 +249,23 @@ def register(sub) -> None:
         "marks land in the store they are a window onto and say only what it did",
     )
     p.add_argument(
+        "--mark-prefix",
+        nargs="*",
+        default=[],
+        metavar="PREFIX",
+        help="mark only addresses starting here. Everything outside is left at whatever it "
+        "held, so the run says nothing about it -- which is the bound to state when a subject "
+        "is aimed at part of the space rather than at all of it",
+    )
+    p.add_argument(
+        "--subjects",
+        default="resets",
+        choices=("resets", "channel-mode"),
+        help="what to break the state with. 'channel-mode' sends controllers 120, 121 and 123, "
+        "which act rather than set and so cannot be measured by an alias scan's out-and-back",
+    )
+    options.add_channel(p)
+    p.add_argument(
         "--include-mode-set",
         action="store_true",
         help="also send System Mode Set, which reinitialises the unit rather than "
@@ -696,11 +713,14 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     from ..aliases import Snapshotter
     from ..resets import (
         METHOD,
+        WHY_BOUNDED,
+        WHY_CHANNEL_MODE_MARKED,
         WHY_PRECEDED,
         WHY_SKIPPED,
         Prober,
         ResetResult,
         catalogue,
+        channel_mode_catalogue,
         compare,
         mode_set,
         named,
@@ -718,13 +738,19 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     # all of them are in a whole-map one, so the addition was covering for the
     # probe rather than adding to it.
     wanted = archive.accepting_bytes(args.write_probe)
-    kept, skipped = archive.split_off_prefixes(wanted, args.skip_prefix)
+    if args.mark_prefix:
+        kept, skipped = archive.keep_only_prefixes(wanted, args.mark_prefix)
+    else:
+        kept, skipped = archive.split_off_prefixes(wanted, args.skip_prefix)
     # Regions overlap, so an address is offered more than once. Marking it twice
     # measures nothing further, and counting it twice makes the tally of what was
     # marked fall short of the target list by the number of repeats -- which reads
     # exactly like that many addresses having refused.
     targets = list(dict.fromkeys(tuple(int(b, 16) for b in a.split()) for a in kept))
-    resets = catalogue(args.device_id)
+    if args.subjects == "channel-mode":
+        resets = channel_mode_catalogue(args.channel)
+    else:
+        resets = catalogue(args.device_id)
     if args.include_mode_set:
         resets.append(mode_set(args.device_id))
 
@@ -772,9 +798,18 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         # bytes: every reset here restores those, and ranking on them alone
         # picks whichever happened to be tried first.
         best = min(results, key=lambda r: (len(r.differs_from_power_on), -len(r.restored)))
-        link.send(next(x for x in resets if x.label == best.label).message)
+        # A channel mode message is not a state to leave the unit in: it is aimed
+        # at one part and the run has just broken the rest of the space with
+        # marks. So the subject that ranked best is reported and the opener is
+        # what actually goes out.
+        left_on = best.label if args.subjects == "resets" else opener.label
+        link.send(
+            next(x for x in resets if x.label == best.label).message
+            if args.subjects == "resets"
+            else opener.message
+        )
         time.sleep(args.settle)
-        print(f"\nleft the unit on {best.label}")
+        print(f"\nleft the unit on {left_on}")
 
     print()
     print(summarise(results))
@@ -788,13 +823,23 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
             "each_preceded_by": args.from_reset,
             "why_preceded": WHY_PRECEDED,
             "write_probe": args.write_probe,
+            "subjects": args.subjects,
             "left_unmarked": {
-                "prefixes": args.skip_prefix,
+                "prefixes": args.mark_prefix or args.skip_prefix,
+                "bounded_to": bool(args.mark_prefix),
                 "addresses": len(skipped),
-                "why": WHY_SKIPPED,
+                "why": WHY_BOUNDED if args.mark_prefix else WHY_SKIPPED,
             },
+            **(
+                {
+                    "channel": args.channel + 1,
+                    "marked_by_sysex_not_by_controller": {"why": WHY_CHANNEL_MODE_MARKED},
+                }
+                if args.subjects == "channel-mode"
+                else {}
+            ),
             "order": [r.label for r in results],
-            "left_on": best.label,
+            "left_on": left_on,
             "resets": [r.to_json() for r in results],
         },
     )

@@ -935,6 +935,48 @@
         },
         {
           "option_strings": [
+            "--mark-prefix"
+          ],
+          "dest": "mark_prefix",
+          "nargs": "*",
+          "default": "[]",
+          "required": false,
+          "help": "mark only addresses starting here. Everything outside is left at whatever it held, so the run says nothing about it -- which is the bound to state when a subject is aimed at part of the space rather than at all of it",
+          "metavar": "PREFIX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--subjects"
+          ],
+          "dest": "subjects",
+          "nargs": null,
+          "default": "'resets'",
+          "required": false,
+          "help": "what to break the state with. 'channel-mode' sends controllers 120, 121 and 123, which act rather than set and so cannot be measured by an alias scan's out-and-back",
+          "metavar": null,
+          "choices": [
+            "resets",
+            "channel-mode"
+          ],
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
             "--include-mode-set"
           ],
           "dest": "include_mode_set",
@@ -1159,7 +1201,8 @@
             "rpn",
             "channel",
             "address",
-            "universal"
+            "universal",
+            "mode"
           ],
           "class": "_StoreAction"
         },

@@ -96,6 +96,64 @@ def catalogue(device_id: int) -> list[Reset]:
     ]
 
 
+WHY_BOUNDED = (
+    "The mark was confined to these blocks, so every address outside them kept whatever it "
+    "held and this run says nothing about what the subject did to it. That is not the same as "
+    "having found nothing there: a byte already at its power-on value reads identically whether "
+    "the message restored it or never reached it, which is the whole reason the state is broken "
+    "first."
+)
+
+CHANNEL_MODE_NOTE = (
+    "A channel mode message rather than a reset, and addressed to one channel rather than to "
+    "the unit. It is measured the same way because the question is the same one -- what does "
+    "this put back -- and because the out-and-back an alias scan runs on cannot be run on a "
+    "message that has one value and no opposite."
+)
+
+WHY_CHANNEL_MODE_MARKED = (
+    "The specification defines these over controller values, and the mark is written by SysEx "
+    "instead, so what is broken is every byte the address space accepts a write at rather than "
+    "the ones a controller can reach. That is the broader perturbation and it is the one that "
+    "can be verified byte by byte. Its cost is that a message restoring an internal controller "
+    "value which is not written back into the address space would read here as restoring "
+    "nothing."
+)
+
+
+def channel_mode(label: str, channel: int, controller: int, value: int = 0x00) -> Reset:
+    """One of the channel mode messages, as something the probe can send.
+
+    Wrapped as a Reset rather than given its own type: what a reset probe does is
+    break the state and see what a message puts back, and that is exactly the
+    question these three raise. The label carries the channel, since unlike every
+    other member of the catalogue this one is addressed to a part.
+    """
+    return Reset(
+        f"{label} on channel {channel + 1}",
+        [0xB0 | (channel & 0x0F), controller & 0x7F, value & 0x7F],
+        CHANNEL_MODE_NOTE,
+    )
+
+
+def channel_mode_catalogue(channel: int) -> list[Reset]:
+    """The three channel mode messages that act rather than set.
+
+    120, 121 and 123 each take one value and have no opposite, so an alias scan's
+    prime-move-return reports every one of them as landing nothing whatever the
+    unit does with them. Here they are sent once, into a space that was broken
+    first, and what they put back is the measurement.
+
+    122 and the omni and mono/poly pairs are absent because they are states, and
+    a state is what the alias scan can measure.
+    """
+    return [
+        channel_mode("All Sound Off", channel, 120),
+        channel_mode("Reset All Controllers", channel, 121),
+        channel_mode("All Notes Off", channel, 123),
+    ]
+
+
 def named(label: str, device_id: int) -> Reset:
     """One reset out of the catalogue, by the label it is published under.
 
@@ -396,6 +454,8 @@ __all__ = [
     "ResetResult",
     "agreed_bytes",
     "catalogue",
+    "channel_mode",
+    "channel_mode_catalogue",
     "compare",
     "mode_set",
     "power_on_record",

@@ -120,3 +120,19 @@ def test_a_stimulus_that_landed_nowhere_contributes_no_address(tmp_path):
     )
 
     assert archive.stores_reached([scan]) == []
+
+
+def test_a_bounded_mark_keeps_its_blocks_and_reports_everything_else():
+    """A run confined to a few blocks and a run that excluded a few are two
+    different claims. Reading which one was made from the order of two return
+    values is how they get mixed up, so the two calls are separate."""
+    addresses = ["20 00 00", "21 00 00", "40 11 19", "41 04 24"]
+    kept, outside = archive.keep_only_prefixes(addresses, ["20", "21"])
+    assert kept == ["20 00 00", "21 00 00"]
+    assert outside == ["40 11 19", "41 04 24"]
+
+
+def test_no_prefix_bounds_nothing_and_leaves_nothing_out():
+    kept, outside = archive.keep_only_prefixes(["20 00 00"], [])
+    assert kept == ["20 00 00"]
+    assert outside == []

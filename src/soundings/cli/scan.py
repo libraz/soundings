@@ -37,7 +37,7 @@ def register(sub) -> None:
     p.add_argument(
         "--kind",
         default="cc",
-        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel", "address", "universal"),
+        choices=("cc", "nrpn", "drum-nrpn", "rpn", "channel", "address", "universal", "mode"),
         help="what to send; two kinds landing on one address is what makes them aliases",
     )
     p.add_argument(
@@ -133,6 +133,8 @@ def _stimuli(args: argparse.Namespace) -> list:
         ]
     if args.kind == "universal":
         return al.universal_stimuli(ch, args.note)
+    if args.kind == "mode":
+        return al.mode_stimuli(ch)
     if args.kind == "channel":
         return [
             al.program_change(ch),
@@ -173,12 +175,15 @@ def _kind_reached(kind: str, stimuli: list, found: list) -> bool:
 def cmd_alias_scan(args: argparse.Namespace) -> int:
     from ..aliases import (
         METHOD,
-        NOT_SCANNED,
+        MODE_NORMAL,
+        MODE_PAIRED,
+        MODE_RESTORED,
         NOTE,
         RPN_PARKED,
         WHY_CONTROL,
         WHY_KIND_REACHED,
         WHY_LANDED_OUTSIDE,
+        WHY_MODE_PAIRED,
         WHY_RECOVERED,
         WHY_RESIDUE,
         WHY_UNREAD,
@@ -188,6 +193,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         control_change,
         control_run,
         landed_outside_its_own_block,
+        not_scanned,
         summarise,
     )
 
@@ -256,6 +262,15 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
             if hit is not None:
                 found.append(hit)
                 print(f"  {stimulus.label}: {', '.join(hit.addresses)}")
+
+        # After the trailing control rather than before it, so the control is
+        # asked in whatever mode the last stimulus left. A mode this unit honours
+        # would break the channel messages that follow it, and the control is the
+        # one message in the run positioned to notice.
+        if args.kind == "mode":
+            for number, value in MODE_NORMAL:
+                link.send(control_change(args.channel, number, value))
+            print("  put back: omni on, poly, local control on")
 
         restored = restorer.put_back(originals) if originals else "nothing written"
         if originals:
@@ -333,6 +348,20 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 if args.kind == "address"
                 else {}
             ),
+            **(
+                {
+                    "channel_mode_restored": {
+                        "sent": [f"CC{n} {v}" for n, v in MODE_NORMAL],
+                        "why": MODE_RESTORED,
+                    },
+                    "stimuli_naming_two_controllers": {
+                        "stimuli": list(MODE_PAIRED),
+                        "why": WHY_MODE_PAIRED,
+                    },
+                }
+                if args.kind == "mode"
+                else {}
+            ),
             "method": METHOD,
             "region_prefix": args.prefix,
             "regions_watched": len(regions),
@@ -345,7 +374,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 "by_stimulus": unread_by_stimulus,
                 "why": WHY_UNREAD,
             },
-            "not_scanned": NOT_SCANNED,
+            "not_scanned": not_scanned(args.kind),
             "rpn_parked": RPN_PARKED,
             "bank_latch_on_exit": latch,
             "written_bytes_restored": restored,

@@ -424,3 +424,71 @@ def test_a_kind_address_run_with_nowhere_to_write_refuses():
     args = argparse.Namespace(addresses=[], addresses_from=[])
     with _pytest.raises(SystemExit):
         _addresses(args)
+
+
+def test_a_mode_pair_sends_one_controller_at_one_value_and_another_at_the_other():
+    """The state is named by two controllers, so what the value selects is which
+    message goes out. Sent as two separate stimuli each would land nothing and
+    read as two dead controllers rather than as one setting."""
+    from soundings.aliases import mode_pair
+
+    stimulus = mode_pair("omni on or off", 9, (125, 0), (124, 0))
+
+    assert stimulus.values == (0, 1)
+    assert stimulus.build(0) == [[0xB9, 125, 0]]
+    assert stimulus.build(1) == [[0xB9, 124, 0]]
+
+
+def test_the_normal_state_is_the_value_the_scan_primes_and_returns_to():
+    """Omni off and mono mode change how every later channel message is received.
+    Priming with the deviant member would put the run in that state for most of
+    its length, and the return leg would leave it there."""
+    from soundings.aliases import mode_stimuli
+
+    low, high = {}, {}
+    for stimulus in mode_stimuli(0):
+        low[stimulus.label] = stimulus.build(stimulus.values[0])
+        high[stimulus.label] = stimulus.build(stimulus.values[1])
+
+    assert low["local control on or off"] == [[0xB0, 122, 0x7F]]
+    assert low["omni on or off"] == [[0xB0, 125, 0]]
+    assert low["poly or mono"] == [[0xB0, 127, 0]]
+    assert high["local control on or off"] == [[0xB0, 122, 0x00]]
+    assert high["omni on or off"] == [[0xB0, 124, 0]]
+    assert high["poly or mono"] == [[0xB0, 126, 1]]
+
+
+def test_the_three_action_mode_messages_are_not_sent_by_this_scan():
+    """120, 121 and 123 have one value and no opposite, so the out-and-back
+    reports them as landing nothing whatever the unit does with them. Sending
+    them here would manufacture three nulls and publish them as findings."""
+    from soundings.aliases import mode_stimuli
+
+    sent = {
+        message[1]
+        for stimulus in mode_stimuli(0)
+        for value in stimulus.values
+        for message in stimulus.build(value)
+    }
+    assert sent == {122, 124, 125, 126, 127}
+    assert not sent & {120, 121, 123}
+
+
+def test_a_mode_run_carries_the_gap_it_left_and_not_the_one_it_closed():
+    """The cc scan's caveat says the channel mode messages need a run of their
+    own. Carried into that run it would say the work still had to be done."""
+    from soundings.aliases import MODE_NOT_SCANNED, NOT_SCANNED, not_scanned
+
+    assert not_scanned("mode") == MODE_NOT_SCANNED
+    assert not_scanned("cc") == NOT_SCANNED
+    assert not_scanned("universal") == NOT_SCANNED
+
+
+def test_the_state_put_back_afterwards_is_the_low_value_of_every_pair():
+    """Whatever the retry left, the unit ends where the stimuli found it. Held
+    against the stimuli rather than written out twice, so a pair whose normal
+    member changed cannot leave the restoring trio behind."""
+    from soundings.aliases import MODE_NORMAL, mode_stimuli
+
+    normal = [stimulus.build(stimulus.values[0])[0] for stimulus in mode_stimuli(0)]
+    assert sorted((m[1], m[2]) for m in normal) == sorted(MODE_NORMAL)

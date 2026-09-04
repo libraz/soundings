@@ -98,6 +98,36 @@ NOT_SCANNED = (
     "every later attribution is measured against, so they need a scan of their own."
 )
 
+MODE_NOT_SCANNED = (
+    "Controllers 120, 121 and 123 are actions rather than settings: one value each and no "
+    "opposite. The out-and-back this scan is built on cannot be run on them at all, since a "
+    "byte one of them moves does not move back when the same message is sent again, and every "
+    "one of them would be reported as landing nothing -- a null the method produced rather than "
+    "the unit. What they change is measured by marking the space first and seeing what the "
+    "message puts back, which is a different run."
+)
+
+MODE_RESTORED = (
+    "Omni on, poly and local control on were sent after the last stimulus. A stimulus that "
+    "lands nothing is retried with its two values the other way round, and for a pair whose "
+    "value is which of two controllers gets sent, that retry ends on the deviant member. "
+    "Without this the run would leave the unit in a mode nothing announced."
+)
+
+WHY_MODE_PAIRED = (
+    "Omni and mono/poly are each named by two controllers rather than by one controller with "
+    "two values, so what varies across the stimulus is which message is sent. The normal state "
+    "is the low value, so the scan primes the unit where it found it and spends the return leg "
+    "putting it back there."
+)
+
+# Sent after a mode scan, whichever way its stimuli ended.
+MODE_NORMAL = ((125, 0), (127, 0), (122, 127))
+
+# The two stimuli whose value is which controller goes out. Named once, and used
+# both to build them and to say in the record which ones they were.
+MODE_PAIRED = ("omni on or off", "poly or mono")
+
 RPN_PARKED = "RPN and NRPN were set to 7F 7F before the scan."
 
 Address = tuple[int, int, int]
@@ -535,6 +565,59 @@ def universal_stimuli(channel: int, note: int) -> list[Stimulus]:
     ]
 
 
+def mode_pair(
+    label: str, channel: int, normal: tuple[int, int], deviant: tuple[int, int]
+) -> Stimulus:
+    """One state named by two controllers, sent as a stimulus with two values.
+
+    The value is which of the two messages goes out, so the pair reads as one
+    setting rather than as two controllers that each land nothing. The normal
+    member is the low value, which is what the scan primes with and returns to.
+    """
+    return Stimulus(
+        label=label,
+        kind="mode",
+        build=lambda v: [control_change(channel, *(deviant if v else normal))],
+        values=(0, 1),
+    )
+
+
+def mode_stimuli(channel: int) -> list[Stimulus]:
+    """The channel mode messages that name a state, which is not all of them.
+
+    Three of the eight are actions with no opposite and are left out, for the
+    reason MODE_NOT_SCANNED gives. The five that remain describe two states each,
+    and are sent as three stimuli: local control on or off, omni on or off, and
+    poly or mono.
+
+    Every one of them ends on the state the unit was found in. That matters more
+    here than for any other kind, because omni off and mono mode change how the
+    channel messages after them are received: a stimulus left standing would be
+    measuring the rest of the run rather than itself, and the run's own trailing
+    control is what would notice.
+    """
+    return [
+        Stimulus(
+            label="local control on or off",
+            kind="mode",
+            build=lambda v: [control_change(channel, 122, v)],
+            values=(0x7F, 0x00),
+        ),
+        mode_pair(MODE_PAIRED[0], channel, (125, 0), (124, 0)),
+        mode_pair(MODE_PAIRED[1], channel, (127, 0), (126, 1)),
+    ]
+
+
+def not_scanned(kind: str) -> str:
+    """What a run of this kind left out, in its own terms.
+
+    A cc scan leaves the channel mode messages out; the scan of those leaves out
+    the three of them it has no method for. Naming the same gap in both would put
+    a run under a caveat saying it still had to be done.
+    """
+    return MODE_NOT_SCANNED if kind == "mode" else NOT_SCANNED
+
+
 def landed_outside_its_own_block(found: list[Attribution]) -> dict[str, list[str]]:
     """For each address write, the addresses it reached under some other top byte.
 
@@ -619,6 +702,9 @@ __all__ = [
     "control_change",
     "control_run",
     "differences",
+    "mode_pair",
+    "mode_stimuli",
+    "not_scanned",
     "nrpn",
     "pitch_bend",
     "program_change",

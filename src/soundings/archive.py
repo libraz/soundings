@@ -76,3 +76,18 @@ def split_off_prefixes(addresses: list[str], prefixes: list[str]) -> tuple[list[
     skipped = sorted({a for a in addresses if any(a.startswith(p) for p in prefixes)})
     dropped = set(skipped)
     return [a for a in addresses if a not in dropped], skipped
+
+
+def keep_only_prefixes(addresses: list[str], prefixes: list[str]) -> tuple[list[str], list[str]]:
+    """The addresses under one of these prefixes, and everything else.
+
+    The inverse of split_off_prefixes, and separate from it rather than the same
+    call with the halves swapped: a run bounded to a few blocks and a run that
+    excluded a few are two different claims, and reading which one a call made
+    from the order of its return values is how they get mixed up.
+    """
+    if not prefixes:
+        return list(addresses), []
+    kept = [a for a in addresses if any(a.startswith(p) for p in prefixes)]
+    inside = set(kept)
+    return kept, sorted({a for a in addresses if a not in inside})
