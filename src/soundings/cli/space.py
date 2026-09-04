@@ -720,10 +720,8 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     from ..aliases import Snapshotter
     from ..resets import (
         METHOD,
-        WHY_BOUNDED,
         WHY_CHANNEL_MODE_MARKED,
         WHY_PRECEDED,
-        WHY_SKIPPED,
         WHY_STOPPED,
         Prober,
         ResetResult,
@@ -731,6 +729,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         catalogue,
         channel_mode_catalogue,
         compare,
+        left_unmarked,
         mode_set,
         named,
         outcomes_agree,
@@ -852,12 +851,11 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         "why_preceded": WHY_PRECEDED,
         "write_probe": args.write_probe,
         "subjects": args.subjects,
-        "left_unmarked": {
-            "prefixes": args.mark_prefix or args.skip_prefix,
-            "bounded_to": bool(args.mark_prefix),
-            "addresses": len(skipped),
-            "why": WHY_BOUNDED if args.mark_prefix else WHY_SKIPPED,
-        },
+        "left_unmarked": left_unmarked(
+            confined_to=args.mark_prefix,
+            skipped=args.skip_prefix,
+            addresses=len(skipped),
+        ),
         **(
             {
                 "channel": args.channel + 1,

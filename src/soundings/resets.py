@@ -122,6 +122,27 @@ WHY_BOUNDED = (
     "first."
 )
 
+
+def left_unmarked(*, confined_to: list[str], skipped: list[str], addresses: int) -> dict:
+    """What a run put no mark in, named so that the naming cannot be read backwards.
+
+    A run bounded to a few blocks and a run that excluded a few leave different
+    things unmarked, and the prefixes that describe them are opposites: one lists
+    where the marks went, the other lists where they did not. Carried under one
+    key they read identically, and a reader taking the list at face value gets
+    the complement of what the run did.
+
+    So the two are different keys and only the one that applies is present. The
+    key that says 'outside' can only be read one way, and 'prefixes' keeps the
+    meaning it has in every record written before a run could be bounded.
+    """
+    where = {"outside": list(confined_to)} if confined_to else {"prefixes": list(skipped)}
+    return {
+        **where,
+        "addresses": addresses,
+        "why": WHY_BOUNDED if confined_to else WHY_SKIPPED,
+    }
+
 CHANNEL_MODE_NOTE = (
     "A channel mode message rather than a reset, and addressed to one channel rather than to "
     "the unit. It is measured the same way because the question is the same one -- what does "
@@ -542,6 +563,7 @@ __all__ = [
     "channel_mode",
     "channel_mode_catalogue",
     "compare",
+    "left_unmarked",
     "mode_set",
     "outcomes_agree",
     "power_on_record",

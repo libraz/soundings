@@ -173,6 +173,30 @@ def test_a_channel_mode_subject_carries_what_the_mark_does_not_cover():
     assert all(r.note == CHANNEL_MODE_NOTE for r in channel_mode_catalogue(0))
 
 
+def test_the_prefixes_a_bounded_run_names_cannot_be_read_as_the_ones_it_excluded():
+    """Where the marks went and where they did not are complements, so one list
+    carried under one key reads as the other. A run bounded to four blocks and a
+    run that skipped four are then indistinguishable to anything reading the key
+    rather than the prose beside it."""
+    from soundings.resets import WHY_BOUNDED, WHY_SKIPPED, left_unmarked
+
+    bounded = left_unmarked(confined_to=["20", "40"], skipped=["4A"], addresses=20020)
+    excluded = left_unmarked(confined_to=[], skipped=["42", "4A"], addresses=17160)
+
+    assert bounded == {"outside": ["20", "40"], "addresses": 20020, "why": WHY_BOUNDED}
+    assert excluded == {"prefixes": ["42", "4A"], "addresses": 17160, "why": WHY_SKIPPED}
+
+
+def test_a_bounded_run_does_not_publish_the_prefixes_it_was_not_bounded_by():
+    """--skip-prefix keeps its default while --mark-prefix is given, and emitting
+    both would put an empty exclusion beside a real confinement -- which reads as
+    a run that excluded nothing rather than one that covered four blocks."""
+    from soundings.resets import left_unmarked
+
+    assert "prefixes" not in left_unmarked(confined_to=["20"], skipped=["4A"], addresses=1)
+    assert "outside" not in left_unmarked(confined_to=[], skipped=["4A"], addresses=1)
+
+
 class DeafeningProber:
     """A prober whose unit answers for a while and then stops, like the one did.
 
