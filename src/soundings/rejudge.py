@@ -28,7 +28,7 @@ from . import audible
 from .takes import read
 
 METHOD_SUFFIX = (
-    " The takes were recorded in an earlier session and judged afterwards with no machine "
+    "The takes were recorded in an earlier session and judged afterwards with no machine "
     "attached. The comparator, the yardstick and the takes are the ones the session captured; "
     "only the moment of asking is later."
 )

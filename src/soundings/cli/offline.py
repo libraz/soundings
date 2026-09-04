@@ -103,6 +103,29 @@ def register(sub) -> None:
 
 
     p = sub.add_parser(
+        "efx-sort",
+        help="sort a unit's insertion effects into the ones that move and the ones "
+        "that stand still, from what each did to the unit's own repeatability",
+    )
+    p.add_argument(
+        "records",
+        help="a directory of contrast records, one per effect type, named for the type",
+    )
+    p.add_argument(
+        "--types-from",
+        help="an efx-type-map record naming every type the unit accepts, so a type with "
+        "no record is reported as unsurveyed rather than silently absent",
+    )
+    p.add_argument(
+        "--tracked",
+        help="an efx-motion record to compare against. The two routes rest on different "
+        "properties, so a type they disagree about is reported as a disagreement rather "
+        "than reconciled",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_efx_sort)
+
+    p = sub.add_parser(
         "verdict",
         help="ask an audible verdict of takes recorded in an earlier session, with no "
         "machine attached",
@@ -305,8 +328,87 @@ def cmd_verdict(args: argparse.Namespace) -> int:
                 args.second if args.second is not None else rejudge.settings_in(manifest)[-1],
             ],
             "stimuli": manifest.get("stimuli", []),
-            "method": audible.METHOD + rejudge.METHOD_SUFFIX,
+            "method": audible.METHOD,
+            "judged_offline": rejudge.METHOD_SUFFIX,
             **overall.to_json(),
         },
     )
     return 0
+
+
+def cmd_efx_sort(args: argparse.Namespace) -> int:
+    """Sort every insertion effect type by what it did to the unit's repeatability."""
+    import json
+
+    from .. import efxmotion, efxsort
+
+    found = efxsort.survey(args.records, progress=lambda e: print(f"  {e.type_id:8} {e.verdict}"))
+    if not found:
+        print(f"no contrast records under {args.records}")
+        return 1
+
+    print()
+    print(efxsort.summarise(found))
+    piles = efxsort.partition(found)
+
+    unsurveyed: list[str] = []
+    if args.types_from:
+        accepted = efxmotion.accepted_types(args.types_from)
+        seen = {f.type_id for f in found}
+        unsurveyed = [t for t in accepted if t not in seen]
+        if unsurveyed:
+            print(f"  !! {len(unsurveyed)} types the unit accepts have no record: {unsurveyed}")
+
+    clashes: list[dict] = []
+    if args.tracked:
+        tracked = json.loads(open(args.tracked).read())
+        clashes = efxsort.disagreements(
+            found, [_Tracked(t["type"], t["verdict"]) for t in tracked.get("types", [])]
+        )
+        for clash in clashes:
+            print(
+                f"  !! {clash['type']}: repeatability says {clash['by_repeatability']}, "
+                f"the delay track says {clash['by_delay_track']}"
+            )
+
+    report.write_json(
+        args.out,
+        {
+            "records": str(args.records),
+            "method": efxsort.METHOD,
+            "why_the_asymmetry_is_the_evidence": efxsort.WHY_ASYMMETRY,
+            "moving": piles["moving"],
+            "static": piles["static"],
+            "could_not_say": {
+                "types": piles["could_not_say"],
+                "why": efxsort.WHY_NOT_AUDIBLE,
+            },
+            **(
+                {
+                    "types_accepted": str(args.types_from),
+                    "unsurveyed": {"types": unsurveyed, "why": efxmotion.WHY_MISSING},
+                }
+                if args.types_from
+                else {}
+            ),
+            **(
+                {
+                    "compared_with": str(args.tracked),
+                    "disagreements": clashes,
+                    "why_two_routes": efxsort.WHY_TWO_ROUTES,
+                }
+                if args.tracked
+                else {}
+            ),
+            "types": [f.to_json() for f in found],
+        },
+    )
+    return 0 if not unsurveyed else 1
+
+
+class _Tracked:
+    """Just enough of an efx-motion entry for the comparison to read."""
+
+    def __init__(self, type_id: str, verdict: str) -> None:
+        self.type_id = type_id
+        self.verdict = verdict
