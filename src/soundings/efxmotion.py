@@ -62,6 +62,13 @@ WHY_ONE_PAIR = (
     "nothing here that it buys elsewhere, and the control is what stands in for it."
 )
 
+WHY_MISSING = (
+    "These are types the unit accepts that no pair of takes was found for, so the survey below "
+    "says nothing about them at all. They are listed because a survey reports on what it was "
+    "handed, and a capture that dropped a type would otherwise leave a shorter list of verdicts "
+    "reading as a complete one."
+)
+
 
 @dataclass
 class TypeMotion:
@@ -216,6 +223,23 @@ def survey(
     return out
 
 
+def accepted_types(path: str | Path) -> list[str]:
+    """The type ids a unit answered to, read from its own type map record.
+
+    The list the survey is measured against comes from the unit rather than from
+    a count written here, so a unit accepting a different set is compared with
+    its own.
+    """
+    record = json.loads(Path(path).read_text())
+    return [str(entry["type"]) for entry in record.get("effects", [])]
+
+
+def missing(found: list[TypeMotion], accepted: list[str]) -> list[str]:
+    """Types the unit accepts that the survey never saw a pair of takes for."""
+    sorted_ids = {f.type_id for f in found}
+    return [t for t in accepted if t not in sorted_ids]
+
+
 def partition(found: list[TypeMotion]) -> dict[str, list[str]]:
     """The three piles, which is what the survey is for."""
     return {
@@ -247,9 +271,12 @@ __all__ = [
     "METHOD",
     "NOT_NAMED",
     "WHY_COULD_NOT_SAY",
+    "WHY_MISSING",
     "WHY_ONE_PAIR",
     "TypeMotion",
+    "accepted_types",
     "measure_type",
+    "missing",
     "pair_from",
     "partition",
     "summarise",

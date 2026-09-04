@@ -69,6 +69,13 @@ def register(sub) -> None:
         default="1",
         help="the setting that had the part routed through it",
     )
+    p.add_argument(
+        "--types-from",
+        help="an efx-type-map record naming every type the unit accepts. Any of them "
+        "with no takes under the directory is reported as unsurveyed, so a capture "
+        "that dropped a type cannot leave a short list of verdicts reading as a "
+        "complete one",
+    )
     p.add_argument("--max-delay", type=float, default=60.0, help="milliseconds of delay searched")
     p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
@@ -187,6 +194,12 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
     print(efxmotion.summarise(found))
     piles = efxmotion.partition(found)
 
+    unsurveyed: list[str] = []
+    if args.types_from:
+        unsurveyed = efxmotion.missing(found, efxmotion.accepted_types(args.types_from))
+        if unsurveyed:
+            print(f"  !! {len(unsurveyed)} types the unit accepts have no takes: {unsurveyed}")
+
     report.write_json(
         args.out,
         {
@@ -202,7 +215,15 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
                 "types": piles["could_not_say"],
                 "why": efxmotion.WHY_COULD_NOT_SAY,
             },
+            **(
+                {
+                    "types_accepted": str(args.types_from),
+                    "unsurveyed": {"types": unsurveyed, "why": efxmotion.WHY_MISSING},
+                }
+                if args.types_from
+                else {}
+            ),
             "types": [f.to_json() for f in found],
         },
     )
-    return 0
+    return 0 if not unsurveyed else 1

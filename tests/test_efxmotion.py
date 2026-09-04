@@ -137,6 +137,34 @@ def test_a_directory_without_a_manifest_is_passed_over(tmp_path):
     assert [f.type_id for f in efxmotion.survey(tmp_path)] == ["01 00"]
 
 
+def test_a_type_the_unit_accepts_with_no_takes_is_reported_unsurveyed(tmp_path):
+    """The capture stage's version of the same failure the three piles guard
+    against. A type whose takes never got recorded leaves a shorter list of
+    verdicts, and a short list reads exactly like a complete one."""
+    dry = material(seconds=1.0)
+    a_type(tmp_path, "01-00", dry, dry + 0.5 * np.roll(dry, 400))
+    accepted = tmp_path / "efx-type-map.json"
+    accepted.write_text(
+        json.dumps({"effects": [{"type": "01 00"}, {"type": "02 00"}, {"type": "03 07"}]})
+    )
+
+    found = efxmotion.survey(tmp_path)
+
+    assert efxmotion.accepted_types(accepted) == ["01 00", "02 00", "03 07"]
+    assert efxmotion.missing(found, efxmotion.accepted_types(accepted)) == ["02 00", "03 07"]
+
+
+def test_nothing_is_unsurveyed_when_every_accepted_type_has_takes(tmp_path):
+    """The guard must be able to come back clean, or it says nothing when it fires."""
+    dry = material(seconds=1.0)
+    a_type(tmp_path, "01-00", dry, dry + 0.5 * np.roll(dry, 400))
+    a_type(tmp_path, "02-00", dry, dry + 0.5 * np.roll(dry, 700))
+
+    found = efxmotion.survey(tmp_path)
+
+    assert efxmotion.missing(found, ["01 00", "02 00"]) == []
+
+
 def test_a_type_missing_one_of_its_two_settings_is_left_out(tmp_path):
     """Half a pair cannot be compared, and pairing it with another type's take
     would produce a verdict about neither."""
