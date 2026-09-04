@@ -503,9 +503,7 @@ def cmd_window_probe(args: argparse.Namespace) -> int:
 
 def cmd_hold_probe(args: argparse.Namespace) -> int:
     """Ask each run of addresses whether its members hold values of their own."""
-    import collections
-
-    from ..window import HOLD_CAVEAT, HOLD_METHOD, Prober, hold_probe
+    from ..window import Prober, hold_probe, hold_record
 
     regions = _probe_regions(args)
     print(f"{len(regions)} regions, {sum(n for _, n in regions)} addresses")
@@ -521,25 +519,16 @@ def cmd_hold_probe(args: argparse.Namespace) -> int:
         for start, length in regions:
             done.append(hold_probe(prober, start, length, progress=lambda m: print(f"  {m}")))
 
-    counts = collections.Counter(h.verdict for h in done)
+    record = hold_record(done)
     print()
-    for verdict, n in counts.most_common():
+    for verdict, n in sorted(record["verdicts"].items(), key=lambda item: -item[1]):
         print(f"  {n:4d} regions: {verdict}")
     unrestored = [h.start for h in done if not h.restored]
     print(
         f"  !! not put back: {', '.join(unrestored)}" if unrestored else "  every region put back"
     )
 
-    report.write_json(
-        args.out,
-        {
-            "device_id": f"{args.device_id:02X}",
-            "method": HOLD_METHOD,
-            "caveat": HOLD_CAVEAT,
-            "verdicts": dict(counts),
-            "regions": [h.to_json() for h in done],
-        },
-    )
+    report.write_json(args.out, {"device_id": f"{args.device_id:02X}", **record})
     return 0 if not unrestored else 1
 
 

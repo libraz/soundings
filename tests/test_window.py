@@ -240,3 +240,35 @@ def test_a_saved_run_is_read_again_through_the_same_rule() -> None:
     assert payload["regions"][0]["verdict"] == window.TOO_FEW_TO_COMPARE
     assert payload["regions"][1]["verdict"] == window.KEPT_ITS_OWN
     assert window.read_hold_verdicts_again(payload) == 0
+
+
+def test_a_record_carries_what_the_run_could_not_have_seen() -> None:
+    """The limitation is written by the same call that writes the verdicts. Kept
+    apart, it was carried by a constant nothing emitted and reached the one saved
+    record by hand, leaving the next run to write its verdicts without it."""
+    record = window.hold_record([_held(["00", "7F"]), _held(["40", "40"])])
+
+    assert record["does_not_see_a_mirrored_block"] == window.DOES_NOT_SEE_A_MIRRORED_BLOCK
+    assert record["method"] == window.HOLD_METHOD
+    assert record["caveat"] == window.HOLD_CAVEAT
+    assert record["verdicts"] == {window.KEPT_ITS_OWN: 1, window.ONE_VALUE_BETWEEN_THEM: 1}
+    assert len(record["regions"]) == 2
+
+
+def test_the_limitation_is_about_the_probe_and_not_about_one_unit() -> None:
+    """It is the harness saying what this method cannot reach, so it holds for
+    any unit. A finding about the blocks of a particular one belongs in that
+    unit's record, where a reader looking for what was measured will find it."""
+    assert "42" not in window.DOES_NOT_SEE_A_MIRRORED_BLOCK
+    assert "504" not in window.DOES_NOT_SEE_A_MIRRORED_BLOCK
+
+
+def _held(read_back: list[str]) -> window.Held:
+    region = window.Held(start="40 00 00", length=len(read_back))
+    for i, value in enumerate(read_back):
+        address = f"40 00 {i:02X}"
+        region.given[address] = value
+        region.read_back[address] = value
+    region.verdict, region.indistinguishable_pairs = window.hold_verdict(read_back)
+    region.restored = True
+    return region

@@ -56,17 +56,6 @@ CAVEAT = (
     "never named."
 )
 
-CORRECTS_EARLIER_RECORDS = (
-    "Blocks 42 through 4F of this unit are not storage. Every address in them is a window onto "
-    "whichever of the two drum setup stores, 41 and 51, was addressed last -- for writes as "
-    "well as for reads. That is why they answered as 12 blocks identical to each other and to "
-    "41, and why writing to an address and reading it straight back made every one of them "
-    "look like it held what it had been given: the write points the window and the read "
-    "follows it. Anything an earlier record says about an address in those blocks is about "
-    "the window and not about a store of its own. Measured at three offsets, in "
-    "drum-map-window-04-24.json, drum-map-window-05-10.json and drum-map-window-11-7b.json."
-)
-
 HOLDS_ITS_OWN = "holds its own value"
 IS_A_WINDOW = "a window onto whichever store was addressed last"
 UNREADABLE = "would not answer"
@@ -261,12 +250,12 @@ HOLD_METHOD = (
 )
 
 DOES_NOT_SEE_A_MIRRORED_BLOCK = (
-    "This does not find a block that mirrors another block. The window at 42 through 4F "
-    "redirects the block and keeps the offset, so 42 04 20 and 42 04 21 reach two different "
-    "cells of the store they point at -- neighbours there really are distinct, and every one "
-    "of those 504 regions passes this as holding independently. What it finds is the other "
-    "shape: a run of addresses backed by one cell. The two questions are separate and neither "
-    "answer covers the other; window-probe is what asks the first."
+    "This does not find a block that mirrors another block. A window that redirects a block "
+    "while keeping the offset reaches a different cell for each address within it, so its "
+    "neighbours really are distinct and every region of one passes here as holding "
+    "independently. What this finds is the other shape: a run of addresses backed by one "
+    "cell. The two questions are separate and neither answer covers the other; window-probe "
+    "is what asks the first."
 )
 
 HOLD_CAVEAT = (
@@ -339,6 +328,29 @@ def read_hold_verdicts_again(payload: dict) -> int:
             moved += 1
         region["neighbouring_pairs_that_answered_alike"] = alike
     return moved
+
+
+def hold_record(held: list[Held]) -> dict:
+    """The record a run leaves: its verdicts, and what it could not have seen.
+
+    Assembled here rather than where the run is driven, so that a record cannot
+    be written without the limitation. It was, once: the caveat about a mirrored
+    block was carried by a constant nothing emitted and reached the saved file by
+    hand, which left the next run due to write a record without it. What a probe
+    does not see is half of what its verdicts mean -- 847 of 854 regions holding
+    independently reads as only 7 regions being suspect when the other half is
+    missing.
+    """
+    counts: dict[str, int] = {}
+    for region in held:
+        counts[region.verdict] = counts.get(region.verdict, 0) + 1
+    return {
+        "method": HOLD_METHOD,
+        "caveat": HOLD_CAVEAT,
+        "does_not_see_a_mirrored_block": DOES_NOT_SEE_A_MIRRORED_BLOCK,
+        "verdicts": counts,
+        "regions": [region.to_json() for region in held],
+    }
 
 
 def hold_probe(prober: Prober, start: Address, length: int, *, progress=None) -> Held:
