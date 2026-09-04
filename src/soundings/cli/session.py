@@ -83,3 +83,28 @@ def prepared(link: MidiLink, specs, *, device_id: int, settle: float) -> bool:
             )
             return False
     return True
+
+
+def took(link: MidiLink, address: str, value: int, *, device_id: int) -> tuple[bool, str]:
+    """Whether the address holds what was just written to it, and what it holds.
+
+    The preparation is read back and the setting under test was not, which is the
+    same failure at the other end of the run: an address that took the write and
+    kept what it had leaves every take a take of one setting, and the pair of
+    them reads as a parameter that does nothing. That null is indistinguishable
+    from a real one and there is nothing in the record to tell them apart.
+
+    An address that answers no one-byte read cannot be checked this way, and that
+    is reported as unverified rather than as a failure -- two addresses in a part
+    block are readable only as part of a wider region, and refusing them would
+    drop them from the sweep for being unreadable rather than measuring them.
+    """
+    from .. import roland
+
+    while link.receive(timeout=0.02):
+        pass
+    parsed = roland.parse_dt1(link.exchange(roland.rq1(address, 1, device_id=device_id)))
+    if parsed is None or len(parsed.data) != 1:
+        return True, "no reply to a one byte read, so the write could not be checked"
+    got = parsed.data[0]
+    return got == (value & 0x7F), f"{got:02X}"

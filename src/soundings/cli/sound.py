@@ -16,9 +16,19 @@ from ..stimuli import CATALOGUE as _STIMULUS_CATALOGUE
 from ..stimuli import DEFAULT as _STIMULUS_DEFAULT
 from . import options, report
 from .session import prepared as prepare_state
+from .session import took as setting_took
 from .session import verified_link
 
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
+
+WHY_READ_BACK = (
+    "The setting under test was read back after each write, as the preparation already was. An "
+    "address that takes a write and keeps what it had leaves both sets of takes at one setting, "
+    "which reads as a parameter that does nothing -- a null indistinguishable from a real one "
+    "with nothing in the record to tell them apart. An address that answers no one-byte read is "
+    "recorded as unchecked rather than refused, since some are readable only as part of a wider "
+    "region and refusing them would drop them from the sweep for being unreadable."
+)
 
 
 def register(sub) -> None:
@@ -220,6 +230,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     # one message short is a different question from the whole one.
     sent: list = []
     left_out: dict[str, list] = {}
+    read_back: list[dict] = []
 
     with verified_link(args, refusing="recording") as link:
         gs_reset = named("GS Reset", args.device_id)
@@ -263,6 +274,21 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 for message in setting(value, channel):
                     link.send(message)
                 time.sleep(args.settle)
+                # Read the setting back, as the preparation already is. An
+                # address that takes the write and keeps what it had leaves both
+                # sets of takes at one setting, and that reads as a parameter
+                # that does nothing -- a null with nothing in the record to tell
+                # it from a real one.
+                if args.address:
+                    ok, held = setting_took(link, args.address, value, device_id=args.device_id)
+                    read_back.append({"setting": value, "reads": held, "took": ok})
+                    if not ok:
+                        print(
+                            f"\n    {args.address} was set to {value} and reads back {held}. "
+                            "Both settings would be takes of whatever it does hold, so nothing "
+                            "measured from them would be about the parameter."
+                        )
+                        return 1
                 takes = []
                 for index in range(args.takes):
                     # After the setting, and before every take rather than once
@@ -356,6 +382,11 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             ],
             **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
             "stimuli": [stim.to_json() for stim in sent],
+            **(
+                {"setting_read_back": read_back, "why_read_back": WHY_READ_BACK}
+                if read_back
+                else {}
+            ),
             **(
                 {"left_out_of_the_gesture": left_out, "why_left_out": gestures.WHY_DROPPED}
                 if left_out
