@@ -137,6 +137,43 @@ def test_a_directory_without_a_manifest_is_passed_over(tmp_path):
     assert [f.type_id for f in efxmotion.survey(tmp_path)] == ["01 00"]
 
 
+def test_a_wrapped_track_is_not_sorted_as_static_even_if_its_control_passes(
+    tmp_path, monkeypatch
+):
+    """A swing wider than half the input's own period folds, and a folded line can
+    vanish -- which is the shape standing still has, so such a pair cannot carry a
+    null whatever its control did.
+
+    The control is forced rather than found. On every source tried, a track
+    periodic enough to wrap defeated the injected control as well, so the two
+    conditions were never seen apart and no recording could reach this branch.
+    That makes the guard redundant on the evidence available rather than shown to
+    be necessary, and the fake is what states the rule it encodes.
+    """
+    period_s = 0.004
+    n = int(4.0 * SR)
+    index = np.arange(n)
+    dry = np.sin(2 * np.pi * index / (period_s * SR)) * np.exp(-0.4 * index / SR)
+    swung = motion.modulated_copy(dry, SR, rate_hz=0.9, depth_ms=12.0, centre_ms=20.0)
+    a_type(tmp_path, "06-00", dry, dry + 0.7 * swung)
+    monkeypatch.setattr(
+        efxmotion.motion,
+        "control",
+        lambda *a, **k: {"detectable_ms": [6.0, 0.375], "return_level_db": -3.2},
+    )
+
+    found = efxmotion.measure_type(
+        "06 00",
+        tmp_path / "06-00" / "unpitched-0-00.wav",
+        tmp_path / "06-00" / "unpitched-1-00.wav",
+        stimulus="unpitched",
+    )
+
+    assert found.track["may_have_wrapped"] and found.detectable_ms is not None
+    assert not found.moves
+    assert found.verdict == "could not say"
+
+
 def test_a_type_the_unit_accepts_with_no_takes_is_reported_unsurveyed(tmp_path):
     """The capture stage's version of the same failure the three piles guard
     against. A type whose takes never got recorded leaves a shorter list of
