@@ -102,6 +102,14 @@ def register(sub) -> None:
         "without this the probe finishes cleanly having measured nothing",
     )
     p.add_argument(
+        "--verify",
+        help="read every address a saved run touched, compare it with what that run "
+        "recorded it holding beforehand, and write the outcome back into the file. Writes "
+        "nothing to the unit. A run restores as it goes and checks each region as it "
+        "finishes, but only this sees the whole space at once and after the fact, which is "
+        "what catches a byte left behind by a run that did not end on its own terms",
+    )
+    p.add_argument(
         "--settle",
         type=float,
         default=0.02,
@@ -271,8 +279,61 @@ def _superseded(kept: list[dict], regions: list[tuple[tuple[int, ...], int]]) ->
     return [r for r in kept if (r["start"], r["length"]) not in redo]
 
 
+def cmd_verify_saved_probe(args: argparse.Namespace) -> int:
+    """Read back every address a saved run touched, and say whether it is as it was."""
+    from ..writeback import READ_BACK_AFTERWARDS, Writer
+
+    payload = json.loads(Path(args.verify).read_text())
+    was = {b["address"]: int(b["original"], 16) for r in payload["regions"] for b in r["bytes"]}
+    print(f"{len(was)} addresses to read back, writing nothing")
+
+    def ask(writer, wanted: dict[str, int]) -> tuple[list, list]:
+        differ, silent = [], []
+        for i, (addr, before) in enumerate(sorted(wanted.items())):
+            got = writer.read_byte(tuple(int(b, 16) for b in addr.split()))
+            if got is None:
+                silent.append(addr)
+            elif got != before:
+                differ.append({"address": addr, "was": f"{before:02X}", "holds": f"{got:02X}"})
+            if i and i % 5000 == 0:
+                print(f"  {i}/{len(wanted)}")
+        return differ, silent
+
+    with verified_link(args, refusing="reading back", show_port=True) as link:
+        writer = Writer(link, device_id=args.device_id, settle=args.settle)
+        differ, unanswered = ask(writer, was)
+        # Asked again at the end rather than on the spot: a failure here comes in
+        # unbroken runs, so an immediate retry asks inside the same stall.
+        suspect = {d["address"]: was[d["address"]] for d in differ}
+        suspect.update({a: was[a] for a in unanswered})
+        asked_again = len(suspect)
+        if suspect:
+            print(f"\n  asking {asked_again} again")
+            differ, unanswered = ask(writer, suspect)
+
+    payload["read_back_afterwards"] = {
+        "method": READ_BACK_AFTERWARDS,
+        "addresses": len(was),
+        "asked_again": asked_again,
+        "differ_from_what_they_held_before": differ,
+        "would_not_answer": unanswered,
+    }
+    Path(args.verify).write_text(json.dumps(payload, indent=2) + "\n")
+
+    print(f"\n{len(was)} addresses read back, {asked_again} of them asked a second time")
+    print(f"  differ from what they held before the probe: {len(differ)}")
+    for d in differ[:20]:
+        print(f"    {d['address']}: was {d['was']}, holds {d['holds']}")
+    print(f"  would not answer: {len(unanswered)}")
+    print(f"\nwrote {args.verify}")
+    return 0 if not differ and not unanswered else 1
+
+
 def cmd_write_probe(args: argparse.Namespace) -> int:
     from ..writeback import NOTE, SINGLE_BYTE_LIMIT, WENT_DEAF, RestoreFailed, Writer, summarise
+
+    if args.verify:
+        return cmd_verify_saved_probe(args)
 
     regions = _probe_regions(args)
     done: list = []

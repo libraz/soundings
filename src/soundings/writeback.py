@@ -51,6 +51,28 @@ SINGLE_BYTE_LIMIT = (
     "that, rather than simply undefined, is not settled here."
 )
 
+READ_BACK_AFTERWARDS = (
+    "Every address the run touched was read again afterwards and compared with what the run "
+    "recorded it holding beforehand. This is a separate check from the ones the run makes as "
+    "it goes: those restore a byte and re-read a region while the run is still in it, so what "
+    "they cannot see is a byte a run left behind when it did not end on its own terms. Nothing "
+    "was written to reach this; it is the whole space read once, and then anything that did "
+    "not answer or did not match asked again in a pass at the end. The second pass is at the "
+    "end rather than on the spot because of what a failure here looks like: 27 addresses in "
+    "one unbroken run went unanswered together, and every one of them answered when asked "
+    "afterwards, holding what it should. Asking again immediately would have asked inside the "
+    "same stall."
+)
+
+VERDICTS_READ_AGAIN = (
+    "The verdicts here were read again from the rows below, after the rule that reaches "
+    "them was corrected, rather than by putting the unit through the whole space a second "
+    "time. What a probe writes does not depend on what it concludes, so the rows are what "
+    "a fresh run would produce. That was checked rather than argued: a second run over the "
+    "same space produced byte-identical rows for all 324 addresses it reached before it "
+    "was stopped, differing only in the verdicts the correction moved."
+)
+
 WENT_DEAF = (
     "An address that had been answering stopped, so the unit was no longer talking and "
     "nothing read after that point would have been about an address. The run stopped there "
@@ -131,6 +153,27 @@ class ByteProbe:
             **({} if self.restore_tries == 1 else {"restore_tries": self.restore_tries}),
         }
 
+    @classmethod
+    def from_json(cls, record: dict) -> ByteProbe:
+        """Rebuild a probe from its record, so a run already made can be read again.
+
+        `low` and `high` are what 00 and 7F read back as, which is the first two
+        rows wherever the probe got that far -- they are not stored separately
+        because storing a value twice is how the two come to disagree.
+        """
+        probe = cls(
+            address=record["address"],
+            original=int(record["original"], 16),
+            written=[(int(w, 16), int(r, 16)) for w, r in record["wrote_read"]],
+        )
+        probe.classification = record["classification"]
+        probe.restored = record["restored"]
+        probe.restore_tries = record.get("restore_tries", 1)
+        first = probe.written[:2]
+        if [w for w, _ in first] == [0x00, 0x7F]:
+            probe.low, probe.high = first[0][1], first[1][1]
+        return probe
+
 
 @dataclass
 class RegionProbe:
@@ -154,6 +197,31 @@ class RegionProbe:
             "skipped": self.skipped,
             "bytes": [b.to_json() for b in self.bytes],
         }
+
+
+def after_the_ladder(probe: ByteProbe) -> str:
+    """Read the verdict again, now that the evidence for it exists.
+
+    A verdict reached before the ladder is reached without what the ladder
+    finds. `_out_of_range_behaviour` needs a value the address has already
+    taken to put in between, and an address resting at the same value that
+    both 00 and 7F leave it at has none to offer -- so it reports that a
+    clamp and a refusal cannot be told apart, and then the ladder goes and
+    finds three. Measured: the 64 one-of-four selectors at 00 01 xx all take
+    00 to 03 and refuse everything above, and the 16 of them resting at 00
+    were filed as indistinguishable while their own rows showed 01, 02 and
+    03 going in and coming back.
+
+    Only that verdict is revisited, because it is the only one the ladder
+    contradicts. Of 11544 addresses filed as clamping, every one the ladder
+    pushed past its bound read that bound back.
+    """
+    if probe.classification != UNDECIDABLE or len(probe.accepted) < 2:
+        return probe.classification
+    # The ladder writes a value the address takes before each trial, so a
+    # value that does not survive left the address holding that one: it was
+    # refused rather than clamped to a bound it does not have.
+    return "refuses out of range"
 
 
 class Writer:
@@ -251,7 +319,7 @@ class Writer:
             # single value, which is one point too few to describe a rule.
             if (low, high) != (0x00, 0x7F):
                 self._ladder(address, probe, low)
-                probe.classification = self._after_the_ladder(probe)
+                probe.classification = after_the_ladder(probe)
 
         probe.restore_tries = self.restore(address, original)
         probe.restored = probe.restore_tries > 0
@@ -280,31 +348,6 @@ class Writer:
             if self.read_byte(address) == original:
                 return attempt
         return 0
-
-    @staticmethod
-    def _after_the_ladder(probe: ByteProbe) -> str:
-        """Read the verdict again, now that the evidence for it exists.
-
-        A verdict reached before the ladder is reached without what the ladder
-        finds. `_out_of_range_behaviour` needs a value the address has already
-        taken to put in between, and an address resting at the same value that
-        both 00 and 7F leave it at has none to offer -- so it reports that a
-        clamp and a refusal cannot be told apart, and then the ladder goes and
-        finds three. Measured: the 64 one-of-four selectors at 00 01 xx all take
-        00 to 03 and refuse everything above, and the 16 of them resting at 00
-        were filed as indistinguishable while their own rows showed 01, 02 and
-        03 going in and coming back.
-
-        Only that verdict is revisited, because it is the only one the ladder
-        contradicts. Of 11544 addresses filed as clamping, every one the ladder
-        pushed past its bound read that bound back.
-        """
-        if probe.classification != UNDECIDABLE or len(probe.accepted) < 2:
-            return probe.classification
-        # The ladder writes a value the address takes before each trial, so a
-        # value that does not survive left the address holding that one: it was
-        # refused rather than clamped to a bound it does not have.
-        return "refuses out of range"
 
     LADDER = (1, 2, 3, 4, 5, 6, 7, 8, 11, 15, 31, 63, 126)
 
@@ -440,4 +483,42 @@ def summarise(regions: list[RegionProbe]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["ByteProbe", "RegionProbe", "RestoreFailed", "Writer", "summarise"]
+def read_verdicts_again(payload: dict) -> int:
+    """Apply the current rule to a saved run, and say how many verdicts moved.
+
+    A verdict is a reading of the rows it sits above, and nothing a probe sends
+    depends on it: the values tried are fixed, the one place a verdict decides
+    what to write next runs before the ladder either way, and the verdict itself
+    is reached after the last write. So a run already made holds everything a
+    fresh run would, and correcting the rule does not need the unit again.
+
+    Goes through the same function the live path calls rather than repeating it,
+    because a second implementation of a rule is a second rule.
+    """
+    moved = 0
+    for region in payload["regions"]:
+        for record in region["bytes"]:
+            probe = ByteProbe.from_json(record)
+            verdict = after_the_ladder(probe)
+            if verdict == record["classification"]:
+                continue
+            probe.classification = verdict
+            record["classification"] = verdict
+            record["range"] = probe.range
+            moved += 1
+        counts: dict[str, int] = {}
+        for record in region["bytes"]:
+            counts[record["classification"]] = counts.get(record["classification"], 0) + 1
+        region["classifications"] = counts
+    return moved
+
+
+__all__ = [
+    "ByteProbe",
+    "RegionProbe",
+    "RestoreFailed",
+    "Writer",
+    "after_the_ladder",
+    "read_verdicts_again",
+    "summarise",
+]

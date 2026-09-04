@@ -174,6 +174,52 @@ def _clamping(unit: FakeUnit, address: tuple[int, int, int], bound: int):
     return send
 
 
+def test_a_record_read_back_carries_everything_the_verdict_needs() -> None:
+    """The verdict is a reading of the rows, so a run already made can be read
+    again -- but only if what comes back off disk is the probe that was written."""
+    address = (0x00, 0x01, 0x10)
+    unit = FakeUnit({address: 0x01}, takes=lambda v: v <= 0x03)
+    probe = writer_for(unit).probe_byte(address, 0x01)
+    again = writeback.ByteProbe.from_json(probe.to_json())
+
+    assert again.to_json() == probe.to_json()
+    assert again.accepted == probe.accepted
+    assert again.range == probe.range
+    assert (again.low, again.high) == (probe.low, probe.high)
+
+
+def test_reading_a_saved_run_again_gives_what_measuring_it_again_would() -> None:
+    """The claim the re-reading rests on: a probe writes the same sequence
+    whatever it concludes, so the rows are the whole of the measurement and the
+    verdict above them is derived. Applying the rule twice must change nothing."""
+    address = (0x00, 0x01, 0x00)
+    unit = FakeUnit({address: 0x00}, takes=lambda v: v <= 0x03)
+    probe = writer_for(unit).probe_byte(address, 0x00)
+    payload = {"regions": [{"bytes": [probe.to_json()], "classifications": {}}]}
+
+    assert writeback.read_verdicts_again(payload) == 0
+    assert payload["regions"][0]["bytes"][0] == probe.to_json()
+
+
+def test_a_run_saved_under_the_old_rule_is_brought_up_to_the_new_one() -> None:
+    """The 50 addresses filed as indistinguishable while their own rows told them
+    apart. The rows are untouched; only the reading of them moves."""
+    address = (0x00, 0x01, 0x00)
+    unit = FakeUnit({address: 0x00}, takes=lambda v: v <= 0x03)
+    stale = writer_for(unit).probe_byte(address, 0x00).to_json()
+    rows = [list(r) for r in stale["wrote_read"]]
+    stale["classification"] = writeback.UNDECIDABLE
+    stale["range"] = "00..00"
+    payload = {"regions": [{"bytes": [stale], "classifications": {}}]}
+
+    assert writeback.read_verdicts_again(payload) == 1
+    got = payload["regions"][0]["bytes"][0]
+    assert got["classification"] == "refuses out of range"
+    assert got["range"] == "00..03 of the values tried"
+    assert got["wrote_read"] == rows
+    assert payload["regions"][0]["classifications"] == {"refuses out of range": 1}
+
+
 def test_a_lost_write_is_retried_rather_than_stopping_the_run() -> None:
     """Measured on the unit: one write in 213328 did not arrive and the address
     kept the last value that did, which stopped a whole run. A lost message is
