@@ -251,3 +251,32 @@ def test_a_balance_that_held_still_changes_no_verdict() -> None:
     (joined,) = block.with_balance(found, measured)
 
     assert not joined.audible and joined.heard_by == []
+
+
+def test_a_move_the_gesture_could_not_carry_travels_with_the_verdict() -> None:
+    """A gesture cannot send a message that writes the address under test, so the
+    gesture asked there was one message short and its null is narrower. For an
+    address whose only route to being heard is the message that stores into it,
+    that is narrower to the point of being unanswerable this way."""
+    body = record("40 11 00", deaf=("struck_moved", "struck_retuned"))
+    body["left_out_of_the_gesture"] = {
+        "struck_retuned": [{"kind": "bank", "data": [8, 0, 12], "stores_at_part_offset": [0, 1]}]
+    }
+
+    written = block.read_one(body).to_json()
+
+    assert written["left_out_of_the_gesture"]["struck_retuned"][0]["kind"] == "bank"
+    assert block.WHY_LEFT_OUT in written["why_left_out"]
+
+
+def test_what_each_pass_left_out_is_kept_when_they_are_joined() -> None:
+    """The caveat belongs to the address, and either pass may have carried one."""
+    first = record("40 11 1C", deaf=("struck",))
+    second = record("40 11 1C", deaf=("struck_moved",))
+    second["left_out_of_the_gesture"] = {"struck_moved": [{"kind": "cc", "data": [10, 0]}]}
+
+    (joined,) = block.join(
+        {"40 11 1C": block.read_one(first)}, {"40 11 1C": block.read_one(second)}
+    )
+
+    assert "struck_moved" in joined.left_out

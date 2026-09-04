@@ -59,6 +59,14 @@ WHY_MODULATOR_SCATTER = (
     "gate blocking the modulation rather than two draws from the same distribution."
 )
 
+WHY_LEFT_OUT = (
+    "A gesture cannot carry a message that writes the address under test: it would put both "
+    "settings at the byte the gesture sends rather than at the two the run asked for. So the "
+    "gesture asked here was one message short, and a null under it is narrower than a null "
+    "under the whole one. For an address whose only route to being heard is the message that "
+    "stores into it, that is narrower to the point of being unanswerable this way."
+)
+
 STEADY_WITHIN_DB = 12.0
 """How near the plain note's own repeatability the steadier setting has to come.
 
@@ -82,6 +90,16 @@ class AddressVerdict:
     unrepeatable_db: dict[str, list] = field(default_factory=dict)
     discounted: list[str] = field(default_factory=list)
     """Stimuli whose audible verdict was set aside, with the reason in the record."""
+
+    left_out: dict = field(default_factory=dict)
+    """Moves the gesture could not carry here, because they write this address.
+
+    A null under a gesture one message short is narrower than a null under the
+    whole one, and for some addresses it is narrower to the point of being
+    unanswerable: the message that would reveal the address is the message that
+    stores into it. Measured here on the two bytes a bank select and a program
+    change land in, which is the only gesture that could have moved them.
+    """
 
     @property
     def still_open(self) -> bool:
@@ -110,6 +128,9 @@ class AddressVerdict:
         if self.discounted:
             out["set_aside"] = self.discounted
             out["why_set_aside"] = WHY_MODULATOR_SCATTER
+        if self.left_out:
+            out["left_out_of_the_gesture"] = self.left_out
+            out["why_left_out"] = WHY_LEFT_OUT
         return out
 
 
@@ -132,6 +153,7 @@ def read_one(record: dict) -> AddressVerdict | None:
         unrepeatable_db={
             name: list(e.get("each_setting_unrepeatable_db") or []) for name, e in entries.items()
         },
+        left_out=dict(record.get("left_out_of_the_gesture") or {}),
     )
 
 
@@ -194,6 +216,7 @@ def join(plain: dict[str, AddressVerdict], gesture: dict[str, AddressVerdict]) -
             inconclusive_under=(first.inconclusive_under if first else [])
             + second.inconclusive_under,
             unrepeatable_db={**(first.unrepeatable_db if first else {}), **second.unrepeatable_db},
+            left_out={**(first.left_out if first else {}), **second.left_out},
         )
         if modulator_scatter(second, first):
             merged.discounted.append("struck_vibrato")
@@ -281,6 +304,7 @@ def summarise(found: list, coverage: dict) -> str:
 __all__ = [
     "METHOD",
     "WHY_BALANCE_COUNTS",
+    "WHY_LEFT_OUT",
     "STEADY_WITHIN_DB",
     "WHY_MODULATOR_SCATTER",
     "WHY_TWO_PASSES",
