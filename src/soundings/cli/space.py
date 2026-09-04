@@ -151,6 +151,35 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_window_probe)
 
     p = sub.add_parser(
+        "hold-probe",
+        help="find whether neighbouring addresses hold their own values, by giving them "
+        "different ones before reading any of them back",
+    )
+    p.add_argument(
+        "regions",
+        nargs="*",
+        metavar="ADDR:COUNT",
+        help="'20 00 00:64' asks 64 consecutive addresses from 20 00 00",
+    )
+    p.add_argument("--map", help="ask every region an address map found, instead of naming them")
+    p.add_argument(
+        "--prefix",
+        nargs="*",
+        default=[],
+        help="for --map: keep only regions whose address starts with one of these, in order",
+    )
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.02,
+        help="pause after each write. Nothing is read until every write is done, so this is "
+        "not a settle before a read back",
+    )
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_hold_probe)
+
+    p = sub.add_parser(
         "tone-map",
         help="find which tones exist, by asking for each and seeing whether it was taken",
     )
@@ -462,6 +491,48 @@ def cmd_window_probe(args: argparse.Namespace) -> int:
     print(summarise(result))
     report.write_json(args.out, {"device_id": f"{args.device_id:02X}", **result.to_json()})
     return 0 if result.restored and result.controls_held_their_own else 1
+
+
+def cmd_hold_probe(args: argparse.Namespace) -> int:
+    """Ask each run of addresses whether its members hold values of their own."""
+    import collections
+
+    from ..window import HOLD_CAVEAT, HOLD_METHOD, Prober, hold_probe
+
+    regions = _probe_regions(args)
+    print(f"{len(regions)} regions, {sum(n for _, n in regions)} addresses")
+
+    done = []
+    with verified_link(
+        args,
+        refusing="probing",
+        show_port=True,
+        announce="Verifying the path before writing (a write is never acknowledged)",
+    ) as link:
+        prober = Prober(link, device_id=args.device_id, settle=args.settle)
+        for start, length in regions:
+            done.append(hold_probe(prober, start, length, progress=lambda m: print(f"  {m}")))
+
+    counts = collections.Counter(h.verdict for h in done)
+    print()
+    for verdict, n in counts.most_common():
+        print(f"  {n:4d} regions: {verdict}")
+    unrestored = [h.start for h in done if not h.restored]
+    print(
+        f"  !! not put back: {', '.join(unrestored)}" if unrestored else "  every region put back"
+    )
+
+    report.write_json(
+        args.out,
+        {
+            "device_id": f"{args.device_id:02X}",
+            "method": HOLD_METHOD,
+            "caveat": HOLD_CAVEAT,
+            "verdicts": dict(counts),
+            "regions": [h.to_json() for h in done],
+        },
+    )
+    return 0 if not unrestored else 1
 
 
 def cmd_tone_map(args: argparse.Namespace) -> int:

@@ -49,6 +49,7 @@
     "sweep",
     "write-probe",
     "window-probe",
+    "hold-probe",
     "tone-map",
     "efx-map",
     "reset-probe",
@@ -550,6 +551,102 @@
           "default": "0.05",
           "required": false,
           "help": "pause after a write before the read that follows it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "hold-probe": {
+      "help": "find whether neighbouring addresses hold their own values, by giving them different ones before reading any of them back",
+      "handler": "cmd_hold_probe",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "regions",
+          "nargs": "*",
+          "default": "None",
+          "required": true,
+          "help": "'20 00 00:64' asks 64 consecutive addresses from 20 00 00",
+          "metavar": "ADDR:COUNT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "ask every region an address map found, instead of naming them",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prefix"
+          ],
+          "dest": "prefix",
+          "nargs": "*",
+          "default": "[]",
+          "required": false,
+          "help": "for --map: keep only regions whose address starts with one of these, in order",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.02",
+          "required": false,
+          "help": "pause after each write. Nothing is read until every write is done, so this is not a settle before a read back",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

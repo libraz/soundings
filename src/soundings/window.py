@@ -243,3 +243,116 @@ def summarise(result: Result) -> str:
 
 
 __all__ = ["Candidate", "HOLDS_ITS_OWN", "IS_A_WINDOW", "Prober", "Result", "summarise"]
+
+
+KEPT_ITS_OWN = "every address answered differently from its neighbours"
+ONE_VALUE_BETWEEN_THEM = "every address answered the same, so at most one of them holds anything"
+SOME_INDISTINGUISHABLE = "some neighbouring addresses could not be told apart"
+NOTHING_READABLE = "no address here would answer"
+
+HOLD_METHOD = (
+    "Neighbouring addresses are given different values before any of them is read, and then "
+    "the whole run is read back. This is what a probe that writes to one address and reads it "
+    "straight back cannot do: on a window the write points it and the read follows, so the "
+    "address answers with what it was just given and looks like a store. Written apart from "
+    "read, a window can only show the value it was given last, and a run of them all answers "
+    "the same."
+)
+
+HOLD_CAVEAT = (
+    "Two addresses that answer differently are not one address. That is all this shows. It "
+    "does not say either of them holds what its own address is supposed to, nor that anything "
+    "here is used for anything. Neighbours that answer the same are not shown to be one "
+    "address either: an address bounded to a single value answers with it whichever extreme "
+    "it was given, so it cannot be told from its neighbour by this and is reported as "
+    "indistinguishable rather than as shared."
+)
+
+
+@dataclass
+class Held:
+    start: str
+    length: int
+    given: dict[str, str] = field(default_factory=dict)
+    read_back: dict[str, str] = field(default_factory=dict)
+    skipped: list[str] = field(default_factory=list)
+    verdict: str = ""
+    indistinguishable_pairs: int = 0
+    restored: bool = False
+
+    @property
+    def distinct(self) -> int:
+        return len(set(self.read_back.values()))
+
+    def to_json(self) -> dict:
+        kept = [a for a, v in self.read_back.items() if v == self.given[a]]
+        return {
+            "start": self.start,
+            "length": self.length,
+            "addresses_asked": len(self.given),
+            "distinct_values_read_back": self.distinct,
+            "kept_exactly_what_they_were_given": len(kept),
+            "neighbouring_pairs_that_answered_alike": self.indistinguishable_pairs,
+            "verdict": self.verdict,
+            "restored": self.restored,
+            "skipped": self.skipped,
+            "given": self.given,
+            "read_back": self.read_back,
+        }
+
+
+def hold_probe(prober: Prober, start: Address, length: int, *, progress=None) -> Held:
+    """Give a run of addresses different values, then read them all, then put them back.
+
+    The order is the whole method. Every write happens before every read, so an
+    address that only ever shows the last thing written anywhere near it has
+    nowhere to hide: it answers with that one value while its neighbours answer
+    with their own.
+    """
+    result = Held(start=_text(start), length=length)
+    originals: dict[Address, int] = {}
+    for i in range(length):
+        address = (start[0], start[1], start[2] + i)
+        held = prober.read(address)
+        if held is None:
+            result.skipped.append(f"{_text(address)} (would not answer)")
+            continue
+        originals[address] = held
+
+    if not originals:
+        result.verdict = NOTHING_READABLE
+        result.restored = True
+        return result
+
+    # Alternating extremes rather than a counter: an address that clamps answers
+    # with its own bound either way, so the two neighbours still differ wherever
+    # the address has any range at all.
+    for i, address in enumerate(originals):
+        value = 0x00 if i % 2 == 0 else 0x7F
+        result.given[_text(address)] = f"{value:02X}"
+        prober.write(address, value)
+
+    for address in originals:
+        got = prober.read(address)
+        result.read_back[_text(address)] = "--" if got is None else f"{got:02X}"
+
+    # Judged on whether neighbours can be told apart, not on whether each kept
+    # exactly what it was given. An address that clamps answers with its own
+    # bound rather than with the extreme it was written, which is a fact about
+    # its range and says nothing about whose storage it is.
+    answers = list(result.read_back.values())
+    pairs = list(zip(answers, answers[1:], strict=False))
+    if result.distinct <= 1:
+        result.verdict = ONE_VALUE_BETWEEN_THEM
+    elif all(a != b for a, b in pairs):
+        result.verdict = KEPT_ITS_OWN
+    else:
+        result.verdict = SOME_INDISTINGUISHABLE
+    result.indistinguishable_pairs = sum(1 for a, b in pairs if a == b)
+
+    for address, value in originals.items():
+        prober.write(address, value)
+    result.restored = all(prober.read(a) == v for a, v in originals.items())
+    if progress:
+        progress(f"{result.start}: {result.verdict} ({result.distinct} distinct)")
+    return result
