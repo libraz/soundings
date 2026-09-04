@@ -50,6 +50,13 @@ WHY_PRECEDED = (
     "power-on capture byte for byte, which is what makes it usable as a starting line."
 )
 
+WHY_NO_VERDICT = (
+    "Neither is a verdict about the reset. A byte the snapshot did not reach, and a byte with "
+    "no power-on value to be held against, were both broken by the mark and left without an "
+    "answer, so they are named rather than dropped: every marked byte is in exactly one list "
+    "here, and the lists add up to what was marked."
+)
+
 WHY_SKIPPED = (
     "A mark written to an address that holds nothing lands in whatever store that address is a "
     "window onto, so a block of them says what the reset did to that store, under names that "
@@ -134,6 +141,12 @@ class ResetResult:
     changed_to_something_else: dict[str, list[int]] = field(default_factory=dict)
     """Address -> [mark, what it holds now] where that is neither the mark nor the default."""
 
+    not_read_afterwards: list[str] = field(default_factory=list)
+    """Marked, then absent from the snapshot taken after the reset."""
+
+    missing_from_the_baseline: list[str] = field(default_factory=list)
+    """Marked, but with no power-on value to be compared against."""
+
     differs_from_power_on: dict[str, list[int]] = field(default_factory=dict)
     """Every readable byte unequal to the power-on capture, marked or not."""
 
@@ -145,7 +158,11 @@ class ResetResult:
             "message": self.message,
             "note": self.note,
             "bytes_marked": len(self.marked),
+            "marked": sorted(self.marked),
             "bytes_that_refused_the_mark": self.refused_the_mark,
+            "not_read_afterwards": sorted(self.not_read_afterwards),
+            "missing_from_the_baseline": sorted(self.missing_from_the_baseline),
+            "why_those_two": WHY_NO_VERDICT,
             "restored_to_the_power_on_value": sorted(self.restored),
             "left_holding_the_mark": {a: f"{v:02X}" for a, v in sorted(self.left_marked.items())},
             "changed_to_neither": {
@@ -208,12 +225,22 @@ def compare(
     after: dict[Address, int],
     baseline: dict[Address, int],
 ) -> None:
-    """Sort every marked byte into restored, still marked, or neither."""
+    """Sort every marked byte into exactly one outcome.
+
+    Including the two that are not verdicts. A byte the snapshot did not reach,
+    or one with no power-on value to be held against, was still broken by the
+    mark, and dropping it makes the buckets add up to less than what was marked
+    with nothing saying which byte went missing or why.
+    """
     for address, mark in marked.items():
         name = f"{address[0]:02X} {address[1]:02X} {address[2]:02X}"
         now = after.get(address)
         default = baseline.get(address)
-        if now is None or default is None:
+        if now is None:
+            result.not_read_afterwards.append(name)
+            continue
+        if default is None:
+            result.missing_from_the_baseline.append(name)
             continue
         if now == default:
             result.restored.append(name)
@@ -229,6 +256,35 @@ def compare(
                 was,
                 now,
             ]
+
+
+WHY_GAP = (
+    "What was marked, less what got a verdict. A run made before the two outcomes that are "
+    "not verdicts were named dropped those bytes silently, and kept only a count of what it "
+    "marked, so the shortfall can be stated and the addresses cannot be recovered. Where this "
+    "is zero every marked byte was accounted for."
+)
+
+
+def read_gap_again(payload: dict) -> dict[str, int]:
+    """Say, per reset, how many marked bytes the record gives no outcome for.
+
+    Read from the record's own counts, since a run that dropped a byte did not
+    write down which one. Nothing here identifies an address; it says only that
+    the arithmetic does not close, which is what the counts alone can support.
+    """
+    gaps = {}
+    for result in payload.get("resets", []):
+        accounted = (
+            len(result.get("restored_to_the_power_on_value", []))
+            + len(result.get("left_holding_the_mark", {}))
+            + len(result.get("changed_to_neither", {}))
+            + len(result.get("not_read_afterwards", []))
+            + len(result.get("missing_from_the_baseline", []))
+        )
+        gaps[result["reset"]] = result["bytes_marked"] - accounted
+    payload["marked_without_an_outcome"] = {"by_reset": gaps, "why": WHY_GAP}
+    return gaps
 
 
 def summarise(results: list[ResetResult]) -> str:

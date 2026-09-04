@@ -645,7 +645,11 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     regions = archive.regions(args.map)
     wanted = list(archive.ALIASED_BYTES) + archive.accepting_bytes(args.write_probe)
     kept, skipped = archive.split_off_prefixes(wanted, args.skip_prefix)
-    targets = [tuple(int(b, 16) for b in a.split()) for a in kept]
+    # Regions overlap, so an address is offered more than once. Marking it twice
+    # measures nothing further, and counting it twice makes the tally of what was
+    # marked fall short of the target list by the number of repeats -- which reads
+    # exactly like that many addresses having refused.
+    targets = list(dict.fromkeys(tuple(int(b, 16) for b in a.split()) for a in kept))
     resets = catalogue(args.device_id)
     if args.include_mode_set:
         resets.append(mode_set(args.device_id))
