@@ -307,8 +307,7 @@ def resolve(names) -> list[Stimulus]:
             chosen.append(CATALOGUE[name])
         else:
             raise KeyError(
-                f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, "
-                "broad, effect, all"
+                f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, broad, effect, all"
             )
     seen, unique = set(), []
     for s in chosen:

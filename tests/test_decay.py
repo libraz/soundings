@@ -133,9 +133,7 @@ def played(decay_s: float, *, seconds: float = 3.0, seed: int = 15) -> np.ndarra
 
 def room(rt60: float, *, seconds: float = 1.5, seed: int = 3) -> np.ndarray:
     n = int(seconds * SR)
-    return np.random.default_rng(seed).standard_normal(n) * 10 ** (
-        -3.0 * np.arange(n) / SR / rt60
-    )
+    return np.random.default_rng(seed).standard_normal(n) * 10 ** (-3.0 * np.arange(n) / SR / rt60)
 
 
 def through(note: np.ndarray, impulse: np.ndarray, *, send: float = 0.3) -> np.ndarray:
