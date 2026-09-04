@@ -45,12 +45,12 @@
       "takes_per_setting": 4,
       "same_setting_residual_db": -0.35,
       "each_setting_unrepeatable_db": [
-        -Infinity,
+        null,
         -41.43
       ],
-      "across_setting_residual_db": NaN,
+      "across_setting_residual_db": null,
       "same_setting_level_db": 0.073,
-      "across_setting_level_db": -Infinity,
+      "across_setting_level_db": null,
       "across_setting_level_is_a_lower_bound": false,
       "margin_db": 6.0,
       "noise_floor_db": 2.09,
@@ -59,7 +59,13 @@
       "changed_the_level": true,
       "audible": true,
       "inconclusive": false,
-      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here.",
+      "beyond_measurement": {
+        "each_setting_unrepeatable_db[0]": "below anything this chain can measure, rather than a figure it measured",
+        "across_setting_residual_db": "not a number, so the figure was never formed rather than formed and found empty",
+        "across_setting_level_db": "below anything this chain can measure, rather than a figure it measured"
+      },
+      "why_beyond_measurement": "JSON has no infinity and no not-a-number, so a figure that ran off the end of what could be measured is written as null with its direction named here. The three that occur are a level difference where one setting produced no signal at all, a repeatability figure whose residual was entirely accounted for by the noise floor, and a residual there were not enough takes to form. None of them is a missing reading."
     }
   ]
 }

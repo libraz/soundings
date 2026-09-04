@@ -45,6 +45,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from . import jsonio
 from .stability import Comparison, compare
 
 METHOD = (
@@ -239,21 +240,19 @@ class Verdict:
         )
 
     def to_json(self) -> dict:
-        return {
+        out = {
             "label": self.label,
             "stimulus": self.stimulus,
             "stimulus_name": self.stimulus_name,
             "takes_per_setting": self.takes,
-            "same_setting_residual_db": round(self.within_db, 2),
-            "each_setting_unrepeatable_db": [
-                None if np.isnan(v) else round(v, 2) for v in self.within_each_db
-            ],
-            "across_setting_residual_db": round(self.across_db, 2),
-            "same_setting_level_db": round(self.within_level_db, 3),
-            "across_setting_level_db": round(self.across_level_db, 3),
+            "same_setting_residual_db": jsonio.db(self.within_db),
+            "each_setting_unrepeatable_db": [jsonio.db(v) for v in self.within_each_db],
+            "across_setting_residual_db": jsonio.db(self.across_db),
+            "same_setting_level_db": jsonio.db(self.within_level_db, 3),
+            "across_setting_level_db": jsonio.db(self.across_level_db, 3),
             "across_setting_level_is_a_lower_bound": self.level_at_floor,
             "margin_db": self.margin_db,
-            "noise_floor_db": None if np.isnan(self.floor_db) else round(self.floor_db, 2),
+            "noise_floor_db": jsonio.db(self.floor_db),
             "changed_the_shape": self.changed_the_shape,
             "changed_the_repeatability": self.changed_the_repeatability,
             "changed_the_level": self.changed_the_level,
@@ -262,6 +261,22 @@ class Verdict:
             "caveat": "A null is about this stimulus. A parameter heard only on a longer "
             "note, at another velocity, or after note-off would read as inaudible here.",
         }
+        # A null that means "ran off the end" and a null that means "no reading"
+        # are the same token, so the ones that ran off name their direction.
+        ran_off = {
+            **jsonio.beyond(
+                same_setting_residual_db=self.within_db,
+                across_setting_residual_db=self.across_db,
+                same_setting_level_db=self.within_level_db,
+                across_setting_level_db=self.across_level_db,
+                noise_floor_db=self.floor_db,
+            ),
+            **jsonio.indexed("each_setting_unrepeatable_db", self.within_each_db),
+        }
+        if ran_off:
+            out["beyond_measurement"] = ran_off
+            out["why_beyond_measurement"] = jsonio.WHY_BEYOND
+        return out
 
 
 def _worst(comparisons: list[Comparison]) -> tuple[float, float, bool]:
