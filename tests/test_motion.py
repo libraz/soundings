@@ -324,6 +324,21 @@ def test_the_control_fails_where_there_is_no_return_to_carry_it() -> None:
     assert vouched["detectable_ms"] is None
 
 
+def test_a_ladder_that_recovered_nothing_does_not_say_it_recovered() -> None:
+    """The caveat naming the band opens by stating that the ladder recovered at two
+    depths. Emitted where there is no band, it stands beside rows saying every rung
+    failed, and a reader who takes the prose has been told the opposite of the
+    rows."""
+    dry = source()
+    echoed = dry + 0.7 * np.roll(dry, int(0.02 * SR))
+
+    failed = motion.control(dry, dry.copy(), SR, depths_ms=(4.0,))
+    passed = motion.control(dry, echoed, SR, depths_ms=(4.0, 2.0))
+
+    assert failed["detectable_why"] == motion.WHY_NO_BAND
+    assert passed["detectable_why"] == motion.WHY_DETECTABLE
+
+
 def test_a_lone_rung_across_a_gap_does_not_widen_the_band() -> None:
     """A band drawn through a missed depth would claim every depth inside it. The
     longest unbroken run is taken instead, so the gap ends the band rather than

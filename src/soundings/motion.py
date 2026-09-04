@@ -765,6 +765,16 @@ WHY_DETECTABLE = (
     "modulation outside this band would not have been seen, whatever the effect was doing."
 )
 
+WHY_NO_BAND = (
+    "No rung of the ladder recovered, so these takes have no measured sensitivity and the band "
+    "is absent rather than wide. What that silence is not is a reason: the ladder closes at both "
+    "ends and for different ones. Below it there is too little return to follow. Above it the "
+    "delay moves too far inside a single tracking frame, which smears that frame's correlation "
+    "peak until nothing clears the confidence threshold. A ladder that failed at every depth "
+    "failed for at least one of those and does not say which, so it cannot be read as the return "
+    "having been too quiet."
+)
+
 CONTROL_FAILED = (
     "No injected swing was recovered at any depth on the ladder, so this pair of takes was never "
     "shown able to report a modulation at all. Nothing here is a finding about the effect: an "
@@ -933,7 +943,11 @@ def control(
         "no_return_to_carry_a_control": not attempts,
         "attempts": attempts,
         "detectable_ms": list(band) if band else None,
-        "detectable_why": WHY_DETECTABLE,
+        # Both strings describe the same two ends of the ladder, and only one of
+        # them can be said about a given run. WHY_DETECTABLE opens by stating that
+        # the ladder recovered, so emitting it unconditionally put that sentence
+        # beside rows saying it had not.
+        "detectable_why": WHY_DETECTABLE if band else WHY_NO_BAND,
         "recovered": band is not None,
         "tolerance": CONTROL_TOLERANCE,
         "why": WHY_CONTROL,
@@ -953,6 +967,7 @@ __all__ = [
     "WHY_DETECTABLE",
     "WHY_CONTROL",
     "WHY_FLOOR_GATE",
+    "WHY_NO_BAND",
     "DelayTrack",
     "LfoFit",
     "Motion",
