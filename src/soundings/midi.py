@@ -68,14 +68,26 @@ class MidiLink:
         self.timeout = timeout
         self._in = rtmidi.MidiIn()
         self._out = rtmidi.MidiOut()
-        ins, outs = list(self._in.get_ports()), list(self._out.get_ports())
-        i_idx = _resolve(ins, port, "input")
-        o_idx = _resolve(outs, port, "output")
-        self.ports = Ports(ins[i_idx], outs[o_idx])
-        self._in.open_port(i_idx)
-        self._out.open_port(o_idx)
-        # rtmidi filters SysEx by default.
-        self._in.ignore_types(sysex=False, timing=True, active_sense=True)
+        # Anything that goes wrong from here on has to give the two objects back.
+        # Each of them is a platform MIDI client and the platform allows a finite
+        # number of them; a construction that raises without releasing its pair
+        # leaks two, and enough of those and the next MidiIn() fails inside the
+        # library, where it is a C++ error that ends the process rather than an
+        # exception anything here can catch. The symptom is a run that aborts on
+        # startup with nothing wrong with the device.
+        try:
+            ins, outs = list(self._in.get_ports()), list(self._out.get_ports())
+            i_idx = _resolve(ins, port, "input")
+            o_idx = _resolve(outs, port, "output")
+            self.ports = Ports(ins[i_idx], outs[o_idx])
+            self._in.open_port(i_idx)
+            self._out.open_port(o_idx)
+            # rtmidi filters SysEx by default.
+            self._in.ignore_types(sysex=False, timing=True, active_sense=True)
+        except BaseException:
+            self._in.delete()
+            self._out.delete()
+            raise
 
     def close(self) -> None:
         self._in.close_port()

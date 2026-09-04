@@ -154,6 +154,12 @@ def timeline_selftest(
     rec = cap.record(seconds, device=device)
     thread.join(timeout=1.0)
 
+    # Named before anything is judged, because a run with no --audio records
+    # from whatever the system calls its default input, and a laptop microphone
+    # hears none of this. Then every check below fails for a reason that is not
+    # about the unit, and the report as it stood said only "0 of 10 onsets" --
+    # which reads as a silent machine and was believed as one.
+    report.add("recorded from", True, rec.device)
     report.add("capture reported no overflow", rec.overflows == 0, f"{rec.overflows} overflows")
     report.add(
         "captured length",
