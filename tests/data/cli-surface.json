@@ -55,6 +55,8 @@
     "reset-probe",
     "power-on",
     "alias-scan",
+    "port-send",
+    "port-read",
     "repeat",
     "contrast",
     "transfer",
@@ -1296,6 +1298,189 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "port-send": {
+      "help": "send into a MIDI input that answers nothing, leaving the result in the unit",
+      "handler": "cmd_port_send",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--input"
+          ],
+          "dest": "input",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "which of the unit's MIDI inputs the cable is in, e.g. 'MIDI IN B'. Stated by whoever moved the cable and not measured: both inputs are reached over one cable from one host output, so nothing in the data can tell them apart",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channels"
+          ],
+          "dest": "channels",
+          "nargs": null,
+          "default": "16",
+          "required": false,
+          "help": "how many channels the per-channel controller is sent on, from --channel upward",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "port-read": {
+      "help": "find what a port-send left in the unit, read through the input that answers",
+      "handler": "cmd_port_read",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--sent"
+          ],
+          "dest": "sent",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the record port-send wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "address map the regions to read are taken from",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--baseline"
+          ],
+          "dest": "baseline",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the state to compare against, normally this unit's power-on capture. There is no snapshot at the head of this run because the input under test could not be read from, so everything that moved since the baseline is credited to the sending phase",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--input"
+          ],
+          "dest": "input",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "which MIDI input the cable is in now, which must be the one that answers",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--no-reset"
+          ],
+          "dest": "no_reset",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "leave the unit holding what the sending phase wrote. The default sends a GS Reset once everything has been read, since the state was the message and is spent",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
         },
         {
           "option_strings": [
