@@ -150,6 +150,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         RPN_PARKED,
         WHY_CONTROL,
         WHY_KIND_REACHED,
+        WHY_LANDED_OUTSIDE,
         WHY_RECOVERED,
         WHY_RESIDUE,
         Scanner,
@@ -157,6 +158,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         cc,
         control_change,
         control_run,
+        landed_outside_its_own_block,
         summarise,
     )
 
@@ -220,9 +222,20 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         print(f"  bank latch: {latch}")
 
     reached = _kind_reached(args.kind, stimuli, found)
+    outside = landed_outside_its_own_block(found)
     bracketed = control_passes == 2
     print()
     print(summarise(found, restless, shot.unread))
+    if args.kind == "address":
+        if outside:
+            for label, addresses in outside.items():
+                print(f"  {label} was also seen outside its block, at {', '.join(addresses)}")
+            print("  so a write landing in another block is something this run can report")
+        else:
+            print(
+                "  no write landed outside the block it was addressed to, so this run was never "
+                "shown able to report one, and says nothing about mirroring"
+            )
     if scanner.recovered:
         print(
             f"  !! {len(scanner.recovered)} stimuli were missed by the first pass and found by "
@@ -268,6 +281,16 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
                 "value": reached,
                 "why": WHY_KIND_REACHED,
             },
+            **(
+                {
+                    "landed_outside_its_own_block": {
+                        "by_stimulus": outside,
+                        "why": WHY_LANDED_OUTSIDE,
+                    }
+                }
+                if args.kind == "address"
+                else {}
+            ),
             "method": METHOD,
             "region_prefix": args.prefix,
             "regions_watched": len(regions),

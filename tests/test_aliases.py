@@ -291,6 +291,56 @@ def test_a_family_that_landed_nothing_is_still_reported_as_unreached():
     assert _kind_reached("cc", stimuli, [])
 
 
+def _write_hit(label: str, *addresses: str) -> Attribution:
+    return Attribution(
+        label=label, kind="address", values=(0x20, 0x60), readings=dict.fromkeys(addresses, [])
+    )
+
+
+def test_a_write_seen_under_another_top_byte_is_named():
+    """The control a mirror scan makes on itself. Twelve of this unit's blocks
+    follow a write to `41`, so a run that includes one has shown it can report a
+    landing outside the block written to, and its other negatives mean something."""
+    from soundings.aliases import landed_outside_its_own_block
+
+    found = [
+        _write_hit("DT1 41 04 24", "41 04 24", "42 04 24", "4F 04 24"),
+        _write_hit("DT1 21 04 24", "21 04 24"),
+    ]
+    assert landed_outside_its_own_block(found) == {"DT1 41 04 24": ["42 04 24", "4F 04 24"]}
+
+
+def test_a_run_where_every_write_stayed_home_reports_no_control():
+    """Empty is the finding, not the absence of one: nothing showed the scan could
+    have reported a mirror, so 'nothing else moved' is about the scan."""
+    from soundings.aliases import landed_outside_its_own_block
+
+    assert landed_outside_its_own_block([_write_hit("DT1 40 11 32", "40 11 32")]) == {}
+
+
+def test_a_stimulus_that_is_not_an_address_write_has_no_block_to_be_outside_of():
+    from soundings.aliases import landed_outside_its_own_block
+
+    hit = Attribution(label="CC7", kind="cc", values=(0x20, 0x60), readings={"40 11 19": []})
+    assert landed_outside_its_own_block([hit]) == {}
+
+
+def test_a_saved_scan_is_given_the_control_by_the_same_rule():
+    from soundings.aliases import WHY_LANDED_OUTSIDE, read_outside_again
+
+    payload = {
+        "attributed": [
+            {
+                "stimulus": "DT1 41 04 24",
+                "kind": "address",
+                "bytes": {"41 04 24": [], "42 04 24": []},
+            }
+        ]
+    }
+    assert read_outside_again(payload) == {"DT1 41 04 24": ["42 04 24"]}
+    assert payload["landed_outside_its_own_block"]["why"] == WHY_LANDED_OUTSIDE
+
+
 def test_something_landing_that_this_run_did_not_send_does_not_count():
     """Only the stimuli sent can show the path carried them."""
     from soundings.cli.scan import _kind_reached

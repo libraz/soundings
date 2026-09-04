@@ -77,6 +77,14 @@ WHY_KIND_REACHED = (
     "Where this is false, every negative in the run is about the path, not about the unit."
 )
 
+WHY_LANDED_OUTSIDE = (
+    "A run that writes to an address and sees only that address move is evidence nothing "
+    "mirrors it, but only if a write that did land elsewhere would have been seen. So a "
+    "stimulus whose value turned up under another top byte is the demonstration, made by the "
+    "run on itself. Where this is empty the negatives are about a scan never shown able to "
+    "report a landing outside the block it wrote to."
+)
+
 NOT_SCANNED = (
     "Controllers 120 to 127 are channel mode messages. Sending one resets the channel state "
     "every later attribution is measured against, so they need a scan of their own."
@@ -445,6 +453,48 @@ GS_RPN = (
     (0x00, 0x02, "master coarse tune", (0x3C, 0x44)),
     (0x00, 0x05, "modulation depth range", (0x01, 0x08)),
 )
+
+
+def landed_outside_its_own_block(found: list[Attribution]) -> dict[str, list[str]]:
+    """For each address write, the addresses it reached under some other top byte.
+
+    Only address writes have a block of their own to be outside of, so a scan of
+    any other kind produces nothing here and can say nothing about mirroring.
+    """
+    outside = {}
+    for hit in found:
+        parts = hit.label.split()
+        if len(parts) != 4 or parts[0] != "DT1":
+            continue
+        elsewhere = [a for a in hit.addresses if a[:2] != parts[1]]
+        if elsewhere:
+            outside[hit.label] = elsewhere
+    return outside
+
+
+def read_outside_again(payload: dict) -> dict[str, list[str]]:
+    """Put the derived control into a record written before the scan computed one.
+
+    Read from the record's own attributions through the same rule the scan uses,
+    so an earlier run carries the control rather than being quietly without one.
+    Where it comes back empty that is the finding: the run never showed it could
+    report a write landing outside the block it was addressed to.
+    """
+    found = [
+        Attribution(
+            label=hit["stimulus"],
+            kind=hit["kind"],
+            values=(0, 0),
+            readings=dict.fromkeys(hit["bytes"], []),
+        )
+        for hit in payload.get("attributed", [])
+    ]
+    outside = landed_outside_its_own_block(found)
+    payload["landed_outside_its_own_block"] = {
+        "by_stimulus": outside,
+        "why": WHY_LANDED_OUTSIDE,
+    }
+    return outside
 
 
 def summarise(found: list[Attribution], restless: set[str], unread: int) -> str:
