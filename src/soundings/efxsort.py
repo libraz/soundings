@@ -63,6 +63,16 @@ WHY_INSIDE_THE_GAP = (
     "somewhere and a reading just under it is not the same fact as a reading far under it."
 )
 
+WHY_STEADIER = (
+    "These types made the takes agree better than bypassing them did, which is the opposite of "
+    "what a modulator does. It is reported rather than folded into standing still because it is a "
+    "fact about the type -- something is suppressing whatever the voice itself fails to repeat, a "
+    "gate or a compressor on the tail -- while standing still is the absence of one. It is also "
+    "what keeps a wide asymmetry running the wrong way from being read as a modulator: the "
+    "audible module's flag does not care which setting repeated worse, because for a parameter in "
+    "general either value could be the one that switches something on."
+)
+
 WHY_TWO_ROUTES = (
     "This sort and the delay-tracked one rest on different properties and are reported apart. "
     "Tracking measures the motion itself and can miss one it cannot follow: too deep for a frame, "
@@ -106,10 +116,30 @@ class TypeSort:
         )
 
     @property
+    def steadier_when_routed(self) -> bool:
+        """Whether the effect made the takes agree *better* than bypassing it did.
+
+        The opposite of a modulator, and worth reporting rather than folding into
+        standing still: something that suppresses whatever the voice itself fails
+        to repeat -- a gate, or a compressor on its tail -- is a fact about the
+        type, while standing still is the absence of one.
+        """
+        if len(self.unrepeatable_db) != 2:
+            return False
+        first, second = self.unrepeatable_db
+        return bool(first - second > 12.0)
+
+    @property
     def verdict(self) -> str:
         if self.inconclusive or not self.audible or self.inside_the_gap:
             return "could not say"
-        return "moves" if self.moves else "static"
+        # Not merely an asymmetry: the asymmetry has to run the right way. The
+        # audible module's flag does not care which setting repeated worse, since
+        # for a parameter in general either value could be the one that switches
+        # something on. Here the settings are known -- bypassed first, routed
+        # second -- and only the routed one can carry a modulator, so a type whose
+        # bypassed takes were the unsteady ones is not one however wide the gap.
+        return "moves" if self.moves and not self.steadier_when_routed else "static"
 
     def to_json(self) -> dict:
         return {
@@ -120,6 +150,7 @@ class TypeSort:
             "inconclusive": self.inconclusive,
             "unrepeatable_db": self.unrepeatable_db,
             "inside_the_calibration_gap": self.inside_the_gap,
+            "steadier_when_routed": self.steadier_when_routed,
             "audible_by": self.heard_by,
         }
 
@@ -176,6 +207,11 @@ def partition(found: list[TypeSort]) -> dict[str, list[str]]:
     }
 
 
+def steadier_when_routed(found: list[TypeSort]) -> list[str]:
+    """Types the effect made more repeatable, not less."""
+    return [f.type_id for f in found if f.steadier_when_routed]
+
+
 def inside_the_gap(found: list[TypeSort]) -> list[str]:
     """Which of the undecided types are undecided for the calibration's own reason.
 
@@ -207,6 +243,21 @@ def disagreements(sorted_here: list[TypeSort], tracked: list) -> list[dict]:
     return out
 
 
+def declined_elsewhere(sorted_here: list[TypeSort], tracked: list) -> list[str]:
+    """Types this route answered that the other one stood aside on.
+
+    Reported beside the disagreements because an empty disagreement list reads as
+    the two routes agreeing, and two routes agree only where both spoke. A route
+    that declined on everything produces no disagreements at all.
+    """
+    by_id = {f.type_id: f.verdict for f in tracked}
+    return [
+        f.type_id
+        for f in sorted_here
+        if f.verdict != "could not say" and by_id.get(f.type_id) == "could not say"
+    ]
+
+
 def summarise(found: list[TypeSort]) -> str:
     piles = partition(found)
     lines = [f"{len(found)} types sorted by their own repeatability"]
@@ -229,11 +280,14 @@ __all__ = [
     "METHOD",
     "WHY_ASYMMETRY",
     "WHY_INSIDE_THE_GAP",
+    "WHY_STEADIER",
     "WHY_NOT_AUDIBLE",
     "WHY_TWO_ROUTES",
     "TypeSort",
+    "declined_elsewhere",
     "disagreements",
     "inside_the_gap",
+    "steadier_when_routed",
     "partition",
     "sort_one",
     "summarise",

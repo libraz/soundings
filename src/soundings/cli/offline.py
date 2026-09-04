@@ -350,6 +350,12 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
     print()
     print(efxsort.summarise(found))
     piles = efxsort.partition(found)
+    steadier = efxsort.steadier_when_routed(found)
+    if steadier:
+        print(
+            f"  {len(steadier)} made the takes agree better routed than bypassed, which is the "
+            f"opposite of a modulator: {steadier}"
+        )
     gap = efxsort.inside_the_gap(found)
     if gap:
         print(
@@ -368,9 +374,14 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
     clashes: list[dict] = []
     if args.tracked:
         tracked = json.loads(open(args.tracked).read())
-        clashes = efxsort.disagreements(
-            found, [_Tracked(t["type"], t["verdict"]) for t in tracked.get("types", [])]
-        )
+        other = [_Tracked(t["type"], t["verdict"]) for t in tracked.get("types", [])]
+        clashes = efxsort.disagreements(found, other)
+        declined = efxsort.declined_elsewhere(found, other)
+        if declined:
+            print(
+                f"  the delay track stood aside on {len(declined)} of the types answered here, "
+                "so an empty disagreement list is not the two routes agreeing"
+            )
         for clash in clashes:
             print(
                 f"  !! {clash['type']}: repeatability says {clash['by_repeatability']}, "
@@ -383,6 +394,10 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
             "records": str(args.records),
             "method": efxsort.METHOD,
             "why_the_asymmetry_is_the_evidence": efxsort.WHY_ASYMMETRY,
+            "steadier_when_routed": {
+                "types": efxsort.steadier_when_routed(found),
+                "why": efxsort.WHY_STEADIER,
+            },
             "moving": piles["moving"],
             "static": piles["static"],
             "could_not_say": {
@@ -405,6 +420,7 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
                 {
                     "compared_with": str(args.tracked),
                     "disagreements": clashes,
+                    "answered_here_and_declined_there": declined,
                     "why_two_routes": efxsort.WHY_TWO_ROUTES,
                 }
                 if args.tracked

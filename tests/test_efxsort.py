@@ -202,3 +202,57 @@ def test_the_gap_is_a_reason_inside_could_not_say_and_not_a_fourth_pile() -> Non
     assert sum(len(v) for v in piles.values()) == len(found)
     assert efxsort.inside_the_gap(found) == ["01 25"]
     assert set(efxsort.inside_the_gap(found)) <= set(piles["could_not_say"])
+
+
+def test_an_effect_that_makes_the_takes_agree_better_is_not_a_modulator() -> None:
+    """The asymmetry has to run the right way. The audible module's flag does not
+    care which setting repeated worse, because for a parameter in general either
+    value could switch something on; here the settings are known and only the
+    routed one can carry a modulator.
+
+    A guard rather than a correction: no type measured on this unit reaches the
+    modulator bar in this direction, so nothing recorded would have been sorted
+    wrongly without it.
+    """
+    found = efxsort.sort_one(record(repeatability=True, unrepeatable=[-15.0, -45.0]), "01 10")
+
+    assert found is not None
+    assert found.steadier_when_routed
+    assert found.verdict == "static"
+
+
+def test_a_modulator_in_the_expected_direction_is_untouched_by_the_guard() -> None:
+    """The guard must not swallow the pile it is protecting."""
+    found = efxsort.sort_one(record(repeatability=True, unrepeatable=[-41.5, -1.7]), "01 20")
+
+    assert found is not None and not found.steadier_when_routed
+    assert found.verdict == "moves"
+
+
+def test_a_small_difference_in_either_direction_is_not_called_steadier() -> None:
+    """Every pair of settings differs a little. Only a difference over the same
+    bar the modulator claim uses is a fact about the effect."""
+    found = efxsort.sort_one(record(unrepeatable=[-41.5, -48.1]), "01 03")
+
+    assert found is not None and not found.steadier_when_routed
+
+
+def test_a_route_that_declined_everywhere_is_reported_beside_the_disagreements() -> None:
+    """An empty disagreement list reads as the two routes agreeing, and two routes
+    agree only where both spoke. Measured on this unit the delay track stood aside
+    on every type, which would otherwise have been recorded as unanimity."""
+    here = [
+        efxsort.sort_one(record(repeatability=True), "01 20"),
+        efxsort.sort_one(record(), "01 00"),
+    ]
+    other = [Tracked("01 20", "could not say"), Tracked("01 00", "could not say")]
+
+    assert efxsort.disagreements(here, other) == []
+    assert efxsort.declined_elsewhere(here, other) == ["01 20", "01 00"]
+
+
+def test_a_type_the_other_route_answered_is_not_counted_as_declined() -> None:
+    """Otherwise the count would say a route stood aside where it agreed."""
+    here = [efxsort.sort_one(record(repeatability=True), "01 20")]
+
+    assert efxsort.declined_elsewhere(here, [Tracked("01 20", "moves")]) == []
