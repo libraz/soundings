@@ -281,3 +281,91 @@ def test_a_rate_read_off_a_wrapped_track_still_counts_as_an_answer() -> None:
     if found.track.wraps and found.delay is not None:
         assert found.delay_answered
         assert found.answered
+
+
+def test_the_control_recovers_a_swing_it_injected_into_broadband_material() -> None:
+    """The control's own control. It has to be able to pass, on material where a
+    modulator plainly is findable, or a failure anywhere else says nothing."""
+    dry = source()
+
+    vouched = motion.control(dry, reverberated(dry), SR, depths_ms=(4.0, 2.0))
+
+    assert vouched["recovered"]
+    assert vouched["detectable_ms"] == [4.0, 2.0]
+    assert abs(vouched["attempts"][0]["recovered_rate_hz"] - motion.CONTROL_RATE_HZ) < 0.1
+
+
+def test_a_swing_too_deep_to_follow_is_missed_like_one_too_shallow() -> None:
+    """The reason sensitivity is reported as a band. A delay that moves far inside
+    one tracking frame smears that frame's peak, so the deepest rungs of the ladder
+    fail for a reason that has nothing to do with the takes -- and a null bounded
+    only from below would claim to cover them."""
+    dry = source()
+    deep = motion.modulated_copy(dry, SR, rate_hz=1.3, depth_ms=24.0, centre_ms=16.0)
+    shallow = motion.modulated_copy(dry, SR, rate_hz=1.3, depth_ms=4.0, centre_ms=16.0)
+
+    assert motion.measure(dry, dry + 0.7 * deep, SR).delay is None
+    assert motion.measure(dry, dry + 0.7 * shallow, SR).delay is not None
+
+
+def test_the_control_fails_where_there_is_no_return_to_carry_it() -> None:
+    """A wet take identical to the dry one has no return, so the injected swing is
+    scaled to nothing and cannot be found. That is the case the control exists for:
+    the measurement would report no motion, and does so for the wrong reason."""
+    dry = source()
+
+    vouched = motion.control(dry, dry.copy(), SR, depths_ms=(4.0,))
+
+    assert not vouched["recovered"]
+    assert vouched["detectable_ms"] is None
+
+
+def test_a_lone_rung_across_a_gap_does_not_widen_the_band() -> None:
+    """A band drawn through a missed depth would claim every depth inside it. The
+    longest unbroken run is taken instead, so the gap ends the band rather than
+    being spanned by it."""
+    attempts = [
+        {"injected_depth_ms": 24.0, "recovered": False},
+        {"injected_depth_ms": 12.0, "recovered": True},
+        {"injected_depth_ms": 6.0, "recovered": True},
+        {"injected_depth_ms": 3.0, "recovered": False},
+        {"injected_depth_ms": 1.5, "recovered": True},
+    ]
+    assert motion._longest_recovered_run(attempts) == (12.0, 6.0)
+
+
+def test_a_ladder_that_recovered_nothing_has_no_band() -> None:
+    assert motion._longest_recovered_run([{"injected_depth_ms": 6.0, "recovered": False}]) is None
+
+
+def test_the_ladder_is_tried_deepest_first_however_it_was_given() -> None:
+    """The band is read by walking down the ladder, so an unsorted one would break
+    its run at whichever depth happened to come first."""
+    dry = source(seconds=1.0)
+    vouched = motion.control(dry, reverberated(dry), SR, depths_ms=(2.0, 4.0))
+    assert vouched["injected_depths_ms"] == [4.0, 2.0]
+
+
+def test_an_injected_swing_is_scaled_to_the_return_the_take_really_has() -> None:
+    """A control given a louder return than the real one vouches for a measurement
+    nobody made. The level is reported so a reader can see which it was."""
+    dry = source(seconds=1.0)
+    quiet = dry + 0.001 * np.roll(dry, 400)
+    loud = dry + 0.5 * np.roll(dry, 400)
+
+    quiet_level = motion.control(dry, quiet, SR, depths_ms=(4.0,))["return_level_db"]
+    loud_level = motion.control(dry, loud, SR, depths_ms=(4.0,))["return_level_db"]
+
+    assert quiet_level < loud_level - 20
+
+
+def test_a_modulated_copy_swings_by_the_depth_it_was_given() -> None:
+    """Peak to peak, because that is the quantity a fit reports back. Halving one
+    and not the other would make every control miss by a factor of two."""
+    dry = source(seconds=3.0)
+    made = motion.modulated_copy(dry, SR, rate_hz=1.0, depth_ms=4.0, centre_ms=20.0)
+    track = motion.track_delay(dry, dry + made, SR, search_ms=(0.0, 40.0))
+    fit = motion.fit_lfo(track)
+
+    assert fit is not None
+    assert abs(fit.depth - 4.0) < 1.0

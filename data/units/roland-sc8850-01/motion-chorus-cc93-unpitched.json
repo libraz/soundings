@@ -1,0 +1,96 @@
+{
+  "dry": ".cache/takes/cc93-effect/unpitched-0-00.wav",
+  "wet": ".cache/takes/cc93-effect/unpitched-100-00.wav",
+  "sample_rate": 48000,
+  "searched_rate_hz": [
+    0.05,
+    20.0
+  ],
+  "positive_control": {
+    "injected_rate_hz": 1.3,
+    "injected_centre_ms": 16.0,
+    "injected_depths_ms": [
+      24.0,
+      12.0,
+      6.0,
+      3.0,
+      1.5,
+      0.75,
+      0.375
+    ],
+    "return_level_db": -42.21,
+    "attempts": [
+      {
+        "injected_depth_ms": 24.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 12.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 6.0,
+        "recovered_rate_hz": 1.324,
+        "recovered_depth": "6.2814 ms",
+        "recovered": true
+      },
+      {
+        "injected_depth_ms": 3.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 1.5,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.75,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.375,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      }
+    ],
+    "detectable_ms": [
+      6.0,
+      6.0
+    ],
+    "detectable_why": "The deepest and shallowest injected swings recovered in one unbroken run down the ladder. Sensitivity here is a band and not a floor, and it closes at both ends for different reasons. Below it there is too little return to follow. Above it the delay moves too far inside a single tracking frame, which smears that frame's correlation peak until nothing clears the confidence threshold -- so a very deep swing is missed for the same reason a very shallow one is, and a null bounded only from below would read as covering it. A modulation outside this band would not have been seen, whatever the effect was doing.",
+    "recovered": true,
+    "tolerance": 0.25,
+    "why": "Modulations of known rate and a ladder of known depths were built from this run's own dry take and put through the same tracker, each at the level the real return was measured to have. Without it a null here is unreadable: a track that found no line because the effect stands still and one that found no line because the tracker could not follow it are the same empty result, and the second is not rare -- a quiet send, a diffuse return or a short take all look like it. What the ladder adds is the bound the null holds inside."
+  },
+  "track": {
+    "frames": 597,
+    "frames_found": 479,
+    "coverage": 0.802,
+    "frame_rate_hz": 200.0,
+    "searched_ms": [
+      0.0,
+      60.0
+    ],
+    "excursion_ms": 59.58,
+    "input_repeats_every_ms": 10.085,
+    "input_periodicity": 0.384,
+    "may_have_wrapped": false,
+    "trigger_scatter_ms": -3.207
+  },
+  "delay_lfo": null,
+  "level_lfo": null,
+  "moves": false,
+  "delay_answered": true,
+  "conclusive": true,
+  "method": "The wet take is aligned to the dry take as a whole, the best scalar copy of the dry take is subtracted to leave the effect's return alone, and the return's delay against the dry signal is measured in independent frames. A periodic motion is a line in that track's spectrum standing clear of the rest of the searched band. Level is searched the same way, for effects that move no delay. A null names the rates and delays that were looked in, and is withheld for the delay when the input's own period folded the track, since a search that could not have found a line reports the same emptiness as one that looked."
+}

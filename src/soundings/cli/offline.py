@@ -65,15 +65,35 @@ def cmd_motion(args: argparse.Namespace) -> int:
     from .. import motion
 
     dry, wet, rate = _pair(args.dry, args.wet)
-    found = motion.measure(
-        dry,
-        wet,
-        rate,
-        search_ms=(0.0, args.max_delay),
-        rate_range=(args.min_rate, args.max_rate),
-    )
+    span = (0.0, args.max_delay)
+    rates = (args.min_rate, args.max_rate)
+    found = motion.measure(dry, wet, rate, search_ms=span, rate_range=rates)
+    # Always, not only when the answer is a null. A run that reports motion is
+    # not excused the control either: knowing the tracker works on this material
+    # is what says a recovered rate is the effect's and not the search's.
+    vouched = motion.control(dry, wet, rate, search_ms=span, rate_range=rates)
+
     print(f"{args.dry} against {args.wet}, {rate} Hz")
     print(found.describe())
+    ladder = ", ".join(
+        f"{a['injected_depth_ms']}{'' if a['recovered'] else ' (missed)'}"
+        for a in vouched["attempts"]
+    )
+    print(
+        f"  control: swings at {vouched['injected_rate_hz']} Hz injected at the real return's "
+        f"level ({vouched['return_level_db']} dB), peak to peak in ms: {ladder}"
+    )
+    if vouched["detectable_ms"] is not None:
+        deep, shallow = vouched["detectable_ms"]
+        print(
+            f"  => the null above holds for a swing between {shallow} and {deep} ms peak to "
+            "peak, and says nothing about one outside that band"
+        )
+    else:
+        print(
+            "  !! no injected swing was recovered at any depth. Nothing above is a finding "
+            "about the effect."
+        )
 
     report.write_json(
         args.out,
@@ -82,10 +102,16 @@ def cmd_motion(args: argparse.Namespace) -> int:
             "wet": str(args.wet),
             "sample_rate": rate,
             "searched_rate_hz": [args.min_rate, args.max_rate],
+            "positive_control": vouched,
+            **(
+                {"control_failed": motion.CONTROL_FAILED}
+                if vouched["detectable_ms"] is None
+                else {}
+            ),
             **found.to_json(),
         },
     )
-    return 0
+    return 0 if vouched["detectable_ms"] is not None else 1
 
 
 def cmd_decay(args: argparse.Namespace) -> int:

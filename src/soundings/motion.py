@@ -267,6 +267,36 @@ def periodicity(
     return lag / sample_rate * 1000.0, height
 
 
+def separate_return(
+    dry: np.ndarray, wet: np.ndarray, *, subtract_direct: bool = True
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """Align the two takes, trim the alignment guard, and leave the return alone.
+
+    Factored out rather than inlined in the tracker because the control that
+    vouches for the tracker has to be built on the same return the tracker had to
+    work with. A control given a louder return than the real one is a control on
+    a measurement nobody made.
+    """
+    dry = np.asarray(dry, dtype=np.float64)
+    wet = np.asarray(wet, dtype=np.float64)
+    length = min(dry.size, wet.size)
+    dry, wet = dry[:length], wet[:length]
+
+    from .stability import cross_correlate, shift
+
+    align, _ = cross_correlate(dry, wet)
+    wet = shift(wet, -align)
+
+    guard = 256 + int(np.ceil(abs(align)))
+    dry, wet = dry[guard:-guard], wet[guard:-guard]
+
+    if not subtract_direct:
+        return dry, wet, align
+    denominator = float(np.dot(dry, dry))
+    gain = float(np.dot(wet, dry)) / denominator if denominator > 0 else 0.0
+    return dry, wet - gain * dry, align
+
+
 def track_delay(
     dry: np.ndarray,
     wet: np.ndarray,
@@ -295,25 +325,7 @@ def track_delay(
     price is correlation gain, so a noisier take or a slower modulator can afford
     a longer one.
     """
-    dry = np.asarray(dry, dtype=np.float64)
-    wet = np.asarray(wet, dtype=np.float64)
-    length = min(dry.size, wet.size)
-    dry, wet = dry[:length], wet[:length]
-
-    from .stability import cross_correlate, shift
-
-    align, _ = cross_correlate(dry, wet)
-    wet = shift(wet, -align)
-
-    guard = 256 + int(np.ceil(abs(align)))
-    dry, wet = dry[guard:-guard], wet[guard:-guard]
-
-    if subtract_direct:
-        denominator = float(np.dot(dry, dry))
-        gain = float(np.dot(wet, dry)) / denominator if denominator > 0 else 0.0
-        target = wet - gain * dry
-    else:
-        target = wet
+    dry, target, align = separate_return(dry, wet, subtract_direct=subtract_direct)
 
     n = max(16, int(window * sample_rate))
     step = max(1, int(hop * sample_rate))
@@ -612,16 +624,204 @@ def measure(
     )
 
 
+# What the control injects. The rate is one a chorus or a phaser plausibly runs
+# at and sits well inside the default search band; the centre is deep enough that
+# the deepest swing on the ladder still asks for a positive delay, and shallow
+# enough that the deepest still fits the default 60 ms search.
+CONTROL_RATE_HZ = 1.3
+CONTROL_CENTRE_MS = 16.0
+CONTROL_TOLERANCE = 0.25
+"""Fraction the recovered rate may miss the injected one by and still count."""
+
+CONTROL_DEPTHS_MS = (24.0, 12.0, 6.0, 3.0, 1.5, 0.75, 0.375)
+"""Swings tried, peak to peak, deepest first -- the unit a fit reports depth in.
+
+A ladder rather than one attempt, because one attempt bounds a null only at the
+depth it happened to use, and the tracker's sensitivity is bounded at both ends
+rather than one. It spans past both: 24 ms is deeper than this tracker holds on
+any material tried, and 0.375 ms is shallower, so the recovered rungs sit inside
+the ladder rather than running off its end with nothing to say where they stopped.
+"""
+
+WHY_CONTROL = (
+    "Modulations of known rate and a ladder of known depths were built from this run's own dry "
+    "take and put through the same tracker, each at the level the real return was measured to "
+    "have. Without it a null here is unreadable: a track that found no line because the effect "
+    "stands still and one that found no line because the tracker could not follow it are the "
+    "same empty result, and the second is not rare -- a quiet send, a diffuse return or a short "
+    "take all look like it. What the ladder adds is the bound the null holds inside."
+)
+
+WHY_DETECTABLE = (
+    "The deepest and shallowest injected swings recovered in one unbroken run down the ladder. "
+    "Sensitivity here is a band and not a floor, and it closes at both ends for different "
+    "reasons. Below it there is too little return to follow. Above it the delay moves too far "
+    "inside a single tracking frame, which smears that frame's correlation peak until nothing "
+    "clears the confidence threshold -- so a very deep swing is missed for the same reason a "
+    "very shallow one is, and a null bounded only from below would read as covering it. A "
+    "modulation outside this band would not have been seen, whatever the effect was doing."
+)
+
+CONTROL_FAILED = (
+    "No injected swing was recovered at any depth on the ladder, so this pair of takes was never "
+    "shown able to report a modulation at all. Nothing here is a finding about the effect: an "
+    "effect that moves and an effect that stands still would both be reported as standing still."
+)
+
+
+def _longest_recovered_run(attempts: list[dict]) -> tuple[float, float] | None:
+    """The deepest and shallowest of the longest unbroken run of recovered rungs.
+
+    A run rather than the outermost recovered pair, because a lone rung recovered
+    across a gap is a fit that happened rather than a sensitivity the takes have,
+    and a band drawn through the gap would claim every depth inside it.
+    """
+    best: list[dict] = []
+    current: list[dict] = []
+    for attempt in [*attempts, {"recovered": False}]:
+        if attempt["recovered"]:
+            current.append(attempt)
+            continue
+        if len(current) > len(best):
+            best = current
+        current = []
+    if not best:
+        return None
+    return best[0]["injected_depth_ms"], best[-1]["injected_depth_ms"]
+
+
+def modulated_copy(
+    signal: np.ndarray,
+    sample_rate: int,
+    *,
+    rate_hz: float,
+    depth_ms: float,
+    centre_ms: float,
+) -> np.ndarray:
+    """A copy of the signal read through a sinusoidally swept fractional delay.
+
+    The depth is peak to peak, which is how a fit reports one, so the injected
+    number and the recovered number are the same quantity and can be compared
+    without either being halved at the call site.
+    """
+    signal = np.asarray(signal, dtype=np.float64)
+    index = np.arange(signal.size, dtype=np.float64)
+    swing = centre_ms + 0.5 * depth_ms * np.sin(2.0 * np.pi * rate_hz * index / sample_rate)
+    return np.interp(index - swing / 1000.0 * sample_rate, index, signal, left=0.0, right=0.0)
+
+
+def _attempt(
+    reference: np.ndarray,
+    residual_rms: float,
+    sample_rate: int,
+    *,
+    rate_hz: float,
+    depth_ms: float,
+    centre_ms: float,
+    search_ms: tuple[float, float],
+    rate_range: tuple[float, float],
+) -> dict:
+    """Inject one known swing at the real return's level and try to read it back."""
+    copy = modulated_copy(
+        reference, sample_rate, rate_hz=rate_hz, depth_ms=depth_ms, centre_ms=centre_ms
+    )
+    copy_rms = float(np.sqrt(np.mean(copy**2)))
+    scale = residual_rms / copy_rms if copy_rms > 0 else 0.0
+    found = measure(
+        reference, reference + scale * copy, sample_rate, search_ms=search_ms, rate_range=rate_range
+    )
+    fit = found.delay if found.delay_answered else None
+    return {
+        "injected_depth_ms": round(depth_ms, 4),
+        "recovered_rate_hz": round(fit.rate_hz, 4) if fit else None,
+        "recovered_depth": f"{fit.depth:.4f} {fit.unit}" if fit else None,
+        "recovered": bool(
+            fit is not None and abs(fit.rate_hz - rate_hz) <= rate_hz * CONTROL_TOLERANCE
+        ),
+    }
+
+
+def control(
+    dry: np.ndarray,
+    wet: np.ndarray,
+    sample_rate: int,
+    *,
+    rate_hz: float = CONTROL_RATE_HZ,
+    depths_ms: tuple[float, ...] = CONTROL_DEPTHS_MS,
+    centre_ms: float = CONTROL_CENTRE_MS,
+    search_ms: tuple[float, float] = (0.0, 60.0),
+    rate_range: tuple[float, float] = (0.05, 20.0),
+) -> dict:
+    """How shallow a modulation this pair of takes could have shown, asked of itself.
+
+    Each injected return is scaled to the return the real wet take actually
+    carries, so the control runs at the signal-to-noise ratio the measurement ran
+    at rather than at a comfortable one. A control that passes only because it was
+    made loud vouches for nothing.
+
+    What comes back is a band rather than a floor, for the reason
+    WHY_DETECTABLE gives: a swing too deep to follow inside one tracking frame is
+    missed as surely as one too shallow to find.
+    """
+    reference, residual, _ = separate_return(dry, wet)
+    reference = np.asarray(reference, dtype=np.float64)
+    residual_rms = float(np.sqrt(np.mean(residual**2)))
+    scale_reference = float(np.sqrt(np.mean(reference**2)))
+
+    ladder = sorted(depths_ms, reverse=True)
+    attempts = [
+        _attempt(
+            reference,
+            residual_rms,
+            sample_rate,
+            rate_hz=rate_hz,
+            depth_ms=depth,
+            centre_ms=centre_ms,
+            search_ms=search_ms,
+            rate_range=rate_range,
+        )
+        for depth in ladder
+    ]
+
+    band = _longest_recovered_run(attempts)
+    return {
+        "injected_rate_hz": round(rate_hz, 4),
+        "injected_centre_ms": round(centre_ms, 4),
+        "injected_depths_ms": [round(d, 4) for d in ladder],
+        "return_level_db": (
+            round(20.0 * np.log10(residual_rms / scale_reference), 2)
+            if residual_rms > 0 and scale_reference > 0
+            else None
+        ),
+        "attempts": attempts,
+        "detectable_ms": list(band) if band else None,
+        "detectable_why": WHY_DETECTABLE,
+        "recovered": band is not None,
+        "tolerance": CONTROL_TOLERANCE,
+        "why": WHY_CONTROL,
+    }
+
+
 __all__ = [
+    "CONTROL_CENTRE_MS",
+    "CONTROL_DEPTHS_MS",
+    "CONTROL_FAILED",
+    "CONTROL_RATE_HZ",
+    "CONTROL_TOLERANCE",
     "EXPLAINS_THE_SERIES",
     "FRAME_CONFIDENCE",
     "LINE_ABOVE_DB",
+    "WHY_DETECTABLE",
+    "WHY_CONTROL",
     "DelayTrack",
     "LfoFit",
     "Motion",
+    "control",
     "fit_lfo",
     "level_lfo",
     "measure",
+    "modulated_copy",
     "periodicity",
+    "separate_return",
     "track_delay",
 ]
