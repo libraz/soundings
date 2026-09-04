@@ -1,9 +1,9 @@
 """Send a signal into the machine's analogue input and measure what comes back.
 
-The one command here needs an audio interface and nothing else -- no MIDI port,
-and for the loopback pass not even the machine. It answers a different kind of
-question from everything else: not what the machine plays, but what it does to a
-signal it is given.
+The one command here needs an audio interface, and a MIDI port only when it is
+asked to put the machine in a state first -- for the loopback pass, not even the
+machine. It answers a different kind of question from everything else: not what
+the machine plays, but what it does to a signal it is given.
 
 Three runs, in order, and each is a precondition for reading the next:
 
@@ -13,9 +13,14 @@ Three runs, in order, and each is a precondition for reading the next:
 2. Through the machine with no effect on the input. That answers whether the
    input reaches the output at all, at what latency and at what level. Until it
    does, nothing further is measurable.
-3. Through the machine with an effect raised on the input. Comparing that with
-   run 2 is what says whether the input is routed through the effects, which is
-   the fact the whole approach depends on and which no manual page settles.
+3. Through the machine with an effect raised on the input, which is what
+   `--prepare` is for. Comparing that with run 2 is what says whether the input
+   is routed through the effects, which is the fact the whole approach depends on
+   and which no manual page settles.
+
+Run 3 is the one whose state has to be proved. Its two outcomes are a response
+that differs from run 2 and a response that does not, and a preparation the
+machine ignored produces the second while looking like the first was asked for.
 """
 
 from __future__ import annotations
@@ -86,6 +91,24 @@ def register(sub) -> None:
         help="a WAV kept from a --loopback run, divided out of this one so what is "
         "left is the machine rather than the machine and the converters in series",
     )
+    p.add_argument(
+        "--prepare",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="state to put the machine in before the sweep, written over MIDI and read "
+        "back to prove it took: '40 03 00=02 01' selects an insertion effect. Recorded "
+        "with the result, since a response is a measurement of the state it was taken in "
+        "and nothing in the returned audio says which state that was",
+    )
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.4,
+        help="seconds after each preparing write, before it is read back",
+    )
+    options.add_verify_reads(p)
     options.add_save(p)
     options.add_out(p)
     p.set_defaults(func=cmd_transfer)
@@ -116,11 +139,30 @@ them does not have to be a delicate one.
 """
 
 
+PREPARED_CAVEAT = (
+    "The sweep was run with the machine put in the state above, and each write was read back "
+    "rather than assumed. A preparation that did not take leaves the machine as it was, so the "
+    "sweep returns through a path with nothing raised on it -- which is exactly the result of a "
+    "run made with no preparation at all, and reads as the input not reaching what was selected. "
+    "That is the conclusion this command exists to reach, so it is the one an unverified state "
+    "would manufacture."
+)
+
+NOT_WITH_LOOPBACK = (
+    "--loopback takes the machine out of the path, so there is nothing there for --prepare to "
+    "put in a state. A loopback run measures the converters and the cable, and a state written "
+    "into a machine the signal never enters cannot change what comes back."
+)
+
+
 def cmd_transfer(args: argparse.Namespace) -> int:
     """Measure a path by sweeping it, and say what it did and what it broke."""
     import numpy as np
 
     from .. import probe, takes
+
+    if args.prepare and args.loopback:
+        raise SystemExit(NOT_WITH_LOOPBACK)
 
     sweep = _sweep_for(args)
     print(
@@ -129,6 +171,12 @@ def cmd_transfer(args: argparse.Namespace) -> int:
         + (f", {args.takes} sweeps" if args.takes > 1 else "")
         + (", loopback (the machine is not in this path)" if args.loopback else "")
     )
+
+    # Written before the sweep and not held open through it: the state stays in
+    # the machine once the writes are acknowledged, and the port is one more thing
+    # to have open while the interface is running.
+    if args.prepare and not _put_in_state(args):
+        return 1
 
     reference = None
     if args.reference:
@@ -193,10 +241,28 @@ def cmd_transfer(args: argparse.Namespace) -> int:
             "in_channels": list(args.in_channels),
             "loopback": args.loopback,
             "reference": args.reference,
+            "prepared": [
+                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
+            ],
+            **({"prepared_caveat": PREPARED_CAVEAT} if args.prepare else {}),
             "inputs": results,
         },
     )
     return 0
+
+
+def _put_in_state(args: argparse.Namespace) -> bool:
+    """Open the port, write the preparation, prove it took, and let the port go."""
+    from .session import prepared, verified_link
+
+    with verified_link(args, refusing="sweeping", show_port=True) as link:
+        if not prepared(link, args.prepare, device_id=args.device_id, settle=args.settle):
+            return False
+    print(
+        "prepared: "
+        + ", ".join(f"{a}={' '.join(f'{v:02X}' for v in vs)}" for a, vs in args.prepare)
+    )
+    return True
 
 
 def _read_channel(channel: int, found: list, reference, args: argparse.Namespace) -> dict:

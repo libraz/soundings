@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 
 import numpy as np
+import pytest
 
 from soundings import probe
 from soundings.cli import inject
@@ -88,3 +89,12 @@ def test_a_single_sweep_still_answers_but_claims_no_repeatability() -> None:
     # One sweep cannot disagree with itself, so the flag says nothing either way
     # and the caveat is absent; the take count is what a reader has to look at.
     assert "caveat" not in entry
+
+
+def test_a_loopback_run_refuses_a_preparation_it_cannot_apply() -> None:
+    """--loopback puts the machine outside the path. A state written into it then
+    changes nothing that comes back, so a run carrying both would record a
+    preparation beside a response the preparation could not have reached."""
+    with pytest.raises(SystemExit) as refused:
+        inject.cmd_transfer(argparse.Namespace(prepare=[("40 03 00", (0x02, 0x01))], loopback=True))
+    assert str(refused.value) == inject.NOT_WITH_LOOPBACK
