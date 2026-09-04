@@ -1,0 +1,62 @@
+# Adding a unit
+
+What to establish about a unit before it is measured. The measurement protocol
+describes the stages; this describes the state the unit and its record have to
+be in before stage 1 runs.
+
+## Identifier and directory
+
+A unit is identified as `<manufacturer>-<model>-<n>`, lowercase, and everything
+measured from it lives in `data/units/<unit-id>/`. The trailing number
+distinguishes two units of the same model, which is the case the archive is
+built for: a measurement describes the unit it was taken from, not the model.
+
+## Before power-on
+
+**Read the rear-panel rating plate and record it verbatim.** Model suffixes and
+serial numbers are recorded as they read, not interpreted. A suffix that
+indicates a regional or supply variant goes into `specifications_claimed` as the
+plate spells it.
+
+**Check the backup battery.** A unit old enough to be interesting is old enough
+for its internal battery to have failed. The problem is not that settings are
+lost. The power-on capture is the baseline every reset measurement is compared
+against and the ground for any comparison with another unit, so a unit whose
+power-on state differs because its battery is dead records a fault of that unit
+as a property of its model. Once taken as a baseline, the two are no longer
+distinguishable.
+
+Replace the battery, if it needs replacing, before the first power-on capture.
+
+## Both directions of the MIDI path
+
+A self-test that passes is not evidence that the unit is receiving. One unit in
+this archive does not route its DIN MIDI IN to the tone generator in three of
+its four rear-selector positions, while MIDI OUT emits Active Sensing in every
+position — which presents as a healthy path with a silent transmit side. The
+selector is read only at power-on.
+
+Confirm both directions explicitly, and record the selector position used in
+`meta.json`.
+
+## First runs
+
+The first stages fix what everything else is measured against, and two of them
+cannot be repeated later:
+
+1. **The power-on capture**, which is unavailable once any stage has written to
+   the unit.
+2. **`repeat`**, which establishes the audio floor. A comparison between two
+   units is bounded by the worse of their two floors, so the figure has to exist
+   before any difference between them is claimed.
+
+## Scope of what is recorded
+
+A measurement describes the unit it was taken from. Findings are written as
+being about that unit, or about the units measured, and never about a model, a
+firmware revision or a family that was not measured.
+
+`meta.json` carries the identity reply, what the unit reports of its firmware,
+the rating plate, the measurement chain and the relevant unit settings. Where
+the unit reports nothing usable — an all-zero software revision, for instance —
+the record says the firmware is unresolved rather than leaving it absent.
