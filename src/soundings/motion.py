@@ -269,13 +269,14 @@ def periodicity(
 
 def separate_return(
     dry: np.ndarray, wet: np.ndarray, *, subtract_direct: bool = True
-) -> tuple[np.ndarray, np.ndarray, int]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
     """Align the two takes, trim the alignment guard, and leave the return alone.
 
-    Factored out rather than inlined in the tracker because the control that
-    vouches for the tracker has to be built on the same return the tracker had to
-    work with. A control given a louder return than the real one is a control on
-    a measurement nobody made.
+    Returns the dry reference, the return alone, and the aligned wet take the
+    return was taken out of. The third is what the control needs: a control has
+    to be injected into the real wet take, so that the effect's own output and
+    the take's own noise are in the way of it exactly as they were in the way of
+    the measurement.
     """
     dry = np.asarray(dry, dtype=np.float64)
     wet = np.asarray(wet, dtype=np.float64)
@@ -291,10 +292,10 @@ def separate_return(
     dry, wet = dry[guard:-guard], wet[guard:-guard]
 
     if not subtract_direct:
-        return dry, wet, align
+        return dry, wet, wet, align
     denominator = float(np.dot(dry, dry))
     gain = float(np.dot(wet, dry)) / denominator if denominator > 0 else 0.0
-    return dry, wet - gain * dry, align
+    return dry, wet - gain * dry, wet, align
 
 
 def track_delay(
@@ -325,7 +326,7 @@ def track_delay(
     price is correlation gain, so a noisier take or a slower modulator can afford
     a longer one.
     """
-    dry, target, align = separate_return(dry, wet, subtract_direct=subtract_direct)
+    dry, target, _, align = separate_return(dry, wet, subtract_direct=subtract_direct)
 
     n = max(16, int(window * sample_rate))
     step = max(1, int(hop * sample_rate))
@@ -624,14 +625,22 @@ def measure(
     )
 
 
-# What the control injects. The rate is one a chorus or a phaser plausibly runs
-# at and sits well inside the default search band; the centre is deep enough that
-# the deepest swing on the ladder still asks for a positive delay, and shallow
-# enough that the deepest still fits the default 60 ms search.
+# The rate the control sweeps at: one a chorus or a phaser plausibly runs at,
+# sitting well inside the default search band and far from its edges, where a
+# line would be hard to tell from the band's own ends.
 CONTROL_RATE_HZ = 1.3
-CONTROL_CENTRE_MS = 16.0
 CONTROL_TOLERANCE = 0.25
 """Fraction the recovered rate may miss the injected one by and still count."""
+
+NO_RETURN_BELOW_DB = -80.0
+"""Return level under the direct path at which there is taken to be no return.
+
+Two takes of the same thing leave a residual of arithmetic noise, and arithmetic
+noise correlates with itself perfectly well. A control injected at that level and
+looked for in the same residual comes back recovered, and the pair is then filed
+as having answered a question it has nothing to answer it with. Nothing this far
+under a direct path is a return; the unit's own noise floor sits far above it.
+"""
 
 CONTROL_DEPTHS_MS = (24.0, 12.0, 6.0, 3.0, 1.5, 0.75, 0.375)
 """Swings tried, peak to peak, deepest first -- the unit a fit reports depth in.
@@ -649,7 +658,10 @@ WHY_CONTROL = (
     "have. Without it a null here is unreadable: a track that found no line because the effect "
     "stands still and one that found no line because the tracker could not follow it are the "
     "same empty result, and the second is not rare -- a quiet send, a diffuse return or a short "
-    "take all look like it. What the ladder adds is the bound the null holds inside."
+    "take all look like it. What the ladder adds is the bound the null holds inside. It is a "
+    "bound on a null and only on a null: where the effect already moves, the sweep is added to a "
+    "motion that was there, and a recovered line cannot be told from the one the effect was "
+    "making anyway."
 )
 
 WHY_DETECTABLE = (
@@ -712,23 +724,41 @@ def modulated_copy(
 
 def _attempt(
     reference: np.ndarray,
-    residual_rms: float,
+    direct: np.ndarray,
+    residual: np.ndarray,
     sample_rate: int,
     *,
     rate_hz: float,
     depth_ms: float,
-    centre_ms: float,
     search_ms: tuple[float, float],
     rate_range: tuple[float, float],
 ) -> dict:
-    """Inject one known swing at the real return's level and try to read it back."""
-    copy = modulated_copy(
-        reference, sample_rate, rate_hz=rate_hz, depth_ms=depth_ms, centre_ms=centre_ms
+    """Set the take's own return moving, and see whether the tracker follows it.
+
+    The return itself is swept, rather than a synthetic copy being added
+    alongside it. That keeps the control on the real thing in every respect the
+    measurement was up against -- the return's level, its spectrum, how much of
+    it correlates with the dry signal at all, and the take's own noise, all of
+    which are inside the residual -- and changes the one property under test.
+
+    Two constructions were tried before this and both were wrong in a way that
+    mattered. Injecting into the dry reference leaves the injected copy alone in
+    the residual, where a normalised correlation recovers it at any level: that
+    control passes on a pair of identical takes, which is the pair it exists to
+    fail on. Adding a moving copy on top of the wet take instead measures whether
+    a modulator could be picked out from beside a static return, which is not the
+    question -- a real modulating effect would be that return, not a second one
+    competing with it, so a strong static effect made its own control fail.
+
+    The sweep runs from zero to `depth_ms` rather than about a centre, since the
+    return already sits at whatever delay the effect gives it and a centre would
+    push the total past the search window.
+    """
+    swept = modulated_copy(
+        residual, sample_rate, rate_hz=rate_hz, depth_ms=depth_ms, centre_ms=depth_ms / 2.0
     )
-    copy_rms = float(np.sqrt(np.mean(copy**2)))
-    scale = residual_rms / copy_rms if copy_rms > 0 else 0.0
     found = measure(
-        reference, reference + scale * copy, sample_rate, search_ms=search_ms, rate_range=rate_range
+        reference, direct + swept, sample_rate, search_ms=search_ms, rate_range=rate_range
     )
     fit = found.delay if found.delay_answered else None
     return {
@@ -748,7 +778,6 @@ def control(
     *,
     rate_hz: float = CONTROL_RATE_HZ,
     depths_ms: tuple[float, ...] = CONTROL_DEPTHS_MS,
-    centre_ms: float = CONTROL_CENTRE_MS,
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
 ) -> dict:
@@ -763,36 +792,46 @@ def control(
     WHY_DETECTABLE gives: a swing too deep to follow inside one tracking frame is
     missed as surely as one too shallow to find.
     """
-    reference, residual, _ = separate_return(dry, wet)
+    reference, residual, aligned_wet, _ = separate_return(dry, wet)
     reference = np.asarray(reference, dtype=np.float64)
     residual_rms = float(np.sqrt(np.mean(residual**2)))
     scale_reference = float(np.sqrt(np.mean(reference**2)))
+    level_db = (
+        20.0 * np.log10(residual_rms / scale_reference)
+        if residual_rms > 0 and scale_reference > 0
+        else float("-inf")
+    )
 
     ladder = sorted(depths_ms, reverse=True)
-    attempts = [
-        _attempt(
-            reference,
-            residual_rms,
-            sample_rate,
-            rate_hz=rate_hz,
-            depth_ms=depth,
-            centre_ms=centre_ms,
-            search_ms=search_ms,
-            rate_range=rate_range,
-        )
-        for depth in ladder
-    ]
+    # A pair with no return has nothing for a modulator to be carried by, so
+    # there is nothing to vouch for and the ladder is not run. Checked rather
+    # than left to the attempts: a residual of pure arithmetic noise still
+    # correlates with itself, so the deepest rungs would come back recovered and
+    # the pair would be filed as having answered.
+    attempts = (
+        []
+        if level_db < NO_RETURN_BELOW_DB
+        else [
+            _attempt(
+                reference,
+                aligned_wet - residual,
+                residual,
+                sample_rate,
+                rate_hz=rate_hz,
+                depth_ms=depth,
+                search_ms=search_ms,
+                rate_range=rate_range,
+            )
+            for depth in ladder
+        ]
+    )
 
     band = _longest_recovered_run(attempts)
     return {
         "injected_rate_hz": round(rate_hz, 4),
-        "injected_centre_ms": round(centre_ms, 4),
         "injected_depths_ms": [round(d, 4) for d in ladder],
-        "return_level_db": (
-            round(20.0 * np.log10(residual_rms / scale_reference), 2)
-            if residual_rms > 0 and scale_reference > 0
-            else None
-        ),
+        "return_level_db": round(level_db, 2) if np.isfinite(level_db) else None,
+        "no_return_to_carry_a_control": not attempts,
         "attempts": attempts,
         "detectable_ms": list(band) if band else None,
         "detectable_why": WHY_DETECTABLE,
@@ -803,7 +842,6 @@ def control(
 
 
 __all__ = [
-    "CONTROL_CENTRE_MS",
     "CONTROL_DEPTHS_MS",
     "CONTROL_FAILED",
     "CONTROL_RATE_HZ",
@@ -811,6 +849,7 @@ __all__ = [
     "EXPLAINS_THE_SERIES",
     "FRAME_CONFIDENCE",
     "LINE_ABOVE_DB",
+    "NO_RETURN_BELOW_DB",
     "WHY_DETECTABLE",
     "WHY_CONTROL",
     "DelayTrack",

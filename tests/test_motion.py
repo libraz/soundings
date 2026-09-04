@@ -284,11 +284,15 @@ def test_a_rate_read_off_a_wrapped_track_still_counts_as_an_answer() -> None:
 
 
 def test_the_control_recovers_a_swing_it_injected_into_broadband_material() -> None:
-    """The control's own control. It has to be able to pass, on material where a
-    modulator plainly is findable, or a failure anywhere else says nothing."""
+    """The control's own control. It has to be able to pass, on material whose
+    return has a delay to sweep, or a failure anywhere else says nothing. A fixed
+    echo rather than a reverb: a diffuse tail correlates with the dry signal at no
+    single lag, so sweeping it produces no track, and this method cannot vouch for
+    itself on one."""
     dry = source()
+    echoed = dry + 0.7 * np.roll(dry, int(0.02 * SR))
 
-    vouched = motion.control(dry, reverberated(dry), SR, depths_ms=(4.0, 2.0))
+    vouched = motion.control(dry, echoed, SR, depths_ms=(4.0, 2.0))
 
     assert vouched["recovered"]
     assert vouched["detectable_ms"] == [4.0, 2.0]

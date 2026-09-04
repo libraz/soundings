@@ -61,7 +61,8 @@
     "contrast",
     "transfer",
     "motion",
-    "decay"
+    "decay",
+    "efx-motion"
   ],
   "commands": {
     "devices": {
@@ -2376,6 +2377,115 @@
           "default": "0.5",
           "required": false,
           "help": "seconds of silence at the head of the take; the per-band noise floor is measured in it, and it is what says where a tail stops being a tail",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-motion": {
+      "help": "sort a unit's insertion effects into the ones that move and the ones that stand still, from saved takes, with no machine attached",
+      "handler": "cmd_efx_motion",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory holding one subdirectory of takes per effect type, each with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--bypassed"
+          ],
+          "dest": "bypassed",
+          "nargs": null,
+          "default": "'0'",
+          "required": false,
+          "help": "the setting in each manifest that had the part routed past the effect",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--routed"
+          ],
+          "dest": "routed",
+          "nargs": null,
+          "default": "'1'",
+          "required": false,
+          "help": "the setting that had the part routed through it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-delay"
+          ],
+          "dest": "max_delay",
+          "nargs": null,
+          "default": "60.0",
+          "required": false,
+          "help": "milliseconds of delay searched",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rate"
+          ],
+          "dest": "min_rate",
+          "nargs": null,
+          "default": "0.05",
+          "required": false,
+          "help": "slowest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-rate"
+          ],
+          "dest": "max_rate",
+          "nargs": null,
+          "default": "20.0",
+          "required": false,
+          "help": "fastest modulation searched, Hz",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

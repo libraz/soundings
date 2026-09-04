@@ -8,7 +8,6 @@
   ],
   "positive_control": {
     "injected_rate_hz": 1.3,
-    "injected_centre_ms": 16.0,
     "injected_depths_ms": [
       24.0,
       12.0,
@@ -19,6 +18,7 @@
       0.375
     ],
     "return_level_db": -42.21,
+    "no_return_to_carry_a_control": false,
     "attempts": [
       {
         "injected_depth_ms": 24.0,
@@ -34,9 +34,9 @@
       },
       {
         "injected_depth_ms": 6.0,
-        "recovered_rate_hz": 1.324,
-        "recovered_depth": "6.2814 ms",
-        "recovered": true
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
       },
       {
         "injected_depth_ms": 3.0,
@@ -63,15 +63,13 @@
         "recovered": false
       }
     ],
-    "detectable_ms": [
-      6.0,
-      6.0
-    ],
+    "detectable_ms": null,
     "detectable_why": "The deepest and shallowest injected swings recovered in one unbroken run down the ladder. Sensitivity here is a band and not a floor, and it closes at both ends for different reasons. Below it there is too little return to follow. Above it the delay moves too far inside a single tracking frame, which smears that frame's correlation peak until nothing clears the confidence threshold -- so a very deep swing is missed for the same reason a very shallow one is, and a null bounded only from below would read as covering it. A modulation outside this band would not have been seen, whatever the effect was doing.",
-    "recovered": true,
+    "recovered": false,
     "tolerance": 0.25,
-    "why": "Modulations of known rate and a ladder of known depths were built from this run's own dry take and put through the same tracker, each at the level the real return was measured to have. Without it a null here is unreadable: a track that found no line because the effect stands still and one that found no line because the tracker could not follow it are the same empty result, and the second is not rare -- a quiet send, a diffuse return or a short take all look like it. What the ladder adds is the bound the null holds inside."
+    "why": "Modulations of known rate and a ladder of known depths were built from this run's own dry take and put through the same tracker, each at the level the real return was measured to have. Without it a null here is unreadable: a track that found no line because the effect stands still and one that found no line because the tracker could not follow it are the same empty result, and the second is not rare -- a quiet send, a diffuse return or a short take all look like it. What the ladder adds is the bound the null holds inside. It is a bound on a null and only on a null: where the effect already moves, the sweep is added to a motion that was there, and a recovered line cannot be told from the one the effect was making anyway."
   },
+  "control_failed": "No injected swing was recovered at any depth on the ladder, so this pair of takes was never shown able to report a modulation at all. Nothing here is a finding about the effect: an effect that moves and an effect that stands still would both be reported as standing still.",
   "track": {
     "frames": 597,
     "frames_found": 479,

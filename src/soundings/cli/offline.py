@@ -1,8 +1,9 @@
 """Measure kept takes, with no machine attached.
 
 Device time is the scarce resource, so a take is recorded once and asked
-questions afterwards. Both commands here read a dry and a wet take of the same
-note and say what the effect did between them; neither opens a MIDI port.
+questions afterwards. Everything here reads a dry and a wet take of the same note
+and says what the effect did between them -- one pair at a time, or a directory
+of them at once. None of it opens a MIDI port.
 """
 
 from __future__ import annotations
@@ -48,6 +49,32 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(func=cmd_decay)
 
+    p = sub.add_parser(
+        "efx-motion",
+        help="sort a unit's insertion effects into the ones that move and the ones "
+        "that stand still, from saved takes, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory holding one subdirectory of takes per effect type, each "
+        "with the takes-manifest.json a --save run wrote",
+    )
+    p.add_argument(
+        "--bypassed",
+        default="0",
+        help="the setting in each manifest that had the part routed past the effect",
+    )
+    p.add_argument(
+        "--routed",
+        default="1",
+        help="the setting that had the part routed through it",
+    )
+    p.add_argument("--max-delay", type=float, default=60.0, help="milliseconds of delay searched")
+    p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
+    p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
+    options.add_out(p)
+    p.set_defaults(func=cmd_efx_motion)
+
 
 def _pair(dry_path: str, wet_path: str):
     """Load two takes and hand back the loudest channel of each, plus the rate."""
@@ -80,8 +107,8 @@ def cmd_motion(args: argparse.Namespace) -> int:
         for a in vouched["attempts"]
     )
     print(
-        f"  control: swings at {vouched['injected_rate_hz']} Hz injected at the real return's "
-        f"level ({vouched['return_level_db']} dB), peak to peak in ms: {ladder}"
+        f"  control: the take's own return, {vouched['return_level_db']} dB under the direct "
+        f"path, swept at {vouched['injected_rate_hz']} Hz by these many ms peak to peak: {ladder}"
     )
     if vouched["detectable_ms"] is not None:
         deep, shallow = vouched["detectable_ms"]
@@ -132,6 +159,50 @@ def cmd_decay(args: argparse.Namespace) -> int:
             "sample_rate": rate,
             "lead_s": args.lead,
             **found.to_json(),
+        },
+    )
+    return 0
+
+
+def cmd_efx_motion(args: argparse.Namespace) -> int:
+    """Sort every insertion effect type into moving, static, or unable to say."""
+    from .. import efxmotion
+
+    def said(entry) -> None:
+        print(f"  {entry.type_id:8} {entry.verdict}")
+
+    found = efxmotion.survey(
+        args.takes,
+        dry=args.bypassed,
+        wet=args.routed,
+        search_ms=(0.0, args.max_delay),
+        rate_range=(args.min_rate, args.max_rate),
+        progress=said,
+    )
+    if not found:
+        print(f"no take directories with a manifest under {args.takes}")
+        return 1
+
+    print()
+    print(efxmotion.summarise(found))
+    piles = efxmotion.partition(found)
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "searched_rate_hz": [args.min_rate, args.max_rate],
+            "searched_delay_ms": [0.0, args.max_delay],
+            "method": efxmotion.METHOD,
+            "one_pair_per_type": efxmotion.WHY_ONE_PAIR,
+            "nothing_is_named": efxmotion.NOT_NAMED,
+            "moving": piles["moving"],
+            "static": piles["static"],
+            "could_not_say": {
+                "types": piles["could_not_say"],
+                "why": efxmotion.WHY_COULD_NOT_SAY,
+            },
+            "types": [f.to_json() for f in found],
         },
     )
     return 0

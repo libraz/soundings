@@ -1,0 +1,257 @@
+"""Which of a unit's insertion effects move, and which stand still.
+
+The type map says how many insertion effects a unit has and what each loads. It
+does not say what any of them is, and the first division that matters for
+identifying one is whether it has a free-running modulator: a chorus, a flanger,
+a phaser, a tremolo, a rotary and an auto-pan are all *motions*, and everything
+else -- a filter, a distortion, a compressor, an equaliser, a fixed delay -- is a
+response that can be measured by averaging. The two need different measurements,
+and running the wrong one produces a number either way.
+
+So this is the sort, done once over every type the unit accepts, from a pair of
+takes per type: the same note with the part routed through the effect and with it
+bypassed.
+
+**A type that reports no motion is only sorted if the pair could have shown
+one.** Each pair carries its own injected control, so a type lands in `static`
+only when a known modulation at the real return's level was recovered from that
+same material, and in `could_not_say` otherwise. Without that split every type
+whose takes were unusable would be filed as standing still, which is the answer
+that costs nothing to produce and is wrong for exactly the effects this is trying
+to find.
+
+**Nothing here is named.** A type that moves at 0.9 Hz over 3 ms of delay is
+reported as that, not as a chorus. What the unit calls it is not this archive's
+question, and a label would survive longer than the measurement that suggested it.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from . import motion
+from .takes import loudest, read
+
+METHOD = (
+    "For each insertion effect the unit accepts, the same note was recorded with the part routed "
+    "through the effect and with it bypassed, and the pair was put through the delay tracker. A "
+    "type is sorted as moving on a periodic line in its delay or level track, and as static only "
+    "when a known modulation injected into that same pair at the real return's level was "
+    "recovered. A pair that could not recover its own control sorts as neither."
+)
+
+WHY_COULD_NOT_SAY = (
+    "These types were neither shown to move nor shown to stand still. Their takes did not recover "
+    "an injected modulation at any depth, so a modulator and the absence of one would have "
+    "produced the same empty track. Filing them as static is the error this category exists to "
+    "prevent: it is the cheapest answer available and it is wrong for precisely the types worth "
+    "finding."
+)
+
+NOT_NAMED = (
+    "A type that moves is reported by its rate, depth and shape, not by what an effect doing that "
+    "is usually called. The measurement is what this archive holds; a name is an identification "
+    "made from it, and one written down here would outlive the evidence for it."
+)
+
+WHY_ONE_PAIR = (
+    "One pair of takes per type, not several. A modulator is free-running, so its phase differs "
+    "between takes and averaging them flattens the very motion under test. Repetition buys "
+    "nothing here that it buys elsewhere, and the control is what stands in for it."
+)
+
+
+@dataclass
+class TypeMotion:
+    """What one insertion effect type did between its two takes."""
+
+    type_id: str
+    stimulus: str
+    moves: bool
+    conclusive: bool
+    rate_hz: float | None = None
+    depth: str | None = None
+    shape: str | None = None
+    where: str | None = None
+    """Which track the line was found in: the delay, or the level."""
+
+    detectable_ms: list[float] | None = None
+    return_level_db: float | None = None
+    track: dict = field(default_factory=dict)
+
+    @property
+    def verdict(self) -> str:
+        if not self.conclusive:
+            return "could not say"
+        return "moves" if self.moves else "static"
+
+    def to_json(self) -> dict:
+        return {
+            "type": self.type_id,
+            "stimulus": self.stimulus,
+            "verdict": self.verdict,
+            "rate_hz": self.rate_hz,
+            "depth": self.depth,
+            "shape": self.shape,
+            "found_in": self.where,
+            "control_detectable_ms": self.detectable_ms,
+            "return_level_db": self.return_level_db,
+            "track": self.track,
+        }
+
+
+def pair_from(manifest: dict, root: Path, dry: str, wet: str) -> tuple[Path, Path] | None:
+    """The first take at each of the two settings, as file paths.
+
+    The first rather than a chosen one: every take of a setting is the same
+    measurement, and picking by any property of the audio would be selecting the
+    pair that answers best.
+    """
+    found: dict[str, Path] = {}
+    for entry in manifest.get("takes", []):
+        setting = str(entry.get("setting"))
+        if setting in (dry, wet) and setting not in found:
+            found[setting] = root / entry["file"]
+    if dry not in found or wet not in found:
+        return None
+    return found[dry], found[wet]
+
+
+def measure_type(
+    type_id: str,
+    dry_path: Path,
+    wet_path: Path,
+    *,
+    stimulus: str,
+    search_ms: tuple[float, float] = (0.0, 60.0),
+    rate_range: tuple[float, float] = (0.05, 20.0),
+    depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
+) -> TypeMotion:
+    """Sort one type, from its own pair of takes and its own control."""
+    dry, dry_rate = read(dry_path)
+    wet, wet_rate = read(wet_path)
+    if dry_rate != wet_rate:
+        raise ValueError(f"{type_id}: takes at {dry_rate} and {wet_rate} Hz")
+    dry, wet = loudest(dry), loudest(wet)
+
+    found = motion.measure(dry, wet, dry_rate, search_ms=search_ms, rate_range=rate_range)
+    # Only where the type stood still. A control sweeps the take's own return, so
+    # on a type that already moves it adds a motion to a motion and recovers a
+    # line either way -- an answer that means nothing, bought at seven more
+    # passes over the audio than the measurement itself cost.
+    vouched = (
+        {"detectable_ms": None, "return_level_db": None}
+        if found.moves
+        else motion.control(
+            dry,
+            wet,
+            dry_rate,
+            depths_ms=depths_ms,
+            search_ms=search_ms,
+            rate_range=rate_range,
+        )
+    )
+
+    fit = found.delay if (found.delay is not None and found.delay_answered) else found.level
+    where = None
+    if found.delay is not None and found.delay_answered:
+        where = "delay"
+    elif found.level is not None:
+        where = "level"
+
+    return TypeMotion(
+        type_id=type_id,
+        stimulus=stimulus,
+        moves=found.moves,
+        # A type that moved is sorted by having moved; the control is what a null
+        # needs, and demanding it of a positive would discard a real modulator
+        # for the search having a narrow band around it.
+        conclusive=found.moves or vouched["detectable_ms"] is not None,
+        rate_hz=round(fit.rate_hz, 4) if fit and where else None,
+        depth=f"{fit.depth:.4f} {fit.unit}" if fit and where else None,
+        shape=("sine" if fit.sinusoidal else f"shape error {fit.shape_error:.2f}")
+        if fit and where
+        else None,
+        where=where,
+        detectable_ms=vouched["detectable_ms"],
+        return_level_db=vouched["return_level_db"],
+        track=found.track.to_json(),
+    )
+
+
+def survey(
+    root: str | Path,
+    *,
+    dry: str = "0",
+    wet: str = "1",
+    search_ms: tuple[float, float] = (0.0, 60.0),
+    rate_range: tuple[float, float] = (0.05, 20.0),
+    depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
+    progress=None,
+) -> list[TypeMotion]:
+    """Sort every type whose takes are under this directory, one subdirectory each."""
+    out = []
+    for directory in sorted(Path(root).iterdir()):
+        manifest_path = directory / "takes-manifest.json"
+        if not directory.is_dir() or not manifest_path.exists():
+            continue
+        manifest = json.loads(manifest_path.read_text())
+        stimulus = next((e["stimulus"] for e in manifest.get("takes", [])), "")
+        paths = pair_from(manifest, directory, dry, wet)
+        if paths is None:
+            continue
+        found = measure_type(
+            directory.name.replace("-", " ").upper(),
+            *paths,
+            stimulus=stimulus,
+            search_ms=search_ms,
+            rate_range=rate_range,
+            depths_ms=depths_ms,
+        )
+        out.append(found)
+        if progress:
+            progress(found)
+    return out
+
+
+def partition(found: list[TypeMotion]) -> dict[str, list[str]]:
+    """The three piles, which is what the survey is for."""
+    return {
+        "moving": [f.type_id for f in found if f.verdict == "moves"],
+        "static": [f.type_id for f in found if f.verdict == "static"],
+        "could_not_say": [f.type_id for f in found if f.verdict == "could not say"],
+    }
+
+
+def summarise(found: list[TypeMotion]) -> str:
+    piles = partition(found)
+    lines = [f"{len(found)} types sorted"]
+    for entry in found:
+        detail = ""
+        if entry.verdict == "moves":
+            detail = f" -- {entry.rate_hz} Hz, {entry.depth} in the {entry.where}, {entry.shape}"
+        elif entry.verdict == "static" and entry.detectable_ms:
+            deep, shallow = entry.detectable_ms
+            detail = f" -- nothing between {shallow} and {deep} ms would have been missed"
+        lines.append(f"  {entry.type_id:8} {entry.verdict}{detail}")
+    lines.append(
+        f"  => {len(piles['moving'])} move, {len(piles['static'])} stand still, "
+        f"{len(piles['could_not_say'])} could not be told apart"
+    )
+    return "\n".join(lines)
+
+
+__all__ = [
+    "METHOD",
+    "NOT_NAMED",
+    "WHY_COULD_NOT_SAY",
+    "WHY_ONE_PAIR",
+    "TypeMotion",
+    "measure_type",
+    "pair_from",
+    "partition",
+    "summarise",
+    "survey",
+]
