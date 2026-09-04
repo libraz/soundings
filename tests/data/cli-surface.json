@@ -48,6 +48,7 @@
     "identity",
     "sweep",
     "write-probe",
+    "window-probe",
     "tone-map",
     "efx-map",
     "reset-probe",
@@ -466,6 +467,89 @@
           "default": "0.02",
           "required": false,
           "help": "pause between a write and the read back that checks it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "window-probe": {
+      "help": "tell an address that holds a value from one that shows another address's, which writing to it and reading it back cannot",
+      "handler": "cmd_window_probe",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--stores"
+          ],
+          "dest": "stores",
+          "nargs": 2,
+          "default": "None",
+          "required": true,
+          "help": "two addresses believed to hold their own values. Everything is measured relative to these, and they are asked as candidates too so a run that calls everything a window says so rather than reporting one",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "candidates",
+          "nargs": "+",
+          "default": "None",
+          "required": true,
+          "help": "addresses to ask. Each is read after addressing each store in turn, and then written through to see which store the write reaches",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.05",
+          "required": false,
+          "help": "pause after a write before the read that follows it",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

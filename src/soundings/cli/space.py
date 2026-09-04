@@ -120,6 +120,37 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_write_probe)
 
     p = sub.add_parser(
+        "window-probe",
+        help="tell an address that holds a value from one that shows another address's, "
+        "which writing to it and reading it back cannot",
+    )
+    p.add_argument(
+        "--stores",
+        nargs=2,
+        required=True,
+        metavar="ADDR",
+        help="two addresses believed to hold their own values. Everything is measured "
+        "relative to these, and they are asked as candidates too so a run that calls "
+        "everything a window says so rather than reporting one",
+    )
+    p.add_argument(
+        "candidates",
+        nargs="+",
+        metavar="ADDR",
+        help="addresses to ask. Each is read after addressing each store in turn, and "
+        "then written through to see which store the write reaches",
+    )
+    p.add_argument(
+        "--settle",
+        type=float,
+        default=0.05,
+        help="pause after a write before the read that follows it",
+    )
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_window_probe)
+
+    p = sub.add_parser(
         "tone-map",
         help="find which tones exist, by asking for each and seeing whether it was taken",
     )
@@ -398,6 +429,39 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
     print(f"  {writer.writes} writes, {writer.reads} reads")
     write_out()
     return 0 if stopped is None and all(r.region_restored for r in done) else 1
+
+
+def _address(spec: str) -> tuple[int, int, int]:
+    parts = spec.split()
+    if len(parts) != 3:
+        raise SystemExit(f"an address is three hex bytes, not {spec!r}")
+    return tuple(int(b, 16) for b in parts)
+
+
+def cmd_window_probe(args: argparse.Namespace) -> int:
+    """Ask each address whether it answers for itself or for whatever was addressed last."""
+    from ..window import Prober, summarise
+    from ..writeback import NEVER_WRITE
+
+    stores = tuple(_address(s) for s in args.stores)
+    candidates = [_address(s) for s in args.candidates]
+    for address in list(stores) + candidates:
+        if address in NEVER_WRITE:
+            raise SystemExit(f"{_address} is on the never-write list")
+
+    with verified_link(
+        args,
+        refusing="probing",
+        show_port=True,
+        announce="Verifying the path before writing (a write is never acknowledged)",
+    ) as link:
+        prober = Prober(link, device_id=args.device_id, settle=args.settle)
+        result = prober.run(stores, candidates, progress=lambda m: print(f"  {m}"))
+
+    print()
+    print(summarise(result))
+    report.write_json(args.out, {"device_id": f"{args.device_id:02X}", **result.to_json()})
+    return 0 if result.restored and result.controls_held_their_own else 1
 
 
 def cmd_tone_map(args: argparse.Namespace) -> int:
