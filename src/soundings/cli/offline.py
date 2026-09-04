@@ -102,6 +102,32 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_efx_motion)
 
 
+    p = sub.add_parser(
+        "verdict",
+        help="ask an audible verdict of takes recorded in an earlier session, with no "
+        "machine attached",
+    )
+    p.add_argument("takes", help="a directory a --save run left, with its takes-manifest.json")
+    p.add_argument(
+        "--first",
+        help="the setting compared from; defaults to the first the manifest records",
+    )
+    p.add_argument(
+        "--second",
+        help="the setting compared to; defaults to the last. A run that swept more than "
+        "two settings has to be told which pair, since any choice defaulted to here would "
+        "be a measurement decision wearing a default's clothes",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=6.0,
+        help="dB the change must clear the unit's own repeatability by",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_verdict)
+
+
 def _pair(dry_path: str, wet_path: str):
     """Load two takes and hand back the loudest channel of each, plus the rate."""
     from ..takes import loudest, read
@@ -248,3 +274,39 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
         },
     )
     return 0 if not unsurveyed else 1
+
+
+def cmd_verdict(args: argparse.Namespace) -> int:
+    """Judge a saved pair of settings, without the machine that recorded them."""
+    from .. import audible, rejudge
+
+    try:
+        overall, manifest = rejudge.judge_directory(
+            args.takes, first=args.first, second=args.second, margin_db=args.margin
+        )
+    except (rejudge.NothingToJudge, FileNotFoundError) as exc:
+        print(exc)
+        return 1
+
+    print(f"{args.takes}: settings {rejudge.settings_in(manifest)}")
+    for verdict in overall.verdicts:
+        print(f"  {verdict.describe()}")
+    print()
+    print(overall.describe())
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "controller": manifest.get("controller"),
+            "address": manifest.get("address"),
+            "settings_compared": [
+                args.first if args.first is not None else rejudge.settings_in(manifest)[0],
+                args.second if args.second is not None else rejudge.settings_in(manifest)[-1],
+            ],
+            "stimuli": manifest.get("stimuli", []),
+            "method": audible.METHOD + rejudge.METHOD_SUFFIX,
+            **overall.to_json(),
+        },
+    )
+    return 0

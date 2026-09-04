@@ -62,7 +62,8 @@
     "transfer",
     "motion",
     "decay",
-    "efx-motion"
+    "efx-motion",
+    "verdict"
   ],
   "commands": {
     "devices": {
@@ -2525,6 +2526,89 @@
           "default": "0.6",
           "required": false,
           "help": "seconds of silence at the head of a take, for any manifest that does not record its stimulus's own. The noise floor is measured in it and frames below that floor are dropped, without which a take that decays into silence cannot recover its own control",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "verdict": {
+      "help": "ask an audible verdict of takes recorded in an earlier session, with no machine attached",
+      "handler": "cmd_verdict",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, with its takes-manifest.json",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--first"
+          ],
+          "dest": "first",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the setting compared from; defaults to the first the manifest records",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--second"
+          ],
+          "dest": "second",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the setting compared to; defaults to the last. A run that swept more than two settings has to be told which pair, since any choice defaulted to here would be a measurement decision wearing a default's clothes",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "6.0",
+          "required": false,
+          "help": "dB the change must clear the unit's own repeatability by",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
