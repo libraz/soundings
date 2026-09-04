@@ -349,3 +349,30 @@ def test_something_landing_that_this_run_did_not_send_does_not_count():
     stray = [Attribution(label="CC7", kind="cc", values=(0x20, 0x60))]
 
     assert not _kind_reached("drum-nrpn", stimuli, stray)
+
+
+def test_addresses_named_on_the_command_line_are_not_topped_up_from_a_record():
+    """The run narrows the list to what it could read and put back, and writes
+    the remainder back into the same field. Adding a record's addresses every
+    time would return the dropped ones after they had been dropped."""
+    import argparse
+
+    from soundings.cli.scan import _addresses
+
+    args = argparse.Namespace(addresses=["40 11 19"], addresses_from=["never read"])
+    assert _addresses(args) == [(0x40, 0x11, 0x19)]
+
+
+def test_a_kind_address_run_with_nowhere_to_write_refuses():
+    """It refuses rather than defaulting to a list of addresses. Which ones are
+    worth asking a third way into is a finding about the unit, and a default
+    would make one unit's finding the starting point for every other."""
+    import argparse
+
+    import pytest as _pytest
+
+    from soundings.cli.scan import _addresses
+
+    args = argparse.Namespace(addresses=[], addresses_from=[])
+    with _pytest.raises(SystemExit):
+        _addresses(args)

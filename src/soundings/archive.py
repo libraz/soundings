@@ -13,25 +13,27 @@ from pathlib import Path
 
 Address = tuple[int, int, int]
 
-# The bytes a control change and an NRPN were both measured to reach. Writing
-# them by SysEx asks whether the location has a third way in, and -- because the
-# whole watched space is diffed, not just the byte written -- whether the value
-# is also kept anywhere else.
-ALIASED_BYTES = (
-    "40 11 19",
-    "40 11 1C",
-    "40 11 21",
-    "40 11 22",
-    "40 11 30",
-    "40 11 31",
-    "40 11 32",
-    "40 11 33",
-    "40 11 34",
-    "40 11 35",
-    "40 11 36",
-    "40 11 37",
-    "40 21 04",
-)
+
+def stores_reached(paths: list[str | Path]) -> list[str]:
+    """Every address these alias scans attributed a message to, verbatim.
+
+    Writing to one of them by SysEx asks whether the location has a third way
+    in, and -- because the whole watched space is diffed, not just the byte
+    written -- whether the value is also kept anywhere else.
+
+    Read from the records rather than written down beside the code. A list
+    written down is a list about the unit it was written from, and it goes stale
+    against its own source: the one this replaced named thirteen addresses,
+    missed three that the same unit's scans had since attributed, included one
+    that no scan in the archive attributes, and described itself as the bytes a
+    control change and an NRPN both reach, which was true of eight of them.
+    """
+    out: set[str] = set()
+    for path in paths:
+        data = json.loads(Path(path).read_text())
+        for entry in data["attributed"]:
+            out.update(entry.get("stores_verbatim") or [])
+    return sorted(out)
 
 
 def regions(path: str | Path, prefix: str = "") -> list[tuple[Address, int]]:

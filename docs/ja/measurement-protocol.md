@@ -86,12 +86,20 @@ rye run soundings hold-probe --map data/units/<unit-id>/address-map.json \
 
 ```sh
 rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --prefix "" --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
+  --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
 ```
 
 ある系統のメッセージを 1 つずつ送り、その前後でアドレス空間を差分して、メッセージが到達する格納場所を特定します。系統ごとに 1 回ずつ実行します。`cc`、`nrpn`、`rpn`、`channel`、`drum-nrpn`、および SysEx による書き込みの `address` です。
 
-**マップ全域を監視してください**。1 つのブロックに限定した走査は、そこで得られる否定的所見のすべてをそのブロックへ限定します。「このメッセージはどこにも格納されない」という記録は、そのとき「監視した空間の 1 割のどこにも」という意味になります。
+**マップ全域を監視してください**。`--prefix` の既定はそうなっています。1 つのブロックに限定した走査は、そこで得られる否定的所見のすべてをそのブロックへ限定します。「このメッセージはどこにも格納されない」という記録は、そのとき「見た範囲のどこにも」という意味になります。
+
+`--kind address` は、先行する走査が到達を確認したアドレスへ書き込み、その場所に第三の入口があるかどうかを問います。書き込み先は、そのユニット自身の記録から取ります。
+
+```sh
+rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
+  --kind address --addresses-from data/units/<unit-id>/cc-aliases-ch1.json \
+  --out data/units/<unit-id>/sysex-aliases-ch1.json
+```
 
 ### 8. リセット
 

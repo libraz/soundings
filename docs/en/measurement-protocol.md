@@ -131,16 +131,27 @@ asks.
 
 ```sh
 rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --prefix "" --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
+  --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
 ```
 
 Sends each message of a family and diffs the address space around it, which
 locates the storage a message reaches. Run once per family: `cc`, `nrpn`,
 `rpn`, `channel`, `drum-nrpn`, and `address` for writes by SysEx.
 
-**Watch the whole map.** A scan restricted to one block bounds every negative
-finding it produces to that block, and the record of "this message is stored
-nowhere" then means "nowhere in the tenth of the space that was watched".
+**Watch the whole map**, which is what `--prefix` does by default. A scan
+restricted to one block bounds every negative finding it produces to that block,
+and the record of "this message is stored nowhere" then means "nowhere in the
+part of the space that was looked at".
+
+`--kind address` writes to addresses an earlier scan attributed, which asks
+whether a location has a third way in. It takes them from that unit's own
+records:
+
+```sh
+rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
+  --kind address --addresses-from data/units/<unit-id>/cc-aliases-ch1.json \
+  --out data/units/<unit-id>/sysex-aliases-ch1.json
+```
 
 ### 8. Resets
 

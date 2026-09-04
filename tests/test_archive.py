@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from soundings import archive
 
 UNIT = Path(__file__).parents[1] / "data" / "units" / "roland-sc8850-01"
@@ -82,7 +80,43 @@ def test_what_a_prefix_removed_comes_back_with_it():
     assert skipped == []
 
 
-@pytest.mark.parametrize("address", archive.ALIASED_BYTES)
-def test_the_aliased_bytes_are_three_hex_bytes(address: str):
-    assert len(address.split()) == 3
-    assert all(0 <= int(b, 16) <= 0x7F for b in address.split())
+def test_the_addresses_a_scan_reached_are_read_from_the_scan(tmp_path):
+    """Which addresses are worth asking a third way into is a finding about the
+    unit. Held as a list beside the code it drifts from the records it came
+    from, and it did: the list this replaced missed three addresses the same
+    unit's scans had attributed since."""
+    first = tmp_path / "cc.json"
+    first.write_text(
+        json.dumps(
+            {
+                "attributed": [
+                    {"stimulus": "CC7", "stores_verbatim": ["40 11 19"]},
+                    {"stimulus": "CC10", "stores_verbatim": ["40 11 1C", "40 11 19"]},
+                ]
+            }
+        )
+    )
+    second = tmp_path / "nrpn.json"
+    second.write_text(
+        json.dumps({"attributed": [{"stimulus": "NRPN 1 8", "stores_verbatim": ["40 21 04"]}]})
+    )
+
+    assert archive.stores_reached([first, second]) == ["40 11 19", "40 11 1C", "40 21 04"]
+
+
+def test_a_stimulus_that_landed_nowhere_contributes_no_address(tmp_path):
+    """An attribution with nothing under it is a message the unit did not store,
+    which is a result rather than an address to write to."""
+    scan = tmp_path / "cc.json"
+    scan.write_text(
+        json.dumps(
+            {
+                "attributed": [
+                    {"stimulus": "CC7", "stores_verbatim": []},
+                    {"stimulus": "CC10", "stores_verbatim": None},
+                ]
+            }
+        )
+    )
+
+    assert archive.stores_reached([scan]) == []

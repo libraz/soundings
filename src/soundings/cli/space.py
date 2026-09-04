@@ -230,14 +230,15 @@ def register(sub) -> None:
     )
     p.add_argument(
         "--baseline",
-        default="data/units/roland-sc8850-01/power-on-state.json",
+        required=True,
         help="the power-on capture every reset is compared against",
     )
-    p.add_argument("--map", default="data/units/roland-sc8850-01/address-map.json")
+    p.add_argument("--map", required=True, help="address map read after each reset")
     p.add_argument(
         "--write-probe",
-        default="data/units/roland-sc8850-01/write-probe.json",
-        help="where the addresses that take any value are read from",
+        required=True,
+        help="where the addresses that take any value are read from. A partial probe leaves "
+        "the marks partial, and a reset is then credited only across what was broken",
     )
     p.add_argument(
         "--skip-prefix",
@@ -711,7 +712,12 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         tuple(int(b, 16) for b in a.split()): int(v, 16) for a, v in captured["values"].items()
     }
     regions = archive.regions(args.map)
-    wanted = list(archive.ALIASED_BYTES) + archive.accepting_bytes(args.write_probe)
+    # Every address a mark can be put in comes from the write probe. A list of
+    # aliased bytes used to be added here as well, from when the probe covered
+    # one block: none of those thirteen were in that probe's accepting set and
+    # all of them are in a whole-map one, so the addition was covering for the
+    # probe rather than adding to it.
+    wanted = archive.accepting_bytes(args.write_probe)
     kept, skipped = archive.split_off_prefixes(wanted, args.skip_prefix)
     # Regions overlap, so an address is offered more than once. Marking it twice
     # measures nothing further, and counting it twice makes the tally of what was

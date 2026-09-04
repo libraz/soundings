@@ -22,10 +22,17 @@ def register(sub) -> None:
     )
     p.add_argument(
         "--map",
-        default="data/units/roland-sc8850-01/address-map.json",
+        required=True,
         help="address map the watched regions are taken from",
     )
-    p.add_argument("--prefix", default="40 ", help="only watch regions whose address starts here")
+    p.add_argument(
+        "--prefix",
+        default="",
+        help="only watch regions whose address starts here. Every negative finding a run "
+        "produces is bounded by what it watched, so a prefix turns 'this message is stored "
+        "nowhere' into 'nowhere in the part of the space that was looked at'. The default "
+        "watches all of it",
+    )
     options.add_channel(p)
     p.add_argument(
         "--kind",
@@ -37,8 +44,16 @@ def register(sub) -> None:
         "--addresses",
         nargs="*",
         metavar="ADDR",
-        help="for --kind address: bytes to write, default being the ones a control change "
-        "and an NRPN were both measured to reach",
+        help="for --kind address: bytes to write",
+    )
+    p.add_argument(
+        "--addresses-from",
+        nargs="*",
+        default=[],
+        metavar="SCAN",
+        help="for --kind address: take the bytes to write from what these alias scans "
+        "attributed. Which addresses are worth asking a third way into is a finding about "
+        "the unit, so it is read from that unit's own records rather than assumed",
     )
     p.add_argument(
         "--values",
@@ -69,7 +84,17 @@ def register(sub) -> None:
 def _addresses(args: argparse.Namespace) -> list[tuple[int, int, int]]:
     from ..writeback import NEVER_WRITE
 
-    given = args.addresses or list(archive.ALIASED_BYTES)
+    # Named addresses win outright rather than adding to the ones read from a
+    # record. The run narrows this list to what it could read and put back, and
+    # writes the remainder here; adding the record's addresses every time would
+    # put the dropped ones back in after they had been dropped.
+    given = list(args.addresses) if args.addresses else archive.stores_reached(args.addresses_from)
+    if not given:
+        raise SystemExit(
+            "--kind address needs addresses: --addresses, or --addresses-from pointed at "
+            "this unit's alias scans. There is no default, because which addresses are "
+            "worth writing to is a finding about the unit rather than about the method"
+        )
     out = []
     for spec in given:
         address = tuple(int(b, 16) for b in spec.split())
@@ -163,6 +188,9 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
     )
 
     regions = archive.regions(args.map, args.prefix)
+    # Resolved before the port is opened, so a run with nowhere to write refuses
+    # without having occupied the unit to find that out.
+    targets = _addresses(args) if args.kind == "address" else []
     # A run that finds nothing cannot say whether the unit stores nothing or the
     # scan was broken, so one control change known to be stored is always sent.
     # Sent at both ends rather than once: a control that passes at the start says
@@ -182,7 +210,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         restorer = parts.Restorer(link, device_id=args.device_id)
         originals = {}
         if args.kind == "address":
-            wanted = _addresses(args)
+            wanted = targets
             originals = restorer.remember(wanted)
             args.addresses = [f"{a[0]:02X} {a[1]:02X} {a[2]:02X}" for a in originals]
             print(
