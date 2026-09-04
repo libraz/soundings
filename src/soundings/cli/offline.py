@@ -201,6 +201,25 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(func=cmd_balance)
 
+    p = sub.add_parser(
+        "vibrato",
+        help="say whether a take's pitch was modulated, and at what rate and depth, "
+        "which no comparison of two takes can measure",
+    )
+    p.add_argument("takes", help="a directory a --save run left, with its takes-manifest.json")
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.6,
+        help="seconds of silence at the head of a take. The noise floor is measured in "
+        "it, and a frame that does not stand over that floor is dropped: a frequency "
+        "estimated from silence is the noise's own strongest period reported as a note",
+    )
+    p.add_argument("--min-rate", type=float, default=0.5, help="slowest modulation searched, Hz")
+    p.add_argument("--max-rate", type=float, default=15.0, help="fastest modulation searched, Hz")
+    options.add_out(p)
+    p.set_defaults(func=cmd_vibrato)
+
 
 def _pair(dry_path: str, wet_path: str):
     """Load two takes and hand back the loudest channel of each, plus the rate."""
@@ -446,6 +465,61 @@ def cmd_balance(args: argparse.Namespace) -> int:
             "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
             "moved_the_balance": moved,
             "runs": [{"name": n, **v.to_json()} for n, v in found],
+        },
+    )
+    return 0
+
+
+def cmd_vibrato(args: argparse.Namespace) -> int:
+    """Say what each setting did to the pitch, from inside single takes."""
+    import json
+    from pathlib import Path
+
+    from .. import vibrato
+    from ..takes import loudest, read
+
+    root = Path(args.takes)
+    manifest = json.loads((root / "takes-manifest.json").read_text())
+    search = (args.min_rate, args.max_rate)
+
+    by_setting: dict[str, list] = {}
+    for entry in manifest.get("takes", []):
+        frames, sample_rate = read(root / entry["file"])
+        found = vibrato.measure(loudest(frames), sample_rate, lead_s=args.lead, search_hz=search)
+        key = f"{entry['stimulus']} at {entry['setting']}"
+        by_setting.setdefault(key, []).append(found)
+        print(f"  {key} take {entry['take']}: {found.describe()}")
+
+    # The control goes into the setting that showed nothing. Injecting a
+    # modulation into a take that already carries one puts two in the track, and
+    # the unit's own is what the search then finds -- which reads as the control
+    # having failed. Measured here: the control recovered nothing at all from the
+    # takes with the vibrato on, and down to 50 cents from the takes with it off.
+    quiet = min(
+        by_setting,
+        key=lambda k: sum(1 for f in by_setting[k] if f.found),
+        default=None,
+    )
+    vouched = None
+    if quiet is not None:
+        entry = next(e for e in manifest["takes"] if f"{e['stimulus']} at {e['setting']}" == quiet)
+        frames, sample_rate = read(root / entry["file"])
+        vouched = vibrato.control(loudest(frames), sample_rate, lead_s=args.lead, search_hz=search)
+        print(
+            f"\ncontrol, injected into {quiet}: recovered "
+            f"{vouched['depths_recovered_cents'] or 'nothing'} of "
+            f"{list(vibrato.CONTROL_DEPTHS_CENTS)} cents"
+        )
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "method": vibrato.METHOD,
+            "searched_hz": list(search),
+            "control": vouched,
+            "control_taken_from": quiet,
+            "by_setting": {key: [f.to_json() for f in found] for key, found in by_setting.items()},
         },
     )
     return 0

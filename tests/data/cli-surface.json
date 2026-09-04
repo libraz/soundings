@@ -67,7 +67,8 @@
     "verdict",
     "plan",
     "block",
-    "balance"
+    "balance",
+    "vibrato"
   ],
   "commands": {
     "devices": {
@@ -2915,6 +2916,89 @@
           "default": "6.0",
           "required": false,
           "help": "dB a movement must clear the steadier setting's own scatter by",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "vibrato": {
+      "help": "say whether a take's pitch was modulated, and at what rate and depth, which no comparison of two takes can measure",
+      "handler": "cmd_vibrato",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, with its takes-manifest.json",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take. The noise floor is measured in it, and a frame that does not stand over that floor is dropped: a frequency estimated from silence is the noise's own strongest period reported as a note",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rate"
+          ],
+          "dest": "min_rate",
+          "nargs": null,
+          "default": "0.5",
+          "required": false,
+          "help": "slowest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-rate"
+          ],
+          "dest": "max_rate",
+          "nargs": null,
+          "default": "15.0",
+          "required": false,
+          "help": "fastest modulation searched, Hz",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
