@@ -66,7 +66,8 @@
     "efx-sort",
     "verdict",
     "plan",
-    "block"
+    "block",
+    "balance"
   ],
   "commands": {
     "devices": {
@@ -2844,6 +2845,76 @@
           "default": "None",
           "required": false,
           "help": "records from the pass that moved messages after the setting. A gesture is a rescue for a null, so it answers only where the plain note could not",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--balance"
+          ],
+          "dest": "balance",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a balance record. A parameter that moves signal between the channels is invisible to a comparison made in one of them, so what it found is folded in as another way of having reached the signal path",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "balance": {
+      "help": "say what a parameter did to the level difference between the two channels, which a comparison made in one of them cannot see",
+      "handler": "cmd_balance",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, or one holding several of them",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "6.0",
+          "required": false,
+          "help": "dB a movement must clear the steadier setting's own scatter by",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

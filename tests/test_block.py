@@ -208,3 +208,46 @@ def test_an_address_nothing_could_measure_is_not_a_null(tmp_path) -> None:
 
     assert joined[0].verdict == "could not be measured"
     assert joined[0].still_open
+
+
+def test_a_balance_that_moved_counts_as_the_parameter_having_reached_the_path() -> None:
+    """It is invisible to a comparison made in one channel, and does not read as
+    nothing there: a balance landing somewhere new on each take reads as the unit
+    failing to repeat. Measured on the part panpot, whose plain verdict was that
+    nothing could be measured."""
+    found = [block.read_one(record("40 11 1C", deaf=(), inconclusive=("struck",)))]
+    measured = {
+        "runs": [
+            {
+                "name": "40-11-1C",
+                "stimulus_name": "struck",
+                "moved_between_settings": True,
+                "did_not_repeat_within_a_setting": True,
+            }
+        ]
+    }
+
+    (joined,) = block.with_balance(found, measured)
+
+    assert joined.audible and joined.heard_by == ["struck (balance)"]
+    assert joined.inconclusive_under == []
+
+
+def test_a_balance_that_held_still_changes_no_verdict() -> None:
+    """Forty-three of forty-six addresses showed a spread of 0.0 dB, so the route
+    has to leave a null a null."""
+    found = [block.read_one(record("40 11 30"))]
+    measured = {
+        "runs": [
+            {
+                "name": "40-11-30",
+                "stimulus_name": "struck",
+                "moved_between_settings": False,
+                "did_not_repeat_within_a_setting": False,
+            }
+        ]
+    }
+
+    (joined,) = block.with_balance(found, measured)
+
+    assert not joined.audible and joined.heard_by == []

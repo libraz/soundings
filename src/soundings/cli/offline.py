@@ -174,8 +174,32 @@ def register(sub) -> None:
         help="records from the pass that moved messages after the setting. A gesture "
         "is a rescue for a null, so it answers only where the plain note could not",
     )
+    p.add_argument(
+        "--balance",
+        help="a balance record. A parameter that moves signal between the channels is "
+        "invisible to a comparison made in one of them, so what it found is folded in "
+        "as another way of having reached the signal path",
+    )
     options.add_out(p)
     p.set_defaults(func=cmd_block)
+
+    p = sub.add_parser(
+        "balance",
+        help="say what a parameter did to the level difference between the two channels, "
+        "which a comparison made in one of them cannot see",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory a --save run left, or one holding several of them",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=6.0,
+        help="dB a movement must clear the steadier setting's own scatter by",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_balance)
 
 
 def _pair(dry_path: str, wet_path: str):
@@ -390,6 +414,43 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_balance(args: argparse.Namespace) -> int:
+    """Say what each saved run did to the balance between the two channels."""
+    from pathlib import Path
+
+    from .. import balance
+
+    root = Path(args.takes)
+    # One run, or a directory of them. The manifest is what says which, since a
+    # run's directory holds one and a directory of runs holds none.
+    roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
+    found = []
+    for one in roots:
+        if not (one / "takes-manifest.json").exists():
+            continue
+        for verdict in balance.measure(one, margin_db=args.margin):
+            print(f"{one.name}: {verdict.describe()}")
+            found.append((one.name, verdict))
+    if not found:
+        print(f"no saved takes under {args.takes}")
+        return 1
+
+    moved = [n for n, v in found if v.moved_between_settings or v.did_not_repeat]
+    print(f"\n{len(moved)} of {len(found)} moved the balance: {' | '.join(moved) or 'none'}")
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "method": balance.METHOD,
+            "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
+            "moved_the_balance": moved,
+            "runs": [{"name": n, **v.to_json()} for n, v in found],
+        },
+    )
+    return 0
+
+
 def cmd_block(args: argparse.Namespace) -> int:
     """Read a block's per-address records into one answer about the block."""
     import json
@@ -405,6 +466,8 @@ def cmd_block(args: argparse.Namespace) -> int:
         return 1
 
     found = [f for f in block.join(plain, gesture) if f is not None]
+    if args.balance:
+        found = block.with_balance(found, json.loads(Path(args.balance).read_text()))
     coverage = block.against_plan(found, planned)
     print(block.summarise(found, coverage))
     # Named rather than counted: an address left to try is the next run's list,
@@ -419,6 +482,7 @@ def cmd_block(args: argparse.Namespace) -> int:
             "block": planned.get("block"),
             "method": block.METHOD,
             "two_passes": block.WHY_TWO_PASSES,
+            **({"balance_counts": block.WHY_BALANCE_COUNTS} if args.balance else {}),
             "chose_the_values": planned.get("method"),
             "coverage": coverage,
             "still_open": open_still,

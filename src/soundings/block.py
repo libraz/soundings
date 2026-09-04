@@ -204,6 +204,44 @@ def join(plain: dict[str, AddressVerdict], gesture: dict[str, AddressVerdict]) -
     return out
 
 
+WHY_BALANCE_COUNTS = (
+    "A parameter that moves signal between the two channels is invisible to a comparison made "
+    "in one of them, and does not read as nothing there: a balance landing somewhere new on "
+    "each take reads as the unit failing to repeat itself. So a balance the same run measured "
+    "moving counts as the parameter having reached the signal path, which is what audible means "
+    "here, and the stimulus it was found under carries the route it was found by."
+)
+
+
+def with_balance(found: list, measured: dict) -> list:
+    """Fold a balance record's verdicts into the addresses they were taken on.
+
+    Keyed by the name the takes were saved under, which is the address with its
+    spaces turned to dashes -- the same name the driver gave the directory and
+    the record.
+    """
+    by_address = {}
+    for entry in measured.get("runs", []):
+        if entry.get("moved_between_settings") or entry.get("did_not_repeat_within_a_setting"):
+            address = str(entry.get("name", "")).replace("-", " ").upper()
+            by_address.setdefault(address, []).append(str(entry.get("stimulus_name", "")))
+    for verdict in found:
+        if verdict is None or verdict.address not in by_address:
+            continue
+        for stimulus in by_address[verdict.address]:
+            name = f"{stimulus} (balance)"
+            if name not in verdict.heard_by:
+                verdict.heard_by.append(name)
+        verdict.audible = True
+        verdict.not_heard_by = [
+            n for n in verdict.not_heard_by if n not in by_address[verdict.address]
+        ]
+        verdict.inconclusive_under = [
+            n for n in verdict.inconclusive_under if n not in by_address[verdict.address]
+        ]
+    return found
+
+
 def against_plan(found: list, planned: dict) -> dict:
     """What the block holds against what the plan said it should.
 
@@ -242,11 +280,13 @@ def summarise(found: list, coverage: dict) -> str:
 
 __all__ = [
     "METHOD",
+    "WHY_BALANCE_COUNTS",
     "STEADY_WITHIN_DB",
     "WHY_MODULATOR_SCATTER",
     "WHY_TWO_PASSES",
     "AddressVerdict",
     "against_plan",
+    "with_balance",
     "join",
     "modulator_scatter",
     "read_one",
