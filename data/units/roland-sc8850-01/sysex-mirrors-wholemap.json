@@ -23,6 +23,10 @@
     "value": true,
     "why": "The control is a control change, so it cannot show that a message of another kind arrived. Where this is false, every negative in the run is about the path, not about the unit."
   },
+  "landed_outside_its_own_block": {
+    "by_stimulus": {},
+    "why": "A run that writes to an address and sees only that address move is evidence nothing mirrors it, but only if a write that did land elsewhere would have been seen. So a stimulus whose value turned up under another top byte is the demonstration, made by the run on itself. Where this is empty the negatives are about a scan never shown able to report a landing outside the block it wrote to."
+  },
   "method": "Each stimulus was sent at its low value, snapshotted, sent at its high value, snapshotted, and sent at its low value again. A byte is listed only if it moved both times, to a different value each time.",
   "region_prefix": "",
   "regions_watched": 854,
