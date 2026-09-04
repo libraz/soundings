@@ -119,6 +119,29 @@ def _stimuli(args: argparse.Namespace) -> list:
     raise ValueError(args.kind)
 
 
+def _kind_reached(kind: str, stimuli: list, found: list) -> bool:
+    """Whether a message of the family under test was shown to arrive at all.
+
+    The positive control proves the snapshots and the diff work, but it is a
+    control change and so cannot show that anything else got through. Without
+    this, a family that lands nothing reads as absent when it may never have
+    been delivered.
+
+    Asked of the stimuli the run actually sent, not of the name they were
+    selected by. `--kind drum-nrpn` sends NRPNs, which is what they are and what
+    they are recorded as, so comparing the selector with a stimulus's own kind
+    compared two different things and could never agree: a run that landed 4
+    stimuli across 13 blocks announced that nothing of its kind had been
+    attributed anywhere, and wrote that into its record. An attribution is
+    itself proof of arrival, so a run that finds something can never report
+    this as unreached.
+    """
+    if kind == "cc":
+        return True
+    sent = {s.label for s in stimuli}
+    return any(a.label in sent for a in found)
+
+
 def cmd_alias_scan(args: argparse.Namespace) -> int:
     from ..aliases import (
         METHOD,
@@ -196,11 +219,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         latch = restorer.clear_bank_latch(args.channel)
         print(f"  bank latch: {latch}")
 
-    # The control proves the snapshots and the diff work. It does not prove that
-    # a message of the kind under test was received, because it is not one of
-    # them, so a kind that lands nothing anywhere is reported as unreached
-    # rather than as absent.
-    reached = args.kind == "cc" or any(a.kind == args.kind for a in found)
+    reached = _kind_reached(args.kind, stimuli, found)
     bracketed = control_passes == 2
     print()
     print(summarise(found, restless, shot.unread))

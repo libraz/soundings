@@ -16,7 +16,14 @@ from __future__ import annotations
 import pytest
 
 from soundings import roland
-from soundings.aliases import Scanner, Snapshotter, Stimulus, control_run, differences
+from soundings.aliases import (
+    Attribution,
+    Scanner,
+    Snapshotter,
+    Stimulus,
+    control_run,
+    differences,
+)
 
 REGION = ((0x40, 0x11, 0x00), 4)
 
@@ -255,3 +262,40 @@ def test_a_latch_left_by_one_stimulus_does_not_silence_the_next():
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))
+
+
+def test_a_family_that_landed_somewhere_is_never_reported_as_unreached():
+    """An attribution is itself proof the message arrived, so a run that finds
+    something cannot also say nothing of its kind got through. It did: the drum
+    NRPN scan landed 4 stimuli across 13 blocks and announced the opposite,
+    because the name the stimuli were selected by was matched against the kind
+    they are recorded as, and those are different words for different things."""
+    from soundings.cli.scan import _kind_reached
+
+    stimuli = [Stimulus(label="NRPN 1C 24", kind="nrpn", build=lambda v: [], values=(0x20, 0x60))]
+    landed = [Attribution(label="NRPN 1C 24", kind="nrpn", values=(0x20, 0x60))]
+
+    assert _kind_reached("drum-nrpn", stimuli, landed)
+    assert _kind_reached("nrpn", stimuli, landed)
+
+
+def test_a_family_that_landed_nothing_is_still_reported_as_unreached():
+    """The guard has to keep working, or a family the unit never received reads
+    as a family the unit does not store."""
+    from soundings.cli.scan import _kind_reached
+
+    stimuli = [Stimulus(label="NRPN 1C 24", kind="nrpn", build=lambda v: [], values=(0x20, 0x60))]
+
+    assert not _kind_reached("drum-nrpn", stimuli, [])
+    # A control change is its own proof, being what the positive control is.
+    assert _kind_reached("cc", stimuli, [])
+
+
+def test_something_landing_that_this_run_did_not_send_does_not_count():
+    """Only the stimuli sent can show the path carried them."""
+    from soundings.cli.scan import _kind_reached
+
+    stimuli = [Stimulus(label="NRPN 1C 24", kind="nrpn", build=lambda v: [], values=(0x20, 0x60))]
+    stray = [Attribution(label="CC7", kind="cc", values=(0x20, 0x60))]
+
+    assert not _kind_reached("drum-nrpn", stimuli, stray)
