@@ -364,6 +364,50 @@ WHY_GAP = (
 )
 
 
+WHY_AGREEMENT = (
+    "Three different messages sorting every marked byte into the same outcome is the run's "
+    "control on itself: a byte that came back under all of them came back for a reason none of "
+    "them is, and a subject that had restored something would be the one that differed. Where "
+    "the subjects agree, nothing in the run is attributable to any of them, and the bytes that "
+    "moved belong to the procedure -- the sweep that wrote the marks -- rather than to what was "
+    "sent afterwards. Where they disagree, the difference is the measurement."
+)
+
+
+def outcomes_agree(payload: dict) -> dict:
+    """Whether every subject in a saved run sorted every marked byte the same way.
+
+    Derived from the record rather than computed while the run is in flight, so
+    a run written before this existed carries the same control, read from its own
+    results through the same rule.
+    """
+    results = payload.get("resets", [])
+    shape = [
+        (
+            tuple(r.get("restored_to_the_power_on_value", [])),
+            tuple(sorted(r.get("left_holding_the_mark", {}))),
+            tuple(sorted(r.get("changed_to_neither", {}).items())),
+        )
+        for r in results
+    ]
+    agree = len(shape) > 1 and all(s == shape[0] for s in shape)
+    found = {
+        "subjects": [r["reset"] for r in results],
+        "every_subject_sorted_every_byte_the_same_way": agree,
+        "shared_by_all_of_them": (
+            {
+                "restored": list(shape[0][0]),
+                "changed_to_neither": dict(shape[0][2]),
+            }
+            if agree
+            else {}
+        ),
+        "why": WHY_AGREEMENT,
+    }
+    payload["subject_agreement"] = found
+    return found
+
+
 def read_gap_again(payload: dict) -> dict[str, int]:
     """Say, per reset, how many marked bytes the record gives no outcome for.
 
@@ -499,6 +543,7 @@ __all__ = [
     "channel_mode_catalogue",
     "compare",
     "mode_set",
+    "outcomes_agree",
     "power_on_record",
     "summarise",
 ]

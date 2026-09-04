@@ -733,6 +733,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         compare,
         mode_set,
         named,
+        outcomes_agree,
         summarise,
     )
 
@@ -843,34 +844,41 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     print()
     print(summarise(results))
 
-    report.write_json(
-        args.out,
-        {
-            "device_id": f"{args.device_id:02X}",
-            "baseline": args.baseline,
-            "method": METHOD,
-            "each_preceded_by": args.from_reset,
-            "why_preceded": WHY_PRECEDED,
-            "write_probe": args.write_probe,
-            "subjects": args.subjects,
-            "left_unmarked": {
-                "prefixes": args.mark_prefix or args.skip_prefix,
-                "bounded_to": bool(args.mark_prefix),
-                "addresses": len(skipped),
-                "why": WHY_BOUNDED if args.mark_prefix else WHY_SKIPPED,
-            },
-            **(
-                {
-                    "channel": args.channel + 1,
-                    "marked_by_sysex_not_by_controller": {"why": WHY_CHANNEL_MODE_MARKED},
-                }
-                if args.subjects == "channel-mode"
-                else {}
-            ),
-            "order": [r.label for r in results],
-            "stopped": {"at": stopped, "why": WHY_STOPPED},
-            "left_on": left_on,
-            "resets": [r.to_json() for r in results],
+    record = {
+        "device_id": f"{args.device_id:02X}",
+        "baseline": args.baseline,
+        "method": METHOD,
+        "each_preceded_by": args.from_reset,
+        "why_preceded": WHY_PRECEDED,
+        "write_probe": args.write_probe,
+        "subjects": args.subjects,
+        "left_unmarked": {
+            "prefixes": args.mark_prefix or args.skip_prefix,
+            "bounded_to": bool(args.mark_prefix),
+            "addresses": len(skipped),
+            "why": WHY_BOUNDED if args.mark_prefix else WHY_SKIPPED,
         },
-    )
+        **(
+            {
+                "channel": args.channel + 1,
+                "marked_by_sysex_not_by_controller": {"why": WHY_CHANNEL_MODE_MARKED},
+            }
+            if args.subjects == "channel-mode"
+            else {}
+        ),
+        "order": [r.label for r in results],
+        "stopped": {"at": stopped, "why": WHY_STOPPED},
+        "left_on": left_on,
+        "resets": [r.to_json() for r in results],
+    }
+    # The subjects' outcomes are held against each other before the record is
+    # written, so a run whose subjects all answered identically says so in the
+    # file rather than leaving a reader to notice three equal counts.
+    agreement = outcomes_agree(record)
+    if agreement["every_subject_sorted_every_byte_the_same_way"]:
+        print(
+            f"\n  all {len(results)} subjects sorted every marked byte the same way, so nothing "
+            "here is attributable to any one of them"
+        )
+    report.write_json(args.out, record)
     return 1 if stopped else 0

@@ -236,3 +236,71 @@ def test_a_unit_that_answers_throughout_is_not_stopped():
     )
     assert len(marked) == 30
     assert refused == []
+
+
+def test_subjects_that_answered_identically_are_reported_as_agreeing():
+    """Three different messages sorting every byte the same way is the control a
+    run makes on itself: the one that had restored something would be the one
+    that differed, so agreement means nothing here belongs to any of them."""
+    from soundings.resets import outcomes_agree
+
+    one = {
+        "reset": "All Sound Off on channel 1",
+        "restored_to_the_power_on_value": ["40 03 03"],
+        "left_holding_the_mark": {"20 06 00": "2A"},
+        "changed_to_neither": {"40 01 33": ["2A", "55"]},
+    }
+    payload = {"resets": [one, dict(one, reset="All Notes Off on channel 1")]}
+
+    found = outcomes_agree(payload)
+
+    assert found["every_subject_sorted_every_byte_the_same_way"]
+    assert found["shared_by_all_of_them"]["restored"] == ["40 03 03"]
+    assert found["shared_by_all_of_them"]["changed_to_neither"] == {"40 01 33": ["2A", "55"]}
+    assert payload["subject_agreement"] is found
+
+
+def test_one_subject_restoring_more_than_another_is_the_measurement():
+    """A difference between subjects is the only thing in this run that can be
+    credited to a subject, so it must not be folded into an agreement."""
+    from soundings.resets import outcomes_agree
+
+    payload = {
+        "resets": [
+            {
+                "reset": "All Sound Off on channel 1",
+                "restored_to_the_power_on_value": ["40 03 03"],
+                "left_holding_the_mark": {},
+                "changed_to_neither": {},
+            },
+            {
+                "reset": "Reset All Controllers on channel 1",
+                "restored_to_the_power_on_value": ["40 03 03", "40 11 19"],
+                "left_holding_the_mark": {},
+                "changed_to_neither": {},
+            },
+        ]
+    }
+
+    found = outcomes_agree(payload)
+
+    assert not found["every_subject_sorted_every_byte_the_same_way"]
+    assert found["shared_by_all_of_them"] == {}
+
+
+def test_a_single_subject_cannot_agree_with_anything():
+    """One result compared against itself would report agreement, and a run with
+    one subject has no control at all."""
+    from soundings.resets import outcomes_agree
+
+    payload = {
+        "resets": [
+            {
+                "reset": "GS Reset",
+                "restored_to_the_power_on_value": ["40 03 03"],
+                "left_holding_the_mark": {},
+                "changed_to_neither": {},
+            }
+        ]
+    }
+    assert not outcomes_agree(payload)["every_subject_sorted_every_byte_the_same_way"]
