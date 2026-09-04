@@ -171,3 +171,68 @@ def test_a_channel_mode_subject_carries_what_the_mark_does_not_cover():
     from soundings.resets import CHANNEL_MODE_NOTE, channel_mode_catalogue
 
     assert all(r.note == CHANNEL_MODE_NOTE for r in channel_mode_catalogue(0))
+
+
+class DeafeningProber:
+    """A prober whose unit answers for a while and then stops, like the one did.
+
+    Built by overriding the read rather than by faking a link, because what is
+    under test is what the mark loop does when a read comes back empty, not how
+    the read got that way.
+    """
+
+    def __init__(self, quiet_after: int):
+        from soundings.resets import Prober
+
+        self.sent = []
+        self.memory: dict[tuple[int, int, int], int] = {}
+        self.reads = 0
+        self.quiet_after = quiet_after
+        self.mark = Prober.mark.__get__(self)
+        self.link = self
+        self.device_id = 0x10
+
+    def send(self, message):
+        from soundings import roland
+
+        self.sent.append(message)
+        written = roland.parse_dt1(message)
+        if written is not None:
+            self.memory[written.address] = written.data[0]
+
+    def read_byte(self, address):
+        self.reads += 1
+        if self.reads > self.quiet_after:
+            return None
+        if address == (0x40, 0x01, 0x30):
+            return 0x00
+        return self.memory.get(address, 0x2A)
+
+
+def test_a_unit_that_goes_quiet_stops_the_run_where_it_went_quiet():
+    """Every number after that point is about a space the run stopped being able
+    to break, so a subject would be credited with restoring bytes that were never
+    marked -- and would score better the worse the failure was."""
+    import pytest as _pytest
+
+    from soundings.resets import UnitWentQuiet
+
+    prober = DeafeningProber(quiet_after=40)
+    targets = [(0x21, 0x04, n) for n in range(60)]
+
+    with _pytest.raises(UnitWentQuiet) as raised:
+        prober.mark(targets, canary=(0x40, 0x01, 0x30), every=10)
+
+    assert "40 01 30 stopped answering" in str(raised.value)
+    assert "of 60 addresses" in str(raised.value)
+
+
+def test_a_unit_that_answers_throughout_is_not_stopped():
+    """The canary must not be able to end a healthy run, or every null it
+    produces is about the guard."""
+    prober = DeafeningProber(quiet_after=10_000)
+    marked, refused = prober.mark(
+        [(0x21, 0x04, n) for n in range(30)], canary=(0x40, 0x01, 0x30), every=10
+    )
+    assert len(marked) == 30
+    assert refused == []

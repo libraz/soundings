@@ -258,6 +258,13 @@ def register(sub) -> None:
         "is aimed at part of the space rather than at all of it",
     )
     p.add_argument(
+        "--canary",
+        default="40 01 30",
+        help="an address known to answer, asked while the marks go in. A unit that stops "
+        "answering reads as one refusing every remaining mark, and the subject then scores "
+        "for restoring a space the run never broke",
+    )
+    p.add_argument(
         "--subjects",
         default="resets",
         choices=("resets", "channel-mode"),
@@ -717,8 +724,10 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         WHY_CHANNEL_MODE_MARKED,
         WHY_PRECEDED,
         WHY_SKIPPED,
+        WHY_STOPPED,
         Prober,
         ResetResult,
+        UnitWentQuiet,
         catalogue,
         channel_mode_catalogue,
         compare,
@@ -757,9 +766,16 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     print(f"baseline: {args.baseline}, {len(baseline)} bytes")
     print(f"{len(targets)} addresses to mark, {len(regions)} regions read after each reset")
     if skipped:
-        print(f"{len(skipped)} left unmarked under {', '.join(args.skip_prefix)}")
+        where = (
+            f"outside {', '.join(args.mark_prefix)}"
+            if args.mark_prefix
+            else f"under {', '.join(args.skip_prefix)}"
+        )
+        print(f"{len(skipped)} left unmarked {where}")
 
     results = []
+    stopped: str | None = None
+    canary = tuple(int(b, 16) for b in args.canary.split())
     with verified_link(args, refusing="resetting") as link:
         prober = Prober(link, baseline=baseline, device_id=args.device_id, settle=args.settle)
         shot = Snapshotter(link, regions, device_id=args.device_id)
@@ -772,7 +788,17 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         for reset in resets:
             print(f"\n{reset.label}")
             prober.apply(opener)
-            marked, refused = prober.mark(targets)
+            try:
+                marked, refused = prober.mark(
+                    targets, progress=lambda m: print(f"  {m}"), canary=canary
+                )
+            except UnitWentQuiet as exc:
+                # Nothing after this point would be a measurement: the subject
+                # would be credited for every byte the run stopped being able to
+                # break, and would score better the worse the failure was.
+                stopped = f"{reset.label}: {exc}"
+                print(f"\nSTOPPED: {exc}")
+                break
             print(f"  marked {len(marked)} of {len(targets)} bytes")
             before = shot.unread
             prober.apply(reset)
@@ -797,16 +823,19 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         # under test left. Ranked on the whole map rather than on the marked
         # bytes: every reset here restores those, and ranking on them alone
         # picks whichever happened to be tried first.
-        best = min(results, key=lambda r: (len(r.differs_from_power_on), -len(r.restored)))
         # A channel mode message is not a state to leave the unit in: it is aimed
         # at one part and the run has just broken the rest of the space with
         # marks. So the subject that ranked best is reported and the opener is
-        # what actually goes out.
-        left_on = best.label if args.subjects == "resets" else opener.label
+        # what actually goes out. A run that stopped is in the same position for
+        # a different reason -- it broke a space and measured nothing.
+        best = (
+            min(results, key=lambda r: (len(r.differs_from_power_on), -len(r.restored)))
+            if results and args.subjects == "resets" and not stopped
+            else None
+        )
+        left_on = best.label if best else opener.label
         link.send(
-            next(x for x in resets if x.label == best.label).message
-            if args.subjects == "resets"
-            else opener.message
+            next(x for x in resets if x.label == best.label).message if best else opener.message
         )
         time.sleep(args.settle)
         print(f"\nleft the unit on {left_on}")
@@ -839,8 +868,9 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
                 else {}
             ),
             "order": [r.label for r in results],
+            "stopped": {"at": stopped, "why": WHY_STOPPED},
             "left_on": left_on,
             "resets": [r.to_json() for r in results],
         },
     )
-    return 0
+    return 1 if stopped else 0

@@ -66,6 +66,16 @@ WHY_SKIPPED = (
 )
 
 
+class UnitWentQuiet(RuntimeError):
+    """The unit stopped answering part way through a run that was writing to it.
+
+    Raised rather than returned, because every number a run goes on to produce
+    after this point is about a space it stopped being able to break. A subject
+    credited with restoring bytes that were never marked scores better the worse
+    the failure was.
+    """
+
+
 @dataclass
 class Reset:
     label: str
@@ -95,6 +105,14 @@ def catalogue(device_id: int) -> list[Reset]:
         ),
     ]
 
+
+WHY_STOPPED = (
+    "The canary is asked every so often while the marks go in, and a run whose unit stops "
+    "answering ends there rather than carrying on. Every number after that point would be "
+    "about a space the run stopped being able to break, and a subject would be credited with "
+    "restoring bytes that were never marked -- scoring better the worse the failure was. Where "
+    "this is null the unit answered throughout."
+)
 
 WHY_BOUNDED = (
     "The mark was confined to these blocks, so every address outside them kept whatever it "
@@ -257,11 +275,33 @@ class Prober:
             return None
         return reply.data[0]
 
-    def mark(self, addresses: list[Address]) -> tuple[dict[Address, int], list[Address]]:
-        """Write a mark to each address and keep only the ones that took it."""
+    def mark(
+        self,
+        addresses: list[Address],
+        *,
+        progress=None,
+        canary: Address | None = None,
+        every: int = 250,
+    ) -> tuple[dict[Address, int], list[Address]]:
+        """Write a mark to each address and keep only the ones that took it.
+
+        Asks the canary every so often, because a unit that stops answering part
+        way through reads exactly like a unit refusing every remaining mark, and
+        the run would go on to credit the subject with restoring a space it never
+        broke. The one thing it must not do is fail silently: a loop this long
+        with nothing coming out of it is where an abort has no location.
+        """
         marked: dict[Address, int] = {}
         refused: list[Address] = []
-        for address in addresses:
+        for i, address in enumerate(addresses):
+            if canary is not None and i and i % every == 0:
+                if self.read_byte(canary) is None and self.read_byte(canary) is None:
+                    raise UnitWentQuiet(
+                        f"{_address_text(canary)} stopped answering after {i} of "
+                        f"{len(addresses)} addresses were offered a mark"
+                    )
+                if progress:
+                    progress(f"marked {len(marked)} of {i} offered")
             current = self.read_byte(address)
             value = MARKS[0] if current != MARKS[0] else MARKS[1]
             self.link.send(roland.dt1(address, [value], device_id=self.device_id))
@@ -452,6 +492,7 @@ __all__ = [
     "Prober",
     "Reset",
     "ResetResult",
+    "UnitWentQuiet",
     "agreed_bytes",
     "catalogue",
     "channel_mode",
