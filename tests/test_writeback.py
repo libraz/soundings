@@ -27,10 +27,15 @@ class FakeUnit:
         *,
         deaf_after: int | None = None,
         drop_writes: set[int] | None = None,
+        takes=None,
     ):
         self.memory = dict(memory)
         self.deaf_after = deaf_after
         self.drop_writes = drop_writes or set()
+        # What the address does with a value it is given: None means it keeps
+        # whatever it is sent, otherwise the value is kept only if `takes` says so
+        # and the address is left as it was if not -- a refusal, not a clamp.
+        self.takes = takes
         self.reads = 0
         self.writes = 0
         self.written: list[tuple[tuple[int, int, int], int]] = []
@@ -41,6 +46,8 @@ class FakeUnit:
             address = (message[5], message[6], message[7])
             self.written.append((address, message[8]))
             if self.writes in self.drop_writes:
+                return
+            if self.takes is not None and not self.takes(message[8]):
                 return
             if address in self.memory:
                 self.memory[address] = message[8]
@@ -103,6 +110,68 @@ def test_a_unit_that_stops_talking_is_not_mistaken_for_silent_addresses() -> Non
 
     talking = FakeUnit({canary: 0x04})
     assert writer_for(talking).answering(canary)
+
+
+def test_a_selector_resting_at_its_lowest_value_is_still_read_as_refusing() -> None:
+    """The measured shape at 00 01 xx: 64 one-of-four selectors, all taking 00 to
+    03 and refusing everything above. The 48 resting at 01, 02 or 03 were read as
+    refusing, and the 16 resting at 00 were filed as indistinguishable -- with 01,
+    02 and 03 recorded in their own rows going in and coming back."""
+    address = (0x00, 0x01, 0x00)
+    unit = FakeUnit({address: 0x00}, takes=lambda v: v <= 0x03)
+    probe = writer_for(unit).probe_byte(address, 0x00)
+
+    assert probe.classification == "refuses out of range"
+    assert probe.accepted == [0x00, 0x01, 0x02, 0x03]
+    assert probe.range == "00..03 of the values tried"
+
+
+def test_a_sibling_resting_higher_is_read_the_same_way() -> None:
+    """Same address kind, same verdict: the value it happened to be holding is
+    not supposed to decide what it is."""
+    address = (0x00, 0x01, 0x10)
+    unit = FakeUnit({address: 0x01}, takes=lambda v: v <= 0x03)
+    probe = writer_for(unit).probe_byte(address, 0x01)
+
+    assert probe.classification == "refuses out of range"
+    assert probe.accepted == [0x00, 0x01, 0x02, 0x03]
+
+
+def test_an_address_that_only_ever_takes_one_value_stays_undecided() -> None:
+    """The ladder overturns the verdict only when it finds something. An address
+    that takes nothing but the value it rests at leaves a clamp to that value and
+    a refusal of everything else genuinely indistinguishable, and neither is
+    asserted."""
+    address = (0x00, 0x01, 0x00)
+    unit = FakeUnit({address: 0x00}, takes=lambda v: v == 0x00)
+    probe = writer_for(unit).probe_byte(address, 0x00)
+
+    assert probe.classification == writeback.UNDECIDABLE
+    assert probe.accepted == [0x00]
+
+
+def test_a_clamping_address_keeps_its_verdict_through_the_ladder() -> None:
+    """Of 11544 addresses filed as clamping, every one the ladder pushed past its
+    bound read that bound back, so the re-read must leave them alone."""
+    address = (0x40, 0x01, 0x32)
+    unit = FakeUnit({address: 0x04})
+    unit.send = _clamping(unit, address, 0x07)
+    probe = writer_for(unit).probe_byte(address, 0x04)
+
+    assert probe.classification == "clamps"
+    assert probe.range == "00..07"
+
+
+def _clamping(unit: FakeUnit, address: tuple[int, int, int], bound: int):
+    """A byte that holds the edge of its range rather than refusing what is past it."""
+
+    def send(message: list[int]) -> None:
+        if len(message) > 9 and message[4] == roland.CMD_DT1:
+            unit.writes += 1
+            unit.written.append(((message[5], message[6], message[7]), message[8]))
+            unit.memory[address] = min(message[8], bound)
+
+    return send
 
 
 def test_a_lost_write_is_retried_rather_than_stopping_the_run() -> None:

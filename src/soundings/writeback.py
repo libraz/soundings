@@ -62,6 +62,9 @@ NEVER_WRITE = {
     (0x40, 0x00, 0x7F),
 }
 
+UNDECIDABLE = "unchanging, so a clamp and a refusal cannot be told apart"
+"""The one verdict that asserts nothing, and so the one the ladder can overturn."""
+
 
 class RestoreFailed(RuntimeError):
     """An address would not take its original value back, so the unit is not as it was.
@@ -248,6 +251,7 @@ class Writer:
             # single value, which is one point too few to describe a rule.
             if (low, high) != (0x00, 0x7F):
                 self._ladder(address, probe, low)
+                probe.classification = self._after_the_ladder(probe)
 
         probe.restore_tries = self.restore(address, original)
         probe.restored = probe.restore_tries > 0
@@ -276,6 +280,31 @@ class Writer:
             if self.read_byte(address) == original:
                 return attempt
         return 0
+
+    @staticmethod
+    def _after_the_ladder(probe: ByteProbe) -> str:
+        """Read the verdict again, now that the evidence for it exists.
+
+        A verdict reached before the ladder is reached without what the ladder
+        finds. `_out_of_range_behaviour` needs a value the address has already
+        taken to put in between, and an address resting at the same value that
+        both 00 and 7F leave it at has none to offer -- so it reports that a
+        clamp and a refusal cannot be told apart, and then the ladder goes and
+        finds three. Measured: the 64 one-of-four selectors at 00 01 xx all take
+        00 to 03 and refuse everything above, and the 16 of them resting at 00
+        were filed as indistinguishable while their own rows showed 01, 02 and
+        03 going in and coming back.
+
+        Only that verdict is revisited, because it is the only one the ladder
+        contradicts. Of 11544 addresses filed as clamping, every one the ladder
+        pushed past its bound read that bound back.
+        """
+        if probe.classification != UNDECIDABLE or len(probe.accepted) < 2:
+            return probe.classification
+        # The ladder writes a value the address takes before each trial, so a
+        # value that does not survive left the address holding that one: it was
+        # refused rather than clamped to a bound it does not have.
+        return "refuses out of range"
 
     LADDER = (1, 2, 3, 4, 5, 6, 7, 8, 11, 15, 31, 63, 126)
 
@@ -325,7 +354,7 @@ class Writer:
             # There is no second value to put in between, because the address has
             # never held one: it rests where a clamp would leave it. The two
             # readings stay open rather than one of them being picked.
-            return "unchanging, so a clamp and a refusal cannot be told apart"
+            return UNDECIDABLE
         placed = self.write_then_read(address, marker)
         probe.written.append((marker, placed if placed is not None else -1))
         if placed != marker:
