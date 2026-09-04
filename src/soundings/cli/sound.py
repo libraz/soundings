@@ -15,6 +15,7 @@ from .. import clock, parts, perform, roland
 from ..stimuli import CATALOGUE as _STIMULUS_CATALOGUE
 from ..stimuli import DEFAULT as _STIMULUS_DEFAULT
 from . import options, report
+from .session import prepared as prepare_state
 from .session import verified_link
 
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
@@ -156,31 +157,6 @@ def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
     return False
 
 
-def _prepare(link, args) -> bool:
-    """Put the unit in the state the parameter needs, and prove each write took.
-
-    Unverified, a preparation that the unit ignored is indistinguishable from one
-    it obeyed: both leave a run that records an inaudible parameter. Reading each
-    address back turns that silent failure into a refusal.
-    """
-    for address, values in args.prepare:
-        link.send(roland.dt1(address, list(values), device_id=args.device_id))
-        time.sleep(args.settle)
-        reply = link.exchange(roland.rq1(address, len(values), device_id=args.device_id))
-        parsed = roland.parse_dt1(reply)
-        got = None if parsed is None else list(parsed.data)
-        if got != list(values):
-            wanted = " ".join(f"{v:02X}" for v in values)
-            found = "no reply" if got is None else " ".join(f"{v:02X}" for v in got)
-            print(
-                f"\n    {address} was set to {wanted} and reads back {found}. The state this "
-                "run needs is not there, so an inaudible verdict would be about the state "
-                "rather than about the parameter."
-            )
-            return False
-    return True
-
-
 def cmd_contrast(args: argparse.Namespace) -> int:
     """Play the same note under two settings and say whether the unit sounded different."""
     from .. import audible, stability, stimuli
@@ -223,7 +199,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             # Reset between stimuli, so a setting left by the previous one cannot
             # follow the parameter into the next and be read as part of it.
             prober.apply(gs_reset)
-            if not _prepare(link, args):
+            if not prepare_state(link, args.prepare, device_id=args.device_id, settle=args.settle):
                 return 1
             channel = stim.on(args.channel)
             # Not `where`: that names the parameter under test, and rebinding it

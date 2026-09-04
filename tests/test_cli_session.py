@@ -107,6 +107,57 @@ def test_an_announcement_is_printed_before_the_report(wired, capsys):
     assert lines == ["Verifying the path", "report: pass"]
 
 
+class Answering:
+    """A link whose reads answer with whatever the unit is standing in for holds."""
+
+    def __init__(self, holds: dict[str, list[int]]):
+        self.holds = holds
+        self.sent: list[list[int]] = []
+
+    def send(self, message) -> None:
+        self.sent.append(list(message))
+
+    def exchange(self, message):
+        from soundings import roland
+
+        # An RQ1's address is the three bytes after the command, which is where
+        # the harness puts it; there is no parser for the request side because
+        # nothing but a test ever reads one back.
+        asked = " ".join(f"{b:02X}" for b in message[5:8])
+        got = self.holds.get(asked)
+        # An empty list, as the real link returns when nothing arrived before the
+        # timeout; it never returns None, and a silence is a result rather than an
+        # error there.
+        return roland.dt1(asked, got, device_id=0x10) if got is not None else []
+
+
+def test_a_preparation_the_unit_took_lets_the_run_go_on(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda _s: None)
+    link = Answering({"40 03 00": [0x02, 0x01]})
+
+    assert session.prepared(link, [("40 03 00", (0x02, 0x01))], device_id=0x10, settle=0.0)
+
+
+def test_a_preparation_the_unit_kept_its_own_value_for_stops_the_run(monkeypatch, capsys):
+    """The failure this exists for. The unit answers, so nothing else in the run
+    notices, and every number after it is about the state the write meant to
+    leave behind."""
+    monkeypatch.setattr("time.sleep", lambda _s: None)
+    link = Answering({"40 03 00": [0x00, 0x00]})
+
+    assert not session.prepared(link, [("40 03 00", (0x02, 0x01))], device_id=0x10, settle=0.0)
+    said = capsys.readouterr().out
+    assert "reads back 00 00" in said
+
+
+def test_a_preparation_no_read_answered_is_not_taken_as_agreement(monkeypatch, capsys):
+    monkeypatch.setattr("time.sleep", lambda _s: None)
+    link = Answering({})
+
+    assert not session.prepared(link, [("40 03 00", (0x02,))], device_id=0x10, settle=0.0)
+    assert "no reply" in capsys.readouterr().out
+
+
 def test_main_turns_a_refusal_into_a_message_and_a_failing_exit(capsys, monkeypatch):
     """The refusal has to reach the reader; an exit code alone says nothing."""
 
