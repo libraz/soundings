@@ -72,6 +72,14 @@ WHY_RECOVERED = (
     "here is something a single pass would have reported as absent."
 )
 
+WHY_UNREAD = (
+    "A region that did not answer is left out of the comparison, so a stimulus whose snapshots "
+    "were short of regions could have moved a byte in one of them and be reported as landing "
+    "nothing. A total says the run had unanswered reads; only the count per stimulus says "
+    "whose null is weakened by them, and a stimulus with none here has a null the reads "
+    "support in full."
+)
+
 WHY_KIND_REACHED = (
     "The control is a control change, so it cannot show that a message of another kind arrived. "
     "Where this is false, every negative in the run is about the path, not about the unit."
@@ -587,7 +595,11 @@ def summarise(found: list[Attribution], restless: set[str], unread: int) -> str:
     else:
         lines.append("  nothing moved with nothing sent, so a difference means the message did it")
     if unread:
-        lines.append(f"  !! {unread} region reads failed and were left out of the comparison")
+        lines.append(
+            f"  !! {unread} region reads went unanswered and were left out of the comparison. "
+            "That is reads across every snapshot, not regions: see which stimulus they fell "
+            "under before believing its null"
+        )
     return "\n".join(lines)
 
 

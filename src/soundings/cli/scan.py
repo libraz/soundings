@@ -181,6 +181,7 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         WHY_LANDED_OUTSIDE,
         WHY_RECOVERED,
         WHY_RESIDUE,
+        WHY_UNREAD,
         Scanner,
         Snapshotter,
         cc,
@@ -235,8 +236,18 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
         found = []
         control_passes = 0
         control_hit = None
+        unread_by_stimulus: dict[str, int] = {}
         for stimulus in stimuli:
+            before = shot.unread
             hit = scanner.attribute(stimulus)
+            # Whose null the unanswered reads weaken. A cumulative total says
+            # only that the run had some, which leaves every negative in it
+            # equally suspect and none of them accountable.
+            missed = shot.unread - before
+            if missed:
+                unread_by_stimulus[stimulus.label] = (
+                    unread_by_stimulus.get(stimulus.label, 0) + missed
+                )
             if stimulus is control:
                 control_passes += hit is not None
                 control_hit = control_hit or hit
@@ -328,6 +339,12 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
             "stimuli_sent": [s.label for s in stimuli],
             "restless_addresses": sorted(restless),
             "region_reads_failed": shot.unread,
+            "region_reads": {
+                "attempted": shot.reads,
+                "unanswered": shot.unread,
+                "by_stimulus": unread_by_stimulus,
+                "why": WHY_UNREAD,
+            },
             "not_scanned": NOT_SCANNED,
             "rpn_parked": RPN_PARKED,
             "bank_latch_on_exit": latch,
