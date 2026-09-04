@@ -50,6 +50,14 @@ WHY_PRECEDED = (
     "power-on capture byte for byte, which is what makes it usable as a starting line."
 )
 
+WHY_SKIPPED = (
+    "A mark written to an address that holds nothing lands in whatever store that address is a "
+    "window onto, so a block of them says what the reset did to that store, under names that "
+    "keep none of it. Skipping them is not a gap in the coverage: the store itself is marked "
+    "and read under its own name. Anything listed here was left unmarked and this run says "
+    "nothing about it."
+)
+
 
 @dataclass
 class Reset:

@@ -240,6 +240,14 @@ def register(sub) -> None:
         help="where the addresses that take any value are read from",
     )
     p.add_argument(
+        "--skip-prefix",
+        nargs="*",
+        default=[],
+        metavar="PREFIX",
+        help="do not mark addresses starting here; for blocks measured to hold nothing, whose "
+        "marks land in the store they are a window onto and say only what it did",
+    )
+    p.add_argument(
         "--include-mode-set",
         action="store_true",
         help="also send System Mode Set, which reinitialises the unit rather than "
@@ -631,6 +639,7 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     from ..resets import (
         METHOD,
         WHY_PRECEDED,
+        WHY_SKIPPED,
         Prober,
         ResetResult,
         catalogue,
@@ -645,16 +654,17 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
         tuple(int(b, 16) for b in a.split()): int(v, 16) for a, v in captured["values"].items()
     }
     regions = archive.regions(args.map)
-    targets = [
-        tuple(int(b, 16) for b in a.split())
-        for a in list(archive.ALIASED_BYTES) + archive.accepting_bytes(args.write_probe)
-    ]
+    wanted = list(archive.ALIASED_BYTES) + archive.accepting_bytes(args.write_probe)
+    kept, skipped = archive.split_off_prefixes(wanted, args.skip_prefix)
+    targets = [tuple(int(b, 16) for b in a.split()) for a in kept]
     resets = catalogue(args.device_id)
     if args.include_mode_set:
         resets.append(mode_set(args.device_id))
 
     print(f"baseline: {args.baseline}, {len(baseline)} bytes")
     print(f"{len(targets)} addresses to mark, {len(regions)} regions read after each reset")
+    if skipped:
+        print(f"{len(skipped)} left unmarked under {', '.join(args.skip_prefix)}")
 
     results = []
     with verified_link(args, refusing="resetting") as link:
@@ -710,6 +720,12 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
             "method": METHOD,
             "each_preceded_by": args.from_reset,
             "why_preceded": WHY_PRECEDED,
+            "write_probe": args.write_probe,
+            "left_unmarked": {
+                "prefixes": args.skip_prefix,
+                "addresses": len(skipped),
+                "why": WHY_SKIPPED,
+            },
             "order": [r.label for r in results],
             "left_on": best.label,
             "resets": [r.to_json() for r in results],

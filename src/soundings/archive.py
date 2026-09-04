@@ -60,3 +60,17 @@ def accepting_bytes(path: str | Path) -> list[str]:
         for b in region["bytes"]
         if b["classification"] == "accepts" and b["restored"]
     ]
+
+
+def split_off_prefixes(addresses: list[str], prefixes: list[str]) -> tuple[list[str], list[str]]:
+    """The addresses to keep, and the ones a prefix asked to leave alone.
+
+    Both halves rather than the kept one, since what was skipped is the caveat
+    on everything the run goes on to say, and a caller that only receives the
+    remainder has nothing to write down.
+    """
+    if not prefixes:
+        return list(addresses), []
+    skipped = sorted({a for a in addresses if any(a.startswith(p) for p in prefixes)})
+    dropped = set(skipped)
+    return [a for a in addresses if a not in dropped], skipped
