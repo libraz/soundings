@@ -91,10 +91,29 @@ def test_a_drum_stimulus_carries_its_own_channel() -> None:
 
 def test_a_stimulus_that_needs_a_part_set_up_says_which_address() -> None:
     """Written after the reset and before the note, and undone by the next reset."""
-    kit = stimuli.CATALOGUE["struck_kit"]
-    assert kit.writes == (("40 12 15", 1),)
-    assert kit.on(0) == 1, "the part written to and the part played must be the same one"
-    assert all(s.writes == () for s in stimuli.CATALOGUE.values() if s.name != "struck_kit")
+    prepared = {s.name: s for s in stimuli.CATALOGUE.values() if s.writes}
+    assert set(prepared) == {"struck_kit", "struck_kit_map2"}
+    assert prepared["struck_kit"].writes == (("40 12 15", 1),)
+    assert prepared["struck_kit_map2"].writes == (("40 12 15", 2),)
+    for name, stimulus in prepared.items():
+        # GS numbers the part blocks with the tenth first: 40 10 is the part on
+        # channel 10, 40 11 to 40 19 are channels 1 to 9, and 40 1A to 40 1F are
+        # channels 11 to 16. A stimulus that writes to one block and plays
+        # another sets up a part it never sounds, and reads as inaudible.
+        block = int(stimulus.writes[0][0].split()[1], 16) & 0x0F
+        channel = 9 if block == 0 else block - 1 if block <= 9 else block
+        assert stimulus.on(0) == channel, f"{name} writes to a part it does not play"
+
+
+def test_the_description_names_the_state_the_question_was_asked_in() -> None:
+    """Two stimuli that differ only in which drum map the part reads would carry
+    identical descriptions without it, and every verdict either produced would
+    read as having been taken under the same condition."""
+    one = stimuli.CATALOGUE["struck_kit"].describe()
+    two = stimuli.CATALOGUE["struck_kit_map2"].describe()
+    assert one != two
+    assert "40 12 15 = 1" in one and "40 12 15 = 2" in two
+    assert "40 12 15" not in stimuli.CATALOGUE["struck"].describe()
 
 
 def test_the_effect_set_holds_only_stimuli_a_delay_can_be_measured_against() -> None:

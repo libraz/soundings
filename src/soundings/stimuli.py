@@ -74,10 +74,16 @@ class Stimulus:
         return default if self.channel is None else self.channel
 
     def describe(self) -> str:
+        # The writes belong in the description, not only in the JSON. A stimulus
+        # that turns a melodic part into a rhythm part on one drum map is asking
+        # its question in a state the note numbers alone do not name, and two
+        # stimuli that differ only by which map they select would otherwise read
+        # as the same condition in every verdict either of them produced.
         where = "" if self.channel is None else f"channel {self.channel + 1}, "
+        prepared = "".join(f", {a} = {v}" for a, v in self.writes)
         return (
             f"{where}program {self.program}, note {self.note}, velocity {self.velocity}, "
-            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s"
+            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}"
         )
 
     def to_json(self) -> dict:
@@ -253,6 +259,26 @@ CATALOGUE: dict[str, Stimulus] = {
         "at once, which nothing else here manages",
         blind_to="anything keyed to pitch, and anything a rhythm part is excluded from "
         "-- which is the thing it is partly there to find out",
+    ),
+    # The same note on the same part, differing only in which of the two drum
+    # maps the part is told to use. That difference is what separates a claim
+    # about a drum block from a claim about the half of it a part happens to
+    # read: an address in the other half is unreachable however live it is, and
+    # reads as storage nothing consults.
+    "struck_kit_map2": Stimulus(
+        name="struck_kit_map2",
+        program=0,
+        note=49,
+        velocity=100,
+        hold=0.15,
+        seconds=4.0,
+        lead=0.6,
+        channel=1,
+        writes=(("40 12 15", 2),),
+        sees="whether an address in the second half of a drum block is read, which the "
+        "first-map form cannot ask at all",
+        blind_to="everything the first-map form is blind to, and additionally anything "
+        "the two maps happen to agree on, which at power-on is most of them",
     ),
     "low": Stimulus(
         name="low",
