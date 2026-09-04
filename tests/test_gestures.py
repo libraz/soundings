@@ -181,3 +181,37 @@ def test_an_address_outside_the_part_block_takes_nothing_out() -> None:
 
     assert _part_offset(Namespace(cc=None, address="40 03 00", channel=0), 0) is None
     assert _part_offset(Namespace(cc=7, address=None, channel=0), 0) is None
+
+
+def test_a_stimulus_plays_its_own_note_first_and_then_the_rest() -> None:
+    """The extra notes are offsets from the first, so the first has to be at zero
+    or every one of them is late by however long the primary is held."""
+    played = stimuli.CATALOGUE["struck_pair"].played()
+
+    assert played[0] == (60, 100, 0.0, 1.0)
+    assert played[1] == (67, 100, 0.0, 1.0)
+
+
+def test_the_polyphony_stimuli_are_the_only_two_that_play_more_than_one_note() -> None:
+    """One note sounds the same whether the part is monophonic or not, so a null
+    from any other stimulus is a fact about the stimulus."""
+    several = [s.name for s in stimuli.CATALOGUE.values() if s.also]
+
+    assert several == list(stimuli.POLYPHONY)
+
+
+def test_the_same_voice_asked_for_twice_is_a_different_question_from_two_voices() -> None:
+    """One asks what the part does with a second note, the other what it does
+    when the note already sounding is asked for again."""
+    pair = stimuli.CATALOGUE["struck_pair"].played()
+    again = stimuli.CATALOGUE["struck_again"].played()
+
+    assert len({n for n, _, _, _ in pair}) == 2
+    assert len({n for n, _, _, _ in again}) == 1
+    assert again[1][2] > 0.0
+
+
+def test_the_notes_a_stimulus_plays_travel_in_its_json() -> None:
+    """A verdict taken on two notes is not the same claim as one taken on one."""
+    assert stimuli.CATALOGUE["struck_pair"].to_json()["also"] == [[67, 100, 0.0, 1.0]]
+    assert stimuli.CATALOGUE["struck"].to_json()["also"] == []

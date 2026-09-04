@@ -18,6 +18,61 @@ from .capture import Recording
 from .midi import MidiLink
 
 
+def record_notes(
+    link: MidiLink,
+    *,
+    device: str | None,
+    channel: int,
+    notes,
+    seconds: float,
+    lead: float,
+) -> Recording:
+    """Record while a set of notes is played, with silence before them for the floor.
+
+    Each note is `(note, velocity, at, hold)`, with `at` measured from the first
+    note-on rather than from the start of the take, so a stimulus reads as what
+    the player does and not as what the recorder does.
+
+    **More than one note is the only way to ask a parameter about polyphony.**
+    Whether a part is monophonic, and what it does when a voice is asked for
+    twice, are both invisible to a single note: it sounds the same either way, so
+    the address answers inaudible and the null is a fact about the stimulus.
+
+    The note-offs are sorted in with the note-ons rather than sent per note,
+    since two notes that overlap have their events interleaved and sending each
+    note's pair in turn would hold the first until the second was over.
+    """
+    ready = threading.Event()
+    status = channel & 0x0F
+    events: list[tuple[float, list[int]]] = []
+    for note, velocity, at, hold in notes:
+        events.append((at, [0x90 | status, note & 0x7F, velocity & 0x7F]))
+        events.append((at + hold, [0x80 | status, note & 0x7F, 0]))
+    events.sort(key=lambda e: e[0])
+    last = events[-1][0] if events else 0.0
+
+    def play() -> None:
+        # Wait for audio to be flowing, not merely for the recorder to have been
+        # called. Opening the device outlasts any lead-in worth having.
+        ready.wait(timeout=30.0)
+        time.sleep(lead)
+        started = time.monotonic()
+        for at, message in events:
+            # Against the start rather than the previous event: sleeping the gap
+            # each time accumulates every send's own latency into the last note's
+            # position, which on a two-note stimulus is the thing being measured.
+            late = at - (time.monotonic() - started)
+            if late > 0:
+                time.sleep(late)
+            link.send(message)
+
+    thread = threading.Thread(target=play, daemon=True)
+    thread.start()
+    recording = cap.record(seconds, device=device, ready=ready)
+    thread.join(timeout=last + lead + 1.0)
+    return recording
+
+
 def record_note(
     link: MidiLink,
     *,
@@ -30,22 +85,14 @@ def record_note(
     lead: float,
 ) -> Recording:
     """Record while one note is played, with silence before it to measure the floor."""
-    ready = threading.Event()
-
-    def play() -> None:
-        # Wait for audio to be flowing, not merely for the recorder to have been
-        # called. Opening the device outlasts any lead-in worth having.
-        ready.wait(timeout=30.0)
-        time.sleep(lead)
-        link.send([0x90 | (channel & 0x0F), note & 0x7F, velocity & 0x7F])
-        time.sleep(hold)
-        link.send([0x80 | (channel & 0x0F), note & 0x7F, 0])
-
-    thread = threading.Thread(target=play, daemon=True)
-    thread.start()
-    recording = cap.record(seconds, device=device, ready=ready)
-    thread.join(timeout=hold + lead + 1.0)
-    return recording
+    return record_notes(
+        link,
+        device=device,
+        channel=channel,
+        notes=((note, velocity, 0.0, hold),),
+        seconds=seconds,
+        lead=lead,
+    )
 
 
 def peak(recording: Recording) -> float:

@@ -274,13 +274,11 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                             link.send(message)
                     if stim.moves:
                         time.sleep(0.15)
-                    recording = perform.record_note(
+                    recording = perform.record_notes(
                         link,
                         device=args.audio,
                         channel=channel,
-                        note=stim.note,
-                        velocity=stim.velocity,
-                        hold=stim.hold,
+                        notes=stim.played(),
                         seconds=stim.seconds,
                         lead=stim.lead,
                     )

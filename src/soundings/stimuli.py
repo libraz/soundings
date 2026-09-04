@@ -82,8 +82,21 @@ class Stimulus:
     to receive without them, and reads as inaudible.
     """
 
+    also: tuple[tuple[int, int, float, float], ...] = ()
+    """Further notes, each `(note, velocity, seconds after the first, hold)`.
+
+    One note cannot ask a parameter about polyphony. Whether a part is
+    monophonic, and what it does when the same voice is asked for twice, sound
+    identical under a single note however the address is set -- so the address
+    answers inaudible and the null is a fact about the stimulus.
+    """
+
     def on(self, default: int) -> int:
         return default if self.channel is None else self.channel
+
+    def played(self) -> tuple[tuple[int, int, float, float], ...]:
+        """Every note this stimulus plays, its own first."""
+        return ((self.note, self.velocity, 0.0, self.hold), *self.also)
 
     def describe(self) -> str:
         # The writes belong in the description, not only in the JSON. A stimulus
@@ -98,9 +111,13 @@ class Stimulus:
         # same note played under power-on defaults, and a verdict that did not
         # say so would read as the plain note's.
         moved = f", moved: {gestures.describe(self.moves)}" if self.moves else ""
+        beside = "".join(
+            f", with note {n} at velocity {v} {a:.2f} s later held {h:.2f} s"
+            for n, v, a, h in self.also
+        )
         return (
             f"{where}program {self.program}, note {self.note}, velocity {self.velocity}, "
-            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}{moved}"
+            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}{beside}{moved}"
         )
 
     def to_json(self) -> dict:
@@ -111,6 +128,7 @@ class Stimulus:
             "velocity": self.velocity,
             "channel": self.channel,
             "writes": [[a, v] for a, v in self.writes],
+            "also": [list(n) for n in self.also],
             "moves": [m.to_json() for m in self.moves],
             "hold_s": self.hold,
             "captured_s": self.seconds,
@@ -354,6 +372,37 @@ CATALOGUE: dict[str, Stimulus] = {
         "yardstick to where no change of any size clears it, so anything not gating the "
         "modulation itself answers inconclusive here",
     ),
+    # The two below are what a parameter about *polyphony* has to be asked with,
+    # and nothing above can ask one at all. Whether a part is monophonic, and
+    # what it does when the same voice is asked for a second time, sound
+    # identical under a single note however the address is set.
+    "struck_pair": Stimulus(
+        name="struck_pair",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.0,
+        lead=0.6,
+        also=((67, 100, 0.0, 1.0),),
+        sees="whether the part sounds two notes at once or takes the second in place of the first",
+        blind_to="anything one note already answers, which it answers with a worse "
+        "yardstick: two notes have two attacks to scatter instead of one",
+    ),
+    "struck_again": Stimulus(
+        name="struck_again",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.2,
+        seconds=3.5,
+        lead=0.6,
+        also=((60, 100, 0.4, 1.2),),
+        sees="what the part does when the voice already sounding is asked for again -- "
+        "the second strike cuts the first off, or the two ring together",
+        blind_to="everything a pair of different notes answers, since one voice being "
+        "asked for twice and two voices being asked for are different questions",
+    ),
     "low": Stimulus(
         name="low",
         program=0,
@@ -406,6 +455,11 @@ SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
 # seconds.
 GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato")
 
+# What a parameter about polyphony has to be asked with, and the only two notes
+# in the catalogue that play more than one note. Nothing else can ask one at all,
+# so a null from anything else is a fact about the stimulus.
+POLYPHONY = ("struck_pair", "struck_again")
+
 
 def resolve(names) -> list[Stimulus]:
     """Look up names, refusing an unknown one rather than silently dropping it."""
@@ -419,6 +473,8 @@ def resolve(names) -> list[Stimulus]:
             chosen.extend(CATALOGUE[n] for n in SWITCH)
         elif name == "gesture":
             chosen.extend(CATALOGUE[n] for n in GESTURE)
+        elif name == "polyphony":
+            chosen.extend(CATALOGUE[n] for n in POLYPHONY)
         elif name == "all":
             chosen.extend(CATALOGUE.values())
         elif name in CATALOGUE:
@@ -426,7 +482,7 @@ def resolve(names) -> list[Stimulus]:
         else:
             raise KeyError(
                 f"no stimulus named {name!r}; have: {', '.join(CATALOGUE)}, "
-                "broad, effect, switch, gesture, all"
+                "broad, effect, switch, gesture, polyphony, all"
             )
     seen, unique = set(), []
     for s in chosen:
@@ -442,6 +498,7 @@ __all__ = [
     "DEFAULT",
     "EFFECT",
     "GESTURE",
+    "POLYPHONY",
     "SWITCH",
     "Stimulus",
     "resolve",
