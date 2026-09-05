@@ -66,11 +66,21 @@ def _literals() -> set[str]:
     return found
 
 
+def _is_prose(key: str) -> bool:
+    """Whether this key's value is a statement about how something was measured.
+
+    By prefix as well as by name: every such key added since has been called
+    why_something, and a set that has to be extended by hand silently stops
+    covering the newest prose -- which is the prose most likely to be wrong.
+    """
+    return key in PROSE or key.startswith("why_")
+
+
 def _prose(obj, path: str = "") -> list[tuple[str, str]]:
     if isinstance(obj, dict):
         out = []
         for key, value in obj.items():
-            if isinstance(value, str) and key in PROSE and len(value) > 60:
+            if isinstance(value, str) and _is_prose(key) and len(value) > 60:
                 out.append((f"{path}/{key}", value))
             else:
                 out.extend(_prose(value, f"{path}/{key}"))
@@ -80,8 +90,10 @@ def _prose(obj, path: str = "") -> list[tuple[str, str]]:
     return []
 
 
+# rglob, not glob: the per-address records live in audible/ and were not being
+# checked at all, which is most of the archive by file count.
 GENERATED = sorted(
-    p for p in UNIT.glob("*.json") if p.name not in BY_HAND and p.name not in SUPERSEDED
+    p for p in UNIT.rglob("*.json") if p.name not in BY_HAND and p.name not in SUPERSEDED
 )
 
 
