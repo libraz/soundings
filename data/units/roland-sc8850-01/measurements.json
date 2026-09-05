@@ -822,6 +822,65 @@
         "Whether the decay is the same for a part other than the rhythm part."
       ],
       "reproduced": "One capture per stimulus. The two stimuli disagree, and the note explains why."
+    },
+    {
+      "id": "twenty-one-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound",
+      "summary": "Part 1's block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 11 17 accepts one value only and cannot be asked at all. Of the 46, 21 changed the sound and 25 did not under anything tried. Nothing was left unasked.",
+      "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte.",
+      "results": {
+        "audible": "40 11 02, 08, 13, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
+        "not audible under what was tried": "40 11 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 14, 18, 1F, 20, 23, 24, 25, 37",
+        "cannot be asked": "40 11 17, which accepts 08 and nothing else",
+        "heard only by moving messages after the setting": "40 11 13 and 40 11 30",
+        "heard as a change in stereo balance": "40 11 13, 15, 16, 1C"
+      },
+      "note": "The values each address was asked at come from this unit's own write probe rather than from a manual, and where the probe could not establish a range the pair defaults to 0 and 127. Three addresses do not hold what that default asks: 40 11 01 and 40 11 18 answer no one-byte read at all and are readable only inside a wider region, and 40 11 14 accepts 0 and 2. A setting is therefore judged by what the unit holds after the write rather than by what was asked, and only a pair that collapses to one byte is refused.",
+      "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
+      "not_established": [
+        "What any of the 23 audible addresses does. Audible means the sound changed, not that the change was identified.",
+        "That the 23 inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than program 0, or under a message none of the three gestures sent would read as inaudible here.",
+        "Anything about parts other than part 1. The block is per part and only part 1 was swept.",
+        "Anything about 40 11 17, which no pair of settings can be built for."
+      ],
+      "reproduced": "One pass of four takes a setting per stimulus. 40 11 18 and 40 11 1F were measured twice: the first pass ran under a method that was then withdrawn -- it opened the audio device a second time before each take to listen for silence -- and under it both appeared to move the stereo balance. Measured again with the device opened once per take, as every other address in the block was, neither does. The second reading is the one published; what the first says about them is set aside rather than averaged in, since the two are not two draws from one method."
+    },
+    {
+      "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
+      "summary": "At panpot 127 the two channels the unit arrives on sit at -58.6 and -48.4 dB on every take, agreeing to 0.1 dB. At panpot 0 the same four takes land at -54.5/-49.3, -47.3/-62.9, -52.2/-50.6 and -63.7/-47.4 dB: a balance spanning over 31 dB while the two channels together stay within 1.21 dB. The placement is different on every note struck; the loudness is not.",
+      "method": "Four takes a setting, each channel's level measured separately rather than after the take was reduced to one channel. The channel pair was chosen from the loudest setting, since a setting that produces nothing would otherwise have the pair picked out of its own noise.",
+      "why_it_matters": "Every other measurement here reduces a take to one channel, which is what makes a residual mean anything. A parameter that moves signal between the channels is therefore invisible to all of them, and it does not read as nothing: a placement that differs on every take reads as the unit failing to repeat itself. 40 11 1C came back as could not be measured for exactly that reason, and the verdict was about the harness wearing the parameter's name.",
+      "results": {
+        "at 127": "-58.6 and -48.4 dB, spread 0.0 dB over four takes",
+        "at 0": "balance spread 31.9 dB over four takes",
+        "the two channels together, at 0": "within 1.21 dB",
+        "addresses in part 1 whose balance moved at all": "40 11 13, 15, 16 and 1C; the other 42 show a spread of 0.0 dB"
+      },
+      "found_by": "A parameter that had to be audible reading as could not be measured.",
+      "not_established": [
+        "Where the note is placed at any given panpot value. What was measured is that the placement moves and that it is not the same twice at 0.",
+        "Whether the same happens at values between 0 and 127.",
+        "Whether it is the panpot or the voice that scatters. Program 0 was the only voice asked."
+      ],
+      "reproduced": "Measured from the takes of two separate passes over the block, which agree about which addresses move the balance."
+    },
+    {
+      "id": "part-vibrato-rate-runs-at-1273-hz-at-its-maximum",
+      "summary": "With modulation held at 127, the note's own frequency is modulated at 12.73 Hz on all four takes with 40 11 30 set to 127, and no modulation is found at all with it set to 0. Left at its power-on value the same measurement reads 4.11 Hz, taken from the takes of a different address in the same block, and 4.11 to 4.52 Hz from those of another.",
+      "method": "The note's frequency was tracked through a single take and the track searched for a periodic component, rather than comparing two takes. A free-running modulator is at a different phase every time the note is struck, so two takes with it on disagree about nearly everything and the difference measurement's own yardstick swallows the change; its rate and depth are the same on every take even though its phase is not. Frames were required to stand 12 dB over the take's own lead-in, and a cubic trend was removed before the search, since a struck note settles in pitch as it decays and a straight line leaves enough of that curve behind to read as a deep slow modulation.",
+      "results": {
+        "40 11 30 at 127": "12.731 Hz on each of four takes, 37.6 to 82.9 cents peak to peak",
+        "40 11 30 at 0": "nothing found on any of four takes",
+        "at its power-on value": "4.11 Hz, and 4.11 to 4.52 Hz in an earlier run",
+        "shallowest modulation the tracker recovered from this material": "12 cents, injected as a control"
+      },
+      "note": "The null at 0 is a null over the searched band. With about two seconds of usable track and three cycles required before a rate is claimed, the search cannot claim anything below roughly 1.5 Hz, so what was established is that no modulation runs between about 1.5 and 15 Hz -- not that the modulator stopped.",
+      "found_by": "A parameter that no comparison of two takes could answer, because the modulator destroys the yardstick the comparison rests on.",
+      "not_established": [
+        "The rate at any value between 0 and 127, or whether it is linear in the byte.",
+        "The depth. It scatters from 37.6 to 82.9 cents across four takes of one setting, which is wider than anything a setting difference would have to clear.",
+        "What 40 11 37 does. Both its settings modulate at 4.11 Hz and their depths scatter from 71.9 to 212.6 cents at each, so a depth taken over the whole take cannot separate them."
+      ],
+      "reproduced": "Four takes a setting, and the power-on rate seen again in two other addresses' takes."
     }
   ]
 }
