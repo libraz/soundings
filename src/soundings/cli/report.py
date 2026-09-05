@@ -17,5 +17,22 @@ def write_json(where: str | None, payload: dict) -> None:
         return
     path = Path(where)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2) + "\n")
+    path.write_text(json.dumps(payload, indent=2, default=_plain) + "\n")
     print(f"\nwrote {path}")
+
+
+def _plain(value):
+    """A numpy scalar as the Python number it stands for.
+
+    Everything here is measured with numpy and a numpy scalar compares, rounds
+    and prints exactly like a number right up to the point where it is written,
+    which is the last step of a run: a numpy bool derived from one dB comparison
+    lost a three minute measurement at `json.dump` with every take already
+    recorded. Converting rather than raising, because there is nothing a reader
+    gains from the distinction and nothing the run can do about it by then.
+    """
+    import numpy as np
+
+    if isinstance(value, np.generic):
+        return value.item()
+    raise TypeError(f"{type(value).__name__} is not something a record can hold")

@@ -147,12 +147,18 @@ WHY_RETAKEN = (
 
 
 def lead_in_dbfs(recording: Recording, before: float) -> float:
-    """How loud the take's own lead-in was, in dBFS."""
+    """How loud the take's own lead-in was, in dBFS.
+
+    A Python float rather than whatever numpy returned. A numpy scalar compares
+    and rounds like a number and then refuses to be written: the record is built
+    from these and `json.dump` raised on a numpy bool derived from one, after the
+    machine time the run had already spent measuring.
+    """
     span = recording.samples[: int(before * recording.sample_rate)]
     if not span.size:
         return float("-inf")
     peak_level = float(np.abs(span).max())
-    return 20.0 * np.log10(peak_level) if peak_level > 0 else float("-inf")
+    return float(20.0 * np.log10(peak_level)) if peak_level > 0 else float("-inf")
 
 
 def peak(recording: Recording) -> float:
