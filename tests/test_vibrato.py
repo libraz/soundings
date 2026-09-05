@@ -118,3 +118,60 @@ def test_every_reading_survives_the_json_round_trip(found_one: bool) -> None:
 
     assert (written["rate_hz"] is not None) is found_one
     assert written["searched_hz"] == list(vibrato.SEARCH_HZ)
+
+
+def wobble(depth_cents: float | None) -> vibrato.Wobble:
+    """A reading that found a modulation at this depth, or one that found none."""
+    if depth_cents is None:
+        return vibrato.Wobble()
+    return vibrato.Wobble(rate_hz=5.3, depth_cents=depth_cents, f0_hz=261.6)
+
+
+def assembled(by_setting, *, floor: float | None = 12.0) -> dict:
+    vouched = None if floor is None else {"shallowest_recovered_cents": floor}
+    return vibrato.record(
+        by_setting,
+        takes=".cache/takes/whatever",
+        searched_hz=vibrato.SEARCH_HZ,
+        control=vouched,
+        control_taken_from=None if floor is None else "quiet at 0",
+    )
+
+
+def test_a_depth_under_what_the_control_reached_is_named_rather_than_left_plain() -> None:
+    """The control bounds the run in both directions. A rate found at a depth the
+    tracker was never shown able to reach sits in the rows in the same shape as one
+    found well above it, and nothing else in the record separates them."""
+    written = assembled({"vibrato at 0": [wobble(2.34), wobble(None)]})
+
+    assert written["shallower_than_the_control_recovered"]["rows"] == [
+        {"setting": "vibrato at 0", "take": 0, "depth_cents": 2.34}
+    ]
+
+
+def test_a_depth_the_control_reached_is_not_named() -> None:
+    written = assembled({"vibrato at 127": [wobble(37.57), wobble(12.0)]})
+
+    assert written["shallower_than_the_control_recovered"]["rows"] == []
+
+
+def test_nothing_is_called_unsupported_when_no_control_bounds_the_run() -> None:
+    """Without a control there is no floor, so no row is under one. Reporting them
+    all would put the run's every reading under a caveat about a measurement that
+    was never made."""
+    written = assembled({"vibrato at 0": [wobble(2.34)]}, floor=None)
+
+    assert written["shallower_than_the_control_recovered"]["rows"] == []
+    assert "why_one_setting_carries_the_control" not in written
+
+
+def test_the_control_says_which_setting_it_came_from_and_what_that_costs() -> None:
+    """A take that already carries a modulation cannot carry an injected one too,
+    so one setting's take bounds every row. The reason lives with the rows rather
+    than in the code that assembled them."""
+    written = assembled({"vibrato at 127": [wobble(37.57)]})
+
+    assert written["control_taken_from"] == "quiet at 0"
+    assert written["why_one_setting_carries_the_control"] == (
+        vibrato.WHY_ONE_SETTING_CARRIES_THE_CONTROL
+    )

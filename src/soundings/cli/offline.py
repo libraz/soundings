@@ -494,11 +494,8 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
         by_setting.setdefault(key, []).append(found)
         print(f"  {key} take {entry['take']}: {found.describe()}")
 
-    # The control goes into the setting that showed nothing. Injecting a
-    # modulation into a take that already carries one puts two in the track, and
-    # the unit's own is what the search then finds -- which reads as the control
-    # having failed. Measured here: the control recovered nothing at all from the
-    # takes with the vibrato on, and down to 50 cents from the takes with it off.
+    # The control goes into the setting that showed nothing, for the reason
+    # WHY_ONE_SETTING_CARRIES_THE_CONTROL gives to the reader of the record.
     quiet = min(
         by_setting,
         key=lambda k: sum(1 for f in by_setting[k] if f.found),
@@ -517,14 +514,13 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
 
     report.write_json(
         args.out,
-        {
-            "takes": str(args.takes),
-            "method": vibrato.METHOD,
-            "searched_hz": list(search),
-            "control": vouched,
-            "control_taken_from": quiet,
-            "by_setting": {key: [f.to_json() for f in found] for key, found in by_setting.items()},
-        },
+        vibrato.record(
+            by_setting,
+            takes=str(args.takes),
+            searched_hz=search,
+            control=vouched,
+            control_taken_from=quiet,
+        ),
     )
     return 0
 

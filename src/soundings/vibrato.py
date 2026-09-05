@@ -41,8 +41,28 @@ METHOD = (
 WHY_CONTROL = (
     "A modulation the tracker cannot recover from a take it was put into by hand is not evidence "
     "that the unit applied none, and nothing in the output separates the two. So every run puts "
-    "a known modulation into the same take and reports which depths came back, and a null is "
-    "worth reading only over the depths the control recovered."
+    "a known modulation into one of its own takes and reports which depths came back. It bounds "
+    "the run in both directions and neither alone: a null is worth reading only over the depths "
+    "the control recovered, and a rate found at a depth shallower than the shallowest of those "
+    "is a fit the tracker was never shown able to make on this material."
+)
+
+WHY_ONE_SETTING_CARRIES_THE_CONTROL = (
+    "The control was injected into one setting's take rather than into each, and the setting is "
+    "named beside this. It cannot be otherwise: a take that already carries a modulation ends up "
+    "with two in the track, the search finds the unit's own, and the control reads as having "
+    "failed -- measured here, a control injected into the takes with the vibrato on recovered "
+    "nothing at any depth. The cost is that the depth reached here bounds the other settings only "
+    "as far as their takes resemble this one, and the frames each row stood over the floor with "
+    "are reported so that a reader can see where they do not."
+)
+
+SHALLOWER_THAN_THE_CONTROL = (
+    "These rows report a modulation shallower than the shallowest depth the control recovered, so "
+    "the tracker was never shown able to find one that small on this material. They are named "
+    "rather than removed, because the rows are what the search returned and a row deleted for "
+    "being unsupported leaves a setting looking as though nothing was found in it. What they are "
+    "not is evidence that the unit modulated anything."
 )
 
 WHY_FLOOR_GATE = (
@@ -298,15 +318,65 @@ def control(
     }
 
 
+def record(
+    by_setting: dict[str, list[Wobble]],
+    *,
+    takes: str,
+    searched_hz: tuple[float, float],
+    control: dict | None,
+    control_taken_from: str | None,
+) -> dict:
+    """The record a vibrato run leaves: its rows, and what the control does not reach.
+
+    Assembled here rather than at the call site because the two limitations only
+    exist once the rows and the control are both in hand, and a record that put
+    them together by hand would leave them out of the next one.
+
+    A control taken from one setting bounds every row, and one row can fall
+    outside it in a direction the control's own prose used to leave unsaid.
+    """
+    floor = None if control is None else control.get("shallowest_recovered_cents")
+    unsupported = [
+        # Rounded as the row it points at is, so the same depth does not appear
+        # twice in one record at two precisions and read as two measurements.
+        {"setting": setting, "take": index, "depth_cents": round(found.depth_cents, 2)}
+        for setting, rows in by_setting.items()
+        for index, found in enumerate(rows)
+        if found.found and floor is not None and found.depth_cents < floor
+    ]
+    return {
+        "takes": takes,
+        "method": METHOD,
+        "searched_hz": list(searched_hz),
+        "control": control,
+        "control_taken_from": control_taken_from,
+        **(
+            {"why_one_setting_carries_the_control": WHY_ONE_SETTING_CARRIES_THE_CONTROL}
+            if control_taken_from is not None
+            else {}
+        ),
+        "shallower_than_the_control_recovered": {
+            "rows": unsupported,
+            "why": SHALLOWER_THAN_THE_CONTROL,
+        },
+        "by_setting": {
+            setting: [found.to_json() for found in rows] for setting, rows in by_setting.items()
+        },
+    }
+
+
 __all__ = [
     "CONTROL_DEPTHS_CENTS",
     "CONTROL_RATE_HZ",
     "METHOD",
     "SEARCH_HZ",
+    "SHALLOWER_THAN_THE_CONTROL",
     "WHY_CONTROL",
     "WHY_FLOOR_GATE",
+    "WHY_ONE_SETTING_CARRIES_THE_CONTROL",
     "Wobble",
     "control",
     "measure",
+    "record",
     "track",
 ]
