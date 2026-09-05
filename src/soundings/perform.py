@@ -73,6 +73,35 @@ def record_notes(
     return recording
 
 
+OPEN_ATTEMPTS = 3
+"""Times opening the audio device is retried before a take is given up on.
+
+Not a hidden failure: the device on this chain refuses to start a stream every so
+often with an unspecified hardware error, and it has cost three whole runs, each
+after the machine time the run had already spent. A retry is a fresh stream
+recording the same note, so nothing about the measurement changes -- and how many
+were needed is kept, because a rate that climbs is a fact about the chain.
+"""
+
+OPEN_REST_S = 1.5
+
+
+def record_notes_retrying(link: MidiLink, **asked) -> tuple[Recording, int]:
+    """Record, retrying a device that refused to open, and say how many it took."""
+    last_error: Exception | None = None
+    for attempt in range(OPEN_ATTEMPTS):
+        try:
+            return record_notes(link, **asked), attempt
+        except Exception as exc:  # sounddevice raises its own error type
+            if "PortAudio" not in type(exc).__name__ and "PortAudio" not in str(exc):
+                raise
+            last_error = exc
+            time.sleep(OPEN_REST_S)
+    raise RuntimeError(
+        f"the audio device refused to open {OPEN_ATTEMPTS} times in a row: {last_error}"
+    )
+
+
 def record_note(
     link: MidiLink,
     *,
@@ -95,52 +124,35 @@ def record_note(
     )
 
 
-QUIET_LISTEN_S = 0.3
-"""How much is listened to at a time while waiting for a tail to die."""
+RETAKES = 3
+"""Attempts a take gets at finding a quiet lead-in before the run measures anyway.
 
-QUIET_TIMEOUT_S = 8.0
-"""How long the wait gives up after, so a parameter that never goes quiet is a
-finding rather than a hang. Whatever it leaves behind is still caught by the
-lead-in check the takes are judged against."""
+Bounded rather than open ended, because a setting that never goes quiet is a
+finding about the setting and the lead-in check on the takes still refuses to
+measure through it.
+"""
 
-WHY_WAIT_FOR_QUIET = (
-    "Each take waited for the room to go quiet before it was recorded, rather than starting on a "
-    "timer. The lead-in is where the noise floor is measured and the floor is the yardstick every "
-    "figure is judged against, so a tail from the take before it does not merely add noise -- it "
-    "raises the bar the parameter then fails to clear, and the run reads as a parameter that does "
-    "nothing. How long each wait took is kept, since a setting that takes longer to go quiet than "
-    "its pair is itself a difference between the two."
+REST_S = 1.2
+"""Waited between attempts, which is what the tail is being given time to die in."""
+
+WHY_RETAKEN = (
+    "A take whose own lead-in was not quiet was recorded again after a rest rather than kept. The "
+    "lead-in is where the noise floor is measured and the floor is the yardstick every figure is "
+    "judged against, so a tail left by the take before does not merely add noise -- it raises the "
+    "bar the parameter is then asked to clear, and the run reads as a parameter that does "
+    "nothing. Judged from the take's own lead-in rather than by listening separately first, since "
+    "opening the audio device is the one part of this chain that fails outright and a listen "
+    "before every take doubles how often it is asked to."
 )
 
 
-def wait_until_quiet(
-    *,
-    device: str | None,
-    below_dbfs: float,
-    listen_s: float = QUIET_LISTEN_S,
-    timeout_s: float = QUIET_TIMEOUT_S,
-) -> tuple[float, float, bool]:
-    """Listen until nothing is sounding, and say how long that took.
-
-    Returns the seconds waited, the level it ended at, and whether it got under
-    the line before giving up. A timeout is not an error here: an address that
-    leaves something sounding for longer than this is a fact about the address,
-    and it is the lead-in check on the takes themselves that refuses to measure
-    through it.
-    """
-    waited = 0.0
-    level = float("inf")
-    while waited < timeout_s:
-        heard = cap.record(listen_s, device=device)
-        level = (
-            20.0 * np.log10(float(np.abs(heard.samples).max()))
-            if heard.samples.size and np.abs(heard.samples).max() > 0
-            else float("-inf")
-        )
-        if level <= below_dbfs:
-            return waited, level, True
-        waited += listen_s
-    return waited, level, False
+def lead_in_dbfs(recording: Recording, before: float) -> float:
+    """How loud the take's own lead-in was, in dBFS."""
+    span = recording.samples[: int(before * recording.sample_rate)]
+    if not span.size:
+        return float("-inf")
+    peak_level = float(np.abs(span).max())
+    return 20.0 * np.log10(peak_level) if peak_level > 0 else float("-inf")
 
 
 def peak(recording: Recording) -> float:

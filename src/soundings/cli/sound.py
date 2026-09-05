@@ -335,33 +335,37 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                             link.send(message)
                     if stim.moves:
                         time.sleep(0.15)
-                    # Wait for whatever is still sounding to die before the take
-                    # rather than measuring through it. The lead-in is where the
+                    # Take it again when its own lead-in was not quiet, rather
+                    # than measuring through a tail. The lead-in is where the
                     # floor comes from and the floor is the yardstick, so a tail
                     # left by the take before does not add noise to the answer --
                     # it raises the bar the parameter is then asked to clear.
-                    waited, at_db, quiet = perform.wait_until_quiet(
-                        device=args.audio, below_dbfs=args.max_lead_in
-                    )
-                    if waited or not quiet:
-                        rests.append(
-                            {
-                                "stimulus": stim.name,
-                                "setting": value,
-                                "take": index,
-                                "waited_s": round(waited, 2),
-                                "reached_dbfs": None if at_db == float("-inf") else round(at_db, 1),
-                                "went_quiet": quiet,
-                            }
+                    for attempt in range(perform.RETAKES):
+                        recording, reopened = perform.record_notes_retrying(
+                            link,
+                            device=args.audio,
+                            channel=channel,
+                            notes=stim.played(),
+                            seconds=stim.seconds,
+                            lead=stim.lead,
                         )
-                    recording = perform.record_notes(
-                        link,
-                        device=args.audio,
-                        channel=channel,
-                        notes=stim.played(),
-                        seconds=stim.seconds,
-                        lead=stim.lead,
-                    )
+                        was = perform.lead_in_dbfs(recording, stim.lead * 0.8)
+                        quiet = was <= args.max_lead_in
+                        if attempt or reopened or not quiet:
+                            rests.append(
+                                {
+                                    "stimulus": stim.name,
+                                    "setting": value,
+                                    "take": index,
+                                    "attempt": attempt + 1,
+                                    "lead_in_dbfs": None if was == float("-inf") else round(was, 1),
+                                    "was_quiet": quiet,
+                                    "device_reopened": reopened,
+                                }
+                            )
+                        if quiet:
+                            break
+                        time.sleep(perform.REST_S)
                     if not recording.healthy:
                         print(f"    lossy capture: {recording.health_report()}")
                         return 1
@@ -449,11 +453,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 if read_back
                 else {}
             ),
-            **(
-                {"waited_for_quiet": rests, "why_waited_for_quiet": perform.WHY_WAIT_FOR_QUIET}
-                if rests
-                else {}
-            ),
+            **({"retaken": rests, "why_retaken": perform.WHY_RETAKEN} if rests else {}),
             **(
                 {"left_out_of_the_gesture": left_out, "why_left_out": gestures.WHY_DROPPED}
                 if left_out
