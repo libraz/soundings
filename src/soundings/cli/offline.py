@@ -176,9 +176,13 @@ def register(sub) -> None:
     )
     p.add_argument(
         "--balance",
-        help="a balance record. A parameter that moves signal between the channels is "
-        "invisible to a comparison made in one of them, so what it found is folded in "
-        "as another way of having reached the signal path",
+        action="append",
+        default=[],
+        metavar="RECORD",
+        help="a balance record, once per pass. A parameter that moves signal between the "
+        "channels is invisible to a comparison made in one of them, so what it found is "
+        "folded in as another way of having reached the signal path. Each pass has its own "
+        "takes and its own balance, so give the plain pass's and the gesture pass's both",
     )
     options.add_out(p)
     p.set_defaults(func=cmd_block)
@@ -540,8 +544,11 @@ def cmd_block(args: argparse.Namespace) -> int:
         return 1
 
     found = [f for f in block.join(plain, gesture) if f is not None]
-    if args.balance:
-        found = block.with_balance(found, json.loads(Path(args.balance).read_text()))
+    # One per pass rather than one for the block: each pass has its own takes and
+    # its own balance, and a parameter that moves the balance under the gesture
+    # is as much a finding as one that moves it under the plain note.
+    for where in args.balance:
+        found = block.with_balance(found, json.loads(Path(where).read_text()))
     coverage = block.against_plan(found, planned)
     print(block.summarise(found, coverage))
     # Named rather than counted: an address left to try is the next run's list,
