@@ -280,3 +280,79 @@ def test_what_each_pass_left_out_is_kept_when_they_are_joined() -> None:
     )
 
     assert "struck_moved" in joined.left_out
+
+
+def test_an_address_only_two_notes_could_hear_is_answered_by_the_polyphony_pass() -> None:
+    """Whether a part sounds two voices at once is inaudible under one note however
+    the address is set, so the one-note passes' null is a fact about the stimulus."""
+    plain = {"40 11 14": block.read_one(record("40 11 14", deaf=("struck",)))}
+    gesture = {"40 11 14": block.read_one(record("40 11 14", deaf=("struck_moved",)))}
+    poly = {
+        "40 11 14": block.read_one(
+            record("40 11 14", audible=True, heard=("struck_pair",), deaf=("struck_again",))
+        )
+    }
+
+    (joined,) = block.join(plain, gesture, poly)
+
+    assert joined.audible and joined.verdict == "audible"
+    assert joined.heard_by == ["struck_pair"]
+    # Every stimulus that failed to hear it stays on the record: the verdict is
+    # what one of them heard, not a claim that the others were not asked.
+    assert set(joined.not_heard_by) == {"struck", "struck_moved", "struck_again"}
+
+
+def test_the_two_rescues_are_peers_and_both_are_named() -> None:
+    """Neither rescue outranks the other, so an address both reached carries both."""
+    plain = {"40 11 09": block.read_one(record("40 11 09", deaf=("struck",)))}
+    gesture = {
+        "40 11 09": block.read_one(
+            record("40 11 09", audible=True, heard=("struck_moved",), deaf=())
+        )
+    }
+    poly = {
+        "40 11 09": block.read_one(
+            record("40 11 09", audible=True, heard=("struck_again",), deaf=())
+        )
+    }
+
+    (joined,) = block.join(plain, gesture, poly)
+
+    assert joined.heard_by == ["struck_moved", "struck_again"]
+
+
+def test_the_modulator_guard_does_not_reach_the_polyphony_pass() -> None:
+    """The guard exists because both settings carry the modulator under the
+    vibrato gesture. The polyphony stimuli carry no modulator, so a verdict from
+    them is never scatter of a free-running phase and is not set aside."""
+    plain = {
+        "40 11 0A": block.read_one(
+            record("40 11 0A", deaf=("struck",), unrepeatable={"struck": [-51.9, -51.9]})
+        )
+    }
+    poly = {
+        "40 11 0A": block.read_one(
+            record(
+                "40 11 0A",
+                audible=True,
+                heard=("struck_pair",),
+                deaf=(),
+                unrepeatable={"struck_pair": [-14.5, -29.2]},
+            )
+        )
+    }
+
+    (joined,) = block.join(plain, {}, poly)
+
+    assert joined.audible and not joined.discounted
+
+
+def test_a_block_read_without_a_polyphony_pass_is_unchanged() -> None:
+    """The third pass is optional, and a block asked before it existed reads the
+    same way afterwards -- otherwise every earlier record would silently move."""
+    plain = {"40 11 08": block.read_one(record("40 11 08", audible=True, heard=("struck",)))}
+    gesture = {"40 11 08": block.read_one(record("40 11 08", deaf=("struck_moved",)))}
+
+    assert [f.to_json() for f in block.join(plain, gesture)] == [
+        f.to_json() for f in block.join(plain, gesture, {})
+    ]

@@ -51,6 +51,16 @@ WHY_TWO_PASSES = (
     "passes spoke, the plain one is the verdict and the gesture is what it took to hear it."
 )
 
+WHY_POLYPHONY_PASS = (
+    "A third pass asked the addresses the first two could not hear with two notes instead of "
+    "one. It is not a narrower question the way a gesture is: the notes are played in the state "
+    "the unit powers up in, so a verdict from it is as broad as the plain note's. What it adds "
+    "is the only question a single note cannot put at all -- whether the part sounds two voices "
+    "at once, and what it does when the voice already sounding is asked for again. A null from "
+    "any one-note stimulus on such a parameter is a fact about the stimulus rather than about "
+    "the address, so until this pass has run those addresses are unasked rather than silent."
+)
+
 WHY_MODULATOR_SCATTER = (
     "Under the modulation gesture both settings carry the modulator, so the channel that reads "
     "one setting repeating worse than the other has nothing to detect and what it reports is "
@@ -196,29 +206,50 @@ def modulator_scatter(gesture: AddressVerdict, plain: AddressVerdict | None) -> 
     return bool(here > there + STEADY_WITHIN_DB)
 
 
-def join(plain: dict[str, AddressVerdict], gesture: dict[str, AddressVerdict]) -> list:
-    """One verdict per address over both passes, the plain note answering first."""
+def join(
+    plain: dict[str, AddressVerdict],
+    gesture: dict[str, AddressVerdict],
+    polyphony: dict[str, AddressVerdict] | None = None,
+) -> list:
+    """One verdict per address over every pass, the plain note answering first.
+
+    The two rescues are peers of each other and neither is a peer of the plain
+    note: both are spent only where it heard nothing, and an address either of
+    them hears is audible. They are kept apart here rather than merged into one
+    pass because only the gesture's verdict is narrowed by the state it was
+    asked in, and only the gesture carries a modulator to be discounted.
+    """
+    polyphony = polyphony or {}
     out = []
-    for address in sorted(set(plain) | set(gesture)):
-        first, second = plain.get(address), gesture.get(address)
+    for address in sorted(set(plain) | set(gesture) | set(polyphony)):
+        first = plain.get(address)
+        second, third = gesture.get(address), polyphony.get(address)
+        rescued = [r for r in (second, third) if r is not None]
         if first is not None and first.audible:
             out.append(first)
             continue
-        if second is None:
+        if not rescued:
             out.append(first)
             continue
         merged = AddressVerdict(
             address=address,
-            values=second.values or (first.values if first else []),
-            audible=second.audible,
-            heard_by=list(second.heard_by),
-            not_heard_by=(first.not_heard_by if first else []) + second.not_heard_by,
+            values=next((r.values for r in rescued if r.values), first.values if first else []),
+            audible=any(r.audible for r in rescued),
+            heard_by=[n for r in rescued for n in r.heard_by],
+            not_heard_by=(first.not_heard_by if first else [])
+            + [n for r in rescued for n in r.not_heard_by],
             inconclusive_under=(first.inconclusive_under if first else [])
-            + second.inconclusive_under,
-            unrepeatable_db={**(first.unrepeatable_db if first else {}), **second.unrepeatable_db},
-            left_out={**(first.left_out if first else {}), **second.left_out},
+            + [n for r in rescued for n in r.inconclusive_under],
+            unrepeatable_db={
+                **(first.unrepeatable_db if first else {}),
+                **{k: v for r in rescued for k, v in r.unrepeatable_db.items()},
+            },
+            left_out={
+                **(first.left_out if first else {}),
+                **{k: v for r in rescued for k, v in r.left_out.items()},
+            },
         )
-        if modulator_scatter(second, first):
+        if second is not None and modulator_scatter(second, first):
             merged.discounted.append("struck_vibrato")
             merged.heard_by = [n for n in merged.heard_by if n != "struck_vibrato"]
             merged.inconclusive_under = merged.inconclusive_under + ["struck_vibrato"]
@@ -307,6 +338,7 @@ __all__ = [
     "WHY_LEFT_OUT",
     "STEADY_WITHIN_DB",
     "WHY_MODULATOR_SCATTER",
+    "WHY_POLYPHONY_PASS",
     "WHY_TWO_PASSES",
     "AddressVerdict",
     "against_plan",

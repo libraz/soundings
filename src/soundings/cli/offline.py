@@ -175,6 +175,12 @@ def register(sub) -> None:
         "is a rescue for a null, so it answers only where the plain note could not",
     )
     p.add_argument(
+        "--polyphony",
+        help="records from the pass that played two notes. A parameter about polyphony "
+        "sounds identical under a single note however it is set, so an address left null "
+        "by the one-note passes has not been asked rather than answered",
+    )
+    p.add_argument(
         "--balance",
         action="append",
         default=[],
@@ -535,11 +541,12 @@ def cmd_block(args: argparse.Namespace) -> int:
     planned = json.loads(Path(args.plan).read_text())
     plain = block.survey(args.plain)
     gesture = block.survey(args.gesture) if args.gesture else {}
-    if not plain and not gesture:
+    polyphony = block.survey(args.polyphony) if args.polyphony else {}
+    if not plain and not gesture and not polyphony:
         print(f"no contrast records under {args.plain}")
         return 1
 
-    found = [f for f in block.join(plain, gesture) if f is not None]
+    found = [f for f in block.join(plain, gesture, polyphony) if f is not None]
     # One per pass rather than one for the block: each pass has its own takes and
     # its own balance, and a parameter that moves the balance under the gesture
     # is as much a finding as one that moves it under the plain note.
@@ -559,6 +566,7 @@ def cmd_block(args: argparse.Namespace) -> int:
             "block": planned.get("block"),
             "method": block.METHOD,
             "two_passes": block.WHY_TWO_PASSES,
+            **({"polyphony_pass": block.WHY_POLYPHONY_PASS} if args.polyphony else {}),
             **({"balance_counts": block.WHY_BALANCE_COUNTS} if args.balance else {}),
             "chose_the_values": planned.get("method"),
             "coverage": coverage,
