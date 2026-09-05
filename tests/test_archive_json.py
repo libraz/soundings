@@ -73,3 +73,37 @@ def test_a_figure_that_ran_off_the_end_is_written_null_and_named() -> None:
 def test_a_record_whose_figures_were_all_finite_says_nothing() -> None:
     """An empty explanation on every record is an explanation nobody reads."""
     assert jsonio.beyond(a=1.0, b=-40.0, c=None) == {}
+
+
+def test_a_figure_that_is_not_a_number_is_said_in_words_not_printed() -> None:
+    """The record says it properly; a line reading "-inf dB" at someone says the
+    same thing in a form nobody can act on, and both values occur on hardware."""
+    from soundings.audible import Verdict
+
+    said = Verdict._figure
+    assert said(float("-inf")) == "below anything measurable"
+    assert said(float("inf")) == "above anything measurable"
+    assert said(float("nan")) == "a figure that could not be formed"
+    assert said(-12.34) == "-12.3 dB"
+
+
+def test_a_setting_that_produced_no_signal_is_the_strongest_level_finding() -> None:
+    """Measured on the tone number: at one setting nothing came out, so there was
+    nothing for the other to be aligned against and the difference has no figure."""
+    from soundings.audible import Verdict
+
+    found = Verdict(
+        label="address 40 11 01 0 against 127",
+        stimulus="a note",
+        stimulus_name="struck",
+        within_db=-2.78,
+        across_db=float("nan"),
+        within_level_db=0.383,
+        across_level_db=float("-inf"),
+        within_each_db=(-40.0, -40.0),
+    )
+
+    said = found.describe()
+
+    assert found.audible and "inf" not in said and "nan" not in said
+    assert "no signal the other could be aligned against" in said

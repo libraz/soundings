@@ -202,24 +202,49 @@ class Verdict:
         """
         return bool(not self.audible and self.within_db > UNUSABLE_ABOVE_DB)
 
+    @staticmethod
+    def _figure(value: float, places: int = 1, sign: str = "") -> str:
+        """A dB figure as words when it is not a number, since the prose is read.
+
+        The record says this properly in `beyond_measurement`; a line that prints
+        "-inf dB" or "nan dB" at a reader is saying the same thing in a form
+        nobody can act on, and both occur -- a setting that produced no signal at
+        all reaches the first and a residual that could not be formed the second.
+        """
+        if np.isnan(value):
+            return "a figure that could not be formed"
+        if np.isinf(value):
+            return "below anything measurable" if value < 0 else "above anything measurable"
+        return f"{value:{sign}.{places}f} dB"
+
     def describe(self) -> str:
         if self.inconclusive:
             return (
                 f"{self.label}: inconclusive. Takes of one setting differ by "
-                f"{self.within_db:.1f} dB, so the yardstick is most of the signal and no "
+                f"{self._figure(self.within_db)}, so the yardstick is most of the signal and no "
                 "change could have cleared it. This says nothing about the parameter."
             )
         if not self.audible:
             return (
                 f"{self.label}: nothing above the noise. Takes of one setting differ by "
-                f"{self.within_db:.1f} dB and the two settings differ by {self.across_db:.1f} dB, "
-                f"which is not {self.margin_db:.0f} dB clear of it. "
-                f"Inaudible under {self.stimulus}."
+                f"{self._figure(self.within_db)} and the two settings differ by "
+                f"{self._figure(self.across_db)}, which is not {self.margin_db:.0f} dB clear of "
+                f"it. Inaudible under {self.stimulus}."
             )
         how = []
         if self.changed_the_shape:
-            how.append(f"shape, {self.across_db - self.within_db:+.1f} dB over the yardstick")
-        if self.changed_the_level and self.level_at_floor:
+            how.append(
+                f"shape, {self._figure(self.across_db - self.within_db, sign='+')} "
+                "over the yardstick"
+            )
+        if self.changed_the_level and not np.isfinite(self.across_level_db):
+            # The strongest level finding there is, and the one the old line
+            # printed as "-inf dB": one setting produced nothing to align to.
+            how.append(
+                "level, one setting produced no signal the other could be aligned against, so "
+                "how far apart they are is below what this chain can see rather than a figure"
+            )
+        elif self.changed_the_level and self.level_at_floor:
             how.append(
                 f"level, at least {abs(self.across_level_db):.2f} dB -- the quieter setting "
                 "reached the noise floor, so how much further it went is below what this "
@@ -230,13 +255,14 @@ class Verdict:
         if self.changed_the_repeatability:
             first, second = self.within_each_db
             how.append(
-                f"repeatability, what fails to repeat went from {first:.1f} to {second:.1f} dB "
-                "-- something that moves came on, and no residual can measure it"
+                f"repeatability, what fails to repeat went from {self._figure(first)} to "
+                f"{self._figure(second)} -- something that moves came on, and no residual can "
+                "measure it"
             )
         return (
             f"{self.label}: audible -- {' and '.join(how)}. "
-            f"Takes of one setting differ by {self.within_db:.1f} dB, "
-            f"the settings by {self.across_db:.1f} dB."
+            f"Takes of one setting differ by {self._figure(self.within_db)}, "
+            f"the settings by {self._figure(self.across_db)}."
         )
 
     def to_json(self) -> dict:
