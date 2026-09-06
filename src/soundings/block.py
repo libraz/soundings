@@ -122,6 +122,16 @@ class AddressVerdict:
     verdict backed by a change of shape or of level.
     """
 
+    caveat: str = ""
+    """What the plan said about how this address had to be asked, if anything.
+
+    Carried through rather than left in the plan. A plan is what a run was aimed
+    by and a block record is what anyone reads afterwards, so a caveat that stays
+    behind is one nobody sees: the addresses asked over a guessed span, because
+    the write probe could not read what they held and so never wrote to them, are
+    the ones whose null means least and they arrive looking like every other null.
+    """
+
     left_out: dict = field(default_factory=dict)
     """Moves the gesture could not carry here, because they write this address.
 
@@ -162,6 +172,8 @@ class AddressVerdict:
         if self.left_out:
             out["left_out_of_the_gesture"] = self.left_out
             out["why_left_out"] = WHY_LEFT_OUT
+        if self.caveat:
+            out["how_it_had_to_be_asked"] = self.caveat
         return out
 
 
@@ -368,6 +380,22 @@ def with_balance(found: list, measured: dict) -> list:
     return found
 
 
+def with_the_plans_caveats(found: list, planned: dict) -> list:
+    """Put each address's caveat from the plan onto its verdict.
+
+    The plan carries one where an address could not be asked in the ordinary
+    way -- over a guessed span, because the write probe never established what it
+    accepts. Nothing else in the record says so, and such a null is the weakest
+    one in the block: it cannot separate an address that ignored the write from
+    one that took it and reached nothing.
+    """
+    caveats = {a["address"]: a.get("caveat", "") for a in planned.get("ask", [])}
+    for verdict in found:
+        if verdict is not None and caveats.get(verdict.address):
+            verdict.caveat = caveats[verdict.address]
+    return found
+
+
 def against_plan(found: list, planned: dict) -> dict:
     """What the block holds against what the plan said it should.
 
@@ -420,4 +448,5 @@ __all__ = [
     "read_one",
     "summarise",
     "survey",
+    "with_the_plans_caveats",
 ]

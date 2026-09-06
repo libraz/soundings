@@ -150,6 +150,7 @@ def cmd_block(args: argparse.Namespace) -> int:
     # is as much a finding as one that moves it under the plain note.
     for where in args.balance:
         found = block.with_balance(found, json.loads(Path(where).read_text()))
+    found = block.with_the_plans_caveats(found, planned)
     coverage = block.against_plan(found, planned)
     print(block.summarise(found, coverage))
     # Named rather than counted: an address left to try is the next run's list,

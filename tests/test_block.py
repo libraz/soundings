@@ -442,3 +442,35 @@ def test_a_plan_naming_its_unaskable_address_as_a_string_still_matches() -> None
     kept, outside = block.split_by_plan({"40 03 1A": object()}, planned)
     assert sorted(kept) == ["40 03 1A"]
     assert outside == []
+
+
+def test_an_address_asked_over_a_guessed_span_says_so_in_the_block(tmp_path):
+    """The weakest null in a block, and it arrived looking like every other one.
+
+    The write probe never writes an address whose original it could not read,
+    because there would be nothing to put back, so the plan asks it over the
+    whole seven-bit span and carries a caveat saying as much. That caveat lived
+    in the plan, which is what a run was aimed by, and not in the block record,
+    which is what anyone reads afterwards. Seven addresses of the system effect
+    block are in exactly that position."""
+    verdict = block.AddressVerdict(address="40 01 41", values=[0, 127], audible=False)
+    planned = {
+        "ask": [
+            {"address": "40 01 41", "caveat": "asked over the whole seven-bit span"},
+            {"address": "40 01 30"},
+        ]
+    }
+
+    (kept,) = block.with_the_plans_caveats([verdict], planned)
+
+    assert kept.to_json()["how_it_had_to_be_asked"] == "asked over the whole seven-bit span"
+
+
+def test_an_address_the_plan_had_nothing_to_say_about_carries_nothing(tmp_path):
+    """The key is absent rather than present and empty, so a record that says
+    something about how an address was asked is one where something was said."""
+    verdict = block.AddressVerdict(address="40 01 30", values=[0, 7], audible=True)
+
+    (kept,) = block.with_the_plans_caveats([verdict], {"ask": [{"address": "40 01 30"}]})
+
+    assert "how_it_had_to_be_asked" not in kept.to_json()
