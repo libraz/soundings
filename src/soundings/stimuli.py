@@ -507,6 +507,27 @@ BROAD = ("struck", "released", "sustained", "soft", "loud")
 # and reports nothing, and it is two separate mistakes: a pitched note against an
 # effect, and a chorus send raised over a take that has to repeat, which puts a
 # free-running LFO at a new phase on every strike exactly as the modulator does.
+#
+# **Three of the four cannot ask a chorus question at all**, and it is not the
+# stimulus so much as where it sounds: unpitched and wash are on the rhythm part,
+# struck_kit puts a melodic part into rhythm mode, and a rhythm part on this unit
+# is excluded from the chorus however its send is set. Measured four ways round,
+# on the same address and the same part, so it is a fact about the mode and not
+# about the crash --
+#
+#   40 12 21  part 2, rhythm mode, struck_kit   not audible, yardstick -40.0 dB
+#   40 12 21  part 2, melodic,     deep         audible, +9.71 dB
+#   40 11 21  part 1, melodic,     deep         audible, +9.39 dB
+#   40 12 22  part 2, rhythm mode, struck_kit   audible, +30.4 dB, yardstick -40.2 dB
+#
+# The last row is what closes it: the same stimulus on the same part in the same
+# mode hears the *reverb* send move by 30 dB. So `deep` is the whole of what can
+# be asked through the chorus, and what that costs is repeatability -- the chorus
+# is a free-running LFO, so raising its send takes takes of one setting from
+# -53.6 dB apart to -4.5, and every null under it comes back inconclusive rather
+# than answered. Lowering the send is a real lever on that and not enough of one:
+# measured across the same address, 7F gives -3.6 dB, 40 gives -4.8 and 20 gives
+# -9.0, and the chorus grows fainter as fast as the yardstick improves.
 EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 
 # What a byte with two values is asked with. The plain note answers a parameter
