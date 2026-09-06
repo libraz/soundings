@@ -27,7 +27,8 @@ directory listing and mean opposite things to a reader.
 | Tones and effects | A tone map for every map-select the unit accepts, not only the first; the effect type map asked for every type. |
 | Repeatability | A floor measured for this unit on this chain, and re-measured after any change to the chain. |
 | Audible differences | Every parameter reachable by a message has an audible verdict, or falls under a stated exclusion. |
-| Effect response | Every parameter found audible has the measurements the identification work needs (below). A parameter found inaudible needs none, and the null verdict is the record. |
+| Whole blocks | One block of each kind swept in full and counted against its plan, with nothing left unasked and the addresses no pair can be built for named. A verdict that appeared in one block and not its peers was re-asked before it was published. |
+| Effect response | The route is established first: whether a signal presented to the unit's analogue input reaches its effects, measured with a control proving the raised state does something. Where it does not, sweeping a known signal through an effect is unavailable on that unit and the stage is what its own voices can support. Every parameter found audible then has the measurements the identification work needs (below); a parameter found inaudible needs none, and the null verdict is the record. |
 
 ## The audible verdict gates the expensive work
 

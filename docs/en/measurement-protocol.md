@@ -213,6 +213,70 @@ and this one can.
 `transfer`, `motion` and `decay` measure an analogue path, a time-varying effect
 and an effect's tail. `motion` and `decay` read takes and need no unit attached.
 
+### 12. Whole blocks
+
+```sh
+rye run soundings plan data/units/<unit-id>/write-probe-wholemap.json "40 11" \
+  --out plan-40-11.json
+rye run soundings block plan-40-11.json <plain records> --gesture <gesture records> \
+  --balance <balance record> --out data/units/<unit-id>/audible-part-1.json
+```
+
+Asks every address in one block whether changing it changes the sound, rather
+than the addresses a manual made interesting. Two passes: a plain note first, and
+then the addresses it could not hear asked again with messages moved after the
+setting, since a parameter that only decides whether a message is received has
+nothing to receive under a bare note.
+
+The pair each address is asked at comes from the write probe rather than from a
+document, and the block is counted against the plan rather than against the
+records that happen to be present -- a directory holding forty-five records of a
+forty-seven address block reads exactly like a complete answer.
+
+**Ask the block on the channel the block itself says it listens to.** That byte
+is in the block and the unit will tell you. A stimulus on any other channel asks
+a part the address does not address, and every address in the block answers
+inaudible.
+
+**A pair chosen from the accepted range alone cannot ask a channel byte.** The
+write probe reports what the address takes; it does not know which channel the
+stimulus is on. Where both values of the pair move the part away from the note
+being played, both settings are silent and the run refuses to measure -- which
+reads as a failed capture rather than as a badly chosen pair. Such an address is
+asked at the part's own channel against off.
+
+## Reading an audible verdict
+
+A verdict can be reached three ways: the shape changed, the level changed, or one
+setting's takes agreed with each other far worse than the other's. The first two
+measure the sound. The third measures a spread, and a spread can be produced by
+things that are not the parameter.
+
+**A verdict resting on agreement alone requires the steadier setting to be steady
+in absolute terms.** Against the plain note's own figure for the same address, not
+against the other setting. A gate leaves the setting it blocks repeating as a
+plain note does; two draws from a free-running phase can sit any distance apart
+and mean nothing.
+
+**A stimulus has to establish its own repeatability before its verdicts count.**
+Stage 10 measures the floor for one stimulus. A stimulus that sounds more than one
+voice has a relative phase the trigger cannot fix, and where the trigger scatter
+is wider than a period of the note being played, the phase is free from take to
+take and the level moves with it. Measured on one unit: a plain note agreed within
+56 to 62 dB while a two-note stimulus landed between 1 and 66 dB, with 84 per cent
+of its figures worse than 10 dB. Nothing it reported survived being asked twice.
+Doubling the takes did not help.
+
+**A verdict witnessed by exactly one stimulus is asked again before it is
+published.** Every such verdict in one three-block sweep failed to reproduce,
+including the ones whose first pass had looked soundest. Re-asking is cheap
+against the cost of publishing a result that is not there.
+
+**Three blocks holding the same parameters are three draws.** A verdict that
+appears in one block and not the others is either a difference between parts,
+which parameters do not usually have, or a measurement that did not reproduce.
+Deciding between those needs a re-ask, not an argument.
+
 ## What every record carries
 
 A stage that finds nothing is only worth reading if the run could have found
@@ -244,3 +308,24 @@ established.
 Hardware stages are serial. One audio interface and one unit mean a background
 run sounds during a foreground capture, and what survives is a set of numbers
 whose reproducibility has quietly collapsed.
+
+That rule was written before it was broken, so writing it down is not enough and
+the harness enforces it: a command that drives the unit takes an exclusive lock
+and a second one refuses to start. The refusal is the point. From inside the
+second run nothing looks wrong -- its notes play, its takes record, its records
+come out ordinary -- and the only trace is in the first run's takes, where the
+other run's notes land in the lead-in that the noise floor is measured in.
+
+**Stopping a run means stopping every process of it, and proving it.** The
+drivers nest, each spawning one stage at a time, so killing the top of the tree
+leaves a parent that starts the next stage as soon as the child being killed
+dies. Kill parents before children, repeat until a scan comes back empty, and
+treat a stop that cannot prove it stopped as a stop that did not happen. A
+survivor is not idle; it is still playing notes into the unit.
+
+**Two failures on a long unattended run are the machine refusing a resource for a
+moment rather than anything about the address**: a capture that comes back short
+of what was asked for, and the MIDI layer declining to create a client at all.
+Both cost the whole address, and the second ends the process outright, so both
+are retried by asking again as a fresh process. How many retries were needed is
+recorded, because a rate that climbs is a fact about the chain.
