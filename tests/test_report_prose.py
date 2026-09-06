@@ -42,8 +42,16 @@ PROSE = frozenset(
 
 # Files no command writes, so there is no source literal for them to match.
 # meta.json and measurements.json are kept by hand; power-on-state.json was read
-# out before there was a command that reads a whole map.
-BY_HAND = {"meta.json", "measurements.json", "power-on-state.json"}
+# out before there was a command that reads a whole map;
+# transfer-input-bypasses-efx.json is one question answered by composing three
+# runs and a control, which no single command produces and whose prose would
+# only pollute the source if it were put there to satisfy this gate.
+BY_HAND = {
+    "meta.json",
+    "measurements.json",
+    "power-on-state.json",
+    "transfer-input-bypasses-efx.json",
+}
 
 # Written by an earlier form of alias-scan, whose prose the current code no
 # longer contains. Left in the archive because it is a record of a run that
