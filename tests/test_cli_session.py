@@ -182,7 +182,9 @@ def test_a_result_is_written_indented_with_a_trailing_newline(tmp_path, capsys):
     raw = path.read_text()
     assert raw.endswith("\n")
     assert raw.splitlines()[1].startswith('  "')
-    assert json.loads(raw) == {"method": "how", "value": 1}
+    written = json.loads(raw)
+    assert {k: v for k, v in written.items() if k != "record"} == {"method": "how", "value": 1}
+    assert list(written)[0] == "record", "the envelope is read before what the run found"
     assert f"wrote {path}" in capsys.readouterr().out
 
 

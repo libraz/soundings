@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
-from .. import hardware, roland
+from .. import hardware, record, roland
 from . import inject, offline, ports, scan, sound, space, wire
 from .session import Refused
 
@@ -36,6 +37,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    # Declared once, here, because this is the only place that knows both what
+    # was asked for and what it was asked of. Every record written by the run
+    # takes its identity from it without its writer being told to.
+    record.invoked(
+        record.Invocation(
+            stage=args.command,
+            argv=list(argv if argv is not None else sys.argv[1:]),
+            midi_device_id=f"{args.device_id:02X}",
+        )
+    )
     try:
         if not getattr(args, "needs_unit", True):
             return args.func(args)

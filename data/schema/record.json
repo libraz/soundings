@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/libraz/soundings/data/schema/record.json",
+  "title": "The envelope a published record carries",
+  "description": "Every file under data/units is one run's record. The envelope says which run: the unit measured, the stage, the invocation and the moment. What the run found is the rest of the file, whose shape is the stage's own and is not described here. A record written before the envelope existed has no `record` key, which is what a migration reads to find it.",
+  "type": "object",
+  "required": ["record"],
+  "properties": {
+    "record": {
+      "type": "object",
+      "required": ["schema_version", "unit_id", "stage", "invocation", "measured_at"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The envelope's version, which is not the archive's and not a unit's. It moves when the envelope gains or loses a field."
+        },
+        "unit_id": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "The individual unit measured, as its meta.json declares it and its directory is named. Null only for a record written outside data/units, which is not published."
+        },
+        "stage": {
+          "type": ["string", "null"],
+          "description": "The measurement stage that produced the record, named as the command line names it. The protocol page is the list."
+        },
+        "invocation": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "The arguments the run was given, with the operator's home directory removed. This is where the parameters of a run are recorded: a scope encoded in the file name instead is a parameter no reader can ask for."
+        },
+        "measured_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was written, UTC. Named measured_at rather than captured because captured is already a prose description of a moment in power-on-state.json, and one name must not carry two meanings."
+        },
+        "midi_device_id": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9A-F]{2}$",
+          "description": "The Roland device ID the run addressed. Held here rather than in the payload, where it was spelled device_id and collided with meta.json's device_id object."
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "What the run established, each entry naming its own kind. Optional: a stage whose whole payload is its result has no separate list. A finding must not be spelled as a key name -- the next unit's answer to the same question is worded differently, and a consumer would have to match key names per unit instead of reading a value.",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "The question this answers, shared across units. The answer's fields sit beside it and are the stage's own."
+          }
+        }
+      }
+    }
+  }
+}
