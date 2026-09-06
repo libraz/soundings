@@ -116,6 +116,29 @@ def test_two_decays_in_sequence_are_reported_as_curved() -> None:
     assert curved, "a bent curve was fitted as if it were one decay"
 
 
+def test_a_band_refused_for_curving_says_so_in_the_record(tmp_path) -> None:
+    """The refusal has to reach the archive, not only the printed prose.
+
+    Measured on a saved pair, all eight bands of one effect type came back
+    `measured: false` with an empty reason and a 3.5 s time beside it, because
+    the sentence naming the curvature was composed where the run is described
+    and not where it is written down. A reader of the record sees a refusal with
+    no reason and a number, and takes the number."""
+    n = int(3.0 * SR)
+    t = np.arange(n) / SR
+    rng = np.random.default_rng(6)
+    signal = rng.standard_normal(n) * (10 ** (-3.0 * t / 0.15) + 0.02 * 10 ** (-3.0 * t / 2.5))
+    found = decay.measure(signal, SR, noise=hush())
+
+    curved = [b.to_json() for b in found.bands if not b.measured and not b.reason]
+
+    assert curved, "a bent curve was fitted as if it were one decay"
+    for band in curved:
+        assert band["reason"].startswith("curved by")
+        assert band["rt60_s"] is None, "a time beside `measured: false` is read as a time"
+        assert band["curvature_db"] is not None, "the curvature is the refusal's own evidence"
+
+
 def test_silence_yields_no_decay_at_all() -> None:
     found = decay.measure(hush(seconds=3.0), SR, noise=hush())
     assert not found.measured

@@ -90,22 +90,41 @@ class BandDecay:
     """
 
     reason: str = ""
-    """Why the band has no time, when it has none."""
+    """Why the band never reached a fit. Empty when one was reached, fit or not."""
 
     @property
     def measured(self) -> bool:
         return not self.reason and self.curvature_db <= STRAIGHT_ENOUGH_DB
 
+    @property
+    def why(self) -> str:
+        """Why the band has no time, whichever of the two ways it has none.
+
+        A band that never reached a fit carries its own sentence; one that was
+        fitted and came back bent carries none, and the refusal is the curvature
+        against the threshold. Read from one place because both are refusals and
+        a record that spells out only the first publishes the second as a
+        refusal with no reason beside a time it just said not to use.
+        """
+        if self.reason:
+            return self.reason
+        if self.curvature_db > STRAIGHT_ENOUGH_DB:
+            return f"curved by {self.curvature_db:.2f} dB, not one decay"
+        return ""
+
     def to_json(self) -> dict:
         return {
             "centre_hz": self.centre_hz,
-            "rt60_s": None if self.reason else round(self.seconds, 4),
+            # Dropped on either refusal, kept only where the band was measured.
+            # A time beside `measured: false` is read as a time.
+            "rt60_s": None if not self.measured else round(self.seconds, 4),
             "fitted_over_db": list(self.fitted_db),
+            # Kept on the curvature route, which is where it is the evidence.
             "curvature_db": None if self.reason else round(self.curvature_db, 3),
             "snr_db": round(self.snr_db, 1),
             "scatter_bound": None if np.isnan(self.scatter) else round(self.scatter, 3),
             "measured": self.measured,
-            "reason": self.reason,
+            "reason": self.why,
         }
 
 
@@ -141,8 +160,7 @@ class Tail:
                     f"(curvature {band.curvature_db:.2f} dB, {band.snr_db:.0f} dB over the floor)"
                 )
             else:
-                why = band.reason or f"curved by {band.curvature_db:.2f} dB, not one decay"
-                lines.append(f"  {band.centre_hz:>6.0f} Hz  --      {why}")
+                lines.append(f"  {band.centre_hz:>6.0f} Hz  --      {band.why}")
         if not self.measured:
             lines.append("  => no band held still long enough above its own noise to be fitted")
         elif not np.isnan(self.damping):
