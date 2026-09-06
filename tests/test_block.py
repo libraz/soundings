@@ -474,3 +474,60 @@ def test_an_address_the_plan_had_nothing_to_say_about_carries_nothing(tmp_path):
     (kept,) = block.with_the_plans_caveats([verdict], {"ask": [{"address": "40 01 30"}]})
 
     assert "how_it_had_to_be_asked" not in kept.to_json()
+
+
+def test_the_method_describes_a_gesture_pass_only_where_one_was_folded_in() -> None:
+    """The gesture sentence was part of one fixed string, so a block folded from a
+    single pass published a method describing a second pass that never ran.
+
+    Nothing downstream compares a method against the directories the fold was
+    handed, so the sentence is the record's own account of itself and there was
+    nothing to catch it -- which is the whole reason a record may make claims.
+    """
+    alone = block.method_for(gesture=False)
+    both = block.method_for(gesture=True)
+
+    gesture_sentence = "was asked again with messages moved after the setting"
+    assert gesture_sentence not in alone
+    assert gesture_sentence in both
+    # The rest of the account is the same either way, and each form is one whole
+    # literal rather than pieces joined at run time: the archive gate pins a
+    # published method to the source verbatim, so an assembled sentence is
+    # pinned to nothing.
+    for sentence in alone.split(". "):
+        assert sentence in both
+
+
+def test_a_pass_carries_the_state_its_verdicts_were_taken_in(tmp_path):
+    """A system effect is reached only through a part's send to it, so the send a
+    pass raised first is part of every verdict it produced.
+
+    Read back from the records rather than written beside them: a driver says
+    what it meant to raise and the records say what was raised, and the two have
+    already parted company here -- one pass raised part 1's send while its
+    stimulus sounded on part 10.
+    """
+    for name, prepared in (("a", "7F"), ("b", "7F"), ("c", "40")):
+        (tmp_path / f"{name}.json").write_text(
+            json.dumps(
+                {
+                    "prepared": [{"address": "40 11 21", "bytes": prepared}],
+                    "by_stimulus": [{"stimulus_name": "deep"}],
+                }
+            )
+        )
+
+    found = block.states(tmp_path)
+
+    assert found == [
+        {"prepared": ["40 11 21 = 7F"], "stimuli": ["deep"], "addresses": 2},
+        {"prepared": ["40 11 21 = 40"], "stimuli": ["deep"], "addresses": 1},
+    ]
+
+
+def test_a_pass_that_prepared_nothing_says_so_rather_than_being_left_out(tmp_path):
+    """The state the unit powers up in is a state, and a block asked in it is
+    making a claim bounded by it exactly as one asked with a send raised is."""
+    (tmp_path / "a.json").write_text(json.dumps({"by_stimulus": [{"stimulus_name": "struck"}]}))
+
+    assert block.states(tmp_path) == [{"prepared": [], "stimuli": ["struck"], "addresses": 1}]

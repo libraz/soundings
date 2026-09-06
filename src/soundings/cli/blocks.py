@@ -163,7 +163,17 @@ def cmd_block(args: argparse.Namespace) -> int:
         args.out,
         {
             "block": planned.get("block"),
-            "method": block.METHOD,
+            "method": block.method_for(bool(args.gesture)),
+            "asked_in": {
+                name: found_states
+                for name, where in (
+                    ("plain", args.plain),
+                    ("gesture", args.gesture),
+                    ("polyphony", args.polyphony),
+                )
+                if where and (found_states := block.states(where))
+            },
+            "why_asked_in": block.WHY_ASKED_IN,
             **(
                 {
                     "records_the_plan_does_not_name": sorted(set(outside)),
@@ -172,7 +182,7 @@ def cmd_block(args: argparse.Namespace) -> int:
                 if outside
                 else {}
             ),
-            "two_passes": block.WHY_TWO_PASSES,
+            **({"two_passes": block.WHY_TWO_PASSES} if args.gesture else {}),
             **({"polyphony_pass": block.WHY_POLYPHONY_PASS} if args.polyphony else {}),
             **({"balance_counts": block.WHY_BALANCE_COUNTS} if args.balance else {}),
             "chose_the_values": planned.get("method"),

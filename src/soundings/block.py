@@ -53,6 +53,32 @@ METHOD = (
     "present, so an address that was never asked cannot read as one that answered."
 )
 
+# The same account with its middle sentence gone, written out rather than
+# assembled from shared pieces. The archive gate holds every published method
+# against the source as one verbatim literal, so a sentence joined at run time
+# is pinned to nothing and orphans the prose of every record already carrying
+# it. Two sentences are duplicated to keep both forms pinned; changing one and
+# not the other is what the gate then catches.
+METHOD_ONE_PASS = (
+    "Each address in the block was asked on its own, at the pair the write probe measured it "
+    "to accept, and the records are read back together here. The block is counted against the "
+    "plan rather than against the files present, so an address that was never asked cannot read "
+    "as one that answered."
+)
+
+
+def method_for(gesture: bool) -> str:
+    """The method sentence, saying only what this fold was actually given.
+
+    The gesture half used to be part of one fixed string, so a block folded from
+    a single pass published a method describing a second pass that never ran.
+    Nothing downstream compares a method against the directories it was handed,
+    so the sentence is the run's own account of itself and there was nothing to
+    catch it -- which is the whole reason a record is allowed to make claims.
+    """
+    return METHOD if gesture else METHOD_ONE_PASS
+
+
 WHY_TWO_PASSES = (
     "A gesture is a rescue for a null rather than a better question. It asks the address with "
     "half a dozen messages moved, which is a state the verdict then holds only in, so it is "
@@ -221,6 +247,41 @@ def survey(root: str | Path) -> dict[str, AddressVerdict]:
         if found is not None and found.address:
             out[found.address] = found
     return out
+
+
+WHY_ASKED_IN = (
+    "A system effect is reached only through a part's send to it, so a block of effect "
+    "parameters asked as the unit powers up answers about the send rather than about the "
+    "addresses. What each pass raised first is therefore part of every verdict it produced, and "
+    "a null taken without it is bounded by a state the record would otherwise not carry. Read "
+    "back from the contrast records rather than written beside them, so it says what the runs "
+    "did and not what the driver meant to do -- listed per distinct state, since a pass whose "
+    "records disagree about it is two passes wearing one name."
+)
+
+
+def states(root: str | Path) -> list[dict]:
+    """The distinct states a directory's records were asked in.
+
+    One entry per distinct preparation, carrying the stimuli asked under it and
+    how many addresses it covered. A pass that prepared nothing is a state too --
+    the one the unit powers up in -- and says so rather than being left out.
+    """
+    seen: dict[tuple, dict] = {}
+    for path in sorted(Path(root).glob("*.json")):
+        record = json.loads(path.read_text())
+        if not record.get("by_stimulus"):
+            continue
+        prepared = tuple(
+            f"{e.get('address')} = {e.get('bytes')}" for e in record.get("prepared") or []
+        )
+        stimuli = tuple(str(e.get("stimulus_name", "")) for e in record["by_stimulus"])
+        entry = seen.setdefault(
+            (prepared, stimuli),
+            {"prepared": list(prepared), "stimuli": list(stimuli), "addresses": 0},
+        )
+        entry["addresses"] += 1
+    return list(seen.values())
 
 
 #: Why a record under the directory can be one the plan does not name.
@@ -434,6 +495,8 @@ def summarise(found: list, coverage: dict) -> str:
 
 __all__ = [
     "METHOD",
+    "METHOD_ONE_PASS",
+    "WHY_ASKED_IN",
     "WHY_BALANCE_COUNTS",
     "WHY_LEFT_OUT",
     "STEADY_WITHIN_DB",
@@ -442,6 +505,8 @@ __all__ = [
     "WHY_TWO_PASSES",
     "AddressVerdict",
     "against_plan",
+    "method_for",
+    "states",
     "with_balance",
     "join",
     "scatter_not_a_gate",
