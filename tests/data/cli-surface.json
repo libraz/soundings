@@ -64,14 +64,14 @@
     "transfer",
     "motion",
     "decay",
-    "efx-motion",
-    "efx-sort",
     "verdict",
-    "plan",
-    "block",
     "balance",
     "vibrato",
+    "plan",
+    "block",
     "efx-params",
+    "efx-motion",
+    "efx-sort",
     "complete"
   ],
   "commands": {
@@ -2718,6 +2718,487 @@
         }
       ]
     },
+    "verdict": {
+      "help": "ask an audible verdict of takes recorded in an earlier session, with no machine attached",
+      "handler": "cmd_verdict",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, with its takes-manifest.json",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--first"
+          ],
+          "dest": "first",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the setting compared from; defaults to the first the manifest records",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--second"
+          ],
+          "dest": "second",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the setting compared to; defaults to the last. A run that swept more than two settings has to be told which pair, since any choice defaulted to here would be a measurement decision wearing a default's clothes",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "6.0",
+          "required": false,
+          "help": "dB the change must clear the unit's own repeatability by",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "balance": {
+      "help": "say what a parameter did to the level difference between the two channels, which a comparison made in one of them cannot see",
+      "handler": "cmd_balance",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, or one holding several of them",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "6.0",
+          "required": false,
+          "help": "dB a movement must clear the steadier setting's own scatter by",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "vibrato": {
+      "help": "say whether a take's pitch was modulated, and at what rate and depth, which no comparison of two takes can measure",
+      "handler": "cmd_vibrato",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory a --save run left, with its takes-manifest.json",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take. The noise floor is measured in it, and a frame that does not stand over that floor is dropped: a frequency estimated from silence is the noise's own strongest period reported as a note",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--min-rate"
+          ],
+          "dest": "min_rate",
+          "nargs": null,
+          "default": "0.5",
+          "required": false,
+          "help": "slowest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--max-rate"
+          ],
+          "dest": "max_rate",
+          "nargs": null,
+          "default": "15.0",
+          "required": false,
+          "help": "fastest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "plan": {
+      "help": "say what pair of values each address in a block should be asked at, from what the write probe measured it to accept",
+      "handler": "cmd_plan",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "write_probe",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a write-probe record covering the block",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "block",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the leading bytes of the addresses to plan, e.g. '40 11' for part 1",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "block": {
+      "help": "read a directory of per-address contrast records into one verdict per address, counted against the plan the block was asked from",
+      "handler": "cmd_block",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "plan",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the plan the block was asked from, which says how many",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "plain",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "records from the pass that asked the plain note",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--gesture"
+          ],
+          "dest": "gesture",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "records from the pass that moved messages after the setting. A gesture is a rescue for a null, so it answers only where the plain note could not",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--polyphony"
+          ],
+          "dest": "polyphony",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "records from the pass that played two notes. A parameter about polyphony sounds identical under a single note however it is set, so an address left null by the one-note passes has not been asked rather than answered",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--balance"
+          ],
+          "dest": "balance",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "a balance record, once per pass. A parameter that moves signal between the channels is invisible to a comparison made in one of them, so what it found is folded in as another way of having reached the signal path. Each pass has its own takes and its own balance, so give the plain pass's and the gesture pass's both",
+          "metavar": "RECORD",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-params": {
+      "help": "read a directory of per-address records into one verdict per parameter of one insertion effect type, with no machine attached",
+      "handler": "cmd_efx_params",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "records",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of contrast records, one per parameter address",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the type they were taken under",
+          "metavar": "MSB LSB",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--types-from"
+          ],
+          "dest": "types_from",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "an efx-type-map record, for the settings it loads",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--control"
+          ],
+          "dest": "control",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the routed-against-bypassed record from the same run",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prepare"
+          ],
+          "dest": "prepare",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "the state the run was taken in, recorded with it since a verdict holds in it",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--supersede"
+          ],
+          "dest": "supersede",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address whose first pair was withdrawn, and the record that replaced it. A pair that left one setting silent compares sound with silence, and the reason travels with the row rather than with whoever remembers the directory",
+          "metavar": "ADDR=RECORD",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
     "efx-motion": {
       "help": "sort a unit's insertion effects into the ones that move and the ones that stand still, from saved takes, with no machine attached",
       "handler": "cmd_efx_motion",
@@ -2907,487 +3388,6 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "verdict": {
-      "help": "ask an audible verdict of takes recorded in an earlier session, with no machine attached",
-      "handler": "cmd_verdict",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "takes",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "a directory a --save run left, with its takes-manifest.json",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--first"
-          ],
-          "dest": "first",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "the setting compared from; defaults to the first the manifest records",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--second"
-          ],
-          "dest": "second",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "the setting compared to; defaults to the last. A run that swept more than two settings has to be told which pair, since any choice defaulted to here would be a measurement decision wearing a default's clothes",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--margin"
-          ],
-          "dest": "margin",
-          "nargs": null,
-          "default": "6.0",
-          "required": false,
-          "help": "dB the change must clear the unit's own repeatability by",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "plan": {
-      "help": "say what pair of values each address in a block should be asked at, from what the write probe measured it to accept",
-      "handler": "cmd_plan",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "write_probe",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "a write-probe record covering the block",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "block",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "the leading bytes of the addresses to plan, e.g. '40 11' for part 1",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "block": {
-      "help": "read a directory of per-address contrast records into one verdict per address, counted against the plan the block was asked from",
-      "handler": "cmd_block",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "plan",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "the plan the block was asked from, which says how many",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "plain",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "records from the pass that asked the plain note",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--gesture"
-          ],
-          "dest": "gesture",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "records from the pass that moved messages after the setting. A gesture is a rescue for a null, so it answers only where the plain note could not",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--polyphony"
-          ],
-          "dest": "polyphony",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "records from the pass that played two notes. A parameter about polyphony sounds identical under a single note however it is set, so an address left null by the one-note passes has not been asked rather than answered",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--balance"
-          ],
-          "dest": "balance",
-          "nargs": null,
-          "default": "[]",
-          "required": false,
-          "help": "a balance record, once per pass. A parameter that moves signal between the channels is invisible to a comparison made in one of them, so what it found is folded in as another way of having reached the signal path. Each pass has its own takes and its own balance, so give the plain pass's and the gesture pass's both",
-          "metavar": "RECORD",
-          "choices": null,
-          "class": "_AppendAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "balance": {
-      "help": "say what a parameter did to the level difference between the two channels, which a comparison made in one of them cannot see",
-      "handler": "cmd_balance",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "takes",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "a directory a --save run left, or one holding several of them",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--margin"
-          ],
-          "dest": "margin",
-          "nargs": null,
-          "default": "6.0",
-          "required": false,
-          "help": "dB a movement must clear the steadier setting's own scatter by",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "vibrato": {
-      "help": "say whether a take's pitch was modulated, and at what rate and depth, which no comparison of two takes can measure",
-      "handler": "cmd_vibrato",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "takes",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "a directory a --save run left, with its takes-manifest.json",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--lead"
-          ],
-          "dest": "lead",
-          "nargs": null,
-          "default": "0.6",
-          "required": false,
-          "help": "seconds of silence at the head of a take. The noise floor is measured in it, and a frame that does not stand over that floor is dropped: a frequency estimated from silence is the noise's own strongest period reported as a note",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--min-rate"
-          ],
-          "dest": "min_rate",
-          "nargs": null,
-          "default": "0.5",
-          "required": false,
-          "help": "slowest modulation searched, Hz",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--max-rate"
-          ],
-          "dest": "max_rate",
-          "nargs": null,
-          "default": "15.0",
-          "required": false,
-          "help": "fastest modulation searched, Hz",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
-    "efx-params": {
-      "help": "read a directory of per-address records into one verdict per parameter of one insertion effect type, with no machine attached",
-      "handler": "cmd_efx_params",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "records",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "a directory of contrast records, one per parameter address",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--type"
-          ],
-          "dest": "type",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "the type they were taken under",
-          "metavar": "MSB LSB",
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--types-from"
-          ],
-          "dest": "types_from",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "an efx-type-map record, for the settings it loads",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--control"
-          ],
-          "dest": "control",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "the routed-against-bypassed record from the same run",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--prepare"
-          ],
-          "dest": "prepare",
-          "nargs": null,
-          "default": "[]",
-          "required": false,
-          "help": "the state the run was taken in, recorded with it since a verdict holds in it",
-          "metavar": "ADDR=BYTES",
-          "choices": null,
-          "class": "_AppendAction"
-        },
-        {
-          "option_strings": [
-            "--supersede"
-          ],
-          "dest": "supersede",
-          "nargs": null,
-          "default": "[]",
-          "required": false,
-          "help": "an address whose first pair was withdrawn, and the record that replaced it. A pair that left one setting silent compares sound with silence, and the reason travels with the row rather than with whoever remembers the directory",
-          "metavar": "ADDR=RECORD",
-          "choices": null,
-          "class": "_AppendAction"
         },
         {
           "option_strings": [

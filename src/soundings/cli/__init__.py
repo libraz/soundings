@@ -6,18 +6,50 @@ import argparse
 import sys
 
 from .. import hardware, record, roland
-from . import catalogue, contents, extent, inject, offline, ports, scan, sound, state, wire
+from . import (
+    blocks,
+    catalogue,
+    contents,
+    effects,
+    extent,
+    inject,
+    pairs,
+    ports,
+    runs,
+    scan,
+    sound,
+    standing,
+    state,
+    wire,
+)
 from .session import Refused
 
-COMMANDS = (wire, extent, contents, state, catalogue, scan, ports, sound, inject, offline)
+COMMANDS = (
+    wire,
+    extent,
+    contents,
+    state,
+    catalogue,
+    scan,
+    ports,
+    sound,
+    inject,
+    pairs,
+    runs,
+    blocks,
+    effects,
+    standing,
+)
 """The modules that hold the subcommands, in the order --help lists them.
 
 Each registers its own parsers and carries the handlers for them, so a flag and
 the code that reads it stay in one file. Grouped by the question a command asks
-rather than by what it asks with: the cable, which addresses are there, what
-they hold, the state a reset puts back, what the unit's catalogues list, a scan
-that writes, a pair of runs with the cable moved between them, an audio
-interface, an audio interface alone, and nothing at all.
+rather than by what it asks with: the cable, which addresses are there, what they
+hold, the state a reset puts back, what the unit's catalogues list, a scan that
+writes, a pair of runs with the cable moved between them, an audio interface, an
+audio interface alone, what an effect did between two takes, what one saved run
+shows, what a block's records come to, how the effect types sort, and where a
+unit stands.
 """
 
 
@@ -27,8 +59,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device-id", type=lambda s: int(s, 0), default=roland.DEFAULT_DEVICE_ID)
     # Every command drives the unit unless it says otherwise, which is the safe
     # way round: a command added without a thought about this waits its turn
-    # rather than joining a run already in progress. `offline` clears the flag on
-    # its own parsers, and it is the group that reads takes with nothing attached.
+    # rather than joining a run already in progress. The modules that read what
+    # an earlier run left behind clear the flag on their own parsers, so asking a
+    # saved block's records a question does not queue behind the sweep capturing
+    # the next one.
     parser.set_defaults(needs_unit=True)
     sub = parser.add_subparsers(dest="command", required=True)
     for module in COMMANDS:
