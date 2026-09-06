@@ -21,6 +21,17 @@ from soundings.cli import build_parser
 SURFACE = Path(__file__).parent / "data" / "cli-surface.json"
 
 
+def _round_trips(value):
+    """A tuple as the list JSON reads it back as.
+
+    argparse gives a two-argument flag a tuple metavar. Recorded as a tuple it
+    comes back from the file as a list and never compares equal again, so the
+    gate fails on every run until the flag is taken out -- which is the gate
+    refusing the surface rather than the surface being wrong.
+    """
+    return list(value) if isinstance(value, tuple) else value
+
+
 def _actions(parser: argparse.ArgumentParser) -> list[dict]:
     return [
         {
@@ -30,7 +41,7 @@ def _actions(parser: argparse.ArgumentParser) -> list[dict]:
             "default": repr(action.default),
             "required": action.required,
             "help": action.help,
-            "metavar": action.metavar,
+            "metavar": _round_trips(action.metavar),
             "choices": None if action.choices is None else list(action.choices),
             "class": type(action).__name__,
         }
