@@ -14,6 +14,7 @@ from pathlib import Path
 
 from .. import archive
 from . import options, report
+from .session import prepared as prepare_state
 from .session import verified_link
 
 
@@ -78,6 +79,19 @@ def register(sub) -> None:
         help="probe every region an address map found, instead of naming them. The map is "
         "what the unit answered when it was asked, so this covers what exists rather than "
         "what a manual lists",
+    )
+    p.add_argument(
+        "--prepare",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="state to put the unit in first, written once and read back to prove it took: "
+        "'40 03 00=04 02' loads an insertion effect. What an address accepts can depend on "
+        "it -- a block of effect parameters probed with no effect loaded reports the ranges "
+        "of whatever was there instead, and a plan built from that asks the wrong pair. "
+        "Recorded with the result, since the ranges only hold in the state they were "
+        "measured in",
     )
     p.add_argument(
         "--prefix",
@@ -479,6 +493,22 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
                 "single_byte_limit": SINGLE_BYTE_LIMIT,
                 "complete": stopped is None and not regions,
                 "stopped": stopped,
+                **(
+                    {
+                        "prepared": [
+                            {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)}
+                            for a, vs in args.prepare
+                        ],
+                        "prepared_caveat": (
+                            "Every range here was measured with the unit in this state and "
+                            "holds in it. An address whose accepted values depend on what "
+                            "is loaded reports a different range under a different load, so "
+                            "a plan built from this record asks about this state and no other."
+                        ),
+                    }
+                    if args.prepare
+                    else {}
+                ),
                 "regions": kept + [r.to_json() for r in done],
             },
         )
@@ -490,6 +520,13 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
         announce="Verifying the path before writing (a write is never acknowledged)",
     ) as link:
         writer = Writer(link, device_id=args.device_id, settle=args.settle)
+        if args.prepare and not prepare_state(
+            link, args.prepare, device_id=args.device_id, settle=args.settle
+        ):
+            # Refused rather than noted: every range this run would report is a
+            # range of the state it was actually in, and a probe of the wrong
+            # state is indistinguishable afterwards from a probe of the right one.
+            return 1
         remaining = list(regions)
         try:
             for start, length in regions:
