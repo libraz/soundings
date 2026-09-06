@@ -1013,6 +1013,28 @@
       ],
       "reproduced": "The two output pairs were measured with the same comparison and answered as each other's mirror, each run carrying both settings.",
       "found_by": "Asking whether a second output pair could carry a dry reference of the same performance."
+    },
+    {
+      "id": "four-regions-under-the-parameter-blocks-run-past-the-size-the-map-gives-them",
+      "summary": "Reading one byte past every region the map holds, and on forward where one answered: of the 85 regions under the block the parameters live in, four run past their mapped size, 29 addresses in all. Two of them are in the insertion effect's own block. Across the whole map 660 of 854 regions run past their end, but 480 of those are the twelve blocks already established to be a window, which answer at any address.",
+      "method": "One single-byte read at the address one past each region's mapped end, and on forward until an address answered nothing or sixteen had answered. An address known to answer was asked every twenty-five regions, since every result here is a negative and a unit that stopped talking answers nothing to all of them. Nothing was written.",
+      "results": {
+        "regions asked": 854,
+        "under the parameter blocks": "85 regions, 4 running past their mapped end: 40 00 00 mapped 4 and answering 3 further, 40 03 00 mapped 30 and answering 2 further, 40 10 00 and 40 18 00 each mapped 26 and answering 12 further",
+        "the drum map and setup blocks": "44 of 44 and 48 of 50 run past their end, 1472 addresses",
+        "the window blocks": "40 of 42 regions in each of the twelve, which is the window answering rather than a region extending",
+        "whole map": "660 of 854 regions, 10483 addresses"
+      },
+      "why_it_matters": "The write probe, the hold probe and every block plan are built from these sizes, so an address above a region's mapped end has had nothing asked of it -- not because it was judged uninteresting but because no stage knew it was there. Four regions is small enough to name, and two of the four are in the block the insertion effect's parameters live in.",
+      "not_established": [
+        "Anything about an address separated from its region by a gap. This reads forward from a region's end and stops at the first address that answers nothing, so a run of live addresses beyond a silent gap is invisible to it. At least one such run exists: the byte that moves a part to the second output pair sits 30 bytes past a region this reports as ending where the map says.",
+        "That an address answering nothing here does not exist. A single-byte read does not reach every byte of a readable block on this unit, which is recorded separately, so a null is bounded by what such a read reaches.",
+        "How far the regions capped at sixteen actually run. Sixteen is where the reading stopped, not where the addresses did.",
+        "What any of the addresses found this way holds or does. They answered a read; nothing was written to them and nothing was heard."
+      ],
+      "positive_control": "An address known to answer, asked every twenty-five regions throughout, and answering every time. A run that lost the unit would otherwise report the rest of the map as regions ending exactly where the map says.",
+      "reproduced": "One pass over every region the map holds, with the canary carried through it.",
+      "found_by": "Two blocks in a row turning out to have live addresses above the size the map gave them."
     }
   ]
 }
