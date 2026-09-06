@@ -9,6 +9,8 @@ of them at once. None of it opens a MIDI port.
 from __future__ import annotations
 
 import argparse
+import json
+from pathlib import Path
 
 from . import options, report
 
@@ -237,6 +239,41 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_vibrato)
 
     p = sub.add_parser(
+        "efx-params",
+        help="read a directory of per-address records into one verdict per parameter of "
+        "one insertion effect type, with no machine attached",
+    )
+    p.add_argument("records", help="a directory of contrast records, one per parameter address")
+    p.add_argument(
+        "--type", required=True, metavar="MSB LSB", help="the type they were taken under"
+    )
+    p.add_argument(
+        "--types-from", required=True, help="an efx-type-map record, for the settings it loads"
+    )
+    p.add_argument(
+        "--control", required=True, help="the routed-against-bypassed record from the same run"
+    )
+    p.add_argument(
+        "--prepare",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="the state the run was taken in, recorded with it since a verdict holds in it",
+    )
+    p.add_argument(
+        "--supersede",
+        action="append",
+        default=[],
+        metavar="ADDR=RECORD",
+        help="an address whose first pair was withdrawn, and the record that replaced it. "
+        "A pair that left one setting silent compares sound with silence, and the reason "
+        "travels with the row rather than with whoever remembers the directory",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_params)
+
+    p = sub.add_parser(
         "complete",
         help="count a unit's directory against the bar for a finished one, and say "
         "what is left, with no machine attached",
@@ -244,6 +281,29 @@ def register(sub) -> None:
     p.add_argument("unit", help="a directory under data/units")
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_complete)
+
+
+def cmd_efx_params(args) -> int:
+    """One verdict per parameter of one type, from records already captured."""
+    from .. import efxparams
+
+    types = json.loads(Path(args.types_from).read_text())
+    loads = [e["parameters"] for e in types["effects"] if e["type"] == args.type]
+    if not loads:
+        print(f"{args.types_from} has no type {args.type}")
+        return 1
+    found = efxparams.read_directory(
+        args.records,
+        args.type,
+        loads[0],
+        args.control,
+        [{"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare],
+        supersede=dict(s.split("=", 1) for s in args.supersede),
+    )
+    for name, count in found["results"].items():
+        print(f"  {name}: {count}")
+    report.write_json(args.out, found)
+    return 0
 
 
 def cmd_complete(args) -> int:
