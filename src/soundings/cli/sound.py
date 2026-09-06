@@ -12,14 +12,24 @@ import argparse
 import time
 
 from .. import clock, gestures, parts, perform, roland
+from ..stimuli import BROAD as _STIMULUS_BROAD
 from ..stimuli import CATALOGUE as _STIMULUS_CATALOGUE
 from ..stimuli import DEFAULT as _STIMULUS_DEFAULT
+from ..stimuli import SWITCH as _STIMULUS_SWITCH
 from . import options, report
 from .session import holds as setting_holds
 from .session import prepared as prepare_state
 from .session import verified_link
 
 _STIMULUS_NAMES = tuple(_STIMULUS_CATALOGUE)
+
+_HOW_MANY = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight")
+"""Spelled out, because the help around them is prose and `5` reads as a flag.
+
+Counted from the sets rather than written beside them: the switch set was
+described as four while holding five, which is the whole failure mode of a
+number kept next to the thing it counts.
+"""
 
 WHY_READ_BACK = (
     "The setting under test was read back after each write, as the preparation already was. An "
@@ -140,10 +150,11 @@ def register(sub) -> None:
         metavar="NAME",
         help="notes to ask the parameter under: "
         + ", ".join(_STIMULUS_NAMES)
-        + ", plus 'broad' for the five that answer most parameters, 'switch' for the four "
-        "a byte with two values needs, and 'all'. Audible under any is audible; a null "
-        "carries the list of what was tried, because an inaudible result is as much a fact "
-        "about the note as about the parameter",
+        + f", plus 'broad' for the {_HOW_MANY[len(_STIMULUS_BROAD)]} that answer most "
+        f"parameters, 'switch' for the {_HOW_MANY[len(_STIMULUS_SWITCH)]} a byte with two "
+        "values needs, and 'all'. Audible under any is audible; a null carries the list of "
+        "what was tried, because an inaudible result is as much a fact about the note as "
+        "about the parameter",
     )
     p.add_argument(
         "--prepare",

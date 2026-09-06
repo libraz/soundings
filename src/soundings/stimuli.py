@@ -394,6 +394,32 @@ CATALOGUE: dict[str, Stimulus] = {
         "yardstick to where no change of any size clears it, so anything not gating the "
         "modulation itself answers inconclusive here",
     ),
+    # The pedals the three gestures above never send, with the second note one of
+    # them needs. Two of part 1's five remaining nulls came back not because the
+    # switch was silent but because nothing in the run moved what it gates: no
+    # gesture carries a portamento or a soft pedal at all.
+    #
+    # A glide is why this plays two notes and why they are an octave apart. The
+    # second is what the first slides to, and the further it travels the longer it
+    # spends somewhere neither note is, which is the only part of it a comparison
+    # against an unglided pair can see.
+    "struck_pedalled": Stimulus(
+        name="struck_pedalled",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.5,
+        lead=0.6,
+        moves=gestures.PEDALLED,
+        also=((72, 100, 0.5, 1.0),),
+        sees="whether the part still acted on a portamento or a soft pedal after the "
+        "setting was written -- a glide between the two notes, or a change in what the "
+        "second one is struck like",
+        blind_to="which of the two it was, since they move together, and everything a "
+        "second note costs: two attacks scatter where one does, so the yardstick is "
+        "worse than the plain note's. " + gestures.CANNOT_ASK,
+    ),
     # The two below are what a parameter about *polyphony* has to be asked with,
     # and nothing above can ask one at all. Whether a part is monophonic, and
     # what it does when the same voice is asked for a second time, sound
@@ -466,7 +492,7 @@ EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 # What a byte with two values is asked with. The plain note answers a parameter
 # that shapes the voice; the other two answer one that gates a message, which the
 # plain note cannot ask at all.
-SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
+SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato", "struck_pedalled")
 
 # The three that move, without the plain note. A gesture is a rescue for a null:
 # it asks a much narrower question, in a state the verdict then only holds in, so
@@ -475,7 +501,7 @@ SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
 # only what the second pass covers, which is the addresses that came back
 # inaudible -- measured on this unit, 2 minutes 39 seconds an address against 40
 # seconds.
-GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato")
+GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato", "struck_pedalled")
 
 # What a parameter about polyphony has to be asked with, and the only two notes
 # in the catalogue that play more than one note. Nothing else can ask one at all,

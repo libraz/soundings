@@ -176,9 +176,34 @@ RETUNED: tuple[Move, ...] = (
     Move("bend", (8191,), "pitch bend to the top of its range"),
 )
 
+# The pedals nothing else sends, with the second note the first of them needs.
+#
+# Portamento and the soft pedal were named as unaskable together with polyphonic
+# pressure and a pedal released mid-note, and they do not belong with those two.
+# A glide needs a second note to reach rather than a message sent while the first
+# sounds, and the catalogue already plays a second note; the soft pedal shapes
+# whatever is struck after it, so sending it before the note is when it works.
+# Only the other two need a message timed into a sounding note, which nothing
+# here can do.
+#
+# Portamento time goes first and is not decoration: with the time at zero the
+# glide is instantaneous, which is what no glide sounds like, so the switch would
+# read as inaudible for want of a second controller rather than for want of
+# reaching the voice.
+#
+# None of the three carries `stores_at`. That is from this archive's own alias
+# scan rather than an assumption: it attributed twelve controllers on this
+# channel and none of these is among them, so no part-block byte follows them and
+# no run has to drop one to ask its address.
+PEDALLED: tuple[Move, ...] = (
+    cc(5, 64, "portamento time, without which the glide is instant and sounds like no glide"),
+    cc(65, 127, "portamento on, which the note below glides under"),
+    cc(67, 127, "the soft pedal, which shapes what is struck after it"),
+)
+
 CANNOT_ASK = (
-    "a pedal released after the note, polyphonic pressure, and portamento -- each needs a note "
-    "already sounding or a second note to move to, and everything here is sent before the note"
+    "polyphonic pressure and a pedal released after the note -- each needs a message timed into "
+    "a note already sounding, and everything here is sent before the note"
 )
 
 WHY_DROPPED = (

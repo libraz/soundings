@@ -74,7 +74,7 @@ def test_neither_gesture_stacks_two_attenuators() -> None:
         assert len(quiet) <= 1
 
 
-def test_the_switch_stimuli_are_the_plain_note_and_the_three_that_move() -> None:
+def test_the_switch_stimuli_are_the_plain_note_and_the_ones_that_move() -> None:
     """The plain note answers a parameter that shapes the voice and cannot ask
     one that gates a message; the gestures ask the second and are a worse
     question for the first, since they move a great deal at once."""
@@ -85,6 +85,7 @@ def test_the_switch_stimuli_are_the_plain_note_and_the_three_that_move() -> None
         "struck_moved",
         "struck_retuned",
         "struck_vibrato",
+        "struck_pedalled",
     ]
     assert asked[0].moves == ()
     assert all(s.moves for s in asked[1:])
@@ -192,12 +193,29 @@ def test_a_stimulus_plays_its_own_note_first_and_then_the_rest() -> None:
     assert played[1] == (67, 100, 0.0, 1.0)
 
 
-def test_the_polyphony_stimuli_are_the_only_two_that_play_more_than_one_note() -> None:
-    """One note sounds the same whether the part is monophonic or not, so a null
-    from any other stimulus is a fact about the stimulus."""
-    several = [s.name for s in stimuli.CATALOGUE.values() if s.also]
+# A stimulus plays a second note to ask about polyphony, or because the thing it
+# is asking about happens between two notes. The second reason is rarer and has
+# to be argued, so it is listed here rather than left to whoever reads the
+# catalogue to infer from the name.
+SEVERAL_NOTES_FOR_ANOTHER_REASON = {
+    "struck_pedalled": "a glide has to have somewhere to go, so the portamento switch "
+    "cannot be asked with one note however the part is set",
+}
 
-    assert several == list(stimuli.POLYPHONY)
+
+def test_a_stimulus_plays_more_than_one_note_only_to_ask_about_polyphony_or_by_argument() -> None:
+    """One note sounds the same whether the part is monophonic or not, so a null
+    from a one-note stimulus is a fact about the stimulus.
+
+    The polyphony stimuli must keep their second note -- without it they ask
+    nothing at all -- and any other stimulus that grows one has to say why, since
+    a second note costs the yardstick two attacks to scatter instead of one and
+    is not something to acquire by accident.
+    """
+    several = {s.name for s in stimuli.CATALOGUE.values() if s.also}
+
+    assert set(stimuli.POLYPHONY) <= several
+    assert several - set(stimuli.POLYPHONY) == set(SEVERAL_NOTES_FOR_ANOTHER_REASON)
 
 
 def test_the_same_voice_asked_for_twice_is_a_different_question_from_two_voices() -> None:
