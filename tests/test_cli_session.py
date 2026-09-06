@@ -192,3 +192,39 @@ def test_the_directory_is_made_for_a_unit_that_has_none_yet(tmp_path):
     path = tmp_path / "units" / "new-unit-01" / "sweep.json"
     report.write_json(str(path), {"regions": []})
     assert Path(path).exists()
+
+
+def test_restating_the_address_under_test_is_refused(capsys):
+    """Both settings would be written the same byte before their takes, so the
+    two sets would be takes of one setting and the null a fact about the
+    restatement. Refused before the link is opened, since nothing about it needs
+    a machine to be wrong."""
+    from soundings.cli import build_parser, sound
+
+    args = build_parser().parse_args(
+        ["contrast", "--address", "40 11 0C", "--values", "1,0", "--restate", "40 11 0C=64"]
+    )
+
+    assert sound.cmd_contrast(args) == 1
+    assert "40 11 0C" in capsys.readouterr().out
+
+
+def test_restating_a_different_address_is_allowed_through_the_guard(monkeypatch):
+    """The guard has to have an outside: the address a gated message stores at is
+    exactly what a receive switch has to be asked with, and it is never the switch."""
+    from soundings.cli import build_parser, sound
+
+    args = build_parser().parse_args(
+        ["contrast", "--address", "40 11 0C", "--values", "1,0", "--restate", "40 11 19=64"]
+    )
+    reached = []
+
+    def refuse(*_a, **_k):
+        reached.append(True)
+        raise session.Refused("\nstopped before the machine")
+
+    monkeypatch.setattr(sound, "verified_link", refuse)
+
+    with pytest.raises(session.Refused):
+        sound.cmd_contrast(args)
+    assert reached, "the guard stopped a restatement that was not the address under test"

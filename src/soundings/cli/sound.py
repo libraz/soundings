@@ -30,6 +30,22 @@ WHY_READ_BACK = (
     "region and refusing them would drop them from the sweep for being unreadable."
 )
 
+WHY_RESTATED = (
+    "Put back before each of the two settings rather than once before both, because a parameter "
+    "that decides whether a message is received is invisible otherwise. The message moves "
+    "something; with the switch on it moves, and with the switch off that something is still "
+    "where the previous setting's message left it, so both settings sound alike whatever the "
+    "switch does. Written by SysEx, which no receive switch gates. The verdict holds in this "
+    "state as much as in the one --prepare establishes, and where a switch reads audible it is "
+    "audible as the difference between the message landing and this value standing."
+)
+
+RESTATE_IS_THE_TARGET = (
+    "{address} is both the address under test and one this run was told to put back before each "
+    "setting. Restating it would write the same byte before both, so the two sets of takes would "
+    "be takes of one setting and the null would be a fact about the restatement."
+)
+
 WHY_AS_HELD = (
     "What the two settings are is what the unit holds after each write, not what the run asked "
     "for. An address that clamps, or that rounds to what it has, still answers the question as "
@@ -134,6 +150,21 @@ def register(sub) -> None:
         "verdict on the routing wearing the parameter's name. Recorded with the result, "
         "since the verdict only holds in the state it was taken in",
     )
+    p.add_argument(
+        "--restate",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="state to put back before EACH of the two settings rather than once before "
+        "both, for a parameter that decides whether a message is received. Such a "
+        "parameter is invisible otherwise: with it on the message lands and moves "
+        "something, and with it off that something is still where the first setting's "
+        "message left it, so the two settings sound alike however different they are. "
+        "Written by SysEx, which no receive switch gates, and read back like --prepare. "
+        "Give it the address the gated message stores at, which this unit's own alias "
+        "scan attributes: '40 11 19=64' for the part level a control change reaches",
+    )
     p.add_argument("--takes", type=int, default=4, help="takes per setting per stimulus")
     p.add_argument("--between", type=float, default=0.8)
     p.add_argument("--settle", type=float, default=0.4, help="seconds after changing the setting")
@@ -231,6 +262,13 @@ def cmd_contrast(args: argparse.Namespace) -> int:
         print(exc)
         return 1
 
+    if args.address:
+        under_test = tuple(roland.address_bytes(args.address))
+        for address, _ in args.restate:
+            if tuple(roland.address_bytes(address)) == under_test:
+                print(RESTATE_IS_THE_TARGET.format(address=args.address))
+                return 1
+
     where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
     label = f"{where} {args.values[0]} against {args.values[1]}"
     overall = audible.Overall(label=label)
@@ -303,6 +341,16 @@ def cmd_contrast(args: argparse.Namespace) -> int:
 
             captured: list[list] = []
             for value in args.values:
+                # Before the setting, and before each of the two rather than once
+                # before both. What a receive switch decides is whether a message
+                # is received, and the message moves something: with the switch on
+                # it moves, and with it off that something is still where the
+                # first setting's message left it. Put back here, the second
+                # setting starts where the first did.
+                if args.restate and not prepare_state(
+                    link, args.restate, device_id=args.device_id, settle=args.settle
+                ):
+                    return 1
                 for message in setting(value, channel):
                     link.send(message)
                 time.sleep(args.settle)
@@ -447,6 +495,10 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],
             **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
+            "restated_before_each_setting": [
+                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.restate
+            ],
+            **({"why_restated": WHY_RESTATED} if args.restate else {}),
             "stimuli": [stim.to_json() for stim in sent],
             **(
                 {"setting_read_back": read_back, "why_read_back": WHY_READ_BACK}
