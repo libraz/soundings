@@ -381,7 +381,7 @@
       ],
       "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
       "not_established": [
-        "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx, and every offset here falls in 19 to 37. A rhythm part responds to CC91 audibly, but the map bounds its block's first region at 26 bytes ending 40 10 19, which would put the offsets from 1A up outside it -- while a readback recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it has 40 10 21 holding 100. The two disagree and neither has been re-asked, so this table is a statement about part 1 and should not be read across parts until single-byte reads of 40 10 1A to 25 settle it.",
+        "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx. The rhythm part's block has every one of those offsets and each holds its own value, so nothing structural stops the table carrying across -- but only one of the twelve has been read back on a rhythm part: 40 10 21 after a CC93, recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it. The other eleven were never sent to a part other than 1, and this table remains a statement about part 1.",
         "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
         "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
         "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
@@ -389,6 +389,29 @@
       ],
       "reproduced": true,
       "coverage": "The twelve addresses and the absence of the other seventeen were both reproduced over the 85 regions under 40, under the procedure above. The claim that the seventeen are stored nowhere in the whole 854 region map rests on an earlier run that watched all of them but primed only once and did not retry a negative. Re-running the whole map under the current procedure takes about two hours and has not been done."
+    },
+    {
+      "id": "a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist",
+      "summary": "The map bounds the rhythm part block's first region at 26 bytes, ending at 40 10 19, and an oversize read there is refused. The twelve addresses above it, 40 10 1A through 25, all answer a single-byte read and all hold their own values.",
+      "method": "One RQ1 at size 1 per address, then a hold probe over 40 10 1A for twelve addresses: neighbours are given alternating 00 and 7F and nothing is read until every write is done, so a run of addresses backed by one cell can only answer with the value it was given last. The region was read back and put back afterwards.",
+      "results": {
+        "answered a single-byte read": "40 10 1A, 1B, 1C, 1D, 1E, 1F, 20, 21, 22, 23, 24, 25 -- twelve of twelve",
+        "read at rest before anything was written": "1A 40, 1B 40, 1C 40, 1D 00, 1E 7F, 1F 10, 20 11, 21 00, 22 28, 23 01, 24 01, 25 01",
+        "neighbouring pairs that answered alike": 0,
+        "kept exactly what they were given": 9,
+        "clamped instead": "40 10 1F given 7F read 5F, 23 given 7F read 01, 25 given 7F read 01",
+        "region restored": true
+      },
+      "why_it_matters": "A region size is what a block read of that region returns. It is not the extent of the addresses behind it, and a stage that builds its plan from those sizes will not ask what lies above one. The part block sweep did exactly that: these twelve were never put to a note, which is why its comparison between a rhythm block and a melodic one covers three shared addresses rather than ten.",
+      "positive_control": "The path was verified before any write: an identity reply, a readable probe address returning 16 bytes, a verified reply checksum, twenty identical reads with none mismatched and none unanswered, and a round trip of median 15.2 ms over a 15.0 to 15.2 ms range. Two addresses inside mapped regions were read first and answered -- 40 10 19 and 40 11 21 -- so a run in which nothing above 19 answered would have been the addresses rather than the path.",
+      "not_established": [
+        "That any of the twelve is used for anything, or that it holds what the same offset holds in a melodic block. Answering and holding its own value is the whole of it.",
+        "Whether a block read starting below them reaches them, which is the shape the same question takes at 40 01 41 and is recorded there. Only single-byte reads were made here.",
+        "That the values read at rest are power-on values. Nothing established what had been written to this unit before the run.",
+        "Whether other regions in the map are bounded the same way. Only 40 10 was asked, so this bounds one region and warns about the rest rather than measuring them."
+      ],
+      "reproduced": "Twelve addresses, each answering on its own, and then all twelve read back together after being written apart from the read.",
+      "found_by": "Two saved records disagreeing about whether 40 10 21 exists at all."
     },
     {
       "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
@@ -790,7 +813,7 @@
       "note": "The chorus send on a rhythm part is state and not audio. Both readings are needed to say that: the address answers, holds what it was given and survives a read, so a scan that only writes and reads back would file it as working. Only a recording says it does nothing. The same address on a melodic part is audible, so the level belongs to the part's mode rather than to the address.",
       "found_by": "Looking for an unpitched note to measure the chorus's modulation with, since a pitched one folds a delay into its own period, and finding that the chorus was not there.",
       "not_established": [
-        "That 40 10 21 is where a rhythm part holds the send. The readback above is the only one taken at that address and it has no record file of its own; the map bounds 40 10's first region at 26 bytes ending at 40 10 19 and refuses an oversize read there, which would put 21 outside the block. The reading of the storage row rests on which of those is right, and the audible result does not: the chorus was inaudible and the reverb audible on the same part in the same run whichever way the address falls. Single-byte reads of 40 10 1A to 25 would settle it and have not been made.",
+        "That the storage row was taken through the map. The map bounds 40 10's first region at 26 bytes ending at 40 10 19, which would put 21 outside the block; it answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So the readback stands and the region size was never a claim about it. The readback itself has no record file of its own in this directory, the figure appearing only here.",
         "Why. Whether the send is ignored, the part is off the chorus bus, or the return is muted for rhythm parts is not separated by anything measured here.",
         "Whether it holds for kits other than the standard one, or for map 2.",
         "Whether the same is true of the other sends. Only the chorus and the reverb were asked.",
@@ -840,7 +863,7 @@
           "askable": 34,
           "audible": "40 10 02, 08, 15, 19, 30, 31, 32, 33, 34, 38",
           "cannot be asked": "40 10 17, the same offset the melodic blocks cannot ask either",
-          "not_asked_in_this_block": "40 1n 1A to 25. The map bounds the rhythm block's first region at 26 bytes ending at 40 10 19, and an oversize read there is refused, so the plan the sweep was built from never contained these twelve and not one of them was asked. That is a bound on this sweep, not a finding that the addresses are absent: see the tension recorded below."
+          "not_asked_in_this_block": "40 1n 1A to 25. The map bounds the rhythm block's first region at 26 bytes ending at 40 10 19, and an oversize read there is refused, so the plan the sweep was built from never contained these twelve and not one of them was asked. They do exist: each answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So this is a bound on what the sweep asked, not a difference between the two kinds of block."
         }
       },
       "the_three_blocks_agree": "Parts 1, 2 and 3 were swept independently and answered with the same 20 addresses, with nothing left unasked in any of them. Three blocks agreeing is not the same as sixteen, and the remaining thirteen were not swept.",
@@ -857,7 +880,7 @@
       "reproduced": "The 20 are the intersection of three independent block sweeps. Every address that appeared in one block and not the others was asked again, and none of those verdicts survived: 40 11 0D, 40 11 13 and 40 11 24 were each audible in one pass and inaudible when re-asked, the re-asks having yardsticks as good or better than the original. They are recorded here as not audible, and the disagreement is stated rather than averaged.",
       "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
       "what_the_rhythm_block_answered": "Every address asked in the rhythm block was audible in a melodic block too, and nothing was audible there and not here. Of the ten addresses audible in a melodic block and not in the rhythm block, seven fall outside the region the map bounds for 40 10 and so were never asked there; the remaining three were asked in both and heard in one: 40 1n 16, 35 and 36. Three is the comparison this sweep supports. The other seven are unasked rather than answered.",
-      "the_map_and_a_saved_readback_disagree_about_40_10_1a_to_25": "The map bounds 40 10's first region at 26 bytes, which would put 40 1n 1A to 25 outside the rhythm block. The entry on the chorus send records 40 10 21 holding 100 after a CC93 was sent on channel 10, which would put 21 inside it. Both cannot be read as they stand. Neither is retracted here: the region size came from a run reporting no lagged replies, and the readback has no record file of its own in this unit's directory, the figure appearing only in that entry's prose. Settling it needs single-byte reads of 40 10 1A to 25, which have not been made. Until then, what the rhythm part holds and where is open, and the sweep's ten audible addresses do not depend on the answer -- none of the twelve is among them."
+      "why_the_twelve_were_not_asked": "The plan comes from the write probe's rows, which come from the map's regions, and the map bounds 40 10's first region at 26 bytes. The twelve above it were therefore never put to a note. They are not absent from the block -- each answers a single-byte read and holds independently -- so what is missing is an audible verdict for them, and the comparison this sweep supports covers three shared addresses rather than ten. The ten it did find audible do not depend on any of this: none of the twelve is among them."
     },
     {
       "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
