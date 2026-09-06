@@ -80,6 +80,27 @@ def _refusal(found: dict) -> str:
     )
 
 
+def _claim(mine: str) -> None:
+    """Put a finished file at LOCK, or raise FileExistsError if it is taken.
+
+    The contents are written before the name exists, rather than after. Creating
+    the file and filling it a moment later leaves it readable and empty in
+    between, and an empty file is what `holder` reads as nobody -- so a second
+    command arriving inside that window deletes the lock of the run it is
+    standing next to and drives the unit alongside it, which is the whole failure
+    this module exists to stop. `os.link` refuses a name that is taken and
+    publishes the file already complete, so there is no such window.
+    """
+    handle, staging = tempfile.mkstemp(dir=LOCK.parent, prefix=f"{LOCK.name}.")
+    try:
+        with os.fdopen(handle, "w") as f:
+            f.write(mine)
+        os.chmod(staging, 0o644)
+        os.link(staging, LOCK)
+    finally:
+        os.unlink(staging)
+
+
 @contextmanager
 def held(command: str) -> Iterator[None]:
     """Hold the unit for the duration, refusing if anything else has it."""
@@ -88,9 +109,7 @@ def held(command: str) -> Iterator[None]:
         raise Busy(_refusal(found))
     mine = json.dumps({"pid": os.getpid(), "command": command, "since": time.time()})
     try:
-        # O_EXCL rather than a read followed by a write: two commands started
-        # together both see no holder, and only one of them can create the file.
-        handle = os.open(LOCK, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+        _claim(mine)
     except FileExistsError:
         # Either a live holder that appeared between the check and here, or the
         # stale file `holder` just declined to believe in. Re-ask, and take it
@@ -99,9 +118,7 @@ def held(command: str) -> Iterator[None]:
         if found is not None:
             raise Busy(_refusal(found)) from None
         LOCK.unlink(missing_ok=True)
-        handle = os.open(LOCK, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-    with os.fdopen(handle, "w") as f:
-        f.write(mine)
+        _claim(mine)
     try:
         yield
     finally:

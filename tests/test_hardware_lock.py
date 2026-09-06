@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import pytest
 
@@ -81,6 +83,47 @@ def test_the_lock_is_not_a_read_followed_by_a_write() -> None:
     with pytest.raises(hardware.Busy):
         with hardware.held("contrast"):
             pytest.fail("a live holder's file should not have been taken over")
+
+
+def test_the_lock_file_is_finished_before_the_name_exists() -> None:
+    """A file created empty and filled a moment later is readable and empty in
+    between, and an empty file reads as nobody holding the unit. A second command
+    arriving in that window would delete a live run's lock and sound alongside it,
+    which no later check can catch. So the write happens before the name."""
+    published = []
+    linking = hardware.os.link
+
+    def watched(source: str, target: str) -> None:
+        published.append(
+            (os.path.exists(target), json.loads(open(source).read())["command"]),
+        )
+        linking(source, target)
+
+    with monkeypatched(hardware.os, "link", watched):
+        with hardware.held("sweep"):
+            assert hardware.holder()["command"] == "sweep"
+
+    assert published == [(False, "sweep")]
+
+
+def test_a_stale_file_is_taken_over_and_the_takeover_is_also_finished_first() -> None:
+    """The way a long run ends is often a kill, so the file it leaves must not
+    refuse the next run -- and the file that replaces it must arrive whole."""
+    hardware.LOCK.write_text(json.dumps({"pid": 2**22 + 1, "command": "gone", "since": 0.0}))
+
+    with hardware.held("contrast"):
+        assert hardware.holder()["command"] == "contrast"
+    assert hardware.holder() is None
+
+
+@contextmanager
+def monkeypatched(target: object, name: str, value: object) -> Iterator[None]:
+    was = getattr(target, name)
+    setattr(target, name, value)
+    try:
+        yield
+    finally:
+        setattr(target, name, was)
 
 
 def _defaults(argv: list[str]) -> object:
