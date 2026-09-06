@@ -66,6 +66,15 @@ def register(sub) -> None:
         "hand beside records that could carry it themselves",
     )
     p.add_argument(
+        "--floor",
+        nargs=2,
+        metavar=("TAKE", "TAKE"),
+        help="two takes of ONE setting, subtracted from each other to measure what the "
+        "subtraction itself leaves. The lead-in bounds the interface noise only; this "
+        "bounds the error under the note, which is the larger of the two and is what a "
+        "type that did nothing at all produces a full set of decay times out of",
+    )
+    p.add_argument(
         "--lead",
         type=float,
         default=0.5,
@@ -400,7 +409,14 @@ def cmd_decay(args: argparse.Namespace) -> int:
 
     dry, wet, rate = _pair(args.dry, args.wet)
     tail, noise = dec.isolate_tail(dry, wet, rate, lead=args.lead)
-    found = dec.measure(tail, rate, noise=noise)
+    floor = None
+    if args.floor:
+        first, second, floor_rate = _pair(*args.floor)
+        if floor_rate != rate:
+            print(f"the floor pair is {floor_rate} Hz and the dry and wet are {rate} Hz")
+            return 1
+        floor = dec.subtraction_floor(first, second)
+    found = dec.measure(tail, rate, noise=noise, floor=floor)
     print(f"{args.dry} against {args.wet}, {rate} Hz")
     print(found.describe())
 
@@ -410,6 +426,7 @@ def cmd_decay(args: argparse.Namespace) -> int:
             "type_id": args.type,
             "dry": str(args.dry),
             "wet": str(args.wet),
+            "floor_from": [str(p) for p in args.floor] if args.floor else None,
             "sample_rate": rate,
             "lead_s": args.lead,
             **found.to_json(),

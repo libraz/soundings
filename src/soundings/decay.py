@@ -35,6 +35,18 @@ decays falls at the slower of the two. A one second reverb on a note whose own
 tail runs to 1.7 seconds measures 1.7 seconds, correctly and uselessly. The
 stimulus for a decay is therefore the shortest note the machine has, and a result
 close to the note's own decay is a result about the note.
+
+**A residual has two floors and the lead-in only measures one of them.** The
+silence at the head of the take says how much interface noise is under the
+return. It says nothing about how much of the return is the subtraction's own
+error, which lives under the note rather than before it and is the larger of the
+two by far. Two takes of one setting subtracted from each other measure it
+directly, and that is the yardstick every other measurement here is judged
+against. Without it, a type that did nothing at all still produces eight decay
+times: measured on this unit, one type's return stood 24.9 dB over the lead-in
+noise at 63 Hz and 6.9 dB over the subtraction floor, and reported an 11 second
+decay in a two second tail. A genuine return on the same run cleared that floor
+by thirty.
 """
 
 from __future__ import annotations
@@ -52,6 +64,24 @@ The number a curved fit returns is not wrong so much as meaningless: a tail made
 of two decays in sequence has no single time, and one that ran into the noise
 bends into a shelf. Both fit a line and both come back curved.
 """
+
+CLEARS_THE_FLOOR_DB = 6.0
+"""How far a band's return has to stand over the subtraction floor to be a return.
+
+The same margin every comparison here takes, for the same reason: what two takes
+of one setting differ by is what a difference between two settings has to beat.
+"""
+
+NOT_OVER_THE_FLOOR = (
+    "the return did not stand clear of what subtracting two takes of one setting leaves"
+)
+
+NO_FLOOR_TAKEN = (
+    "No pair of takes of one setting was given, so the subtraction floor was not measured and "
+    "no band could be judged against it. The lead-in silence bounds the interface noise only; "
+    "the error the subtraction itself leaves lives under the note, is the larger of the two, "
+    "and is what a type that did nothing at all produces a full set of decay times out of."
+)
 
 
 @dataclass
@@ -92,8 +122,18 @@ class BandDecay:
     reason: str = ""
     """Why the band never reached a fit. Empty when one was reached, fit or not."""
 
+    over_the_floor_db: float = float("nan")
+    """How far this band's return stood over the subtraction floor.
+
+    NaN when no pair of takes of one setting was given, which is not the same as
+    zero: it says the floor was never measured, and `NO_FLOOR_TAKEN` carries that
+    on the tail so an unjudged band is not read as one that passed.
+    """
+
     @property
     def measured(self) -> bool:
+        if not np.isnan(self.over_the_floor_db) and self.over_the_floor_db < CLEARS_THE_FLOOR_DB:
+            return False
         return not self.reason and self.curvature_db <= STRAIGHT_ENOUGH_DB
 
     @property
@@ -106,6 +146,8 @@ class BandDecay:
         a record that spells out only the first publishes the second as a
         refusal with no reason beside a time it just said not to use.
         """
+        if not np.isnan(self.over_the_floor_db) and self.over_the_floor_db < CLEARS_THE_FLOOR_DB:
+            return f"{NOT_OVER_THE_FLOOR}, by {self.over_the_floor_db:.1f} dB"
         if self.reason:
             return self.reason
         if self.curvature_db > STRAIGHT_ENOUGH_DB:
@@ -119,9 +161,16 @@ class BandDecay:
             # A time beside `measured: false` is read as a time.
             "rt60_s": None if not self.measured else round(self.seconds, 4),
             "fitted_over_db": list(self.fitted_db),
-            # Kept on the curvature route, which is where it is the evidence.
-            "curvature_db": None if self.reason else round(self.curvature_db, 3),
-            "snr_db": round(self.snr_db, 1),
+            # Kept wherever a line was fitted, which is where it is the evidence
+            # for the curvature refusal. On the routes that return before the fit
+            # -- no fit reached, or the floor not cleared -- there is no number,
+            # and writing the NaN that stands for one is not JSON any strict
+            # reader accepts.
+            "curvature_db": None if np.isnan(self.curvature_db) else round(self.curvature_db, 3),
+            "snr_db": None if np.isnan(self.snr_db) else round(self.snr_db, 1),
+            "over_the_subtraction_floor_db": (
+                None if np.isnan(self.over_the_floor_db) else round(self.over_the_floor_db, 1)
+            ),
             "scatter_bound": None if np.isnan(self.scatter) else round(self.scatter, 3),
             "measured": self.measured,
             "reason": self.why,
@@ -132,6 +181,11 @@ class BandDecay:
 class Tail:
     bands: list[BandDecay]
     sample_rate: int
+
+    @property
+    def floor_taken(self) -> bool:
+        """Whether a pair of takes of one setting was given to measure the floor."""
+        return any(not np.isnan(b.over_the_floor_db) for b in self.bands)
 
     @property
     def measured(self) -> list[BandDecay]:
@@ -157,10 +211,12 @@ class Tail:
                 lines.append(
                     f"  {band.centre_hz:>6.0f} Hz  {band.seconds:6.3f} s "
                     f"+/- {band.scatter * 100:.0f}% at most  "
-                    f"(curvature {band.curvature_db:.2f} dB, {band.snr_db:.0f} dB over the floor)"
+                    f"(curvature {band.curvature_db:.2f} dB, {band.snr_db:.0f} dB over the noise)"
                 )
             else:
                 lines.append(f"  {band.centre_hz:>6.0f} Hz  --      {band.why}")
+        if not self.floor_taken:
+            lines.append(f"  !! {NO_FLOOR_TAKEN}")
         if not self.measured:
             lines.append("  => no band held still long enough above its own noise to be fitted")
         elif not np.isnan(self.damping):
@@ -174,6 +230,8 @@ class Tail:
         return {
             "bands": [b.to_json() for b in self.bands],
             "damping_low_over_high": None if np.isnan(self.damping) else round(self.damping, 3),
+            "subtraction_floor_measured": self.floor_taken,
+            "why_no_subtraction_floor": None if self.floor_taken else NO_FLOOR_TAKEN,
             "method": "Each octave band's energy is integrated from the end of the usable "
             "tail backwards, after the noise floor's own contribution has been taken out and "
             "the tail truncated where it reaches that floor. A straight line is fitted to the "
@@ -226,12 +284,17 @@ def band_decay(
     centre: float,
     *,
     noise: np.ndarray,
+    floor: np.ndarray | None = None,
 ) -> BandDecay:
-    """Decay time of one octave band of a tail, measured against a sample of the noise.
+    """Decay time of one octave band of a tail, against the noise and the floor.
 
     `noise` is a stretch of the same take with nothing sounding in it -- the
     silence before the note. It sets both what gets subtracted from the energy
     and where the tail stops being a tail.
+
+    `floor` is what subtracting two takes of one setting leaves, which is the
+    error the subtraction makes under the note rather than the noise before it.
+    Where it is absent the band is fitted and not judged, and the tail says so.
     """
     root_two = np.sqrt(2.0)
     band = band_limit(np.asarray(tail, dtype=np.float64), sample_rate, centre)
@@ -241,13 +304,26 @@ def band_decay(
     peak = float(energy.max()) if energy.size else 0.0
     snr = 10.0 * np.log10(peak / floor_power) if floor_power > 0 and peak > 0 else float("nan")
 
+    over = float("nan")
+    if floor is not None:
+        left = band_limit(np.asarray(floor, dtype=np.float64), sample_rate, centre)
+        # Both as RMS over the whole residual, which is the quantity the floor is
+        # a floor for: the peak sees the onset, where an alignment error puts most
+        # of what the subtraction failed to remove.
+        left_rms = float(np.sqrt(np.mean(left**2)))
+        band_rms = float(np.sqrt(np.mean(band**2)))
+        over = 20.0 * np.log10(band_rms / left_rms) if left_rms > 0 and band_rms > 0 else -120.0
+
     blank = BandDecay(
         centre_hz=centre,
         seconds=float("nan"),
         fitted_db=(0.0, 0.0),
         curvature_db=float("nan"),
         snr_db=snr,
+        over_the_floor_db=over,
     )
+    if not np.isnan(over) and over < CLEARS_THE_FLOOR_DB:
+        return blank
     if not np.isfinite(snr) or snr < 20.0:
         blank.reason = "never rose 20 dB over the noise in this band"
         return blank
@@ -285,6 +361,7 @@ def band_decay(
                 curvature_db=curvature,
                 snr_db=snr,
                 scatter=1.0 / np.sqrt(samples) if samples > 0 else float("nan"),
+                over_the_floor_db=over,
             )
     blank.reason = "the curve never fell far enough to fit a line to"
     return blank
@@ -295,11 +372,12 @@ def measure(
     sample_rate: int,
     *,
     noise: np.ndarray,
+    floor: np.ndarray | None = None,
     centres: tuple[float, ...] = OCTAVE_CENTRES,
 ) -> Tail:
     """Decay times of a tail across the octave bands, each with its own verdict."""
     return Tail(
-        bands=[band_decay(tail, sample_rate, c, noise=noise) for c in centres],
+        bands=[band_decay(tail, sample_rate, c, noise=noise, floor=floor) for c in centres],
         sample_rate=sample_rate,
     )
 
@@ -333,7 +411,24 @@ def isolate_tail(
     return apart.residual, apart.residual[:lead_samples]
 
 
+def subtraction_floor(first: np.ndarray, second: np.ndarray) -> np.ndarray:
+    """What the subtraction leaves when nothing changed between the two takes.
+
+    Two takes of one setting, put through the same align-level-subtract the
+    effect's return is isolated by. What comes out is the error that step makes
+    -- alignment to a sample, a gain fitted over the whole take, the unit's own
+    run to run scatter -- and a return that does not stand over it by
+    `CLEARS_THE_FLOOR_DB` is that error rather than an effect.
+    """
+    from .stability import isolate
+
+    return isolate(first, second).residual
+
+
 __all__ = [
+    "CLEARS_THE_FLOOR_DB",
+    "NOT_OVER_THE_FLOOR",
+    "NO_FLOOR_TAKEN",
     "OCTAVE_CENTRES",
     "STRAIGHT_ENOUGH_DB",
     "BandDecay",
@@ -342,4 +437,5 @@ __all__ = [
     "band_limit",
     "isolate_tail",
     "measure",
+    "subtraction_floor",
 ]

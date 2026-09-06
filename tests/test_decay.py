@@ -182,3 +182,51 @@ def test_a_reverb_shorter_than_the_note_measures_the_note() -> None:
     found = decay.measure(isolated, SR, noise=noise)
     assert found.measured
     assert np.median([b.seconds for b in found.measured]) > 1.4
+
+
+def test_a_return_that_does_not_clear_the_subtraction_floor_is_refused() -> None:
+    """A return the same size as what subtracting two takes of one setting leaves
+    is that subtraction's error, and it fits a decay as readily as anything else.
+
+    Measured on this unit: one insertion effect type left a return standing 24.9
+    dB over the lead-in noise at 63 Hz and 6.9 dB over the subtraction floor, and
+    reported an 11 second decay from a two second tail. A second type's return sat
+    3.2 dB *below* the floor in one band and still produced eight times."""
+    floor = tail(rt60=1.2, seed=3)
+    barely = tail(rt60=1.2, seed=4) * 10 ** (3.0 / 20.0)
+
+    found = decay.measure(barely, SR, noise=hush(), floor=floor)
+
+    assert not found.measured
+    assert found.floor_taken
+    for band in found.bands:
+        assert band.why.startswith(decay.NOT_OVER_THE_FLOOR)
+        assert band.to_json()["rt60_s"] is None
+
+
+def test_a_return_well_over_the_floor_is_measured_as_before() -> None:
+    """The guard has to have an outside, or it is a rule that refuses everything.
+    On the same run the two refused types came from, a genuine return cleared the
+    floor by thirty dB and kept all eight of its bands."""
+    floor = tail(rt60=1.2, seed=3) * 10 ** (-30.0 / 20.0)
+    real = tail(rt60=1.2, seed=4)
+
+    found = decay.measure(real, SR, noise=hush(), floor=floor)
+
+    assert len(found.measured) >= 6
+    assert np.median([b.seconds for b in found.measured]) == pytest.approx(1.2, rel=0.05)
+    assert all(b.over_the_floor_db > decay.CLEARS_THE_FLOOR_DB for b in found.measured)
+
+
+def test_a_run_with_no_floor_pair_says_the_floor_was_not_measured() -> None:
+    """Absent is not passed. A band fitted without the floor ever being taken is
+    unjudged, and a record that does not say so is read as one that cleared it."""
+    found = decay.measure(tail(rt60=1.2), SR, noise=hush())
+
+    written = found.to_json()
+
+    assert not found.floor_taken
+    assert written["subtraction_floor_measured"] is False
+    assert written["why_no_subtraction_floor"] == decay.NO_FLOOR_TAKEN
+    assert all(b["over_the_subtraction_floor_db"] is None for b in written["bands"])
+    assert found.measured, "a run without the floor is still fitted, only unjudged"
