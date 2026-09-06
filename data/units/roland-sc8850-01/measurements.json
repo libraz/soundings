@@ -1,1100 +1,1116 @@
 {
-  "unit_id": "roland-sc8850-01",
-  "schema_version": 0,
-  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte. power-on-state.json holds the whole readable map as read immediately after a power cycle, before anything but RQ1 had been sent.",
-  "withdrawn": {
-    "what": "An earlier hand measured table of addresses and region sizes.",
-    "why": "It was taken before the reply deadline was understood, so replies were running one request behind and its sizes and values were the previous probe's answer. Three of its rows were re-read cleanly and all three were wrong: 40 00 00 was recorded as 7 bytes reading 00 04 00 00 and is 4 bytes reading 00 00 04 07; 40 00 04 was recorded as readable holding 7F and does not answer at any size; 40 01 30 was recorded as returning 64 bytes and bounds at 24, refusing 64. The rest is not individually retracted because it was produced the same way and none of it is needed -- the sweep covers it.",
-    "see": "rq1-reply-latency-grows-with-length-and-varies-by-address"
+ "unit_id": "roland-sc8850-01",
+ "schema_version": 0,
+ "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte. power-on-state.json holds the whole readable map as read immediately after a power cycle, before anything but RQ1 had been sent.",
+ "withdrawn": {
+  "what": "An earlier hand measured table of addresses and region sizes.",
+  "why": "It was taken before the reply deadline was understood, so replies were running one request behind and its sizes and values were the previous probe's answer. Three of its rows were re-read cleanly and all three were wrong: 40 00 00 was recorded as 7 bytes reading 00 04 00 00 and is 4 bytes reading 00 00 04 07; 40 00 04 was recorded as readable holding 7F and does not answer at any size; 40 01 30 was recorded as returning 64 bytes and bounds at 24, refusing 64. The rest is not individually retracted because it was produced the same way and none of it is needed -- the sweep covers it.",
+  "see": "rq1-reply-latency-grows-with-length-and-varies-by-address"
+ },
+ "spot_checks": [
+  {
+   "address": "40 00 00",
+   "largest_read_answered": 4,
+   "value": "00 00 04 07",
+   "note": "Refuses 16 and above. Re-read with a 1.5 s deadline after the sweep agreed."
   },
-  "spot_checks": [
+  {
+   "address": "40 00 04",
+   "readable": false,
+   "note": "No reply at sizes 1, 4, 16, 24 or 64."
+  },
+  {
+   "address": "40 01 30",
+   "largest_read_answered": 24,
+   "value": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
+   "note": "Refuses 64. Used as the sweep's canary because it answers reliably."
+  },
+  {
+   "address": "41 00 00",
+   "largest_read_answered": 12,
+   "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
+   "note": "ASCII 'STANDARD 1  ', space padded to 12."
+  },
+  {
+   "address": "51 00 00",
+   "largest_read_answered": 12,
+   "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
+   "note": "The same text as 41 00 00. 51 00 01 returns 54, the second character, so the name is byte addressable."
+  },
+  {
+   "address": "52 00 00",
+   "readable": false,
+   "note": "No reply, while 50 and 51 both answer. The space is not dense."
+  },
+  {
+   "address": "40 03 1D",
+   "readable": true,
+   "note": "Answers a one byte read and takes any value, yet lies outside every region the sweep bounded, so it is absent from address-map.json and from the power-on capture. The mirror image of 40 01 41 to 47, which a block read reaches and a one byte read does not: neither kind of read alone bounds a region."
+  }
+ ],
+ "behaviours": [
+  {
+   "id": "rq1-large-size-hangs-the-unit",
+   "summary": "An RQ1 request for 256 bytes stops the unit responding entirely, including its Active Sensing. Recovery needs a power cycle.",
+   "method": "RQ1 at 40 01 30 with increasing sizes, checking after each that a known-good one-byte read still answers.",
+   "results": [
     {
-      "address": "40 00 00",
-      "largest_read_answered": 4,
-      "value": "00 00 04 07",
-      "note": "Refuses 16 and above. Re-read with a 1.5 s deadline after the sweep agreed."
+     "size": 32,
+     "returned": 32,
+     "unit_alive_after": true
     },
     {
-      "address": "40 00 04",
-      "readable": false,
-      "note": "No reply at sizes 1, 4, 16, 24 or 64."
+     "size": 64,
+     "returned": 64,
+     "unit_alive_after": true
     },
     {
-      "address": "40 01 30",
-      "largest_read_answered": 24,
-      "value": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
-      "note": "Refuses 64. Used as the sweep's canary because it answers reliably."
+     "size": 128,
+     "returned": null,
+     "unit_alive_after": true
     },
     {
-      "address": "41 00 00",
-      "largest_read_answered": 12,
-      "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
-      "note": "ASCII 'STANDARD 1  ', space padded to 12."
+     "size": 200,
+     "returned": null,
+     "unit_alive_after": true
     },
     {
-      "address": "51 00 00",
-      "largest_read_answered": 12,
-      "value": "53 54 41 4E 44 41 52 44 20 31 20 20",
-      "note": "The same text as 41 00 00. 51 00 01 returns 54, the second character, so the name is byte addressable."
-    },
-    {
-      "address": "52 00 00",
-      "readable": false,
-      "note": "No reply, while 50 and 51 both answer. The space is not dense."
-    },
-    {
-      "address": "40 03 1D",
-      "readable": true,
-      "note": "Answers a one byte read and takes any value, yet lies outside every region the sweep bounded, so it is absent from address-map.json and from the power-on capture. The mirror image of 40 01 41 to 47, which a block read reaches and a one byte read does not: neither kind of read alone bounds a region."
+     "size": 256,
+     "returned": null,
+     "unit_alive_after": false
     }
-  ],
-  "behaviours": [
+   ],
+   "boundary": "between 200 and 256; not narrowed further, because each test past the boundary costs a power cycle",
+   "note": "The failure is total and silent, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
+   "reproduced": true,
+   "not_established": [
+    "That recovery requires a power cycle. The unit was power cycled without first being left alone, so whether it would have recovered on its own was never tested.",
+    "That Active Sensing stops. The harness filters Active Sensing on receive, so no run so far could have observed it either way."
+   ],
+   "still_holds_after": "rq1-0c0000-is-a-command-not-a-read, which shows a probe can read another message's traffic and appear to answer. That failure mode would have made a busy unit read as alive rather than dead, so the silence recorded here is not explained by it."
+  },
+  {
+   "id": "rq1-0c0000-is-a-command-not-a-read",
+   "summary": "A one-byte RQ1 at 0C 00 00 is not a read. The unit replies about a different address and then keeps transmitting for 29 seconds, 286 messages in total.",
+   "method": "RQ1 at 0C 00 00 with size 1, then receive until the input has been quiet for 3 s. Isolated by probing every level-1 address from 00 00 00 upward with 1.2 s of silent listening after each: nothing arrived until this address, and it produced the stream immediately.",
+   "results": {
+    "messages": 286,
+    "seconds": 29.3,
+    "payload_sizes": [
+     16,
+     24,
+     128
+    ],
+    "unparsable_or_bad_checksum": 0,
+    "blocks": [
+     {
+      "top": "08",
+      "messages": 2,
+      "first": "08 00 00",
+      "last": "08 01 00"
+     },
+     {
+      "top": "48",
+      "messages": 39,
+      "first": "48 1D 10",
+      "last": "48 1D 00"
+     },
+     {
+      "top": "49",
+      "messages": 32,
+      "first": "49 00 00",
+      "last": "49 1F 00"
+     },
+     {
+      "top": "58",
+      "messages": 39,
+      "first": "58 1D 10",
+      "last": "58 1D 00"
+     },
+     {
+      "top": "59",
+      "messages": 32,
+      "first": "59 00 00",
+      "last": "59 1F 00"
+     },
+     {
+      "top": "68",
+      "messages": 39,
+      "first": "68 1D 10",
+      "last": "68 1D 00"
+     },
+     {
+      "top": "69",
+      "messages": 32,
+      "first": "69 00 00",
+      "last": "69 1F 00"
+     },
+     {
+      "top": "78",
+      "messages": 39,
+      "first": "78 1D 10",
+      "last": "78 1D 00"
+     },
+     {
+      "top": "79",
+      "messages": 32,
+      "first": "79 00 00",
+      "last": "79 1F 00"
+     }
+    ],
+    "structure": "2 + 4 x (39 + 32) = 286. Four identically shaped blocks at top byte pairs 48/49, 58/59, 68/69 and 78/79, after a two message preamble at 08.",
+    "spacing": "about 102 ms between messages"
+   },
+   "why_it_matters": "The address space cannot be assumed passive. A probe sent while this is running takes a dump message as its own answer, so a single address like this makes every address probed after it read as populated. This is what made a first sweep of this unit report 117 of 128 top bytes as answering. A probe that does not pair the reply against the address it asked for cannot see the difference.",
+   "not_established": [
+    "What the dumped blocks contain. Only their addresses, sizes and count were recorded here.",
+    "Whether other addresses in the 0C and 0D range are commands too. Only 0C 00 00 was isolated."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "rq1-reply-latency-grows-with-length-and-varies-by-address",
+   "summary": "A reply's arrival time grows with its length, but length does not determine it: two addresses that both return 64 bytes answer in 31 ms and 78 ms.",
+   "method": "RQ1 with a 2 s timeout, measuring from send to a complete SysEx. The size series is 12 reads per size at 40 02 00; the cross address series is 10 reads per size at nine addresses.",
+   "size_series_at_40_02_00": [
     {
-      "id": "rq1-large-size-hangs-the-unit",
-      "summary": "An RQ1 request for 256 bytes stops the unit responding entirely, including its Active Sensing. Recovery needs a power cycle.",
-      "method": "RQ1 at 40 01 30 with increasing sizes, checking after each that a known-good one-byte read still answers.",
-      "results": [
-        {
-          "size": 32,
-          "returned": 32,
-          "unit_alive_after": true
-        },
-        {
-          "size": 64,
-          "returned": 64,
-          "unit_alive_after": true
-        },
-        {
-          "size": 128,
-          "returned": null,
-          "unit_alive_after": true
-        },
-        {
-          "size": 200,
-          "returned": null,
-          "unit_alive_after": true
-        },
-        {
-          "size": 256,
-          "returned": null,
-          "unit_alive_after": false
-        }
-      ],
-      "boundary": "between 200 and 256; not narrowed further, because each test past the boundary costs a power cycle",
-      "note": "The failure is total and silent, so a probe loop that treats silence as absence will map the rest of the address space as empty and finish successfully. Keep bulk requests at or below 64 bytes, and check a known-good address periodically rather than trusting that a run of silences means a run of absent addresses.",
-      "reproduced": true,
-      "not_established": [
-        "That recovery requires a power cycle. The unit was power cycled without first being left alone, so whether it would have recovered on its own was never tested.",
-        "That Active Sensing stops. The harness filters Active Sensing on receive, so no run so far could have observed it either way."
-      ],
-      "still_holds_after": "rq1-0c0000-is-a-command-not-a-read, which shows a probe can read another message's traffic and appear to answer. That failure mode would have made a busy unit read as alive rather than dead, so the silence recorded here is not explained by it."
+     "size": 1,
+     "returned": 1,
+     "median_ms": 10.2,
+     "max_ms": 13.0
     },
     {
-      "id": "rq1-0c0000-is-a-command-not-a-read",
-      "summary": "A one-byte RQ1 at 0C 00 00 is not a read. The unit replies about a different address and then keeps transmitting for 29 seconds, 286 messages in total.",
-      "method": "RQ1 at 0C 00 00 with size 1, then receive until the input has been quiet for 3 s. Isolated by probing every level-1 address from 00 00 00 upward with 1.2 s of silent listening after each: nothing arrived until this address, and it produced the stream immediately.",
-      "results": {
-        "messages": 286,
-        "seconds": 29.3,
-        "payload_sizes": [
-          16,
-          24,
-          128
-        ],
-        "unparsable_or_bad_checksum": 0,
-        "blocks": [
-          {
-            "top": "08",
-            "messages": 2,
-            "first": "08 00 00",
-            "last": "08 01 00"
-          },
-          {
-            "top": "48",
-            "messages": 39,
-            "first": "48 1D 10",
-            "last": "48 1D 00"
-          },
-          {
-            "top": "49",
-            "messages": 32,
-            "first": "49 00 00",
-            "last": "49 1F 00"
-          },
-          {
-            "top": "58",
-            "messages": 39,
-            "first": "58 1D 10",
-            "last": "58 1D 00"
-          },
-          {
-            "top": "59",
-            "messages": 32,
-            "first": "59 00 00",
-            "last": "59 1F 00"
-          },
-          {
-            "top": "68",
-            "messages": 39,
-            "first": "68 1D 10",
-            "last": "68 1D 00"
-          },
-          {
-            "top": "69",
-            "messages": 32,
-            "first": "69 00 00",
-            "last": "69 1F 00"
-          },
-          {
-            "top": "78",
-            "messages": 39,
-            "first": "78 1D 10",
-            "last": "78 1D 00"
-          },
-          {
-            "top": "79",
-            "messages": 32,
-            "first": "79 00 00",
-            "last": "79 1F 00"
-          }
-        ],
-        "structure": "2 + 4 x (39 + 32) = 286. Four identically shaped blocks at top byte pairs 48/49, 58/59, 68/69 and 78/79, after a two message preamble at 08.",
-        "spacing": "about 102 ms between messages"
-      },
-      "why_it_matters": "The address space cannot be assumed passive. A probe sent while this is running takes a dump message as its own answer, so a single address like this makes every address probed after it read as populated. This is what made a first sweep of this unit report 117 of 128 top bytes as answering. A probe that does not pair the reply against the address it asked for cannot see the difference.",
-      "not_established": [
-        "What the dumped blocks contain. Only their addresses, sizes and count were recorded here.",
-        "Whether other addresses in the 0C and 0D range are commands too. Only 0C 00 00 was isolated."
-      ],
-      "reproduced": true
+     "size": 2,
+     "returned": 2,
+     "median_ms": 10.2,
+     "max_ms": 10.5
     },
     {
-      "id": "rq1-reply-latency-grows-with-length-and-varies-by-address",
-      "summary": "A reply's arrival time grows with its length, but length does not determine it: two addresses that both return 64 bytes answer in 31 ms and 78 ms.",
-      "method": "RQ1 with a 2 s timeout, measuring from send to a complete SysEx. The size series is 12 reads per size at 40 02 00; the cross address series is 10 reads per size at nine addresses.",
-      "size_series_at_40_02_00": [
-        {
-          "size": 1,
-          "returned": 1,
-          "median_ms": 10.2,
-          "max_ms": 13.0
-        },
-        {
-          "size": 2,
-          "returned": 2,
-          "median_ms": 10.2,
-          "max_ms": 10.5
-        },
-        {
-          "size": 4,
-          "returned": 4,
-          "median_ms": 10.5,
-          "max_ms": 11.3
-        },
-        {
-          "size": 8,
-          "returned": 8,
-          "median_ms": 15.2,
-          "max_ms": 15.5
-        },
-        {
-          "size": 16,
-          "returned": 16,
-          "median_ms": 24.1,
-          "max_ms": 25.3
-        },
-        {
-          "size": 24,
-          "returned": 24,
-          "median_ms": 32.9,
-          "max_ms": 33.5
-        },
-        {
-          "size": 32,
-          "returned": 32,
-          "median_ms": 41.8,
-          "max_ms": 42.4
-        },
-        {
-          "size": 40,
-          "returned": 40,
-          "median_ms": 51.3,
-          "max_ms": 51.5
-        },
-        {
-          "size": 48,
-          "returned": 48,
-          "median_ms": 60.1,
-          "max_ms": 60.5
-        },
-        {
-          "size": 56,
-          "returned": 56,
-          "median_ms": 68.7,
-          "max_ms": 69.2
-        },
-        {
-          "size": 64,
-          "returned": 64,
-          "median_ms": 77.7,
-          "max_ms": 78.2
-        }
-      ],
-      "cross_address_series": [
-        {
-          "address": "40 01 30",
-          "size_1_ms": 9.5,
-          "size_16": {
-            "returned": 16,
-            "median_ms": 14.7
-          },
-          "size_64": "no reply"
-        },
-        {
-          "address": "40 02 00",
-          "size_1_ms": 9.5,
-          "size_16": {
-            "returned": 16,
-            "median_ms": 23.9
-          },
-          "size_64": {
-            "returned": 64,
-            "median_ms": 77.8
-          }
-        },
-        {
-          "address": "40 00 00",
-          "size_1_ms": 9.4,
-          "size_16": "no reply",
-          "size_64": "no reply"
-        },
-        {
-          "address": "20 00 00",
-          "size_1_ms": 10.1,
-          "size_16": {
-            "returned": 16,
-            "median_ms": 15.1
-          },
-          "size_64": {
-            "returned": 64,
-            "median_ms": 31.5
-          }
-        },
-        {
-          "address": "21 00 00",
-          "size_1_ms": 10.1,
-          "size_16": "no reply",
-          "size_64": "no reply"
-        },
-        {
-          "address": "41 00 00",
-          "size_1_ms": 9.1,
-          "size_16": {
-            "returned": 12,
-            "median_ms": 13.6
-          },
-          "size_64": {
-            "returned": 12,
-            "median_ms": 13.8
-          }
-        },
-        {
-          "address": "50 00 00",
-          "size_1_ms": 9.8,
-          "size_16": "no reply",
-          "size_64": "no reply"
-        },
-        {
-          "address": "51 00 00",
-          "size_1_ms": 10.1,
-          "size_16": {
-            "returned": 12,
-            "median_ms": 13.8
-          },
-          "size_64": {
-            "returned": 12,
-            "median_ms": 13.9
-          }
-        },
-        {
-          "address": "00 01 00",
-          "size_1_ms": 10.1,
-          "size_16": {
-            "returned": 16,
-            "median_ms": 15.1
-          },
-          "size_64": {
-            "returned": 64,
-            "median_ms": 31.6
-          }
-        }
-      ],
-      "worst_observed_per_reply_length_ms": {
-        "1": 11.2,
-        "12": 14.0,
-        "16": 26.3,
-        "64": 81.1
-      },
-      "why_it_matters": "A probe deadline is a measurement, not a constant, and it has to bound the slowest address rather than the one it was taken on. A late reply is not lost: it arrives while the next probe is listening, and every reply after it is one request behind. Pairing a reply against the address asked for does not detect this, because a size bisection asks the same address every probe. A sweep run with a flat 60 ms deadline was destroyed by it, classifying 613 regions as returning a full 64 bytes; a probe by probe trace showed each read returning the previous request's answer -- 1 byte requested, 64 returned, then 32 requested and 1 returned.",
-      "not_established": [
-        "Why the slope is what it is. A 31250 baud line spends 0.32 ms on a byte, and the fastest addresses come close to that while 40 02 00 takes over three times as long per byte. Nothing here separates the module's own pacing from the interface or the host.",
-        "What distinguishes a fast address from a slow one. Both 20 00 00 and 00 01 00 return 64 bytes at about half the per byte cost of 40 02 00, and no reason for that was investigated."
-      ],
-      "reproduced": true
+     "size": 4,
+     "returned": 4,
+     "median_ms": 10.5,
+     "max_ms": 11.3
     },
     {
-      "id": "twelve-controllers-are-stored-in-the-part-block-and-the-rest-are-not-stored-anywhere-readable",
-      "summary": "Twelve control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Eighteen others, including modulation, expression, hold and delay send, change nothing anywhere in the readable address space.",
-      "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is primed at 20, moved to 60 and returned to 20, and a byte is kept only if it moved both times and to a different value each time; a controller that lands nothing is sent again with the two values swapped. CC7 is sent before the first controller and after the last. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular, and the bank latch is committed back to the tone the part already held at the end.",
-      "stored": {
-        "CC7": "40 11 19",
-        "CC10": "40 11 1C",
-        "CC71": "40 11 33",
-        "CC72": "40 11 36",
-        "CC73": "40 11 34",
-        "CC74": "40 11 32",
-        "CC75": "40 11 35",
-        "CC76": "40 11 30",
-        "CC77": "40 11 31",
-        "CC78": "40 11 37",
-        "CC91": "40 11 22",
-        "CC93": "40 11 21"
-      },
-      "not_stored_anywhere_in_the_map": [
-        1,
-        5,
-        6,
-        11,
-        32,
-        38,
-        64,
-        65,
-        66,
-        67,
-        84,
-        94,
-        95,
-        98,
-        99,
-        100,
-        101
-      ],
-      "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
-      "not_established": [
-        "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx. The rhythm part's block has every one of those offsets and each holds its own value, so nothing structural stops the table carrying across -- but only one of the twelve has been read back on a rhythm part: 40 10 21 after a CC93, recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it. The other eleven were never sent to a part other than 1, and this table remains a statement about part 1.",
-        "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
-        "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
-        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
-        "That CC0 and CC32 are stored nowhere. They are stored, but only once a program change commits them, and only if the unit has that bank and program: see bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole. Sent on their own, which is how this scan sends them, they change nothing."
-      ],
-      "reproduced": true,
-      "coverage": "The twelve addresses and the absence of the other seventeen were both reproduced over the 85 regions under 40, under the procedure above. The claim that the seventeen are stored nowhere in the whole 854 region map rests on an earlier run that watched all of them but primed only once and did not retry a negative. Re-running the whole map under the current procedure takes about two hours and has not been done."
+     "size": 8,
+     "returned": 8,
+     "median_ms": 15.2,
+     "max_ms": 15.5
     },
     {
-      "id": "a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist",
-      "summary": "The map bounds the rhythm part block's first region at 26 bytes, ending at 40 10 19, and an oversize read there is refused. The twelve addresses above it, 40 10 1A through 25, all answer a single-byte read and all hold their own values.",
-      "method": "One RQ1 at size 1 per address, then a hold probe over 40 10 1A for twelve addresses: neighbours are given alternating 00 and 7F and nothing is read until every write is done, so a run of addresses backed by one cell can only answer with the value it was given last. The region was read back and put back afterwards.",
-      "results": {
-        "answered a single-byte read": "40 10 1A, 1B, 1C, 1D, 1E, 1F, 20, 21, 22, 23, 24, 25 -- twelve of twelve",
-        "read at rest before anything was written": "1A 40, 1B 40, 1C 40, 1D 00, 1E 7F, 1F 10, 20 11, 21 00, 22 28, 23 01, 24 01, 25 01",
-        "neighbouring pairs that answered alike": 0,
-        "kept exactly what they were given": 9,
-        "clamped instead": "40 10 1F given 7F read 5F, 23 given 7F read 01, 25 given 7F read 01",
-        "region restored": true
-      },
-      "why_it_matters": "A region size is what a block read of that region returns. It is not the extent of the addresses behind it, and a stage that builds its plan from those sizes will not ask what lies above one. The part block sweep did exactly that: these twelve were never put to a note, which is why its comparison between a rhythm block and a melodic one covers three shared addresses rather than ten.",
-      "positive_control": "The path was verified before any write: an identity reply, a readable probe address returning 16 bytes, a verified reply checksum, twenty identical reads with none mismatched and none unanswered, and a round trip of median 15.2 ms over a 15.0 to 15.2 ms range. Two addresses inside mapped regions were read first and answered -- 40 10 19 and 40 11 21 -- so a run in which nothing above 19 answered would have been the addresses rather than the path.",
-      "not_established": [
-        "That any of the twelve is used for anything, or that it holds what the same offset holds in a melodic block. Answering and holding its own value is the whole of it.",
-        "Whether a block read starting below them reaches them, which is the shape the same question takes at 40 01 41 and is recorded there. Only single-byte reads were made here.",
-        "That the values read at rest are power-on values. Nothing established what had been written to this unit before the run.",
-        "Whether other regions in the map are bounded the same way. Only 40 10 was asked, so this bounds one region and warns about the rest rather than measuring them."
-      ],
-      "reproduced": "Twelve addresses, each answering on its own, and then all twelve read back together after being written apart from the read.",
-      "found_by": "Two saved records disagreeing about whether 40 10 21 exists at all."
+     "size": 16,
+     "returned": 16,
+     "median_ms": 24.1,
+     "max_ms": 25.3
     },
     {
-      "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
-      "summary": "Adjacent addresses with the same 0 to 7 range disagree on what happens outside it. 40 01 30, 31 and 38 leave their value untouched; 40 01 32 and 39 clamp to 07.",
-      "method": "Write then read back one byte at a time, resetting the address to a known accepted value before each out of range test, so a refusal and a clamp read back differently. Six values above the range were tried on each address: 08, 0B, 0F, 1F, 3F and 7E. Every byte was restored and the whole region re-read afterwards.",
-      "results": [
-        {
-          "address": "40 01 30",
-          "accepts": "00-07",
-          "out_of_range": "refused, value unchanged"
-        },
-        {
-          "address": "40 01 31",
-          "accepts": "00-07",
-          "out_of_range": "refused, value unchanged"
-        },
-        {
-          "address": "40 01 32",
-          "accepts": "00-07",
-          "out_of_range": "clamped to 07"
-        },
-        {
-          "address": "40 01 38",
-          "accepts": "00-07",
-          "out_of_range": "refused, value unchanged"
-        },
-        {
-          "address": "40 01 39",
-          "accepts": "00-07",
-          "out_of_range": "clamped to 07"
-        },
-        {
-          "address": "40 03 00",
-          "accepts": "00 only",
-          "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
-        },
-        {
-          "address": "40 03 1A",
-          "accepts": "00 only",
-          "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
-        }
-      ],
-      "other_bytes": "38 of the 45 bytes probed across 40 01 30 and 40 03 00 take the full 00 to 7F unchanged.",
-      "why_the_reset_matters": "Probed in ascending order without one, a refusing address is indistinguishable from a clamping one: 07 is accepted, 08 is refused and reads back as 07, which is exactly what a clamp to 07 returns. A first run of this probe reported all five addresses as clamping for that reason.",
-      "not_established": [
-        "Whether any of these values changes what the unit sounds like. A read back says an address stores a value, not that anything uses it.",
-        "Whether the accepted set is contiguous above the values tried. The ladder is a list of points, not a proof of a range."
-      ],
-      "reproduced": true
+     "size": 24,
+     "returned": 24,
+     "median_ms": 32.9,
+     "max_ms": 33.5
     },
     {
-      "id": "single-byte-reads-do-not-reach-every-byte-of-a-readable-block",
-      "summary": "40 01 41 through 47 return nothing to an RQ1 addressed at them, yet their contents come back in a read that starts earlier.",
-      "method": "RQ1 at 40 01 30 for 24 bytes, at 40 01 40 for 8 bytes, and at 40 01 41 for 1 and 4 bytes, each with a 1.5 s deadline.",
-      "results": {
-        "40 01 30 size 24": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
-        "40 01 40 size 8": "00 00 00 61 01 01 00 46",
-        "40 01 41 size 1": "no reply",
-        "40 01 41 size 4": "no reply"
-      },
-      "note": "The two block reads agree on the contents of 41 to 47. So an address that answers nothing is not thereby an address that holds nothing, and a probe that only ever reads one byte will under-report a region.",
-      "reproduced": true
+     "size": 32,
+     "returned": 32,
+     "median_ms": 41.8,
+     "max_ms": 42.4
     },
     {
-      "id": "malformed-sysex-frames-on-the-measurement-path",
-      "summary": "About two probes in a hundred come back as one frame that starts with F0 and ends with F7 but is not one SysEx message: an unterminated header, then three byte groups led by EF, then the correct reply. Re-asking after the path goes quiet always produced a clean reply.",
-      "method": "Observed during address space sweeps and reproduced by replaying one top byte's level 2 loop. The frame was read back one rtmidi message at a time to establish that it arrives as a single delivery rather than being assembled by the harness.",
-      "example": {
-        "request": "RQ1 41 01 00 size 1",
-        "frame_bytes": 113,
-        "structure": "F0 41 10 42 12 41 01 00 00 | EF 10 01 EF 01 02 EF 00 1C EF 00 10 EF 00 45 ... EF 6C 77 | F0 41 10 42 12 41 01 00 00 3E F7",
-        "note": "The first nine bytes are a DT1 header for the requested address with no terminator. Then 31 three byte groups each led by EF. Then the correct 11 byte reply, which is what a clean probe of the same address returns. Byte values above 7F cannot occur inside a SysEx message."
-      },
-      "rates": {
-        "probes": 7420,
-        "malformed_frames": 150,
-        "by_reason": {
-          "one further F0 inside the frame": 102,
-          "four further F0": 42,
-          "three further F0": 4,
-          "two further F0": 2
-        },
-        "recovered_by_one_retry": 150
-      },
-      "why_it_matters": "Parsed without checking the interior, this frame reads as a 103 byte reply to a 1 byte request. The number is plausible and wrong, and there is nothing in it that looks like an error. A harness that only checks the F0 and F7 at the ends accepts it. It also caused a second, subtler failure: once frames like this were correctly refused, a liveness check that read 'did not parse' as 'said nothing' declared a live unit dead on its first probe.",
-      "not_established": [
-        "Where the frame comes from. Probing the same address in isolation always returns a clean 11 byte reply, so it depends on preceding traffic; nothing here separates the module, the interface and the host.",
-        "What the EF led groups are. EF is a channel status byte, but no interpretation of them was tested.",
-        "Whether a corruption that stays within legal SysEx values also occurs. It would pass this check and be caught only by the checksum, which was verified on every region of the completed sweep."
-      ],
-      "reproduced": true
+     "size": 40,
+     "returned": 40,
+     "median_ms": 51.3,
+     "max_ms": 51.5
     },
     {
-      "id": "cc10-pan-separation-depends-on-patch",
-      "summary": "CC10 hard pan fully separates a mono patch but leaves a stereo patch's internal spread largely intact.",
-      "method": "CC10=0 and CC10=127, note 84 at velocity 127, CC7=127, CC11=127, reverb and chorus sends at 0. Peak level per output channel over the sustained section.",
-      "results": [
-        {
-          "program": 56,
-          "separation_db": 68.0,
-          "detail": "opposite channel reached the measurement noise floor"
-        },
-        {
-          "program": 80,
-          "separation_db": 27.1
-        },
-        {
-          "program": 0,
-          "separation_db": 4.1
-        }
-      ],
-      "note": "Suggests pan is applied per part but does not override a patch's internal per-wave placement. The signal path itself has no measurable crosstalk, which is what the program 56 result establishes."
+     "size": 48,
+     "returned": 48,
+     "median_ms": 60.1,
+     "max_ms": 60.5
     },
     {
-      "id": "bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole",
-      "summary": "CC0 and CC32 change nothing readable on their own. A program change commits the three of them together, and only if that bank holds that program: otherwise the whole triple is discarded and the bank byte, the program byte and the map byte all keep the values they had. A bank left latched therefore switches off every later program change silently, because the latch itself is in no readable address.",
-      "method": "Send the bank halves and the program change one message at a time, reading 40 11 00 to 02 and 40 41 00 after each, over several combinations of bank MSB, map and program.",
-      "results": {
-        "CC0 alone": "nothing moves; the value is held, not stored",
-        "CC0=0 then PC 0": "40 11 00 = 00, 40 11 01 = 00  (accepted)",
-        "CC0=8 then PC 0": "40 11 00 = 08, 40 11 01 = 00  (accepted)",
-        "CC0=1, 2 or 3 then PC 0": "nothing moves at all  (discarded)",
-        "CC0=3 then PC 25": "nothing moves at all  (discarded)",
-        "CC32=0..4 with CC0=0, then PC 0": "40 41 00 takes 00, 01, 02, 03, 04 in turn  (accepted)",
-        "CC32=0 or 3 with CC0 left at 3, then PC 0": "nothing moves at all  (discarded)"
-      },
-      "note": "A discarded triple is indistinguishable from a message that was never sent: no byte moves, no reply is produced, and the part keeps playing what it played. This is what a difference based scan reads as 'the message is stored nowhere', and the reading is wrong in a way that spreads, because one such message poisons every program change after it.",
-      "found_by": "Chasing an attribution that appeared in two runs and then vanished for six. Message loss (0 in 300 control changes and 0 in 150 program changes), storage latency (median 12.6 ms, never above 14 ms) and failed region reads (0) were each measured and ruled out before the latch was found.",
-      "not_established": [
-        "Which bank and program pairs exist. Only the handful above were tried, and the boundary between accepted and discarded was not mapped.",
-        "Whether a discarded program change is audibly silent as well as invisible. Nothing here was heard.",
-        "Whether CC32 behaves as a map select in the sense the manual gives it. What is measured is that it reaches 40 41 00 and is kept there verbatim."
-      ],
-      "reproduced": true
+     "size": 56,
+     "returned": 56,
+     "median_ms": 68.7,
+     "max_ms": 69.2
     },
     {
-      "id": "eight-nrpns-reach-the-same-bytes-as-eight-control-changes",
-      "summary": "Every GS part NRPN this unit answers is stored in the same byte as a control change, verbatim on both routes. The pair is not merely two names for one parameter: it is one storage location with two ways in.",
-      "method": "The same difference scan run twice over the same 85 regions, once sending control changes and once sending an NRPN selector and data entry as one indivisible stimulus. Each stimulus is primed at one value, moved to a second and returned to the first, and a byte is kept only if it moved both times.",
-      "aliases": {
-        "40 11 30": [
-          "CC76",
-          "NRPN 01 08"
-        ],
-        "40 11 31": [
-          "CC77",
-          "NRPN 01 09"
-        ],
-        "40 11 32": [
-          "CC74",
-          "NRPN 01 20"
-        ],
-        "40 11 33": [
-          "CC71",
-          "NRPN 01 21"
-        ],
-        "40 11 34": [
-          "CC73",
-          "NRPN 01 63"
-        ],
-        "40 11 35": [
-          "CC75",
-          "NRPN 01 64"
-        ],
-        "40 11 36": [
-          "CC72",
-          "NRPN 01 66"
-        ],
-        "40 11 37": [
-          "CC78",
-          "NRPN 01 0A"
-        ]
-      },
-      "note": "The NRPN selector is re-sent with every value rather than once per pair. A selector left standing from an earlier stimulus is the ordinary way for a data entry to land somewhere nobody named.",
-      "not_established": [
-        "Nothing further about the SysEx route beyond the value stored; that it is a third way in, and that these bytes have no mirror, is recorded separately.",
-        "That the two routes are equivalent in anything but the value stored. Rate of change, resolution and audible result were not compared.",
-        "Anything about the per-note drum NRPNs, which only mean something on a part in drum mode."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "rpn-modulation-depth-range-is-stored-scaled-and-clamped-not-verbatim",
-      "summary": "RPN 00 05 is kept at 40 21 04 as floor(sent * 127 / 6), saturating at 127. It is the only one of the four GS RPNs that reaches any readable address, and the only alias so far that is not verbatim.",
-      "method": "Send the RPN selector and data entry MSB at each value from 0 to 8 and at 12, 24 and 127, reading 40 21 00 to 0A after each.",
-      "results": {
-        "0": 0,
-        "1": 21,
-        "2": 42,
-        "3": 63,
-        "4": 84,
-        "5": 105,
-        "6": 127,
-        "7": 127,
-        "8": 127,
-        "12": 127,
-        "24": 127,
-        "127": 127
-      },
-      "fit": "floor(v * 127 / 6) reproduces all six unsaturated points exactly, including 3 -> 63 where rounding would give 64.",
-      "rpns_that_reached_nothing": [
-        "00 00 pitch bend sensitivity",
-        "00 01 master fine tune",
-        "00 02 master coarse tune"
-      ],
-      "not_established": [
-        "Where the other three RPNs are kept. They changed no byte of the readable space; whether they are held somewhere unaddressable or not held at all is not decided by this.",
-        "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported. A DT1 write to the same byte is kept verbatim, so the conversion is in the RPN receiver and the byte itself is an ordinary 0 to 127 field: see sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly",
-      "summary": "A DT1 write reaches every byte a control change and an NRPN were measured to reach, keeping the value verbatim, and moves nothing else anywhere in the readable map. So each of these parameters has one storage location with three ways in and no mirror. The three routes are not interchangeable: RPN 00 05 converts on the way in while a DT1 to the same byte does not, so the scaling belongs to the receiver rather than to the storage.",
-      "method": "The same difference scan, sending a DT1 write as the stimulus. Each byte is primed at 20, written 60 and returned to 20, and the whole watched space is diffed rather than only the byte written, so a second location holding the same value would show. Every target byte is read before anything is written and written back and re-read at the end; a byte that would not read is never written to.",
-      "results": {
-        "reached verbatim by DT1": [
-          "40 11 19",
-          "40 11 1C",
-          "40 11 21",
-          "40 11 22",
-          "40 11 30",
-          "40 11 31",
-          "40 11 32",
-          "40 11 33",
-          "40 11 34",
-          "40 11 35",
-          "40 11 36",
-          "40 11 37",
-          "40 21 04"
-        ],
-        "mirrors found": "none",
-        "40 21 04 by DT1": "60 is stored as 60",
-        "40 21 04 by RPN 00 05": "6 is stored as 7F, and the fit is floor(v * 127 / 6)"
-      },
-      "mirror_search": "Two of the thirteen, 40 11 32 and 40 21 04, were written with all 854 regions watched rather than only the 85 under 40. Each moved its own byte and nothing else in the 37502 readable bytes. The other eleven were watched over the 85 regions under 40 only.",
-      "not_established": [
-        "That the other eleven have no mirror outside the 40 block. Only two were checked against the whole map; watching all 854 regions for all thirteen takes about four hours.",
-        "Which other parameters convert on the way in. Only 40 21 04 has been compared across two routes at several values.",
-        "That the three routes behave alike in anything but the value stored. Rate of change, resolution and audible result were not compared."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "gs-reset-reproduces-the-power-on-state-and-the-two-gm-resets-do-not",
-      "summary": "GS Reset returns all 37502 readable bytes to exactly what the unit held after a power cycle. GM1 System On leaves 88 of them elsewhere and GM2 System On leaves 974, and the two GM resets are not nested: they share 32 changes, GM1 makes 56 the other does not, and GM2 makes 942 the other does not. All three restore every marked byte, so the difference is not in what they reset but in what they additionally set.",
-      "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on-state.json.",
-      "results": {
-        "GS Reset": {
-          "message": "F0 41 10 42 12 40 00 7F 00 41 F7",
-          "marked_bytes_restored": "50 of 51",
-          "readable_bytes_differing_from_power_on": 0
-        },
-        "GM1 System On": {
-          "message": "F0 7E 7F 09 01 F7",
-          "marked_bytes_restored": "50 of 51",
-          "readable_bytes_differing_from_power_on": 88,
-          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks (40 10 to 40 1F and 50 10 to 50 1F), and at low bytes 23 and 24 in 28 of them; 40 10, 40 18, 50 10 and 50 18 already held 00 there"
-        },
-        "GM2 System On": {
-          "message": "F0 7E 7F 09 03 F7",
-          "marked_bytes_restored": "50 of 51",
-          "readable_bytes_differing_from_power_on": 974,
-          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks, as GM1 also does; 00 -> 7A at low byte 00 in all 32 blocks of the 40 4x and 50 4x family, which is the byte CC32 writes into; and 65 bytes in each of the fourteen drum setup families 41 to 47, 4A to 4F and 51",
-          "does_not_change": "low bytes 23 and 24, which GM1 System On does"
-        }
-      },
-      "reproduced": "three runs, the last two from a common starting state, all giving 88 and 974 exactly",
-      "not_established": [
-        "What any of the changed fields is. The addresses and the transitions are what was measured; naming them would be reading the manual, not the machine.",
-        "Whether the changes are audible. This is a read back and nothing was heard.",
-        "What System Mode Set does. It reinitialises rather than resetting parameters and was not sent.",
-        "That GS Reset reproduces power-on for anything unreadable. 37502 bytes of the 42064 the map spans were compared; the rest answer no read."
-      ]
-    },
-    {
-      "id": "the-tone-map-is-what-the-unit-accepts-and-it-refuses-most-of-the-space",
-      "summary": "Asking for all 16384 bank and program combinations on map 0 finds 1710 tones in 53 banks. Bank 0 holds a full 128. The variation banks thin out from there, down to bank 47 holding one tone and bank 48 holding one. Banks 64, 65 and 127 accept every program and bank 126 accepts exactly 0 to 63.",
-      "method": "There is no query for whether a tone exists, so each was asked for: send the bank select and the program change that commits it, then read the part's own tone bytes. A combination the unit does not have is discarded whole and leaves the part where it was, so a part that moved to what was asked for is the tone existing. The part is moved somewhere else first whenever it already stands on what is about to be asked, since otherwise accepted and discarded read alike.",
-      "coverage": "Exhaustive: every one of the 128 banks was asked for all 128 programs, on map 0 and channel 1. No read failed.",
-      "results": {
-        "tones": 1710,
-        "banks_holding_at_least_one": 53,
-        "bank_0": "all 128",
-        "banks_1_to_48": "variation banks, thinning with the bank number but not monotonically; local peaks at 8, 16, 24, 32 and 40",
-        "banks_49_to_63": "empty",
-        "banks_64_and_65": "all 128 each",
-        "bank_126": "exactly 0 to 63",
-        "bank_127": "all 128",
-        "banks_66_to_125": "empty"
-      },
-      "the_unit_really_does_refuse": "Bank 126 accepts 0 to 63 and refuses 64 to 127, which is a boundary a unit that simply took every program change could not produce. So acceptance is a decision the unit makes rather than an artefact of the asking.",
-      "sampling_would_have_missed_it": "Sampling six programs spread across the range before sweeping a bank, which is the cheaper form of this survey, reported 33 banks and 1584 tones. It missed 20 banks and 126 tones, including two banks whose only tone is a single program. A bank that reads as empty from a sample is not a bank that is empty.",
-      "not_established": [
-        "That the 128 accepted programs in banks 64, 65 and 127 are 128 distinct tones. A bank that holds everything and a bank that validates nothing are the same answer to this method; only hearing them apart would separate the two.",
-        "Anything about maps other than 0, or about a part in drum mode. CC32 was held at 0 throughout and the survey ran on channel 1.",
-        "What any tone is. What was measured is which combinations the unit takes, not what comes out of them."
-      ],
-      "reproduced": "the sampled form twice with identical bank and program lists where the two overlap"
-    },
-    {
-      "id": "one-note-played-twice-comes-back-the-same-to-the-noise-floor",
-      "summary": "Two takes of the same note, aligned to a fraction of a sample and levelled, differ by 54 dB less than the note itself, which is 0.1 to 2.3 dB above what the converter noise alone would leave. What actually fails to repeat is -58 dB down. The level agrees to under 0.001 dB. The trigger arrives within a 4 ms window, so the alignment is doing real work rather than confirming a timing that was already good.",
-      "method": "The same note is played several times with silence before it, each take cross correlated against the first, shifted by the fractional lag the correlation peak interpolates to, scaled by its best fitting gain, and subtracted. The noise floor is measured from the silence in the same take and raised 3 dB, because two takes carry that noise independently and their difference holds twice its power. The residual is reported as its distance from that floor, and the noise is taken back out in power to leave the part that is a fact about the machine.",
-      "results": {
-        "residual below the note": "-56.7 to -54.5 dB",
-        "noise floor for two takes": "-56.8 dB",
-        "residual above that floor": "0.1 to 2.3 dB",
-        "what does not repeat": "-58 dB, after the noise is removed in power",
-        "level agreement": "under 0.001 dB",
-        "trigger scatter": "-3.1 to +1.2 ms",
-        "worst correlation": 0.9998
-      },
-      "note": "This is the gate every difference measurement rests on. Averaging takes to get under the noise, and subtracting one setting from another to see what a parameter changed, both need it and neither can be checked afterwards from the data they produce. It holds for a struck piano note with no effect switched on; the chorus breaks it completely, which is recorded separately.",
-      "found_by": "Standing the measurement up before using it. Two setup faults were caught first and both produced healthy looking captures: the default input device was the machine's own microphone, giving silent takes that read as a unit failing to repeat, and the audio device takes 650 ms to open, so a note triggered on a timer started alongside the recorder sounded before a single sample was captured and only its tail was recorded.",
-      "not_established": [
-        "Whether other voices repeat as well as this one. Only program 0 was measured this way.",
-        "Whether the first 50 ms repeats as well as the whole take. The residual is dominated by the loud early part but was not measured separately.",
-        "Whether repeatability holds across a power cycle. Every take here came from one session."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "cc7-volume-is-a-square-law-and-changes-nothing-but-the-level",
-      "summary": "CC7 at 40 against 127 changes the level by 20.09 dB and leaves the shape of the note otherwise untouched. A square law, amplitude proportional to the square of the value, predicts 40 log10(127/40) = 20.07 dB. The two agree to 0.02 dB.",
-      "method": "Four takes of the same note at each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings the same way to measure the change. The comparison divides out the best fitting gain, so a change that is purely level leaves no residual at all and is read from the gain instead.",
-      "results": {
-        "level change": "+20.09 dB",
-        "square law prediction": "+20.07 dB",
-        "residual after levelling": "-38.6 dB, against -35.6 dB for two takes of one setting",
-        "shape verdict": "unchanged; the residual does not clear the repeatability by the 6 dB margin"
-      },
-      "note": "Reproduced at +20.09 dB on three separate runs. The prediction is an exact power of the ratio and nothing was fitted to reach it, so this is the volume curve rather than an approximation of it.",
-      "found_by": "Used as the positive control for the audibility method, since a volume control has to come out audible or the method is not measuring anything.",
-      "not_established": [
-        "Whether the square law holds over the whole range. Only 40 and 127 were compared, and two points cannot separate a square law from any other curve through them.",
-        "Whether it is a square law in amplitude or a decibel table that happens to pass through both points.",
-        "Whether the curve is the same for other patches or at other velocities."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "the-reverb-is-audible-and-stands-still-while-the-chorus-moves",
-      "summary": "CC91 at 0 against 100 changes the sound by 26 to 50 dB more than two takes of one setting differ, under all five stimuli, and takes with the reverb on repeat as well as dry ones. So the reverb reaches the signal path and holds no moving part. CC93 at 0 against 100 does the opposite: it leaves no residual that clears the yardstick, and instead destroys repeatability. What fails to repeat rises from between -41.6 and -63.3 dB dry to between -1.9 and -3.9 dB with the chorus on, under every one of the five. The chorus carries a modulator at a different phase each time the note is struck.",
-      "method": "The same contrast for both, four takes per setting, under five stimuli. Each setting's own repeatability is kept separately and reported as what fails to repeat with the noise taken back out, rather than as distance to the noise floor: whatever fails to repeat scales with the signal while the converter noise does not, so distance to the floor grows with level and a change that is nothing but level opens a gap with no modulator behind it. Four takes a setting, because the statistic is the median pair and three takes give two pairs, whose median is their mean.",
-      "results": {
-        "CC91, five stimuli": "shape changed, 25.7 to 49.8 dB clear of the yardstick",
-        "CC91 modulator flagged": "none of five",
-        "CC93 residual": "never clears the yardstick; the settings differ by less than the takes do",
-        "CC93 what fails to repeat, dry": "-41.6 to -63.3 dB",
-        "CC93 what fails to repeat, chorus on": "-1.9 to -3.9 dB",
-        "CC93 modulator flagged": "five of five"
-      },
-      "note": "The chorus is why a difference method needs a second kind of evidence. Once a free running modulator is on, the yardstick swallows any change, and the parameter that caused it would read as inaudible however large its effect. The collapse in repeatability is the measurement in that case, and it is only readable because each setting's repeatability is kept apart from the other's.",
-      "found_by": "Checking whether reverb on takes still repeated, then noticing that the same test called CC93 inaudible while the unit had visibly stopped repeating.",
-      "not_established": [
-        "The chorus modulation rate and depth. Only that a modulator is present and free running relative to note-on.",
-        "Whether the reverb tank is truly static or merely modulated far below what one struck note reveals.",
-        "Whether either holds at other send values. Only 0 against 100 was compared."
-      ],
-      "reproduced": "Re-measured 2026-09-03 under the current statistic, with every take kept. The conclusion is the one first recorded; the numbers are on a different scale because the statistic changed."
-    },
-    {
-      "id": "no-voice-in-the-bank-holds-a-steady-enough-tone-to-read-a-clock-from",
-      "summary": "Seven voices were held for 20 seconds each at A above middle C and their frequency taken from the slope of the unwrapped phase. All seven wobble: the phase departs from a straight line by 0.09 to 2.8 cycles, so none is a frequency reference. Their pitches span 466 ppm flat to 2842 ppm sharp of equal temperament at A440, with master tune at its default, so the spread is the voices rather than the tuning.",
-      "method": "One sustained note per voice, the band around the expected fundamental isolated so the phase belongs to the fundamental alone, then a straight line fitted to the unwrapped phase. The departure from that line is kept beside the slope, because a wobbling tone still yields a confident slope and the departure is the only thing that says the slope means nothing. Each voice was asked for through the bank latch and confirmed taken before it was recorded.",
-      "results": {
-        "voices tried": 7,
-        "steady": 0,
-        "phase departure": "0.0884 to 2.7646 cycles over 20 s",
-        "pitch spread": "-466 to +2842 ppm off equal temperament",
-        "calmest voice": "program 80, 0.0884 cycles, +2842.0 ppm reproduced to 0.1 ppm on three runs",
-        "master tune": "default, 0.0 cents"
-      },
-      "note": "The calmest voice bounds the measurement chain rather than the unit: every take passed through the same converters, so the chain cannot be wandering by more than the least wobbly voice does, which puts it under 10 ppm over 20 seconds. The rest is the voices. A departure measured this way is in any case the unit's tuning and the ratio of its sample clock to the converter's, together, and nothing here separates them. It is the correction a comparison against software rendered at exactly 48000 Hz would need; a comparison of two takes from this unit needs none of it, since both carry it equally.",
-      "found_by": "Trying to read the sample clock, and finding that the instrument stands in the way of it.",
-      "not_established": [
-        "The clock ratio on its own. It cannot be separated from the voices' tuning without a source whose pitch is known independently.",
-        "Whether any voice anywhere in the 1710 tone map is steady. Seven were tried, chosen for being plausibly simple.",
-        "Whether the wobble is vibrato, layered detuning, or an unstable oscillator. Only that the tone is not steady."
-      ],
-      "reproduced": true
-    },
-    {
-      "id": "a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it",
-      "summary": "A part switched to rhythm mode accepts a chorus send, stores it verbatim and reads it back, and sounds no different for it. The reverb send on the same part in the same run is plainly audible. This is a property of rhythm mode rather than of part 10: part 2 hears the chorus while it is melodic and stops hearing it once USE FOR RHYTHM PART is set, with nothing else changed.",
-      "method": "CC93 0 against 100 and CC91 0 against 100, four takes a setting, on a broadband unpitched note. Run on part 10 with the standard kit at notes 38 and 49, and on part 2 with USE FOR RHYTHM PART written to 1 at note 49. The reverb is the positive control in every cell: it shares the channel, the kit, the note and the protocol, so a cell where the reverb is audible and the chorus is not cannot be explained by the message failing to arrive. Storage was read back with RQ1 after the controller was sent.",
-      "results": {
-        "part 1, melodic, CC93": "audible; what fails to repeat rises from -62.2 to -2.2 dB",
-        "part 2, melodic, CC93": "audible; -63.1 to -0.6 dB",
-        "part 2, rhythm, CC93": "inaudible; settings differ by -46.2 dB against takes at -43.6",
-        "part 2, rhythm, CC91": "audible, 23.2 dB clear of the yardstick",
-        "part 10, rhythm, CC93": "inaudible; -40.6 and -38.5 dB under two notes",
-        "part 10, rhythm, CC91": "audible, 26.2 and 24.1 dB clear",
-        "stored at 40 10 21 after CC93 100 on channel 10": 100,
-        "stored at 40 12 21 after CC93 100 on channel 2": 100,
-        "stored at 40 12 15 after the rhythm mode write": 1
-      },
-      "note": "The chorus send on a rhythm part is state and not audio. Both readings are needed to say that: the address answers, holds what it was given and survives a read, so a scan that only writes and reads back would file it as working. Only a recording says it does nothing. The same address on a melodic part is audible, so the level belongs to the part's mode rather than to the address.",
-      "found_by": "Looking for an unpitched note to measure the chorus's modulation with, since a pitched one folds a delay into its own period, and finding that the chorus was not there.",
-      "not_established": [
-        "That the storage row was taken through the map. The map bounds 40 10's first region at 26 bytes ending at 40 10 19, which would put 21 outside the block; it answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So the readback stands and the region size was never a claim about it. The readback itself has no record file of its own in this directory, the figure appearing only here.",
-        "Why. Whether the send is ignored, the part is off the chorus bus, or the return is muted for rhythm parts is not separated by anything measured here.",
-        "Whether it holds for kits other than the standard one, or for map 2.",
-        "Whether the same is true of the other sends. Only the chorus and the reverb were asked.",
-        "Whether an insertion effect reaches a rhythm part. Not asked."
-      ],
-      "reproduced": "Four cells, two parts, three notes, with the reverb as a control in each."
-    },
-    {
-      "id": "the-reverb-is-a-damped-network-and-a-pitched-note-cannot-read-it",
-      "summary": "Excited with a broadband unpitched note, the reverb's decay falls smoothly from 2.10 s at 63 Hz to 1.03 s at 8 kHz, the top decaying 2.04 times faster than the bottom. Every band is straight, departing from its fitted line by 0.17 to 0.89 dB. Excited with a piano note instead, the same reverb reads 1.69, 2.09, 1.41, 2.44, 1.62, 1.90, 1.52 and 0.87 s -- a scatter several times wider than each band's own bound, in no order.",
-      "method": "The dry take was aligned to the wet one, scaled by its best fitting level and subtracted, leaving the reverb's return over the whole take rather than only after the note stopped. Each octave band's energy was then integrated from the end of the usable tail backwards, after the noise floor's own contribution was removed and the tail truncated where it reaches that floor. A straight line was fitted to the integrated curve between -5 and -25 dB and extrapolated to 60 dB. The departure from that line is reported with every time, since a tail that is two decays in sequence yields a slope as readily as one decay does. A snare was used because the isolated return is the note convolved with the effect and falls at the slower of the two.",
-      "results": {
-        "63 Hz": "2.098 s, bound 18%",
-        "125 Hz": "2.220 s, bound 12%",
-        "250 Hz": "2.048 s, bound 9%",
-        "500 Hz": "2.061 s, bound 6%",
-        "1 kHz": "1.878 s, bound 5%",
-        "2 kHz": "1.733 s, bound 3%",
-        "4 kHz": "1.331 s, bound 3%",
-        "8 kHz": "1.027 s, bound 2%",
-        "bottom over top": 2.04,
-        "curvature": "0.17 to 0.89 dB",
-        "same reverb on a piano note": "1.41 to 2.44 s across the bands, unordered"
-      },
-      "note": "The bound on each band comes from its bandwidth times the fitted duration, which counts how many independent samples the estimate had. It assumes the band was excited across its width. A harmonic note does not do that -- only the partials that fall inside a band excite it -- so under a piano the true count is far lower than the bound assumes and the scatter is the note's line spectrum rather than the reverb. The stated bound is honest only for a broadband source, which is why the number to read is the snare's.",
-      "found_by": "Measuring the reverb through a piano note first, and finding a spread that no bound allowed for.",
-      "not_established": [
-        "The reverb's type or topology. A decay per band says a delay network is damped in the loop; it does not say how many delays, of what lengths, or in what arrangement.",
-        "Anything about settings other than CC91 at 100 with every reverb parameter at its power-on default.",
-        "The predelay, the early reflections, or the density. None was asked for.",
-        "Whether the decay is the same for a part other than the rhythm part."
-      ],
-      "reproduced": "One capture per stimulus. The two stimuli disagree, and the note explains why."
-    },
-    {
-      "id": "twenty-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound-and-three-blocks-agree",
-      "summary": "A melodic part block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 1n 17 accepts one value only and cannot be asked at all. Of the 46, 20 changed the sound and 26 did not under anything tried. Parts 1, 2 and 3 were each swept in full and returned the same 20, address for address. The rhythm part's block is not the same block: the map bounds it at 35 addresses, 34 askable, of which 10 changed the sound.",
-      "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte. Each block was asked on the channel its own 40 1n 02 byte says it listens to, read from the unit rather than assumed: 00 for 40 11, 01 for 40 12, 02 for 40 13.",
-      "results": {
-        "audible": "40 1n 02, 08, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
-        "not audible under what was tried": "40 1n 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 13, 14, 18, 1F, 20, 23, 24, 25, 37",
-        "cannot be asked": "40 1n 17, which accepts 08 and nothing else",
-        "heard as a change in stereo balance": "40 1n 15, 16, 1C",
-        "identical across the three blocks swept": true,
-        "rhythm_part_block": {
-          "addresses": 35,
-          "askable": 34,
-          "audible": "40 10 02, 08, 15, 19, 30, 31, 32, 33, 34, 38",
-          "cannot be asked": "40 10 17, the same offset the melodic blocks cannot ask either",
-          "not_asked_in_this_block": "40 1n 1A to 25. The map bounds the rhythm block's first region at 26 bytes ending at 40 10 19, and an oversize read there is refused, so the plan the sweep was built from never contained these twelve and not one of them was asked. They do exist: each answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So this is a bound on what the sweep asked, not a difference between the two kinds of block."
-        }
-      },
-      "the_three_blocks_agree": "Parts 1, 2 and 3 were swept independently and answered with the same 20 addresses, with nothing left unasked in any of them. Three blocks agreeing is not the same as sixteen, and the remaining thirteen were not swept.",
-      "asking_the_channel_byte_needs_the_stimulus_channel": "40 1n 02 is the byte the part listens to a channel on, and the pair to ask it at cannot come from the write probe alone. The probe reports the accepted range and the plan picked 0 against 16 for all three blocks from it; the plan cannot know which channel the stimulus is on. For part 1 that pair happens to be its own channel against off, which is a question. For parts 2 and 3 both values take the part away from the note being played, so both settings are silent and the run refused to measure -- correctly, and in a way that reads as a failed capture rather than as a badly chosen pair. Asked at the part's own channel against off, all three answer audible on the level channel.",
-      "positive_control": "The plain note's own take-to-take repeatability is measured in every run and sat between -56 and -62 dB throughout, including in the runs taken to check a doubtful verdict. That is what says a stimulus returning no usable yardstick is a fact about the stimulus rather than about the chain that hour.",
-      "not_established": [
-        "What any of the audible addresses does. Audible means the sound changed, not that the change was identified.",
-        "That the inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than the one used, or under a message none of the gestures sent would read as inaudible here.",
-        "Where the rhythm part holds the controllers it responds to. Twelve of the addresses a melodic part holds them in were outside the plan this sweep was built from and were not asked, and a saved readback disagrees with the map about whether they are there at all.",
-        "Anything about parts 4 to 16. Three melodic blocks and the rhythm block were swept; the block is per part and the rest were not.",
-        "Anything about 40 1n 17, which no pair of settings can be built for in either kind of block.",
-        "Anything a parameter about polyphony would answer. Two stimuli were built for it and neither produces a yardstick that repeats, so the pass was withdrawn rather than read."
-      ],
-      "reproduced": "The 20 are the intersection of three independent block sweeps. Every address that appeared in one block and not the others was asked again, and none of those verdicts survived: 40 11 0D, 40 11 13 and 40 11 24 were each audible in one pass and inaudible when re-asked, the re-asks having yardsticks as good or better than the original. They are recorded here as not audible, and the disagreement is stated rather than averaged.",
-      "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
-      "what_the_rhythm_block_answered": "Every address asked in the rhythm block was audible in a melodic block too, and nothing was audible there and not here. Of the ten addresses audible in a melodic block and not in the rhythm block, seven fall outside the region the map bounds for 40 10 and so were never asked there; the remaining three were asked in both and heard in one: 40 1n 16, 35 and 36. Three is the comparison this sweep supports. The other seven are unasked rather than answered.",
-      "why_the_twelve_were_not_asked": "The plan comes from the write probe's rows, which come from the map's regions, and the map bounds 40 10's first region at 26 bytes. The twelve above it were therefore never put to a note. They are not absent from the block -- each answers a single-byte read and holds independently -- so what is missing is an audible verdict for them, and the comparison this sweep supports covers three shared addresses rather than ten. The ten it did find audible do not depend on any of this: none of the twelve is among them."
-    },
-    {
-      "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
-      "summary": "At panpot 127 the two channels the unit arrives on sit at -58.6 and -48.4 dB on every take, agreeing to 0.1 dB. At panpot 0 the same four takes land at -54.5/-49.3, -47.3/-62.9, -52.2/-50.6 and -63.7/-47.4 dB: a balance spanning over 31 dB while the two channels together stay within 1.21 dB. The placement is different on every note struck; the loudness is not.",
-      "method": "Four takes a setting, each channel's level measured separately rather than after the take was reduced to one channel. The channel pair was chosen from the loudest setting, since a setting that produces nothing would otherwise have the pair picked out of its own noise.",
-      "why_it_matters": "Every other measurement here reduces a take to one channel, which is what makes a residual mean anything. A parameter that moves signal between the channels is therefore invisible to all of them, and it does not read as nothing: a placement that differs on every take reads as the unit failing to repeat itself. 40 11 1C came back as could not be measured for exactly that reason, and the verdict was about the harness wearing the parameter's name.",
-      "results": {
-        "at 127": "-58.6 and -48.4 dB, spread 0.0 dB over four takes",
-        "at 0": "balance spread 31.9 dB over four takes",
-        "the two channels together, at 0": "within 1.21 dB",
-        "addresses in part 1 whose balance moved at all": "40 11 13, 15, 16 and 1C; the other 42 show a spread of 0.0 dB"
-      },
-      "found_by": "A parameter that had to be audible reading as could not be measured.",
-      "not_established": [
-        "Where the note is placed at any given panpot value. What was measured is that the placement moves and that it is not the same twice at 0.",
-        "Whether the same happens at values between 0 and 127.",
-        "Whether it is the panpot or the voice that scatters. Program 0 was the only voice asked."
-      ],
-      "reproduced": "Measured from the takes of two separate passes over the block, which agree about which addresses move the balance."
-    },
-    {
-      "id": "part-vibrato-rate-runs-at-1273-hz-at-its-maximum",
-      "summary": "With modulation held at 127, the note's own frequency is modulated at 12.73 Hz on all four takes with 40 11 30 set to 127, and no modulation is found at all with it set to 0. Left at its power-on value the same measurement reads 4.11 Hz, taken from the takes of a different address in the same block, and 4.11 to 4.52 Hz from those of another.",
-      "method": "The note's frequency was tracked through a single take and the track searched for a periodic component, rather than comparing two takes. A free-running modulator is at a different phase every time the note is struck, so two takes with it on disagree about nearly everything and the difference measurement's own yardstick swallows the change; its rate and depth are the same on every take even though its phase is not. Frames were required to stand 12 dB over the take's own lead-in, and a cubic trend was removed before the search, since a struck note settles in pitch as it decays and a straight line leaves enough of that curve behind to read as a deep slow modulation.",
-      "results": {
-        "40 11 30 at 127": "12.731 Hz on each of four takes, 37.6 to 82.9 cents peak to peak",
-        "40 11 30 at 0": "nothing found on any of four takes",
-        "at its power-on value": "4.11 Hz, and 4.11 to 4.52 Hz in an earlier run",
-        "shallowest modulation the tracker recovered from this material": "12 cents, injected as a control"
-      },
-      "note": "The null at 0 is a null over the searched band. With about two seconds of usable track and three cycles required before a rate is claimed, the search cannot claim anything below roughly 1.5 Hz, so what was established is that no modulation runs between about 1.5 and 15 Hz -- not that the modulator stopped.",
-      "found_by": "A parameter that no comparison of two takes could answer, because the modulator destroys the yardstick the comparison rests on.",
-      "not_established": [
-        "The rate at any value between 0 and 127, or whether it is linear in the byte.",
-        "The depth. It scatters from 37.6 to 82.9 cents across four takes of one setting, which is wider than anything a setting difference would have to clear.",
-        "What 40 11 37 does. Both its settings modulate at 4.11 Hz and their depths scatter from 71.9 to 212.6 cents at each, so a depth taken over the whole take cannot separate them."
-      ],
-      "reproduced": "Four takes a setting, and the power-on rate seen again in two other addresses' takes."
-    },
-    {
-      "id": "the-two-stimuli-built-to-ask-about-polyphony-produce-no-yardstick-that-repeats",
-      "summary": "Two notes at once, and one note struck twice 0.4 s apart, were built to ask the questions a single note cannot put. Neither repeats: the plain note's takes agree within -56 to -62 dB, while the struck-again stimulus lands between -1.1 and -66 dB with 84 per cent of its figures worse than -10 dB. No verdict taken from either survived being asked a second time.",
-      "method": "Both stimuli were run over every address three block sweeps had left silent, four takes a setting, and the doubtful verdicts were then asked again -- including with the takes doubled to eight. A plain struck note was measured on the same chain in the same period as a control on the chain itself.",
-      "why_it_is_the_stimulus_and_not_the_chain": "The plain note measured 61.53 and 62.30 dB of agreement between its takes minutes after the failing runs, which is where it has always sat on this unit. A chain that had degraded would have taken the plain note down with it.",
-      "the_mechanism": "Two voices sounding together sum with whatever relative phase the trigger leaves them, and this chain's trigger scatter spans about 3.9 ms against a 3.8 ms period at the note used. The phase is therefore free from take to take, the level moves with it, and the channel that reads one setting's takes agreeing worse than the other's has nothing left to detect.",
-      "what_it_cost": "Sixteen addresses were reported audible across three blocks on this evidence, each witnessed by a single stimulus and on a different set of addresses in every block. A parameter cannot do that. The guard that already existed for the modulation gesture was keyed on that gesture's name rather than on the channel a verdict came from, so it passed all sixteen.",
-      "not_established": [
-        "That the questions themselves are unanswerable. What is established is that these two stimuli, judged this way, cannot answer them. A stimulus whose two voices are far enough apart in pitch to be separated, or a measurement that does not rest on take-to-take agreement, is untried.",
-        "Whether any of the sixteen addresses is in fact audible. They are recorded as not audible under what was tried, which is what the surviving evidence supports."
-      ],
-      "reproduced": "Eight addresses were asked a second time, six doubtful and two chosen because their first pass had looked sound. Neither of the two survived: one lost its steady yardstick entirely, the other kept an audible verdict while the setting that had been steady at -66.34 dB fell to -1.85. Three of the six changed answer as well.",
-      "found_by": "Asking whether a verdict that only one stimulus ever witnessed would come back."
-    },
-    {
-      "id": "a-signal-presented-to-the-analogue-input-reaches-the-output-and-bypasses-the-effects",
-      "summary": "A swept sine played into the analogue input comes back flat within 0.1 dB from 63 Hz to 8 kHz with distortion 86 dB down. The insertion effect, the system reverb and the system chorus were each raised as far as they go, and the returned sweep moved by 0.2, 0.5 and 0.2 dB. Each was raised with a control proving the same state changes a note the machine plays.",
-      "method": "Two runs of three exponential sine sweeps each, deconvolved so the linear response and each harmonic order arrive separately; the second run with 40 03 00 set to a distortion type and 40 41 22 routing part 1 through it, both read back after writing. The control puts the same state to a struck note and compares the routing byte bypassed against routed.",
-      "why_it_matters": "Characterising an effect by sweeping a known signal through it is the only route that separates a linear response from the harmonic orders it generates, and it is closed on this machine. What can be learned about the insertion effects has to come from the machine's own voices.",
-      "not_established": [
-        "That the input path is stereo. One of the two return channels carried the sweep and the other carried essentially nothing, so this measures one channel.",
-        "Whether some send exists that would route the input into an effect. What is established is that with each effect raised as far as it goes, nothing presented to the input comes back changed."
-      ],
-      "reproduced": "Three sweeps per run, the floor sitting within 0.3 dB across them in the first and 0.1 dB in the second, so neither run is one disturbed sweep read as a result.",
-      "found_by": "Asking whether the approach the effect work would rest on could work at all.",
-      "a_control_that_fails_for_its_own_reason": "The chorus needed a second attempt. Raising its system level alone changes nothing a note can hear, because the per-part chorus send powers up at zero and the level scales a send of nothing; the reverb's per-part send powers up at 40, so the same control works there. The first run's null is not reported. This is the shape a null has to be checked for: a state raised into something that was never connected produces exactly the reading a genuine bypass does."
-    },
-    {
-      "id": "half-of-one-insertion-effects-parameters-change-the-sound-and-the-type-level-sort-could-not-have-said-so",
-      "summary": "Of the twenty parameter addresses one insertion effect type loads, ten changed the sound, nine did not under the note asked, and one broke the repeatability it would have been measured against instead of changing anything the comparison could see. The type-level sort passed all sixty-five types the unit has, so it turned nothing away; asked at the parameter, the same question retires nine addresses of twenty.",
-      "method": "Type 04 02 loaded at 40 03 00 and the stimulus's part routed through it at 40 42 22, both read back after writing. Each of 40 03 03 through 40 03 16 was then written at two settings, four takes each, on a broadband unpitched note played on a melodic part. Takes of one setting are compared with each other before the two settings are, and the change must clear that by 6 dB. The accepted range for each address was measured in this same prepared state, not carried from the whole-map probe, which was taken with no effect loaded.",
-      "results": {
-        "audible": "40 03 04, 40 03 05, 40 03 08, 40 03 0B, 40 03 0C, 40 03 12, 40 03 13, 40 03 14, 40 03 15, 40 03 16",
-        "not audible under the note asked": "40 03 03, 40 03 06, 40 03 07, 40 03 09, 40 03 0A, 40 03 0D, 40 03 0E, 40 03 0F, 40 03 11",
-        "started something that does not repeat": "40 03 10",
-        "changes the level and not the shape": "40 03 16, asked at 44 against 88",
-        "silences the routed part at 0": "40 03 16"
-      },
-      "why_it_matters": "A gate is worth what it turns away. Sorted by type, every type this unit accepts is audible, so the count of parameters to sweep stands where it started. Sorted by parameter, nine of twenty need no response measurement at all, and that is the difference between a bounded stage and an open one.",
-      "positive_control": "Routing the part through this type against bypassing it, under the same type and note, is audible at 38.6 dB over the yardstick, taken in the same run. So a null here is about the parameter rather than about a chain that was doing nothing.",
-      "not_established": [
-        "Anything about the other sixty-four types. The addresses are shared and what each holds is not, so this is one type's answer at those addresses.",
-        "What any audible parameter is, or by how much it moves anything. Two settings were compared; no curve was measured between them.",
-        "That the nine nulls do nothing, under another note, another velocity, or a pair that is not the two ends of the range.",
-        "Whether 40 03 10 does anything besides start a modulator. It removed the yardstick, so anything else it does sits behind that."
-      ],
-      "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be. Two addresses were asked a second time and the withdrawn pair is named with its reason: 40 03 16 at 0 against 127 compared sound with silence and put the lead-in above full scale.",
-      "found_by": "Asking the parameters of one type, after the sort that was supposed to bound them passed every type."
-    },
-    {
-      "id": "the-second-output-pair-carried-nothing-for-a-note-the-first-pair-carried",
-      "summary": "A note the first output pair carried 58 dB over the silence before it left the second pair at the line inputs' own noise floor, -107.5 dB, with no note in it. The first pair was measured immediately before and immediately after the change and answered the same both times.",
-      "method": "One stimulus, one prepared state and one pair of interface inputs throughout. The routing byte the insertion effect is reached through was compared at its two settings on the first output pair, then the cable was moved to the second pair and the same comparison made, then moved back and made a third time. Every channel of the capture was read rather than the loudest, so a signal arriving anywhere would have been seen.",
-      "results": {
-        "first pair, before the change": "audible; shape -0.21 dB against a repeatability of -38.78 dB, floor -52.51 dB",
-        "second pair": "no note at any channel; -94.2, -102.2, -107.5 and -107.5 dB RMS across the four inputs, the last two being the pair the first output was read on",
-        "first pair, after the change": "audible; shape -0.21 dB against a repeatability of -39.71 dB, floor -53.40 dB"
-      },
-      "positive_control": "The first output pair, on the same inputs and the same stimulus, before and after. Two figures that agree to 0.01 dB on the shape channel and to 0.9 dB on the repeatability, either side of the change, are what say the silence in between was the output rather than the chain. A single reading of a silent input cannot be told from a cable that was not seated.",
-      "why_it_matters": "Reading a dry and a wet version of one performance at the same time would remove the repeatability the machine's own voices do not have, which is what stands between this archive and a deconvolved response. That needs two output pairs carrying different things and two pairs of inputs to read them on. Neither was available: the second pair carried nothing here, and the interface in this chain has one usable line pair.",
-      "not_established": [
-        "Nothing further. The address that moves a part to the second pair was found afterwards and is recorded under one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects. The silence measured here was the state this unit powers up in, not the pair.",
-        "What the second pair does under any other state, program or part.",
-        "That the two pairs would differ if both carried something. Nothing was compared, because there was nothing on one side to compare."
-      ],
-      "reproduced": "Three runs, three takes a setting, the first and last being the same measurement either side of the change.",
-      "found_by": "Asking whether the second output pair carries a different mix, which would make a simultaneous dry reference possible."
-    },
-    {
-      "id": "one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects",
-      "summary": "40 42 21 accepts 00 to 03 and holds 00. At 00 the part sounds on the first output pair and not the second; at 01 it sounds on the second and not the first. On the second pair neither the insertion effect nor the system reverb changes it, while a volume controller does.",
-      "method": "One stimulus throughout. The byte was compared at 00 against 01 with the capture on the first pair, then the cable moved and the same comparison made on the second, so each run holds both settings and no verdict rests on which output was connected. With the part left on the second pair, the routing byte that reaches the insertion effect was compared at its two settings under a loaded type, the reverb send at 0 against 100, and a volume controller at 40 against 127. The byte was found by reading the addresses above the region the map bounds for this block, and probing what the ones that answered accept.",
-      "results": {
-        "40 42 21 on the first pair": "the note stands 56.7 dB over the lead-in at 00 and 1.1 dB at 01",
-        "40 42 21 on the second pair": "1.4 dB at 00 and 57.4 dB at 01",
-        "insertion effect, part on the second pair": "no change: takes differ by -34.34 dB and the settings by -34.91 dB",
-        "system reverb, part on the second pair": "no change: takes differ by -40.34 dB and the settings by -40.21 dB",
-        "accepted range": "00 to 03, clamping outside it, holding 00 when read",
-        "answering above the mapped region": "40 42 20, 21 and 22, where the map bounds the region at 2 bytes"
-      },
-      "positive_control": {
-        "on the second pair": "A volume controller at 40 against 127 is audible there in the same session, 20.09 dB of level over a repeatability of -32.20 dB. So the part sounds on that pair and a change to it would have been seen.",
-        "on the first pair": "The same insertion effect comparison is audible on the first pair at -0.21 dB against a repeatability of -39.71 dB, measured in the same session. So the null on the second pair is the output rather than the effect being idle."
-      },
-      "why_it_matters": "A dry rendering of the machine's own voice is what a deconvolution needs and what turning an effect off in a separate take does not give, because the voices do not repeat well enough to be divided out. This pair renders one. It does not render it at the same time as the wet one, since the byte moves the part rather than copying it.",
-      "not_established": [
-        "What 00 to 03 mean beyond 00 and 01. Two of the four accepted values were asked.",
-        "Whether the chorus or the delay reaches the second pair. Only the insertion effect and the reverb were raised.",
-        "That the second pair is the same signal as the first with the effects removed. It carries the part and neither effect changes it; nothing compared the two pairs against each other, which would need both captured at once and this chain has one usable line input pair.",
-        "What 40 42 20 does. It answers, accepts 00 to 01 and holds 01, and was not asked anything further."
-      ],
-      "reproduced": "The two output pairs were measured with the same comparison and answered as each other's mirror, each run carrying both settings.",
-      "found_by": "Asking whether a second output pair could carry a dry reference of the same performance."
-    },
-    {
-      "id": "four-regions-under-the-parameter-blocks-run-past-the-size-the-map-gives-them",
-      "summary": "Reading one byte past every region the map holds, and on forward where one answered: of the 85 regions under the block the parameters live in, four run past their mapped size, 29 addresses in all. Two of them are in the insertion effect's own block. Across the whole map 660 of 854 regions run past their end, but 480 of those are the twelve blocks already established to be a window, which answer at any address.",
-      "method": "One single-byte read at the address one past each region's mapped end, and on forward until an address answered nothing or sixteen had answered. An address known to answer was asked every twenty-five regions, since every result here is a negative and a unit that stopped talking answers nothing to all of them. Nothing was written.",
-      "results": {
-        "regions asked": 854,
-        "under the parameter blocks": "85 regions, 4 running past their mapped end: 40 00 00 mapped 4 and answering 3 further, 40 03 00 mapped 30 and answering 2 further, 40 10 00 and 40 18 00 each mapped 26 and answering 12 further",
-        "the drum map and setup blocks": "44 of 44 and 48 of 50 run past their end, 1472 addresses",
-        "the window blocks": "40 of 42 regions in each of the twelve, which is the window answering rather than a region extending",
-        "whole map": "660 of 854 regions, 10483 addresses"
-      },
-      "why_it_matters": "The write probe, the hold probe and every block plan are built from these sizes, so an address above a region's mapped end has had nothing asked of it -- not because it was judged uninteresting but because no stage knew it was there. Four regions is small enough to name, and two of the four are in the block the insertion effect's parameters live in.",
-      "not_established": [
-        "Anything about an address separated from its region by a gap. This reads forward from a region's end and stops at the first address that answers nothing, so a run of live addresses beyond a silent gap is invisible to it. At least one such run exists: the byte that moves a part to the second output pair sits 30 bytes past a region this reports as ending where the map says.",
-        "That an address answering nothing here does not exist. A single-byte read does not reach every byte of a readable block on this unit, which is recorded separately, so a null is bounded by what such a read reaches.",
-        "How far the regions capped at sixteen actually run. Sixteen is where the reading stopped, not where the addresses did.",
-        "What any of the addresses found this way holds or does. They answered a read; nothing was written to them and nothing was heard."
-      ],
-      "positive_control": "An address known to answer, asked every twenty-five regions throughout, and answering every time. A run that lost the unit would otherwise report the rest of the map as regions ending exactly where the map says.",
-      "reproduced": "One pass over every region the map holds, with the canary carried through it.",
-      "found_by": "Two blocks in a row turning out to have live addresses above the size the map gave them."
-    },
-    {
-      "id": "asking-a-blocks-offsets-one-by-one-stopped-the-unit-answering-anything",
-      "summary": "Reading all 128 offsets of one block, a byte at a time, left the unit answering nothing -- not the address the run was asking about, not the address it carried as a control, and not an identity request. It did not come back on its own and was recovered by switching it off and on.",
-      "method": "One single-byte read per offset, from 40 40 00 through 40 40 7F, with a 0.3 s deadline. Five offsets answered and the rest did not, so most of the run was a request followed by a wait. The control was asked once the block was finished and had stopped answering by then; the selftest before the run had passed every check, including twenty identical reads with none unanswered and a round trip of 15.2 ms.",
-      "why_it_matters": "A scan of addresses nothing is known about is not a read-only operation on this unit. One address in the map is already recorded as a command rather than a readable location, so a request that looks like a read can be something the unit does. Any stage that walks addresses blind carries this risk, and a run that hangs the unit costs whatever else was in flight.",
-      "not_established": [
-        "Which offset did it. The run asked 128 of them and the control was asked once at the end, so the hang is bounded by the block rather than by an address. Narrowing it would mean hanging the unit again, once per bisection step.",
-        "That it was an offset at all. A rate, a depth of unanswered requests, or the 0.3 s deadline repeated 123 times are not separated from each other or from the addresses by this.",
-        "Whether it repeats. It was seen once.",
-        "Whether anything was left changed. The unit was power cycled, which is also what clears any state a command-like address may have set, so the two cannot be told apart afterwards."
-      ],
-      "positive_control": "The selftest immediately before the run passed, and the control address answered when the run began. So the silence afterwards was the run rather than a unit that was already gone.",
-      "reproduced": "Not reproduced. Recorded from one occurrence, because what it changes is how a run may be made rather than what the unit holds.",
-      "found_by": "Scanning a block's offsets to find addresses that sit past a silent gap, which reading forward from a region's end cannot reach."
-    },
-    {
-      "id": "a-parts-assign-block-holds-five-addresses-and-three-of-them-sit-past-a-silent-gap",
-      "summary": "Of the 128 offsets in one part's assign block, five answer a single-byte read: 00 and 01, which the map holds, and 20, 21 and 22, which it does not. A second such block answers at the same five offsets. 21 is the byte that moves the part to the second output pair and 22 the byte that routes it through the insertion effect.",
-      "method": "Every offset of 40 40 asked once at size 1. The same five offsets had already answered in 40 42, which was read by hand after the map's region for it turned out to end at two bytes.",
-      "results": {
-        "answered in 40 40": "00 holding 00, 01 holding 04, 20 holding 01, 21 holding 00, 22 holding 00",
-        "answered in 40 42": "the same five offsets",
-        "mapped": "00 and 01 only, the map giving the region two bytes",
-        "known": "21 moves the part to the second output pair; 22 routes it through the insertion effect",
-        "not known": "20, which accepts 00 to 01 and holds 01"
-      },
-      "why_it_matters": "Three of the five sit thirty-odd bytes above a region the map bounds at two, with silence in between. Reading forward from a region's end stops at that silence, so these are addresses no stage built from the map would ever ask about -- and two of them decide where a part's audio goes.",
-      "not_established": [
-        "That the other fourteen blocks of this kind answer at the same offsets. Two of sixteen were asked, and the scan that would have asked the rest stopped the unit answering.",
-        "What 40 4n 00, 01 and 20 hold or do. They answer a read; nothing was heard.",
-        "That five is all there is. Offsets above 7F are not addressable this way, and an address reachable only by a block read starting earlier would not answer here."
-      ],
-      "reproduced": "Two blocks of the kind, answering at the same five offsets.",
-      "found_by": "Asking every offset of a block, after a byte that decides a part's output turned up past a gap the map gave no reason to look beyond."
-    },
-    {
-      "id": "the-insertion-effect-block-runs-two-bytes-past-the-map-and-its-three-sends-are-the-audible-part-of-its-tail",
-      "summary": "The insertion effect's block answers to 40 03 1F and not to 40 03 20, so it holds 32 addresses where the map gives it 30. Of the nine above the twenty parameters, three change the sound and five do not; one accepts a single value and cannot be asked. One of the three removes the repeatability it would be read against.",
-      "method": "The block's end was found by reading forward a byte at a time until nothing answered. The accepted range of each of the nine was then measured with the type loaded and the part routed through it, and each was compared at the two ends of that range, four takes a setting, on a broadband unpitched note played on a melodic part.",
-      "results": {
-        "the block ends at": "40 03 1F; 40 03 20 answers nothing",
-        "audible": "40 03 17, 18 and 19",
-        "not audible under the note asked": "40 03 1B, 1C, 1D, 1E and 1F",
-        "cannot be asked": "40 03 1A, which accepts 00 and nothing else",
-        "40 03 17": "audible, the change clearing its repeatability by 32.3 dB, level 2.29 dB",
-        "40 03 18": "audible on the level by 13.73 dB, but its two settings repeat at -40.95 and -0.66 dB. The setting away from the default has no yardstick of its own, which is what this unit's chorus does to a take: it carries a modulator at a different phase each strike",
-        "40 03 19": "audible, the change clearing its repeatability by 31.7 dB, level 8.47 dB"
-      },
-      "positive_control": "The routing byte compared at its two settings under the same type, in the same run, audible against a repeatability of -37.76 dB. So the five nulls are the addresses rather than an effect that was not in the path.",
-      "why_it_matters": "Two of the nine were outside the block the map describes, so no stage built from the map would have asked them. The three that answer sit where a block of three sends would, and the middle one behaves as this unit's chorus behaves -- which is a thing to check against, not a thing established here.",
-      "not_established": [
-        "What any of the three does. Two settings were compared and no quantity was measured.",
-        "That the five nulls do nothing. Another note, another velocity, another type's settings, or a pair that is not the two ends of the range would each ask a different question.",
-        "That 40 03 18 does anything besides start something moving. It removed the yardstick, so whatever else it does sits behind that.",
-        "Anything about the other sixty-four types at these addresses.",
-        "What 40 03 1A holds, since no pair of settings can be built for it."
-      ],
-      "reproduced": "Four takes a setting at every address, each setting's own take-to-take figure reported beside the comparison.",
-      "found_by": "Reading past the end the map gives the insertion effect's block, after four regions turned out to run past their mapped size."
+     "size": 64,
+     "returned": 64,
+     "median_ms": 77.7,
+     "max_ms": 78.2
     }
-  ]
+   ],
+   "cross_address_series": [
+    {
+     "address": "40 01 30",
+     "size_1_ms": 9.5,
+     "size_16": {
+      "returned": 16,
+      "median_ms": 14.7
+     },
+     "size_64": "no reply"
+    },
+    {
+     "address": "40 02 00",
+     "size_1_ms": 9.5,
+     "size_16": {
+      "returned": 16,
+      "median_ms": 23.9
+     },
+     "size_64": {
+      "returned": 64,
+      "median_ms": 77.8
+     }
+    },
+    {
+     "address": "40 00 00",
+     "size_1_ms": 9.4,
+     "size_16": "no reply",
+     "size_64": "no reply"
+    },
+    {
+     "address": "20 00 00",
+     "size_1_ms": 10.1,
+     "size_16": {
+      "returned": 16,
+      "median_ms": 15.1
+     },
+     "size_64": {
+      "returned": 64,
+      "median_ms": 31.5
+     }
+    },
+    {
+     "address": "21 00 00",
+     "size_1_ms": 10.1,
+     "size_16": "no reply",
+     "size_64": "no reply"
+    },
+    {
+     "address": "41 00 00",
+     "size_1_ms": 9.1,
+     "size_16": {
+      "returned": 12,
+      "median_ms": 13.6
+     },
+     "size_64": {
+      "returned": 12,
+      "median_ms": 13.8
+     }
+    },
+    {
+     "address": "50 00 00",
+     "size_1_ms": 9.8,
+     "size_16": "no reply",
+     "size_64": "no reply"
+    },
+    {
+     "address": "51 00 00",
+     "size_1_ms": 10.1,
+     "size_16": {
+      "returned": 12,
+      "median_ms": 13.8
+     },
+     "size_64": {
+      "returned": 12,
+      "median_ms": 13.9
+     }
+    },
+    {
+     "address": "00 01 00",
+     "size_1_ms": 10.1,
+     "size_16": {
+      "returned": 16,
+      "median_ms": 15.1
+     },
+     "size_64": {
+      "returned": 64,
+      "median_ms": 31.6
+     }
+    }
+   ],
+   "worst_observed_per_reply_length_ms": {
+    "1": 11.2,
+    "12": 14.0,
+    "16": 26.3,
+    "64": 81.1
+   },
+   "why_it_matters": "A probe deadline is a measurement, not a constant, and it has to bound the slowest address rather than the one it was taken on. A late reply is not lost: it arrives while the next probe is listening, and every reply after it is one request behind. Pairing a reply against the address asked for does not detect this, because a size bisection asks the same address every probe. A sweep run with a flat 60 ms deadline was destroyed by it, classifying 613 regions as returning a full 64 bytes; a probe by probe trace showed each read returning the previous request's answer -- 1 byte requested, 64 returned, then 32 requested and 1 returned.",
+   "not_established": [
+    "Why the slope is what it is. A 31250 baud line spends 0.32 ms on a byte, and the fastest addresses come close to that while 40 02 00 takes over three times as long per byte. Nothing here separates the module's own pacing from the interface or the host.",
+    "What distinguishes a fast address from a slow one. Both 20 00 00 and 00 01 00 return 64 bytes at about half the per byte cost of 40 02 00, and no reason for that was investigated."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "twelve-controllers-are-stored-in-the-part-block-and-the-rest-are-not-stored-anywhere-readable",
+   "summary": "Twelve control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Eighteen others, including modulation, expression, hold and delay send, change nothing anywhere in the readable address space.",
+   "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is primed at 20, moved to 60 and returned to 20, and a byte is kept only if it moved both times and to a different value each time; a controller that lands nothing is sent again with the two values swapped. CC7 is sent before the first controller and after the last. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular, and the bank latch is committed back to the tone the part already held at the end.",
+   "stored": {
+    "CC7": "40 11 19",
+    "CC10": "40 11 1C",
+    "CC71": "40 11 33",
+    "CC72": "40 11 36",
+    "CC73": "40 11 34",
+    "CC74": "40 11 32",
+    "CC75": "40 11 35",
+    "CC76": "40 11 30",
+    "CC77": "40 11 31",
+    "CC78": "40 11 37",
+    "CC91": "40 11 22",
+    "CC93": "40 11 21"
+   },
+   "not_stored_anywhere_in_the_map": [
+    1,
+    5,
+    6,
+    11,
+    32,
+    38,
+    64,
+    65,
+    66,
+    67,
+    84,
+    94,
+    95,
+    98,
+    99,
+    100,
+    101
+   ],
+   "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
+   "not_established": [
+    "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx. The rhythm part's block has every one of those offsets and each holds its own value, so nothing structural stops the table carrying across -- but only one of the twelve has been read back on a rhythm part: 40 10 21 after a CC93, recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it. The other eleven were never sent to a part other than 1, and this table remains a statement about part 1.",
+    "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
+    "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
+    "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
+    "That CC0 and CC32 are stored nowhere. They are stored, but only once a program change commits them, and only if the unit has that bank and program: see bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole. Sent on their own, which is how this scan sends them, they change nothing."
+   ],
+   "reproduced": true,
+   "coverage": "The twelve addresses and the absence of the other seventeen were both reproduced over the 85 regions under 40, under the procedure above. The claim that the seventeen are stored nowhere in the whole 854 region map rests on an earlier run that watched all of them but primed only once and did not retry a negative. Re-running the whole map under the current procedure takes about two hours and has not been done."
+  },
+  {
+   "id": "a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist",
+   "summary": "The map bounds the rhythm part block's first region at 26 bytes, ending at 40 10 19, and an oversize read there is refused. The twelve addresses above it, 40 10 1A through 25, all answer a single-byte read and all hold their own values.",
+   "method": "One RQ1 at size 1 per address, then a hold probe over 40 10 1A for twelve addresses: neighbours are given alternating 00 and 7F and nothing is read until every write is done, so a run of addresses backed by one cell can only answer with the value it was given last. The region was read back and put back afterwards.",
+   "results": {
+    "answered a single-byte read": "40 10 1A, 1B, 1C, 1D, 1E, 1F, 20, 21, 22, 23, 24, 25 -- twelve of twelve",
+    "read at rest before anything was written": "1A 40, 1B 40, 1C 40, 1D 00, 1E 7F, 1F 10, 20 11, 21 00, 22 28, 23 01, 24 01, 25 01",
+    "neighbouring pairs that answered alike": 0,
+    "kept exactly what they were given": 9,
+    "clamped instead": "40 10 1F given 7F read 5F, 23 given 7F read 01, 25 given 7F read 01",
+    "region restored": true
+   },
+   "why_it_matters": "A region size is what a block read of that region returns. It is not the extent of the addresses behind it, and a stage that builds its plan from those sizes will not ask what lies above one. The part block sweep did exactly that: these twelve were never put to a note, which is why its comparison between a rhythm block and a melodic one covers three shared addresses rather than ten.",
+   "positive_control": "The path was verified before any write: an identity reply, a readable probe address returning 16 bytes, a verified reply checksum, twenty identical reads with none mismatched and none unanswered, and a round trip of median 15.2 ms over a 15.0 to 15.2 ms range. Two addresses inside mapped regions were read first and answered -- 40 10 19 and 40 11 21 -- so a run in which nothing above 19 answered would have been the addresses rather than the path.",
+   "not_established": [
+    "That any of the twelve is used for anything, or that it holds what the same offset holds in a melodic block. Answering and holding its own value is the whole of it.",
+    "Whether a block read starting below them reaches them, which is the shape the same question takes at 40 01 41 and is recorded there. Only single-byte reads were made here.",
+    "That the values read at rest are power-on values. Nothing established what had been written to this unit before the run.",
+    "Whether other regions in the map are bounded the same way. Only 40 10 was asked, so this bounds one region and warns about the rest rather than measuring them."
+   ],
+   "reproduced": "Twelve addresses, each answering on its own, and then all twelve read back together after being written apart from the read.",
+   "found_by": "Two saved records disagreeing about whether 40 10 21 exists at all."
+  },
+  {
+   "id": "out-of-range-writes-are-refused-by-some-addresses-and-clamped-by-others",
+   "summary": "Adjacent addresses with the same 0 to 7 range disagree on what happens outside it. 40 01 30, 31 and 38 leave their value untouched; 40 01 32 and 39 clamp to 07.",
+   "method": "Write then read back one byte at a time, resetting the address to a known accepted value before each out of range test, so a refusal and a clamp read back differently. Six values above the range were tried on each address: 08, 0B, 0F, 1F, 3F and 7E. Every byte was restored and the whole region re-read afterwards.",
+   "results": [
+    {
+     "address": "40 01 30",
+     "accepts": "00-07",
+     "out_of_range": "refused, value unchanged"
+    },
+    {
+     "address": "40 01 31",
+     "accepts": "00-07",
+     "out_of_range": "refused, value unchanged"
+    },
+    {
+     "address": "40 01 32",
+     "accepts": "00-07",
+     "out_of_range": "clamped to 07"
+    },
+    {
+     "address": "40 01 38",
+     "accepts": "00-07",
+     "out_of_range": "refused, value unchanged"
+    },
+    {
+     "address": "40 01 39",
+     "accepts": "00-07",
+     "out_of_range": "clamped to 07"
+    },
+    {
+     "address": "40 03 00",
+     "accepts": "00 only",
+     "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
+    },
+    {
+     "address": "40 03 1A",
+     "accepts": "00 only",
+     "out_of_range": "unresolved: the address rests at 00, which is also where a clamp would leave it"
+    }
+   ],
+   "other_bytes": "38 of the 45 bytes probed across 40 01 30 and 40 03 00 take the full 00 to 7F unchanged.",
+   "why_the_reset_matters": "Probed in ascending order without one, a refusing address is indistinguishable from a clamping one: 07 is accepted, 08 is refused and reads back as 07, which is exactly what a clamp to 07 returns. A first run of this probe reported all five addresses as clamping for that reason.",
+   "not_established": [
+    "Whether any of these values changes what the unit sounds like. A read back says an address stores a value, not that anything uses it.",
+    "Whether the accepted set is contiguous above the values tried. The ladder is a list of points, not a proof of a range."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "single-byte-reads-do-not-reach-every-byte-of-a-readable-block",
+   "summary": "40 01 41 through 47 return nothing to an RQ1 addressed at them, yet their contents come back in a read that starts earlier.",
+   "method": "RQ1 at 40 01 30 for 24 bytes, at 40 01 40 for 8 bytes, and at 40 01 41 for 1 and 4 bytes, each with a 1.5 s deadline.",
+   "results": {
+    "40 01 30 size 24": "04 04 00 40 40 00 00 00 02 00 40 08 50 03 13 00 00 00 00 61 01 01 00 46",
+    "40 01 40 size 8": "00 00 00 61 01 01 00 46",
+    "40 01 41 size 1": "no reply",
+    "40 01 41 size 4": "no reply"
+   },
+   "note": "The two block reads agree on the contents of 41 to 47. So an address that answers nothing is not thereby an address that holds nothing, and a probe that only ever reads one byte will under-report a region.",
+   "reproduced": true
+  },
+  {
+   "id": "malformed-sysex-frames-on-the-measurement-path",
+   "summary": "About two probes in a hundred come back as one frame that starts with F0 and ends with F7 but is not one SysEx message: an unterminated header, then three byte groups led by EF, then the correct reply. Re-asking after the path goes quiet always produced a clean reply.",
+   "method": "Observed during address space sweeps and reproduced by replaying one top byte's level 2 loop. The frame was read back one rtmidi message at a time to establish that it arrives as a single delivery rather than being assembled by the harness.",
+   "example": {
+    "request": "RQ1 41 01 00 size 1",
+    "frame_bytes": 113,
+    "structure": "F0 41 10 42 12 41 01 00 00 | EF 10 01 EF 01 02 EF 00 1C EF 00 10 EF 00 45 ... EF 6C 77 | F0 41 10 42 12 41 01 00 00 3E F7",
+    "note": "The first nine bytes are a DT1 header for the requested address with no terminator. Then 31 three byte groups each led by EF. Then the correct 11 byte reply, which is what a clean probe of the same address returns. Byte values above 7F cannot occur inside a SysEx message."
+   },
+   "rates": {
+    "probes": 7420,
+    "malformed_frames": 150,
+    "by_reason": {
+     "one further F0 inside the frame": 102,
+     "four further F0": 42,
+     "three further F0": 4,
+     "two further F0": 2
+    },
+    "recovered_by_one_retry": 150
+   },
+   "why_it_matters": "Parsed without checking the interior, this frame reads as a 103 byte reply to a 1 byte request. The number is plausible and wrong, and there is nothing in it that looks like an error. A harness that only checks the F0 and F7 at the ends accepts it. It also caused a second, subtler failure: once frames like this were correctly refused, a liveness check that read 'did not parse' as 'said nothing' declared a live unit dead on its first probe.",
+   "not_established": [
+    "Where the frame comes from. Probing the same address in isolation always returns a clean 11 byte reply, so it depends on preceding traffic; nothing here separates the module, the interface and the host.",
+    "What the EF led groups are. EF is a channel status byte, but no interpretation of them was tested.",
+    "Whether a corruption that stays within legal SysEx values also occurs. It would pass this check and be caught only by the checksum, which was verified on every region of the completed sweep."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "cc10-pan-separation-depends-on-patch",
+   "summary": "CC10 hard pan fully separates a mono patch but leaves a stereo patch's internal spread largely intact.",
+   "method": "CC10=0 and CC10=127, note 84 at velocity 127, CC7=127, CC11=127, reverb and chorus sends at 0. Peak level per output channel over the sustained section.",
+   "results": [
+    {
+     "program": 56,
+     "separation_db": 68.0,
+     "detail": "opposite channel reached the measurement noise floor"
+    },
+    {
+     "program": 80,
+     "separation_db": 27.1
+    },
+    {
+     "program": 0,
+     "separation_db": 4.1
+    }
+   ],
+   "note": "Suggests pan is applied per part but does not override a patch's internal per-wave placement. The signal path itself has no measurable crosstalk, which is what the program 56 result establishes."
+  },
+  {
+   "id": "bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole",
+   "summary": "CC0 and CC32 change nothing readable on their own. A program change commits the three of them together, and only if that bank holds that program: otherwise the whole triple is discarded and the bank byte, the program byte and the map byte all keep the values they had. A bank left latched therefore switches off every later program change silently, because the latch itself is in no readable address.",
+   "method": "Send the bank halves and the program change one message at a time, reading 40 11 00 to 02 and 40 41 00 after each, over several combinations of bank MSB, map and program.",
+   "results": {
+    "CC0 alone": "nothing moves; the value is held, not stored",
+    "CC0=0 then PC 0": "40 11 00 = 00, 40 11 01 = 00  (accepted)",
+    "CC0=8 then PC 0": "40 11 00 = 08, 40 11 01 = 00  (accepted)",
+    "CC0=1, 2 or 3 then PC 0": "nothing moves at all  (discarded)",
+    "CC0=3 then PC 25": "nothing moves at all  (discarded)",
+    "CC32=0..4 with CC0=0, then PC 0": "40 41 00 takes 00, 01, 02, 03, 04 in turn  (accepted)",
+    "CC32=0 or 3 with CC0 left at 3, then PC 0": "nothing moves at all  (discarded)"
+   },
+   "note": "A discarded triple is indistinguishable from a message that was never sent: no byte moves, no reply is produced, and the part keeps playing what it played. This is what a difference based scan reads as 'the message is stored nowhere', and the reading is wrong in a way that spreads, because one such message poisons every program change after it.",
+   "found_by": "Chasing an attribution that appeared in two runs and then vanished for six. Message loss (0 in 300 control changes and 0 in 150 program changes), storage latency (median 12.6 ms, never above 14 ms) and failed region reads (0) were each measured and ruled out before the latch was found.",
+   "not_established": [
+    "Which bank and program pairs exist. Only the handful above were tried, and the boundary between accepted and discarded was not mapped.",
+    "Whether a discarded program change is audibly silent as well as invisible. Nothing here was heard.",
+    "Whether CC32 behaves as a map select in the sense the manual gives it. What is measured is that it reaches 40 41 00 and is kept there verbatim."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "eight-nrpns-reach-the-same-bytes-as-eight-control-changes",
+   "summary": "Every GS part NRPN this unit answers is stored in the same byte as a control change, verbatim on both routes. The pair is not merely two names for one parameter: it is one storage location with two ways in.",
+   "method": "The same difference scan run twice over the same 85 regions, once sending control changes and once sending an NRPN selector and data entry as one indivisible stimulus. Each stimulus is primed at one value, moved to a second and returned to the first, and a byte is kept only if it moved both times.",
+   "aliases": {
+    "40 11 30": [
+     "CC76",
+     "NRPN 01 08"
+    ],
+    "40 11 31": [
+     "CC77",
+     "NRPN 01 09"
+    ],
+    "40 11 32": [
+     "CC74",
+     "NRPN 01 20"
+    ],
+    "40 11 33": [
+     "CC71",
+     "NRPN 01 21"
+    ],
+    "40 11 34": [
+     "CC73",
+     "NRPN 01 63"
+    ],
+    "40 11 35": [
+     "CC75",
+     "NRPN 01 64"
+    ],
+    "40 11 36": [
+     "CC72",
+     "NRPN 01 66"
+    ],
+    "40 11 37": [
+     "CC78",
+     "NRPN 01 0A"
+    ]
+   },
+   "note": "The NRPN selector is re-sent with every value rather than once per pair. A selector left standing from an earlier stimulus is the ordinary way for a data entry to land somewhere nobody named.",
+   "not_established": [
+    "Nothing further about the SysEx route beyond the value stored; that it is a third way in, and that these bytes have no mirror, is recorded separately.",
+    "That the two routes are equivalent in anything but the value stored. Rate of change, resolution and audible result were not compared.",
+    "Anything about the per-note drum NRPNs, which only mean something on a part in drum mode."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "rpn-modulation-depth-range-is-stored-scaled-and-clamped-not-verbatim",
+   "summary": "RPN 00 05 is kept at 40 21 04 as floor(sent * 127 / 6), saturating at 127. It is the only one of the four GS RPNs that reaches any readable address, and the only alias so far that is not verbatim.",
+   "method": "Send the RPN selector and data entry MSB at each value from 0 to 8 and at 12, 24 and 127, reading 40 21 00 to 0A after each.",
+   "results": {
+    "0": 0,
+    "1": 21,
+    "2": 42,
+    "3": 63,
+    "4": 84,
+    "5": 105,
+    "6": 127,
+    "7": 127,
+    "8": 127,
+    "12": 127,
+    "24": 127,
+    "127": 127
+   },
+   "fit": "floor(v * 127 / 6) reproduces all six unsaturated points exactly, including 3 -> 63 where rounding would give 64.",
+   "rpns_that_reached_nothing": [
+    "00 00 pitch bend sensitivity",
+    "00 01 master fine tune",
+    "00 02 master coarse tune"
+   ],
+   "not_established": [
+    "Where the other three RPNs are kept. They changed no byte of the readable space; whether they are held somewhere unaddressable or not held at all is not decided by this.",
+    "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported. A DT1 write to the same byte is kept verbatim, so the conversion is in the RPN receiver and the byte itself is an ordinary 0 to 127 field: see sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly",
+   "summary": "A DT1 write reaches every byte a control change and an NRPN were measured to reach, keeping the value verbatim, and moves nothing else anywhere in the readable map. So each of these parameters has one storage location with three ways in and no mirror. The three routes are not interchangeable: RPN 00 05 converts on the way in while a DT1 to the same byte does not, so the scaling belongs to the receiver rather than to the storage.",
+   "method": "The same difference scan, sending a DT1 write as the stimulus. Each byte is primed at 20, written 60 and returned to 20, and the whole watched space is diffed rather than only the byte written, so a second location holding the same value would show. Every target byte is read before anything is written and written back and re-read at the end; a byte that would not read is never written to.",
+   "results": {
+    "reached verbatim by DT1": [
+     "40 11 19",
+     "40 11 1C",
+     "40 11 21",
+     "40 11 22",
+     "40 11 30",
+     "40 11 31",
+     "40 11 32",
+     "40 11 33",
+     "40 11 34",
+     "40 11 35",
+     "40 11 36",
+     "40 11 37",
+     "40 21 04"
+    ],
+    "mirrors found": "none",
+    "40 21 04 by DT1": "60 is stored as 60",
+    "40 21 04 by RPN 00 05": "6 is stored as 7F, and the fit is floor(v * 127 / 6)"
+   },
+   "mirror_search": "Two of the thirteen, 40 11 32 and 40 21 04, were written with all 854 regions watched rather than only the 85 under 40. Each moved its own byte and nothing else in the 37502 readable bytes. The other eleven were watched over the 85 regions under 40 only.",
+   "not_established": [
+    "That the other eleven have no mirror outside the 40 block. Only two were checked against the whole map; watching all 854 regions for all thirteen takes about four hours.",
+    "Which other parameters convert on the way in. Only 40 21 04 has been compared across two routes at several values.",
+    "That the three routes behave alike in anything but the value stored. Rate of change, resolution and audible result were not compared."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "gs-reset-reproduces-the-power-on-state-and-the-two-gm-resets-do-not",
+   "summary": "GS Reset returns all 37502 readable bytes to exactly what the unit held after a power cycle. GM1 System On leaves 88 of them elsewhere and GM2 System On leaves 974, and the two GM resets are not nested: they share 32 changes, GM1 makes 56 the other does not, and GM2 makes 942 the other does not. All three restore every marked byte, so the difference is not in what they reset but in what they additionally set.",
+   "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on-state.json.",
+   "results": {
+    "GS Reset": {
+     "message": "F0 41 10 42 12 40 00 7F 00 41 F7",
+     "marked_bytes_restored": "50 of 51",
+     "readable_bytes_differing_from_power_on": 0
+    },
+    "GM1 System On": {
+     "message": "F0 7E 7F 09 01 F7",
+     "marked_bytes_restored": "50 of 51",
+     "readable_bytes_differing_from_power_on": 88,
+     "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks (40 10 to 40 1F and 50 10 to 50 1F), and at low bytes 23 and 24 in 28 of them; 40 10, 40 18, 50 10 and 50 18 already held 00 there"
+    },
+    "GM2 System On": {
+     "message": "F0 7E 7F 09 03 F7",
+     "marked_bytes_restored": "50 of 51",
+     "readable_bytes_differing_from_power_on": 974,
+     "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks, as GM1 also does; 00 -> 7A at low byte 00 in all 32 blocks of the 40 4x and 50 4x family, which is the byte CC32 writes into; and 65 bytes in each of the fourteen drum setup families 41 to 47, 4A to 4F and 51",
+     "does_not_change": "low bytes 23 and 24, which GM1 System On does"
+    }
+   },
+   "reproduced": "three runs, the last two from a common starting state, all giving 88 and 974 exactly",
+   "not_established": [
+    "What any of the changed fields is. The addresses and the transitions are what was measured; naming them would be reading the manual, not the machine.",
+    "Whether the changes are audible. This is a read back and nothing was heard.",
+    "What System Mode Set does. It reinitialises rather than resetting parameters and was not sent.",
+    "That GS Reset reproduces power-on for anything unreadable. 37502 bytes of the 42064 the map spans were compared; the rest answer no read."
+   ]
+  },
+  {
+   "id": "the-tone-map-is-what-the-unit-accepts-and-it-refuses-most-of-the-space",
+   "summary": "Asking for all 16384 bank and program combinations on map 0 finds 1710 tones in 53 banks. Bank 0 holds a full 128. The variation banks thin out from there, down to bank 47 holding one tone and bank 48 holding one. Banks 64, 65 and 127 accept every program and bank 126 accepts exactly 0 to 63.",
+   "method": "There is no query for whether a tone exists, so each was asked for: send the bank select and the program change that commits it, then read the part's own tone bytes. A combination the unit does not have is discarded whole and leaves the part where it was, so a part that moved to what was asked for is the tone existing. The part is moved somewhere else first whenever it already stands on what is about to be asked, since otherwise accepted and discarded read alike.",
+   "coverage": "Exhaustive: every one of the 128 banks was asked for all 128 programs, on map 0 and channel 1. No read failed.",
+   "results": {
+    "tones": 1710,
+    "banks_holding_at_least_one": 53,
+    "bank_0": "all 128",
+    "banks_1_to_48": "variation banks, thinning with the bank number but not monotonically; local peaks at 8, 16, 24, 32 and 40",
+    "banks_49_to_63": "empty",
+    "banks_64_and_65": "all 128 each",
+    "bank_126": "exactly 0 to 63",
+    "bank_127": "all 128",
+    "banks_66_to_125": "empty"
+   },
+   "the_unit_really_does_refuse": "Bank 126 accepts 0 to 63 and refuses 64 to 127, which is a boundary a unit that simply took every program change could not produce. So acceptance is a decision the unit makes rather than an artefact of the asking.",
+   "sampling_would_have_missed_it": "Sampling six programs spread across the range before sweeping a bank, which is the cheaper form of this survey, reported 33 banks and 1584 tones. It missed 20 banks and 126 tones, including two banks whose only tone is a single program. A bank that reads as empty from a sample is not a bank that is empty.",
+   "not_established": [
+    "That the 128 accepted programs in banks 64, 65 and 127 are 128 distinct tones. A bank that holds everything and a bank that validates nothing are the same answer to this method; only hearing them apart would separate the two.",
+    "Anything about maps other than 0, or about a part in drum mode. CC32 was held at 0 throughout and the survey ran on channel 1.",
+    "What any tone is. What was measured is which combinations the unit takes, not what comes out of them."
+   ],
+   "reproduced": "the sampled form twice with identical bank and program lists where the two overlap"
+  },
+  {
+   "id": "one-note-played-twice-comes-back-the-same-to-the-noise-floor",
+   "summary": "Two takes of the same note, aligned to a fraction of a sample and levelled, differ by 54 dB less than the note itself, which is 0.1 to 2.3 dB above what the converter noise alone would leave. What actually fails to repeat is -58 dB down. The level agrees to under 0.001 dB. The trigger arrives within a 4 ms window, so the alignment is doing real work rather than confirming a timing that was already good.",
+   "method": "The same note is played several times with silence before it, each take cross correlated against the first, shifted by the fractional lag the correlation peak interpolates to, scaled by its best fitting gain, and subtracted. The noise floor is measured from the silence in the same take and raised 3 dB, because two takes carry that noise independently and their difference holds twice its power. The residual is reported as its distance from that floor, and the noise is taken back out in power to leave the part that is a fact about the machine.",
+   "results": {
+    "residual below the note": "-56.7 to -54.5 dB",
+    "noise floor for two takes": "-56.8 dB",
+    "residual above that floor": "0.1 to 2.3 dB",
+    "what does not repeat": "-58 dB, after the noise is removed in power",
+    "level agreement": "under 0.001 dB",
+    "trigger scatter": "-3.1 to +1.2 ms",
+    "worst correlation": 0.9998
+   },
+   "note": "This is the gate every difference measurement rests on. Averaging takes to get under the noise, and subtracting one setting from another to see what a parameter changed, both need it and neither can be checked afterwards from the data they produce. It holds for a struck piano note with no effect switched on; the chorus breaks it completely, which is recorded separately.",
+   "found_by": "Standing the measurement up before using it. Two setup faults were caught first and both produced healthy looking captures: the default input device was the machine's own microphone, giving silent takes that read as a unit failing to repeat, and the audio device takes 650 ms to open, so a note triggered on a timer started alongside the recorder sounded before a single sample was captured and only its tail was recorded.",
+   "not_established": [
+    "Whether other voices repeat as well as this one. Only program 0 was measured this way.",
+    "Whether the first 50 ms repeats as well as the whole take. The residual is dominated by the loud early part but was not measured separately.",
+    "Whether repeatability holds across a power cycle. Every take here came from one session."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "cc7-volume-is-a-square-law-and-changes-nothing-but-the-level",
+   "summary": "CC7 at 40 against 127 changes the level by 20.09 dB and leaves the shape of the note otherwise untouched. A square law, amplitude proportional to the square of the value, predicts 40 log10(127/40) = 20.07 dB. The two agree to 0.02 dB.",
+   "method": "Four takes of the same note at each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings the same way to measure the change. The comparison divides out the best fitting gain, so a change that is purely level leaves no residual at all and is read from the gain instead.",
+   "results": {
+    "level change": "+20.09 dB",
+    "square law prediction": "+20.07 dB",
+    "residual after levelling": "-38.6 dB, against -35.6 dB for two takes of one setting",
+    "shape verdict": "unchanged; the residual does not clear the repeatability by the 6 dB margin"
+   },
+   "note": "Reproduced at +20.09 dB on three separate runs. The prediction is an exact power of the ratio and nothing was fitted to reach it, so this is the volume curve rather than an approximation of it.",
+   "found_by": "Used as the positive control for the audibility method, since a volume control has to come out audible or the method is not measuring anything.",
+   "not_established": [
+    "Whether the square law holds over the whole range. Only 40 and 127 were compared, and two points cannot separate a square law from any other curve through them.",
+    "Whether it is a square law in amplitude or a decibel table that happens to pass through both points.",
+    "Whether the curve is the same for other patches or at other velocities."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "the-reverb-is-audible-and-stands-still-while-the-chorus-moves",
+   "summary": "CC91 at 0 against 100 changes the sound by 26 to 50 dB more than two takes of one setting differ, under all five stimuli, and takes with the reverb on repeat as well as dry ones. So the reverb reaches the signal path and holds no moving part. CC93 at 0 against 100 does the opposite: it leaves no residual that clears the yardstick, and instead destroys repeatability. What fails to repeat rises from between -41.6 and -63.3 dB dry to between -1.9 and -3.9 dB with the chorus on, under every one of the five. The chorus carries a modulator at a different phase each time the note is struck.",
+   "method": "The same contrast for both, four takes per setting, under five stimuli. Each setting's own repeatability is kept separately and reported as what fails to repeat with the noise taken back out, rather than as distance to the noise floor: whatever fails to repeat scales with the signal while the converter noise does not, so distance to the floor grows with level and a change that is nothing but level opens a gap with no modulator behind it. Four takes a setting, because the statistic is the median pair and three takes give two pairs, whose median is their mean.",
+   "results": {
+    "CC91, five stimuli": "shape changed, 25.7 to 49.8 dB clear of the yardstick",
+    "CC91 modulator flagged": "none of five",
+    "CC93 residual": "never clears the yardstick; the settings differ by less than the takes do",
+    "CC93 what fails to repeat, dry": "-41.6 to -63.3 dB",
+    "CC93 what fails to repeat, chorus on": "-1.9 to -3.9 dB",
+    "CC93 modulator flagged": "five of five"
+   },
+   "note": "The chorus is why a difference method needs a second kind of evidence. Once a free running modulator is on, the yardstick swallows any change, and the parameter that caused it would read as inaudible however large its effect. The collapse in repeatability is the measurement in that case, and it is only readable because each setting's repeatability is kept apart from the other's.",
+   "found_by": "Checking whether reverb on takes still repeated, then noticing that the same test called CC93 inaudible while the unit had visibly stopped repeating.",
+   "not_established": [
+    "The chorus modulation rate and depth. Only that a modulator is present and free running relative to note-on.",
+    "Whether the reverb tank is truly static or merely modulated far below what one struck note reveals.",
+    "Whether either holds at other send values. Only 0 against 100 was compared."
+   ],
+   "reproduced": "Re-measured 2026-09-03 under the current statistic, with every take kept. The conclusion is the one first recorded; the numbers are on a different scale because the statistic changed."
+  },
+  {
+   "id": "no-voice-in-the-bank-holds-a-steady-enough-tone-to-read-a-clock-from",
+   "summary": "Seven voices were held for 20 seconds each at A above middle C and their frequency taken from the slope of the unwrapped phase. All seven wobble: the phase departs from a straight line by 0.09 to 2.8 cycles, so none is a frequency reference. Their pitches span 466 ppm flat to 2842 ppm sharp of equal temperament at A440, with master tune at its default, so the spread is the voices rather than the tuning.",
+   "method": "One sustained note per voice, the band around the expected fundamental isolated so the phase belongs to the fundamental alone, then a straight line fitted to the unwrapped phase. The departure from that line is kept beside the slope, because a wobbling tone still yields a confident slope and the departure is the only thing that says the slope means nothing. Each voice was asked for through the bank latch and confirmed taken before it was recorded.",
+   "results": {
+    "voices tried": 7,
+    "steady": 0,
+    "phase departure": "0.0884 to 2.7646 cycles over 20 s",
+    "pitch spread": "-466 to +2842 ppm off equal temperament",
+    "calmest voice": "program 80, 0.0884 cycles, +2842.0 ppm reproduced to 0.1 ppm on three runs",
+    "master tune": "default, 0.0 cents"
+   },
+   "note": "The calmest voice bounds the measurement chain rather than the unit: every take passed through the same converters, so the chain cannot be wandering by more than the least wobbly voice does, which puts it under 10 ppm over 20 seconds. The rest is the voices. A departure measured this way is in any case the unit's tuning and the ratio of its sample clock to the converter's, together, and nothing here separates them. It is the correction a comparison against software rendered at exactly 48000 Hz would need; a comparison of two takes from this unit needs none of it, since both carry it equally.",
+   "found_by": "Trying to read the sample clock, and finding that the instrument stands in the way of it.",
+   "not_established": [
+    "The clock ratio on its own. It cannot be separated from the voices' tuning without a source whose pitch is known independently.",
+    "Whether any voice anywhere in the 1710 tone map is steady. Seven were tried, chosen for being plausibly simple.",
+    "Whether the wobble is vibrato, layered detuning, or an unstable oscillator. Only that the tone is not steady."
+   ],
+   "reproduced": true
+  },
+  {
+   "id": "a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it",
+   "summary": "A part switched to rhythm mode accepts a chorus send, stores it verbatim and reads it back, and sounds no different for it. The reverb send on the same part in the same run is plainly audible. This is a property of rhythm mode rather than of part 10: part 2 hears the chorus while it is melodic and stops hearing it once USE FOR RHYTHM PART is set, with nothing else changed.",
+   "method": "CC93 0 against 100 and CC91 0 against 100, four takes a setting, on a broadband unpitched note. Run on part 10 with the standard kit at notes 38 and 49, and on part 2 with USE FOR RHYTHM PART written to 1 at note 49. The reverb is the positive control in every cell: it shares the channel, the kit, the note and the protocol, so a cell where the reverb is audible and the chorus is not cannot be explained by the message failing to arrive. Storage was read back with RQ1 after the controller was sent.",
+   "results": {
+    "part 1, melodic, CC93": "audible; what fails to repeat rises from -62.2 to -2.2 dB",
+    "part 2, melodic, CC93": "audible; -63.1 to -0.6 dB",
+    "part 2, rhythm, CC93": "inaudible; settings differ by -46.2 dB against takes at -43.6",
+    "part 2, rhythm, CC91": "audible, 23.2 dB clear of the yardstick",
+    "part 10, rhythm, CC93": "inaudible; -40.6 and -38.5 dB under two notes",
+    "part 10, rhythm, CC91": "audible, 26.2 and 24.1 dB clear",
+    "stored at 40 10 21 after CC93 100 on channel 10": 100,
+    "stored at 40 12 21 after CC93 100 on channel 2": 100,
+    "stored at 40 12 15 after the rhythm mode write": 1
+   },
+   "note": "The chorus send on a rhythm part is state and not audio. Both readings are needed to say that: the address answers, holds what it was given and survives a read, so a scan that only writes and reads back would file it as working. Only a recording says it does nothing. The same address on a melodic part is audible, so the level belongs to the part's mode rather than to the address.",
+   "found_by": "Looking for an unpitched note to measure the chorus's modulation with, since a pitched one folds a delay into its own period, and finding that the chorus was not there.",
+   "not_established": [
+    "That the storage row was taken through the map. The map bounds 40 10's first region at 26 bytes ending at 40 10 19, which would put 21 outside the block; it answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So the readback stands and the region size was never a claim about it. The readback itself has no record file of its own in this directory, the figure appearing only here.",
+    "Why. Whether the send is ignored, the part is off the chorus bus, or the return is muted for rhythm parts is not separated by anything measured here.",
+    "Whether it holds for kits other than the standard one, or for map 2.",
+    "Whether the same is true of the other sends. Only the chorus and the reverb were asked.",
+    "Whether an insertion effect reaches a rhythm part. Not asked."
+   ],
+   "reproduced": "Four cells, two parts, three notes, with the reverb as a control in each. Asked again later through the part block addresses rather than the controllers -- 40 12 21 and 40 12 22 in place of CC93 and CC91 -- and every cell answered the same way, so the exclusion is not a property of how the send was written."
+  },
+  {
+   "id": "the-reverb-is-a-damped-network-and-a-pitched-note-cannot-read-it",
+   "summary": "Excited with a broadband unpitched note, the reverb's decay falls smoothly from 2.10 s at 63 Hz to 1.03 s at 8 kHz, the top decaying 2.04 times faster than the bottom. Every band is straight, departing from its fitted line by 0.17 to 0.89 dB. Excited with a piano note instead, the same reverb reads 1.69, 2.09, 1.41, 2.44, 1.62, 1.90, 1.52 and 0.87 s -- a scatter several times wider than each band's own bound, in no order.",
+   "method": "The dry take was aligned to the wet one, scaled by its best fitting level and subtracted, leaving the reverb's return over the whole take rather than only after the note stopped. Each octave band's energy was then integrated from the end of the usable tail backwards, after the noise floor's own contribution was removed and the tail truncated where it reaches that floor. A straight line was fitted to the integrated curve between -5 and -25 dB and extrapolated to 60 dB. The departure from that line is reported with every time, since a tail that is two decays in sequence yields a slope as readily as one decay does. A snare was used because the isolated return is the note convolved with the effect and falls at the slower of the two.",
+   "results": {
+    "63 Hz": "2.098 s, bound 18%",
+    "125 Hz": "2.220 s, bound 12%",
+    "250 Hz": "2.048 s, bound 9%",
+    "500 Hz": "2.061 s, bound 6%",
+    "1 kHz": "1.878 s, bound 5%",
+    "2 kHz": "1.733 s, bound 3%",
+    "4 kHz": "1.331 s, bound 3%",
+    "8 kHz": "1.027 s, bound 2%",
+    "bottom over top": 2.04,
+    "curvature": "0.17 to 0.89 dB",
+    "same reverb on a piano note": "1.41 to 2.44 s across the bands, unordered"
+   },
+   "note": "The bound on each band comes from its bandwidth times the fitted duration, which counts how many independent samples the estimate had. It assumes the band was excited across its width. A harmonic note does not do that -- only the partials that fall inside a band excite it -- so under a piano the true count is far lower than the bound assumes and the scatter is the note's line spectrum rather than the reverb. The stated bound is honest only for a broadband source, which is why the number to read is the snare's.",
+   "found_by": "Measuring the reverb through a piano note first, and finding a spread that no bound allowed for.",
+   "not_established": [
+    "The reverb's type or topology. A decay per band says a delay network is damped in the loop; it does not say how many delays, of what lengths, or in what arrangement.",
+    "Anything about settings other than CC91 at 100 with every reverb parameter at its power-on default.",
+    "The predelay, the early reflections, or the density. None was asked for.",
+    "Whether the decay is the same for a part other than the rhythm part."
+   ],
+   "reproduced": "One capture per stimulus. The two stimuli disagree, and the note explains why."
+  },
+  {
+   "id": "twenty-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound-and-three-blocks-agree",
+   "summary": "A melodic part block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 1n 17 accepts one value only and cannot be asked at all. Of the 46, 20 changed the sound and 26 did not under anything tried. Parts 1, 2 and 3 were each swept in full and returned the same 20, address for address. The rhythm part's block is not the same block: the map bounds it at 35 addresses, 34 askable, of which 10 changed the sound.",
+   "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte. Each block was asked on the channel its own 40 1n 02 byte says it listens to, read from the unit rather than assumed: 00 for 40 11, 01 for 40 12, 02 for 40 13.",
+   "results": {
+    "audible": "40 1n 02, 08, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
+    "not audible under what was tried": "40 1n 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 13, 14, 18, 1F, 20, 23, 24, 25, 37",
+    "cannot be asked": "40 1n 17, which accepts 08 and nothing else",
+    "heard as a change in stereo balance": "40 1n 15, 16, 1C",
+    "identical across the three blocks swept": true,
+    "rhythm_part_block": {
+     "addresses": 35,
+     "askable": 34,
+     "audible": "40 10 02, 08, 15, 19, 30, 31, 32, 33, 34, 38",
+     "cannot be asked": "40 10 17, the same offset the melodic blocks cannot ask either",
+     "not_asked_in_this_block": "40 1n 1A to 25. The map bounds the rhythm block's first region at 26 bytes ending at 40 10 19, and an oversize read there is refused, so the plan the sweep was built from never contained these twelve and not one of them was asked. They do exist: each answers a single-byte read and holds its own value, measured afterwards and recorded under a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist. So this is a bound on what the sweep asked, not a difference between the two kinds of block."
+    }
+   },
+   "the_three_blocks_agree": "Parts 1, 2 and 3 were swept independently and answered with the same 20 addresses, with nothing left unasked in any of them. Three blocks agreeing is not the same as sixteen, and the remaining thirteen were not swept.",
+   "asking_the_channel_byte_needs_the_stimulus_channel": "40 1n 02 is the byte the part listens to a channel on, and the pair to ask it at cannot come from the write probe alone. The probe reports the accepted range and the plan picked 0 against 16 for all three blocks from it; the plan cannot know which channel the stimulus is on. For part 1 that pair happens to be its own channel against off, which is a question. For parts 2 and 3 both values take the part away from the note being played, so both settings are silent and the run refused to measure -- correctly, and in a way that reads as a failed capture rather than as a badly chosen pair. Asked at the part's own channel against off, all three answer audible on the level channel.",
+   "positive_control": "The plain note's own take-to-take repeatability is measured in every run and sat between -56 and -62 dB throughout, including in the runs taken to check a doubtful verdict. That is what says a stimulus returning no usable yardstick is a fact about the stimulus rather than about the chain that hour.",
+   "not_established": [
+    "What any of the audible addresses does. Audible means the sound changed, not that the change was identified.",
+    "That the inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than the one used, or under a message none of the gestures sent would read as inaudible here.",
+    "Where the rhythm part holds the controllers it responds to. Twelve of the addresses a melodic part holds them in were outside the plan this sweep was built from and were not asked, and a saved readback disagrees with the map about whether they are there at all.",
+    "Anything about parts 4 to 16. Three melodic blocks and the rhythm block were swept; the block is per part and the rest were not.",
+    "Anything about 40 1n 17, which no pair of settings can be built for in either kind of block.",
+    "Anything a parameter about polyphony would answer. Two stimuli were built for it and neither produces a yardstick that repeats, so the pass was withdrawn rather than read."
+   ],
+   "reproduced": "The 20 are the intersection of three independent block sweeps. Every address that appeared in one block and not the others was asked again, and none of those verdicts survived: 40 11 0D, 40 11 13 and 40 11 24 were each audible in one pass and inaudible when re-asked, the re-asks having yardsticks as good or better than the original. They are recorded here as not audible, and the disagreement is stated rather than averaged.",
+   "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
+   "what_the_rhythm_block_answered": "Every address asked in the rhythm block was audible in a melodic block too, and nothing was audible there and not here. Of the ten addresses audible in a melodic block and not in the rhythm block, seven fall outside the region the map bounds for 40 10 and so were never asked there; the remaining three were asked in both and heard in one: 40 1n 16, 35 and 36. Three is the comparison this sweep supports. The other seven are unasked rather than answered.",
+   "why_the_twelve_were_not_asked": "The plan comes from the write probe's rows, which come from the map's regions, and the map bounds 40 10's first region at 26 bytes. The twelve above it were therefore never put to a note. They are not absent from the block -- each answers a single-byte read and holds independently -- so what is missing is an audible verdict for them, and the comparison this sweep supports covers three shared addresses rather than ten. The ten it did find audible do not depend on any of this: none of the twelve is among them."
+  },
+  {
+   "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
+   "summary": "At panpot 127 the two channels the unit arrives on sit at -58.6 and -48.4 dB on every take, agreeing to 0.1 dB. At panpot 0 the same four takes land at -54.5/-49.3, -47.3/-62.9, -52.2/-50.6 and -63.7/-47.4 dB: a balance spanning over 31 dB while the two channels together stay within 1.21 dB. The placement is different on every note struck; the loudness is not.",
+   "method": "Four takes a setting, each channel's level measured separately rather than after the take was reduced to one channel. The channel pair was chosen from the loudest setting, since a setting that produces nothing would otherwise have the pair picked out of its own noise.",
+   "why_it_matters": "Every other measurement here reduces a take to one channel, which is what makes a residual mean anything. A parameter that moves signal between the channels is therefore invisible to all of them, and it does not read as nothing: a placement that differs on every take reads as the unit failing to repeat itself. 40 11 1C came back as could not be measured for exactly that reason, and the verdict was about the harness wearing the parameter's name.",
+   "results": {
+    "at 127": "-58.6 and -48.4 dB, spread 0.0 dB over four takes",
+    "at 0": "balance spread 31.9 dB over four takes",
+    "the two channels together, at 0": "within 1.21 dB",
+    "addresses in part 1 whose balance moved at all": "40 11 13, 15, 16 and 1C; the other 42 show a spread of 0.0 dB"
+   },
+   "found_by": "A parameter that had to be audible reading as could not be measured.",
+   "not_established": [
+    "Where the note is placed at any given panpot value. What was measured is that the placement moves and that it is not the same twice at 0.",
+    "Whether the same happens at values between 0 and 127.",
+    "Whether it is the panpot or the voice that scatters. Program 0 was the only voice asked."
+   ],
+   "reproduced": "Measured from the takes of two separate passes over the block, which agree about which addresses move the balance."
+  },
+  {
+   "id": "part-vibrato-rate-runs-at-1273-hz-at-its-maximum",
+   "summary": "With modulation held at 127, the note's own frequency is modulated at 12.73 Hz on all four takes with 40 11 30 set to 127, and no modulation is found at all with it set to 0. Left at its power-on value the same measurement reads 4.11 Hz, taken from the takes of a different address in the same block, and 4.11 to 4.52 Hz from those of another.",
+   "method": "The note's frequency was tracked through a single take and the track searched for a periodic component, rather than comparing two takes. A free-running modulator is at a different phase every time the note is struck, so two takes with it on disagree about nearly everything and the difference measurement's own yardstick swallows the change; its rate and depth are the same on every take even though its phase is not. Frames were required to stand 12 dB over the take's own lead-in, and a cubic trend was removed before the search, since a struck note settles in pitch as it decays and a straight line leaves enough of that curve behind to read as a deep slow modulation.",
+   "results": {
+    "40 11 30 at 127": "12.731 Hz on each of four takes, 37.6 to 82.9 cents peak to peak",
+    "40 11 30 at 0": "nothing found on any of four takes",
+    "at its power-on value": "4.11 Hz, and 4.11 to 4.52 Hz in an earlier run",
+    "shallowest modulation the tracker recovered from this material": "12 cents, injected as a control"
+   },
+   "note": "The null at 0 is a null over the searched band. With about two seconds of usable track and three cycles required before a rate is claimed, the search cannot claim anything below roughly 1.5 Hz, so what was established is that no modulation runs between about 1.5 and 15 Hz -- not that the modulator stopped.",
+   "found_by": "A parameter that no comparison of two takes could answer, because the modulator destroys the yardstick the comparison rests on.",
+   "not_established": [
+    "The rate at any value between 0 and 127, or whether it is linear in the byte.",
+    "The depth. It scatters from 37.6 to 82.9 cents across four takes of one setting, which is wider than anything a setting difference would have to clear.",
+    "What 40 11 37 does. Both its settings modulate at 4.11 Hz and their depths scatter from 71.9 to 212.6 cents at each, so a depth taken over the whole take cannot separate them."
+   ],
+   "reproduced": "Four takes a setting, and the power-on rate seen again in two other addresses' takes."
+  },
+  {
+   "id": "the-two-stimuli-built-to-ask-about-polyphony-produce-no-yardstick-that-repeats",
+   "summary": "Two notes at once, and one note struck twice 0.4 s apart, were built to ask the questions a single note cannot put. Neither repeats: the plain note's takes agree within -56 to -62 dB, while the struck-again stimulus lands between -1.1 and -66 dB with 84 per cent of its figures worse than -10 dB. No verdict taken from either survived being asked a second time.",
+   "method": "Both stimuli were run over every address three block sweeps had left silent, four takes a setting, and the doubtful verdicts were then asked again -- including with the takes doubled to eight. A plain struck note was measured on the same chain in the same period as a control on the chain itself.",
+   "why_it_is_the_stimulus_and_not_the_chain": "The plain note measured 61.53 and 62.30 dB of agreement between its takes minutes after the failing runs, which is where it has always sat on this unit. A chain that had degraded would have taken the plain note down with it.",
+   "the_mechanism": "Two voices sounding together sum with whatever relative phase the trigger leaves them, and this chain's trigger scatter spans about 3.9 ms against a 3.8 ms period at the note used. The phase is therefore free from take to take, the level moves with it, and the channel that reads one setting's takes agreeing worse than the other's has nothing left to detect.",
+   "what_it_cost": "Sixteen addresses were reported audible across three blocks on this evidence, each witnessed by a single stimulus and on a different set of addresses in every block. A parameter cannot do that. The guard that already existed for the modulation gesture was keyed on that gesture's name rather than on the channel a verdict came from, so it passed all sixteen.",
+   "not_established": [
+    "That the questions themselves are unanswerable. What is established is that these two stimuli, judged this way, cannot answer them. A stimulus whose two voices are far enough apart in pitch to be separated, or a measurement that does not rest on take-to-take agreement, is untried.",
+    "Whether any of the sixteen addresses is in fact audible. They are recorded as not audible under what was tried, which is what the surviving evidence supports."
+   ],
+   "reproduced": "Eight addresses were asked a second time, six doubtful and two chosen because their first pass had looked sound. Neither of the two survived: one lost its steady yardstick entirely, the other kept an audible verdict while the setting that had been steady at -66.34 dB fell to -1.85. Three of the six changed answer as well.",
+   "found_by": "Asking whether a verdict that only one stimulus ever witnessed would come back."
+  },
+  {
+   "id": "a-signal-presented-to-the-analogue-input-reaches-the-output-and-bypasses-the-effects",
+   "summary": "A swept sine played into the analogue input comes back flat within 0.1 dB from 63 Hz to 8 kHz with distortion 86 dB down. The insertion effect, the system reverb and the system chorus were each raised as far as they go, and the returned sweep moved by 0.2, 0.5 and 0.2 dB. Each was raised with a control proving the same state changes a note the machine plays.",
+   "method": "Two runs of three exponential sine sweeps each, deconvolved so the linear response and each harmonic order arrive separately; the second run with 40 03 00 set to a distortion type and 40 41 22 routing part 1 through it, both read back after writing. The control puts the same state to a struck note and compares the routing byte bypassed against routed.",
+   "why_it_matters": "Characterising an effect by sweeping a known signal through it is the only route that separates a linear response from the harmonic orders it generates, and it is closed on this machine. What can be learned about the insertion effects has to come from the machine's own voices.",
+   "not_established": [
+    "That the input path is stereo. One of the two return channels carried the sweep and the other carried essentially nothing, so this measures one channel.",
+    "Whether some send exists that would route the input into an effect. What is established is that with each effect raised as far as it goes, nothing presented to the input comes back changed."
+   ],
+   "reproduced": "Three sweeps per run, the floor sitting within 0.3 dB across them in the first and 0.1 dB in the second, so neither run is one disturbed sweep read as a result.",
+   "found_by": "Asking whether the approach the effect work would rest on could work at all.",
+   "a_control_that_fails_for_its_own_reason": "The chorus needed a second attempt. Raising its system level alone changes nothing a note can hear, because the per-part chorus send powers up at zero and the level scales a send of nothing; the reverb's per-part send powers up at 40, so the same control works there. The first run's null is not reported. This is the shape a null has to be checked for: a state raised into something that was never connected produces exactly the reading a genuine bypass does."
+  },
+  {
+   "id": "half-of-one-insertion-effects-parameters-change-the-sound-and-the-type-level-sort-could-not-have-said-so",
+   "summary": "Of the twenty parameter addresses one insertion effect type loads, ten changed the sound, nine did not under the note asked, and one broke the repeatability it would have been measured against instead of changing anything the comparison could see. The type-level sort passed all sixty-five types the unit has, so it turned nothing away; asked at the parameter, the same question retires nine addresses of twenty.",
+   "method": "Type 04 02 loaded at 40 03 00 and the stimulus's part routed through it at 40 42 22, both read back after writing. Each of 40 03 03 through 40 03 16 was then written at two settings, four takes each, on a broadband unpitched note played on a melodic part. Takes of one setting are compared with each other before the two settings are, and the change must clear that by 6 dB. The accepted range for each address was measured in this same prepared state, not carried from the whole-map probe, which was taken with no effect loaded.",
+   "results": {
+    "audible": "40 03 04, 40 03 05, 40 03 08, 40 03 0B, 40 03 0C, 40 03 12, 40 03 13, 40 03 14, 40 03 15, 40 03 16",
+    "not audible under the note asked": "40 03 03, 40 03 06, 40 03 07, 40 03 09, 40 03 0A, 40 03 0D, 40 03 0E, 40 03 0F, 40 03 11",
+    "started something that does not repeat": "40 03 10",
+    "changes the level and not the shape": "40 03 16, asked at 44 against 88",
+    "silences the routed part at 0": "40 03 16"
+   },
+   "why_it_matters": "A gate is worth what it turns away. Sorted by type, every type this unit accepts is audible, so the count of parameters to sweep stands where it started. Sorted by parameter, nine of twenty need no response measurement at all, and that is the difference between a bounded stage and an open one.",
+   "positive_control": "Routing the part through this type against bypassing it, under the same type and note, is audible at 38.6 dB over the yardstick, taken in the same run. So a null here is about the parameter rather than about a chain that was doing nothing.",
+   "not_established": [
+    "Anything about the other sixty-four types. The addresses are shared and what each holds is not, so this is one type's answer at those addresses.",
+    "What any audible parameter is, or by how much it moves anything. Two settings were compared; no curve was measured between them.",
+    "That the nine nulls do nothing, under another note, another velocity, or a pair that is not the two ends of the range.",
+    "Whether 40 03 10 does anything besides start a modulator. It removed the yardstick, so anything else it does sits behind that."
+   ],
+   "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be. Two addresses were asked a second time and the withdrawn pair is named with its reason: 40 03 16 at 0 against 127 compared sound with silence and put the lead-in above full scale.",
+   "found_by": "Asking the parameters of one type, after the sort that was supposed to bound them passed every type."
+  },
+  {
+   "id": "the-second-output-pair-carried-nothing-for-a-note-the-first-pair-carried",
+   "summary": "A note the first output pair carried 58 dB over the silence before it left the second pair at the line inputs' own noise floor, -107.5 dB, with no note in it. The first pair was measured immediately before and immediately after the change and answered the same both times.",
+   "method": "One stimulus, one prepared state and one pair of interface inputs throughout. The routing byte the insertion effect is reached through was compared at its two settings on the first output pair, then the cable was moved to the second pair and the same comparison made, then moved back and made a third time. Every channel of the capture was read rather than the loudest, so a signal arriving anywhere would have been seen.",
+   "results": {
+    "first pair, before the change": "audible; shape -0.21 dB against a repeatability of -38.78 dB, floor -52.51 dB",
+    "second pair": "no note at any channel; -94.2, -102.2, -107.5 and -107.5 dB RMS across the four inputs, the last two being the pair the first output was read on",
+    "first pair, after the change": "audible; shape -0.21 dB against a repeatability of -39.71 dB, floor -53.40 dB"
+   },
+   "positive_control": "The first output pair, on the same inputs and the same stimulus, before and after. Two figures that agree to 0.01 dB on the shape channel and to 0.9 dB on the repeatability, either side of the change, are what say the silence in between was the output rather than the chain. A single reading of a silent input cannot be told from a cable that was not seated.",
+   "why_it_matters": "Reading a dry and a wet version of one performance at the same time would remove the repeatability the machine's own voices do not have, which is what stands between this archive and a deconvolved response. That needs two output pairs carrying different things and two pairs of inputs to read them on. Neither was available: the second pair carried nothing here, and the interface in this chain has one usable line pair.",
+   "not_established": [
+    "Nothing further. The address that moves a part to the second pair was found afterwards and is recorded under one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects. The silence measured here was the state this unit powers up in, not the pair.",
+    "What the second pair does under any other state, program or part.",
+    "That the two pairs would differ if both carried something. Nothing was compared, because there was nothing on one side to compare."
+   ],
+   "reproduced": "Three runs, three takes a setting, the first and last being the same measurement either side of the change.",
+   "found_by": "Asking whether the second output pair carries a different mix, which would make a simultaneous dry reference possible."
+  },
+  {
+   "id": "one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects",
+   "summary": "40 42 21 accepts 00 to 03 and holds 00. At 00 the part sounds on the first output pair and not the second; at 01 it sounds on the second and not the first. On the second pair neither the insertion effect nor the system reverb changes it, while a volume controller does.",
+   "method": "One stimulus throughout. The byte was compared at 00 against 01 with the capture on the first pair, then the cable moved and the same comparison made on the second, so each run holds both settings and no verdict rests on which output was connected. With the part left on the second pair, the routing byte that reaches the insertion effect was compared at its two settings under a loaded type, the reverb send at 0 against 100, and a volume controller at 40 against 127. The byte was found by reading the addresses above the region the map bounds for this block, and probing what the ones that answered accept.",
+   "results": {
+    "40 42 21 on the first pair": "the note stands 56.7 dB over the lead-in at 00 and 1.1 dB at 01",
+    "40 42 21 on the second pair": "1.4 dB at 00 and 57.4 dB at 01",
+    "insertion effect, part on the second pair": "no change: takes differ by -34.34 dB and the settings by -34.91 dB",
+    "system reverb, part on the second pair": "no change: takes differ by -40.34 dB and the settings by -40.21 dB",
+    "accepted range": "00 to 03, clamping outside it, holding 00 when read",
+    "answering above the mapped region": "40 42 20, 21 and 22, where the map bounds the region at 2 bytes"
+   },
+   "positive_control": {
+    "on the second pair": "A volume controller at 40 against 127 is audible there in the same session, 20.09 dB of level over a repeatability of -32.20 dB. So the part sounds on that pair and a change to it would have been seen.",
+    "on the first pair": "The same insertion effect comparison is audible on the first pair at -0.21 dB against a repeatability of -39.71 dB, measured in the same session. So the null on the second pair is the output rather than the effect being idle."
+   },
+   "why_it_matters": "A dry rendering of the machine's own voice is what a deconvolution needs and what turning an effect off in a separate take does not give, because the voices do not repeat well enough to be divided out. This pair renders one. It does not render it at the same time as the wet one, since the byte moves the part rather than copying it.",
+   "not_established": [
+    "What 00 to 03 mean beyond 00 and 01. Two of the four accepted values were asked.",
+    "Whether the chorus or the delay reaches the second pair. Only the insertion effect and the reverb were raised.",
+    "That the second pair is the same signal as the first with the effects removed. It carries the part and neither effect changes it; nothing compared the two pairs against each other, which would need both captured at once and this chain has one usable line input pair.",
+    "What 40 42 20 does. It answers, accepts 00 to 01 and holds 01, and was not asked anything further."
+   ],
+   "reproduced": "The two output pairs were measured with the same comparison and answered as each other's mirror, each run carrying both settings.",
+   "found_by": "Asking whether a second output pair could carry a dry reference of the same performance."
+  },
+  {
+   "id": "four-regions-under-the-parameter-blocks-run-past-the-size-the-map-gives-them",
+   "summary": "Reading one byte past every region the map holds, and on forward where one answered: of the 85 regions under the block the parameters live in, four run past their mapped size, 29 addresses in all. Two of them are in the insertion effect's own block. Across the whole map 660 of 854 regions run past their end, but 480 of those are the twelve blocks already established to be a window, which answer at any address.",
+   "method": "One single-byte read at the address one past each region's mapped end, and on forward until an address answered nothing or sixteen had answered. An address known to answer was asked every twenty-five regions, since every result here is a negative and a unit that stopped talking answers nothing to all of them. Nothing was written.",
+   "results": {
+    "regions asked": 854,
+    "under the parameter blocks": "85 regions, 4 running past their mapped end: 40 00 00 mapped 4 and answering 3 further, 40 03 00 mapped 30 and answering 2 further, 40 10 00 and 40 18 00 each mapped 26 and answering 12 further",
+    "the drum map and setup blocks": "44 of 44 and 48 of 50 run past their end, 1472 addresses",
+    "the window blocks": "40 of 42 regions in each of the twelve, which is the window answering rather than a region extending",
+    "whole map": "660 of 854 regions, 10483 addresses"
+   },
+   "why_it_matters": "The write probe, the hold probe and every block plan are built from these sizes, so an address above a region's mapped end has had nothing asked of it -- not because it was judged uninteresting but because no stage knew it was there. Four regions is small enough to name, and two of the four are in the block the insertion effect's parameters live in.",
+   "not_established": [
+    "Anything about an address separated from its region by a gap. This reads forward from a region's end and stops at the first address that answers nothing, so a run of live addresses beyond a silent gap is invisible to it. At least one such run exists: the byte that moves a part to the second output pair sits 30 bytes past a region this reports as ending where the map says.",
+    "That an address answering nothing here does not exist. A single-byte read does not reach every byte of a readable block on this unit, which is recorded separately, so a null is bounded by what such a read reaches.",
+    "How far the regions capped at sixteen actually run. Sixteen is where the reading stopped, not where the addresses did.",
+    "What any of the addresses found this way holds or does. They answered a read; nothing was written to them and nothing was heard."
+   ],
+   "positive_control": "An address known to answer, asked every twenty-five regions throughout, and answering every time. A run that lost the unit would otherwise report the rest of the map as regions ending exactly where the map says.",
+   "reproduced": "One pass over every region the map holds, with the canary carried through it.",
+   "found_by": "Two blocks in a row turning out to have live addresses above the size the map gave them."
+  },
+  {
+   "id": "asking-a-blocks-offsets-one-by-one-stopped-the-unit-answering-anything",
+   "summary": "Reading all 128 offsets of one block, a byte at a time, left the unit answering nothing -- not the address the run was asking about, not the address it carried as a control, and not an identity request. It did not come back on its own and was recovered by switching it off and on.",
+   "method": "One single-byte read per offset, from 40 40 00 through 40 40 7F, with a 0.3 s deadline. Five offsets answered and the rest did not, so most of the run was a request followed by a wait. The control was asked once the block was finished and had stopped answering by then; the selftest before the run had passed every check, including twenty identical reads with none unanswered and a round trip of 15.2 ms.",
+   "why_it_matters": "A scan of addresses nothing is known about is not a read-only operation on this unit. One address in the map is already recorded as a command rather than a readable location, so a request that looks like a read can be something the unit does. Any stage that walks addresses blind carries this risk, and a run that hangs the unit costs whatever else was in flight.",
+   "not_established": [
+    "Which offset did it. The run asked 128 of them and the control was asked once at the end, so the hang is bounded by the block rather than by an address. Narrowing it would mean hanging the unit again, once per bisection step.",
+    "That it was an offset at all. A rate, a depth of unanswered requests, or the 0.3 s deadline repeated 123 times are not separated from each other or from the addresses by this.",
+    "Whether it repeats. It was seen once.",
+    "Whether anything was left changed. The unit was power cycled, which is also what clears any state a command-like address may have set, so the two cannot be told apart afterwards."
+   ],
+   "positive_control": "The selftest immediately before the run passed, and the control address answered when the run began. So the silence afterwards was the run rather than a unit that was already gone.",
+   "reproduced": "Not reproduced. Recorded from one occurrence, because what it changes is how a run may be made rather than what the unit holds.",
+   "found_by": "Scanning a block's offsets to find addresses that sit past a silent gap, which reading forward from a region's end cannot reach."
+  },
+  {
+   "id": "a-parts-assign-block-holds-five-addresses-and-three-of-them-sit-past-a-silent-gap",
+   "summary": "Of the 128 offsets in one part's assign block, five answer a single-byte read: 00 and 01, which the map holds, and 20, 21 and 22, which it does not. A second such block answers at the same five offsets. 21 is the byte that moves the part to the second output pair and 22 the byte that routes it through the insertion effect.",
+   "method": "Every offset of 40 40 asked once at size 1. The same five offsets had already answered in 40 42, which was read by hand after the map's region for it turned out to end at two bytes.",
+   "results": {
+    "answered in 40 40": "00 holding 00, 01 holding 04, 20 holding 01, 21 holding 00, 22 holding 00",
+    "answered in 40 42": "the same five offsets",
+    "mapped": "00 and 01 only, the map giving the region two bytes",
+    "known": "21 moves the part to the second output pair; 22 routes it through the insertion effect",
+    "not known": "20, which accepts 00 to 01 and holds 01"
+   },
+   "why_it_matters": "Three of the five sit thirty-odd bytes above a region the map bounds at two, with silence in between. Reading forward from a region's end stops at that silence, so these are addresses no stage built from the map would ever ask about -- and two of them decide where a part's audio goes.",
+   "not_established": [
+    "That the other fourteen blocks of this kind answer at the same offsets. Two of sixteen were asked, and the scan that would have asked the rest stopped the unit answering.",
+    "What 40 4n 00, 01 and 20 hold or do. They answer a read; nothing was heard.",
+    "That five is all there is. Offsets above 7F are not addressable this way, and an address reachable only by a block read starting earlier would not answer here."
+   ],
+   "reproduced": "Two blocks of the kind, answering at the same five offsets.",
+   "found_by": "Asking every offset of a block, after a byte that decides a part's output turned up past a gap the map gave no reason to look beyond."
+  },
+  {
+   "id": "the-insertion-effect-block-runs-two-bytes-past-the-map-and-its-three-sends-are-the-audible-part-of-its-tail",
+   "summary": "The insertion effect's block answers to 40 03 1F and not to 40 03 20, so it holds 32 addresses where the map gives it 30. Of the nine above the twenty parameters, three change the sound and five do not; one accepts a single value and cannot be asked. One of the three removes the repeatability it would be read against.",
+   "method": "The block's end was found by reading forward a byte at a time until nothing answered. The accepted range of each of the nine was then measured with the type loaded and the part routed through it, and each was compared at the two ends of that range, four takes a setting, on a broadband unpitched note played on a melodic part.",
+   "results": {
+    "the block ends at": "40 03 1F; 40 03 20 answers nothing",
+    "audible": "40 03 17, 18 and 19",
+    "not audible under the note asked": "40 03 1B, 1C, 1D, 1E and 1F",
+    "cannot be asked": "40 03 1A, which accepts 00 and nothing else",
+    "40 03 17": "audible, the change clearing its repeatability by 32.3 dB, level 2.29 dB",
+    "40 03 18": "audible on the level by 13.73 dB, but its two settings repeat at -40.95 and -0.66 dB. The setting away from the default has no yardstick of its own, which is what this unit's chorus does to a take: it carries a modulator at a different phase each strike",
+    "40 03 19": "audible, the change clearing its repeatability by 31.7 dB, level 8.47 dB"
+   },
+   "positive_control": "The routing byte compared at its two settings under the same type, in the same run, audible against a repeatability of -37.76 dB. So the five nulls are the addresses rather than an effect that was not in the path.",
+   "why_it_matters": "Two of the nine were outside the block the map describes, so no stage built from the map would have asked them. The three that answer sit where a block of three sends would, and the middle one behaves as this unit's chorus behaves -- which is a thing to check against, not a thing established here.",
+   "not_established": [
+    "What any of the three does. Two settings were compared and no quantity was measured.",
+    "That the five nulls do nothing. Another note, another velocity, another type's settings, or a pair that is not the two ends of the range would each ask a different question.",
+    "That 40 03 18 does anything besides start something moving. It removed the yardstick, so whatever else it does sits behind that.",
+    "Anything about the other sixty-four types at these addresses.",
+    "What 40 03 1A holds, since no pair of settings can be built for it."
+   ],
+   "reproduced": "Four takes a setting at every address, each setting's own take-to-take figure reported beside the comparison.",
+   "found_by": "Reading past the end the map gives the insertion effect's block, after four regions turned out to run past their mapped size."
+  },
+  {
+   "id": "the-system-effect-block-is-reached-through-the-send-a-part-powers-up-holding",
+   "summary": "The reverb half of 40 01 was asked with a send raised on part 1 while the stimulus sounded on part 10, so the preparation reached nothing the note went through. Its verdicts stand anyway: the reverb was already reached through the send every part powers up holding, and raising part 10's own send to full changes no answer.",
+   "method": "Two addresses the block recorded as inaudible were asked again with 40 1A 22 -- part 10's own reverb send -- written to 7F, everything else as in the block run: the same broadband unpitched note on the same part, four takes a setting. A null that is bounded by a send left low would come back audible once the send is raised, so the pair of them answering as before is what says the send was never the limit.",
+   "results": {
+    "40 01 35, part 10's send at full": "inaudible; settings -37.2 dB against takes at -34.3",
+    "40 01 36, part 10's send at full": "inaudible; settings -36.7 dB against takes at -33.7",
+    "the same two in the block run": "inaudible, and six addresses of the same block audible"
+   },
+   "note": "The block record now carries the state each pass raised, read back from the contrast records, which is what made the mismatch visible at all -- it had been invisible in the published record and lived only in a driver script. A preparation that reaches nothing is not the same defect as one that changes an answer, and only a measurement separates them.",
+   "not_established": [
+    "Whether the other twenty-eight inaudible addresses of the block would answer with the send raised. Two were asked, chosen as the two reverb-region addresses the block left open, and the rest are the patch-name bytes and the chorus half.",
+    "What the power-on send actually is on this unit as a number. The claim rests on the block having heard six of its addresses, not on a reading of the send."
+   ],
+   "reproduced": "Two addresses, one send, against the block's own verdicts for the same pair."
+  }
+ ]
 }
