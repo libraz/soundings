@@ -6,17 +6,18 @@ import argparse
 import sys
 
 from .. import hardware, record, roland
-from . import inject, offline, ports, scan, sound, space, wire
+from . import catalogue, contents, extent, inject, offline, ports, scan, sound, state, wire
 from .session import Refused
 
-COMMANDS = (wire, space, scan, ports, sound, inject, offline)
+COMMANDS = (wire, extent, contents, state, catalogue, scan, ports, sound, inject, offline)
 """The modules that hold the subcommands, in the order --help lists them.
 
 Each registers its own parsers and carries the handlers for them, so a flag and
-the code that reads it stay in one file. Grouped by what a command needs to run:
-the cable, the address space, a scan that writes, a pair of runs with the cable
-moved between them, an audio interface, an audio interface alone, and nothing at
-all.
+the code that reads it stay in one file. Grouped by the question a command asks
+rather than by what it asks with: the cable, which addresses are there, what
+they hold, the state a reset puts back, what the unit's catalogues list, a scan
+that writes, a pair of runs with the cable moved between them, an audio
+interface, an audio interface alone, and nothing at all.
 """
 
 

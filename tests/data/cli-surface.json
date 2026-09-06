@@ -47,15 +47,15 @@
     "read",
     "identity",
     "sweep",
-    "write-probe",
     "boundary",
     "offsets",
+    "write-probe",
     "window-probe",
     "hold-probe",
+    "power-on",
+    "reset-probe",
     "tone-map",
     "efx-map",
-    "reset-probe",
-    "power-on",
     "alias-scan",
     "port-send",
     "port-read",
@@ -379,154 +379,6 @@
         }
       ]
     },
-    "write-probe": {
-      "help": "find what an address accepts by writing to it and reading it back",
-      "handler": "cmd_write_probe",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
-        },
-        {
-          "option_strings": [],
-          "dest": "regions",
-          "nargs": "*",
-          "default": "None",
-          "required": true,
-          "help": "'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
-          "metavar": "ADDR:COUNT",
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--map"
-          ],
-          "dest": "map",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "probe every region an address map found, instead of naming them. The map is what the unit answered when it was asked, so this covers what exists rather than what a manual lists",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--prepare"
-          ],
-          "dest": "prepare",
-          "nargs": null,
-          "default": "[]",
-          "required": false,
-          "help": "state to put the unit in first, written once and read back to prove it took: '40 03 00=04 02' loads an insertion effect. What an address accepts can depend on it -- a block of effect parameters probed with no effect loaded reports the ranges of whatever was there instead, and a plan built from that asks the wrong pair. Recorded with the result, since the ranges only hold in the state they were measured in",
-          "metavar": "ADDR=BYTES",
-          "choices": null,
-          "class": "_AppendAction"
-        },
-        {
-          "option_strings": [
-            "--prefix"
-          ],
-          "dest": "prefix",
-          "nargs": "*",
-          "default": "[]",
-          "required": false,
-          "help": "for --map: keep only regions whose address starts with one of these, in the order given. A run long enough to be interrupted should meet the blocks that differ from each other before the ones that repeat",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--resume"
-          ],
-          "dest": "resume",
-          "nargs": 0,
-          "default": "False",
-          "required": false,
-          "help": "skip regions already in --out and add to it. A region is written as soon as it is finished, so an interrupted run resumes from the last whole region rather than from the start",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreTrueAction"
-        },
-        {
-          "option_strings": [
-            "--canary"
-          ],
-          "dest": "canary",
-          "nargs": null,
-          "default": "'40 01 30'",
-          "required": false,
-          "help": "an address known to answer, asked between regions. A unit that stops talking reads as a map of unreadable bytes, which is skipped rather than written to, so without this the probe finishes cleanly having measured nothing",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--verify"
-          ],
-          "dest": "verify",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "read every address a saved run touched, compare it with what that run recorded it holding beforehand, and write the outcome back into the file. Writes nothing to the unit. A run restores as it goes and checks each region as it finishes, but only this sees the whole space at once and after the fact, which is what catches a byte left behind by a run that did not end on its own terms",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--settle"
-          ],
-          "dest": "settle",
-          "nargs": null,
-          "default": "0.02",
-          "required": false,
-          "help": "pause between a write and the read back that checks it",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--verify-reads"
-          ],
-          "dest": "verify_reads",
-          "nargs": null,
-          "default": "20",
-          "required": false,
-          "help": null,
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
-          "nargs": null,
-          "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        }
-      ]
-    },
     "boundary": {
       "help": "ask whether each mapped region ends where the map says it ends, by reading past it one byte at a time",
       "handler": "cmd_boundary",
@@ -745,6 +597,154 @@
         }
       ]
     },
+    "write-probe": {
+      "help": "find what an address accepts by writing to it and reading it back",
+      "handler": "cmd_write_probe",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "regions",
+          "nargs": "*",
+          "default": "None",
+          "required": true,
+          "help": "'40 01 30:24' probes 24 consecutive bytes from 40 01 30",
+          "metavar": "ADDR:COUNT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map"
+          ],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "probe every region an address map found, instead of naming them. The map is what the unit answered when it was asked, so this covers what exists rather than what a manual lists",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prepare"
+          ],
+          "dest": "prepare",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "state to put the unit in first, written once and read back to prove it took: '40 03 00=04 02' loads an insertion effect. What an address accepts can depend on it -- a block of effect parameters probed with no effect loaded reports the ranges of whatever was there instead, and a plan built from that asks the wrong pair. Recorded with the result, since the ranges only hold in the state they were measured in",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--prefix"
+          ],
+          "dest": "prefix",
+          "nargs": "*",
+          "default": "[]",
+          "required": false,
+          "help": "for --map: keep only regions whose address starts with one of these, in the order given. A run long enough to be interrupted should meet the blocks that differ from each other before the ones that repeat",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--resume"
+          ],
+          "dest": "resume",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "skip regions already in --out and add to it. A region is written as soon as it is finished, so an interrupted run resumes from the last whole region rather than from the start",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--canary"
+          ],
+          "dest": "canary",
+          "nargs": null,
+          "default": "'40 01 30'",
+          "required": false,
+          "help": "an address known to answer, asked between regions. A unit that stops talking reads as a map of unreadable bytes, which is skipped rather than written to, so without this the probe finishes cleanly having measured nothing",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify"
+          ],
+          "dest": "verify",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "read every address a saved run touched, compare it with what that run recorded it holding beforehand, and write the outcome back into the file. Writes nothing to the unit. A run restores as it goes and checks each region as it finishes, but only this sees the whole space at once and after the fact, which is what catches a byte left behind by a run that did not end on its own terms",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.02",
+          "required": false,
+          "help": "pause between a write and the read back that checks it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
     "window-probe": {
       "help": "tell an address that holds a value from one that shows another address's, which writing to it and reading it back cannot",
       "handler": "cmd_window_probe",
@@ -924,9 +924,9 @@
         }
       ]
     },
-    "tone-map": {
-      "help": "find which tones exist, by asking for each and seeing whether it was taken",
-      "handler": "cmd_tone_map",
+    "power-on": {
+      "help": "capture the state the unit powers up in, which is available only until something writes to it",
+      "handler": "cmd_power_on",
       "options": [
         {
           "option_strings": [
@@ -944,137 +944,39 @@
         },
         {
           "option_strings": [
-            "--channel"
+            "--map"
           ],
-          "dest": "channel",
-          "nargs": null,
-          "default": "0",
-          "required": false,
-          "help": "zero based MIDI channel",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--map-select"
-          ],
-          "dest": "map_select",
-          "nargs": null,
-          "default": "0",
-          "required": false,
-          "help": "the CC32 value held for the whole survey",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--exhaustive"
-          ],
-          "dest": "exhaustive",
-          "nargs": 0,
-          "default": "False",
-          "required": false,
-          "help": "ask every bank for all 128 programs instead of sampling first; three times the cost and the only form with nothing to caveat",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreTrueAction"
-        },
-        {
-          "option_strings": [
-            "--banks-from"
-          ],
-          "dest": "banks_from",
-          "nargs": null,
-          "default": "0",
-          "required": false,
-          "help": null,
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--banks-to"
-          ],
-          "dest": "banks_to",
-          "nargs": null,
-          "default": "127",
-          "required": false,
-          "help": null,
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--settle"
-          ],
-          "dest": "settle",
-          "nargs": null,
-          "default": "0.04",
-          "required": false,
-          "help": "pause after a program change before reading the part back; the tone was measured to reach the part block in a median 12.6 ms",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--verify-reads"
-          ],
-          "dest": "verify_reads",
-          "nargs": null,
-          "default": "20",
-          "required": false,
-          "help": null,
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--out"
-          ],
-          "dest": "out",
+          "dest": "map",
           "nargs": null,
           "default": "None",
-          "required": false,
-          "help": "write the result as JSON",
+          "required": true,
+          "help": "address map the regions are read from. Required rather than defaulted: a capture read through another unit's map is a baseline for a space this unit was never asked about",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
-        }
-      ]
-    },
-    "efx-map": {
-      "help": "find which insertion effects exist, by asking for each type and reading it back with the settings it loads",
-      "handler": "cmd_efx_map",
-      "options": [
-        {
-          "option_strings": [
-            "-h",
-            "--help"
-          ],
-          "dest": "help",
-          "nargs": 0,
-          "default": "'==SUPPRESS=='",
-          "required": false,
-          "help": "show this help message and exit",
-          "metavar": null,
-          "choices": null,
-          "class": "_HelpAction"
         },
         {
           "option_strings": [
-            "--settle"
+            "--unit-id"
           ],
-          "dest": "settle",
+          "dest": "unit_id",
           "nargs": null,
-          "default": "0.02",
+          "default": "None",
+          "required": true,
+          "help": "the unit this is a capture of, as its directory names it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--captured"
+          ],
+          "dest": "captured",
+          "nargs": null,
+          "default": "'immediately after a power cycle, before anything was sent to the unit'",
           "required": false,
-          "help": "pause after selecting a type before reading it back",
+          "help": "what was done before this run, in the words of whoever did it. The run cannot check it and records it as a claim",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
@@ -1299,9 +1201,9 @@
         }
       ]
     },
-    "power-on": {
-      "help": "capture the state the unit powers up in, which is available only until something writes to it",
-      "handler": "cmd_power_on",
+    "tone-map": {
+      "help": "find which tones exist, by asking for each and seeing whether it was taken",
+      "handler": "cmd_tone_map",
       "options": [
         {
           "option_strings": [
@@ -1319,39 +1221,137 @@
         },
         {
           "option_strings": [
-            "--map"
+            "--channel"
           ],
-          "dest": "map",
+          "dest": "channel",
           "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "address map the regions are read from. Required rather than defaulted: a capture read through another unit's map is a baseline for a space this unit was never asked about",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--unit-id"
-          ],
-          "dest": "unit_id",
-          "nargs": null,
-          "default": "None",
-          "required": true,
-          "help": "the unit this is a capture of, as its directory names it",
-          "metavar": null,
-          "choices": null,
-          "class": "_StoreAction"
-        },
-        {
-          "option_strings": [
-            "--captured"
-          ],
-          "dest": "captured",
-          "nargs": null,
-          "default": "'immediately after a power cycle, before anything was sent to the unit'",
+          "default": "0",
           "required": false,
-          "help": "what was done before this run, in the words of whoever did it. The run cannot check it and records it as a claim",
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--map-select"
+          ],
+          "dest": "map_select",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "the CC32 value held for the whole survey",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--exhaustive"
+          ],
+          "dest": "exhaustive",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "ask every bank for all 128 programs instead of sampling first; three times the cost and the only form with nothing to caveat",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--banks-from"
+          ],
+          "dest": "banks_from",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--banks-to"
+          ],
+          "dest": "banks_to",
+          "nargs": null,
+          "default": "127",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.04",
+          "required": false,
+          "help": "pause after a program change before reading the part back; the tone was measured to reach the part block in a median 12.6 ms",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-map": {
+      "help": "find which insertion effects exist, by asking for each type and reading it back with the settings it loads",
+      "handler": "cmd_efx_map",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.02",
+          "required": false,
+          "help": "pause after selecting a type before reading it back",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

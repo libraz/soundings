@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 
 from soundings import roland, writeback
-from soundings.cli import space
+from soundings.cli import contents
 
 
 class FakeUnit:
@@ -271,7 +271,7 @@ def test_a_run_that_stops_keeps_the_bytes_measured_before_the_failure() -> None:
 def test_a_resumed_run_skips_only_the_regions_already_finished() -> None:
     regions = [((0x40, 0x01, 0x30), 24), ((0x40, 0x02, 0x00), 16), ((0x40, 0x03, 0x00), 32)]
     kept = [{"start": "40 02 00", "length": 16, "region_restored": True}]
-    assert space._still_to_do(regions, kept) == [
+    assert contents._still_to_do(regions, kept) == [
         ((0x40, 0x01, 0x30), 24),
         ((0x40, 0x03, 0x00), 32),
     ]
@@ -282,7 +282,7 @@ def test_a_region_probed_at_a_different_length_is_not_taken_as_done() -> None:
     unprobed while the file said the address had been covered."""
     regions = [((0x40, 0x01, 0x30), 24)]
     kept = [{"start": "40 01 30", "length": 8, "region_restored": True}]
-    assert space._still_to_do(regions, kept) == regions
+    assert contents._still_to_do(regions, kept) == regions
 
 
 def test_the_region_a_run_stopped_in_is_measured_again_and_not_duplicated() -> None:
@@ -293,9 +293,9 @@ def test_the_region_a_run_stopped_in_is_measured_again_and_not_duplicated() -> N
         {"start": "40 01 30", "length": 24, "region_restored": True},
         {"start": "40 02 00", "length": 16, "region_restored": False},
     ]
-    todo = space._still_to_do(regions, kept)
+    todo = contents._still_to_do(regions, kept)
     assert todo == [((0x40, 0x02, 0x00), 16)]
-    assert space._superseded(kept, todo) == [kept[0]]
+    assert contents._superseded(kept, todo) == [kept[0]]
 
 
 def test_prefixes_order_the_regions_as_well_as_filtering_them(tmp_path) -> None:
@@ -309,4 +309,4 @@ def test_prefixes_order_the_regions_as_well_as_filtering_them(tmp_path) -> None:
         '{"address": "50 00 00", "size": 2}]}'
     )
     args = argparse.Namespace(regions=[], map=str(path), prefix=["50 ", "40 "])
-    assert space._probe_regions(args) == [((0x50, 0x00, 0x00), 2), ((0x40, 0x01, 0x30), 8)]
+    assert contents._probe_regions(args) == [((0x50, 0x00, 0x00), 2), ((0x40, 0x01, 0x30), 8)]
