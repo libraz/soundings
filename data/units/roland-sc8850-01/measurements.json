@@ -981,12 +981,38 @@
       "positive_control": "The first output pair, on the same inputs and the same stimulus, before and after. Two figures that agree to 0.01 dB on the shape channel and to 0.9 dB on the repeatability, either side of the change, are what say the silence in between was the output rather than the chain. A single reading of a silent input cannot be told from a cable that was not seated.",
       "why_it_matters": "Reading a dry and a wet version of one performance at the same time would remove the repeatability the machine's own voices do not have, which is what stands between this archive and a deconvolved response. That needs two output pairs carrying different things and two pairs of inputs to read them on. Neither was available: the second pair carried nothing here, and the interface in this chain has one usable line pair.",
       "not_established": [
-        "Whether an assignment exists that would put a part on the second pair. The state tested was the one the effect measurements are taken in, and no address was written to move a part's output.",
+        "Nothing further. The address that moves a part to the second pair was found afterwards and is recorded under one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects. The silence measured here was the state this unit powers up in, not the pair.",
         "What the second pair does under any other state, program or part.",
         "That the two pairs would differ if both carried something. Nothing was compared, because there was nothing on one side to compare."
       ],
       "reproduced": "Three runs, three takes a setting, the first and last being the same measurement either side of the change.",
       "found_by": "Asking whether the second output pair carries a different mix, which would make a simultaneous dry reference possible."
+    },
+    {
+      "id": "one-byte-moves-a-part-to-the-second-output-pair-which-carries-it-without-the-effects",
+      "summary": "40 42 21 accepts 00 to 03 and holds 00. At 00 the part sounds on the first output pair and not the second; at 01 it sounds on the second and not the first. On the second pair neither the insertion effect nor the system reverb changes it, while a volume controller does.",
+      "method": "One stimulus throughout. The byte was compared at 00 against 01 with the capture on the first pair, then the cable moved and the same comparison made on the second, so each run holds both settings and no verdict rests on which output was connected. With the part left on the second pair, the routing byte that reaches the insertion effect was compared at its two settings under a loaded type, the reverb send at 0 against 100, and a volume controller at 40 against 127. The byte was found by reading the addresses above the region the map bounds for this block, and probing what the ones that answered accept.",
+      "results": {
+        "40 42 21 on the first pair": "the note stands 56.7 dB over the lead-in at 00 and 1.1 dB at 01",
+        "40 42 21 on the second pair": "1.4 dB at 00 and 57.4 dB at 01",
+        "insertion effect, part on the second pair": "no change: takes differ by -34.34 dB and the settings by -34.91 dB",
+        "system reverb, part on the second pair": "no change: takes differ by -40.34 dB and the settings by -40.21 dB",
+        "accepted range": "00 to 03, clamping outside it, holding 00 when read",
+        "answering above the mapped region": "40 42 20, 21 and 22, where the map bounds the region at 2 bytes"
+      },
+      "positive_control": {
+        "on the second pair": "A volume controller at 40 against 127 is audible there in the same session, 20.09 dB of level over a repeatability of -32.20 dB. So the part sounds on that pair and a change to it would have been seen.",
+        "on the first pair": "The same insertion effect comparison is audible on the first pair at -0.21 dB against a repeatability of -39.71 dB, measured in the same session. So the null on the second pair is the output rather than the effect being idle."
+      },
+      "why_it_matters": "A dry rendering of the machine's own voice is what a deconvolution needs and what turning an effect off in a separate take does not give, because the voices do not repeat well enough to be divided out. This pair renders one. It does not render it at the same time as the wet one, since the byte moves the part rather than copying it.",
+      "not_established": [
+        "What 00 to 03 mean beyond 00 and 01. Two of the four accepted values were asked.",
+        "Whether the chorus or the delay reaches the second pair. Only the insertion effect and the reverb were raised.",
+        "That the second pair is the same signal as the first with the effects removed. It carries the part and neither effect changes it; nothing compared the two pairs against each other, which would need both captured at once and this chain has one usable line input pair.",
+        "What 40 42 20 does. It answers, accepts 00 to 01 and holds 01, and was not asked anything further."
+      ],
+      "reproduced": "The two output pairs were measured with the same comparison and answered as each other's mirror, each run carrying both settings.",
+      "found_by": "Asking whether a second output pair could carry a dry reference of the same performance."
     }
   ]
 }
