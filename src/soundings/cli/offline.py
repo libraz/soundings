@@ -14,6 +14,12 @@ from . import options, report
 
 
 def register(sub) -> None:
+    """Everything here reads takes that were already recorded.
+
+    Each parser clears `needs_unit`, so these do not queue behind a sweep that is
+    still running -- which matters, because reading a block's records back while
+    the next block is being captured is the ordinary way to work.
+    """
     p = sub.add_parser(
         "motion",
         help="say what an effect does over time -- its modulation rate, depth and "
@@ -40,7 +46,7 @@ def register(sub) -> None:
         "stimulus in the catalogue records 0.6",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_motion)
+    p.set_defaults(needs_unit=False, func=cmd_motion)
 
     p = sub.add_parser(
         "decay",
@@ -57,7 +63,7 @@ def register(sub) -> None:
         "measured in it, and it is what says where a tail stops being a tail",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_decay)
+    p.set_defaults(needs_unit=False, func=cmd_decay)
 
     p = sub.add_parser(
         "efx-motion",
@@ -99,7 +105,7 @@ def register(sub) -> None:
         "recover its own control",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_efx_motion)
+    p.set_defaults(needs_unit=False, func=cmd_efx_motion)
 
     p = sub.add_parser(
         "efx-sort",
@@ -122,7 +128,7 @@ def register(sub) -> None:
         "than reconciled",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_efx_sort)
+    p.set_defaults(needs_unit=False, func=cmd_efx_sort)
 
     p = sub.add_parser(
         "verdict",
@@ -147,7 +153,7 @@ def register(sub) -> None:
         help="dB the change must clear the unit's own repeatability by",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_verdict)
+    p.set_defaults(needs_unit=False, func=cmd_verdict)
 
     p = sub.add_parser(
         "plan",
@@ -160,7 +166,7 @@ def register(sub) -> None:
         help="the leading bytes of the addresses to plan, e.g. '40 11' for part 1",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_plan)
+    p.set_defaults(needs_unit=False, func=cmd_plan)
 
     p = sub.add_parser(
         "block",
@@ -191,7 +197,7 @@ def register(sub) -> None:
         "takes and its own balance, so give the plain pass's and the gesture pass's both",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_block)
+    p.set_defaults(needs_unit=False, func=cmd_block)
 
     p = sub.add_parser(
         "balance",
@@ -209,7 +215,7 @@ def register(sub) -> None:
         help="dB a movement must clear the steadier setting's own scatter by",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_balance)
+    p.set_defaults(needs_unit=False, func=cmd_balance)
 
     p = sub.add_parser(
         "vibrato",
@@ -228,7 +234,7 @@ def register(sub) -> None:
     p.add_argument("--min-rate", type=float, default=0.5, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=15.0, help="fastest modulation searched, Hz")
     options.add_out(p)
-    p.set_defaults(func=cmd_vibrato)
+    p.set_defaults(needs_unit=False, func=cmd_vibrato)
 
 
 def _pair(dry_path: str, wet_path: str):
