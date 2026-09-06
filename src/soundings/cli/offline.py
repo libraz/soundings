@@ -236,6 +236,29 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_vibrato)
 
+    p = sub.add_parser(
+        "complete",
+        help="count a unit's directory against the bar for a finished one, and say "
+        "what is left, with no machine attached",
+    )
+    p.add_argument("unit", help="a directory under data/units")
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_complete)
+
+
+def cmd_complete(args) -> int:
+    """Say where a unit stands, and fail while it is short of the bar.
+
+    A non-zero exit is what lets this be asked mechanically rather than read, so
+    a stage quietly going missing from a directory is caught by whatever asks.
+    """
+    from .. import completion
+
+    found = completion.survey(args.unit)
+    print(completion.render(found))
+    report.write_json(args.out, found)
+    return 0 if found["complete"] else 1
+
 
 def _pair(dry_path: str, wet_path: str):
     """Load two takes and hand back the loudest channel of each, plus the rate."""

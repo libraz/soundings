@@ -68,7 +68,8 @@
     "plan",
     "block",
     "balance",
-    "vibrato"
+    "vibrato",
+    "complete"
   ],
   "commands": {
     "devices": {
@@ -3012,6 +3013,50 @@
           "default": "15.0",
           "required": false,
           "help": "fastest modulation searched, Hz",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "complete": {
+      "help": "count a unit's directory against the bar for a finished one, and say what is left, with no machine attached",
+      "handler": "cmd_complete",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "unit",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory under data/units",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

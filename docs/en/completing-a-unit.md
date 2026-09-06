@@ -28,21 +28,33 @@ directory listing and mean opposite things to a reader.
 | Repeatability | A floor measured for this unit on this chain, and re-measured after any change to the chain. |
 | Audible differences | Every parameter reachable by a message has an audible verdict, or falls under a stated exclusion. |
 | Whole blocks | One block of each kind swept in full and counted against its plan, with nothing left unasked and the addresses no pair can be built for named. A verdict that appeared in one block and not its peers was re-asked before it was published. |
-| Effect response | The route is established first: whether a signal presented to the unit's analogue input reaches its effects, measured with a control proving the raised state does something. Where it does not, sweeping a known signal through an effect is unavailable on that unit and the stage is what its own voices can support. Every parameter found audible then has the measurements the identification work needs (below); a parameter found inaudible needs none, and the null verdict is the record. |
+| Effect response | The route is established first: whether a signal presented to the unit's analogue input reaches its effects, measured with a control proving the raised state does something. Where it does not, sweeping a known signal through an effect is unavailable on that unit and the stage is what its own voices can support. Then every effect parameter carries an audible verdict, taken at the parameter rather than at the effect type. The curves the identification work needs (below) are not required for completion. |
 
 ## The audible verdict gates the expensive work
 
 Sweeping an effect parameter across its range, capturing a response at each
-setting, is the costliest measurement here and the one with no natural end. It
-is bounded by making the cheap measurement first: **a parameter is swept only
-after it has been found audible.**
+setting, is the costliest measurement here and the one with no natural end. Two
+things bound it.
+
+**The gate is asked at the parameter.** A gate is worth what it turns away, and
+one asked of a whole effect type can pass every type a unit has, leaving the
+number of parameters to sweep exactly where it started. So the audible verdict
+that admits a sweep is the one taken at the parameter. Screening every parameter
+of every type is a stage of its own, and its cost can be worked out before it is
+begun: a count of parameters times the cost of one cheap comparison.
 
 A parameter the unit stores but is not heard through does not get a response
-measurement. That it is stored and inaudible is itself the finding, and it is
-already recorded.
+measurement. That it is stored and inaudible is itself the finding.
 
-For a parameter that is audible, the bar is the material an algorithm can be
-identified from rather than a summary of it:
+**The sweep is asked for, not scheduled.** Screening ends; sweeping does not. A
+unit is complete when what is audible in it has been mapped, with the bounds and
+controls that make each null readable. The curves come afterwards, one parameter
+at a time, when a named downstream question needs that parameter — the same rule
+that decides what enters scope at all. A complete unit is one those questions can
+be put to, not one that has already answered them.
+
+For a parameter whose curve is asked for, the bar is the material an algorithm
+can be identified from rather than a summary of it:
 
 - the deconvolved response, kept as numbers beside the stimulus that produced it
 - the harmonic orders separated from the linear response, not folded into it
@@ -61,6 +73,10 @@ identified from rather than a summary of it:
 - **Every part or channel scanned.** Scanning one of each kind and naming what
   was left is complete; scanning all sixteen is not more complete, it is more
   expensive.
+- **Every audible parameter swept.** The map of what is audible is the
+  deliverable; the curves are drawn from it on demand. A unit that has to answer
+  every question before it is finished is a unit that is never finished, and the
+  questions are not all known yet.
 - **A model of anything.** No algorithm is named, no topology fitted, no
   coefficient estimated. A unit is complete when it can be derived from, not
   when it has been.
@@ -69,7 +85,20 @@ identified from rather than a summary of it:
 
 ## Stages that do not apply
 
-Recorded in `meta.json`, naming the stage and the reason, in the same terms the
-protocol names it. A stage is skipped because the unit has nothing to answer it
-with — not because it was inconvenient, and not because the answer was expected
-to be uninteresting.
+Recorded in `meta.json` under `stages_that_do_not_apply`, keyed by the stage name
+in the table above and carrying the reason. A stage is skipped because the unit
+has nothing to answer it with — not because it was inconvenient, and not because
+the answer was expected to be uninteresting.
+
+## Asking where a unit stands
+
+`soundings complete <unit directory>` counts a directory against the table and
+prints what is left. The checks are structural — a file is present, a flag is
+set, one count agrees with another — so a stage it reports as met was counted
+rather than read. Where the bar turns on something only a reader can settle,
+such as whether a control was sufficient or a null carried its bound, it says
+it cannot decide instead of passing it.
+
+What remains is given as counts of addresses and parameters, never as hours. A
+rate belongs to a chain and a stimulus; one measured on one unit is not a fact
+about the next, and the operator is the one who knows which applies.
