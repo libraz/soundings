@@ -825,27 +825,37 @@
     },
     {
       "id": "twenty-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound-and-three-blocks-agree",
-      "summary": "A part block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 1n 17 accepts one value only and cannot be asked at all. Of the 46, 20 changed the sound and 26 did not under anything tried. Parts 1, 2 and 3 were each swept in full and returned the same 20, address for address.",
+      "summary": "A melodic part block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 1n 17 accepts one value only and cannot be asked at all. Of the 46, 20 changed the sound and 26 did not under anything tried. Parts 1, 2 and 3 were each swept in full and returned the same 20, address for address. The rhythm part's block is not the same block: it holds 35 addresses, 34 askable, of which 10 changed the sound.",
       "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte. Each block was asked on the channel its own 40 1n 02 byte says it listens to, read from the unit rather than assumed: 00 for 40 11, 01 for 40 12, 02 for 40 13.",
       "results": {
         "audible": "40 1n 02, 08, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
         "not audible under what was tried": "40 1n 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 13, 14, 18, 1F, 20, 23, 24, 25, 37",
         "cannot be asked": "40 1n 17, which accepts 08 and nothing else",
         "heard as a change in stereo balance": "40 1n 15, 16, 1C",
-        "identical across the three blocks swept": true
+        "identical across the three blocks swept": true,
+        "rhythm_part_block": {
+          "addresses": 35,
+          "askable": 34,
+          "audible": "40 10 02, 08, 15, 19, 30, 31, 32, 33, 34, 38",
+          "cannot be asked": "40 10 17, the same offset the melodic blocks cannot ask either",
+          "absent_from_this_block": "40 1n 1A to 25, twelve addresses the melodic blocks have and this one does not"
+        }
       },
       "the_three_blocks_agree": "Parts 1, 2 and 3 were swept independently and answered with the same 20 addresses, with nothing left unasked in any of them. Three blocks agreeing is not the same as sixteen, and the remaining thirteen were not swept.",
       "asking_the_channel_byte_needs_the_stimulus_channel": "40 1n 02 is the byte the part listens to a channel on, and the pair to ask it at cannot come from the write probe alone. The probe reports the accepted range and the plan picked 0 against 16 for all three blocks from it; the plan cannot know which channel the stimulus is on. For part 1 that pair happens to be its own channel against off, which is a question. For parts 2 and 3 both values take the part away from the note being played, so both settings are silent and the run refused to measure -- correctly, and in a way that reads as a failed capture rather than as a badly chosen pair. Asked at the part's own channel against off, all three answer audible on the level channel.",
       "positive_control": "The plain note's own take-to-take repeatability is measured in every run and sat between -56 and -62 dB throughout, including in the runs taken to check a doubtful verdict. That is what says a stimulus returning no usable yardstick is a fact about the stimulus rather than about the chain that hour.",
       "not_established": [
-        "What any of the 20 audible addresses does. Audible means the sound changed, not that the change was identified.",
-        "That the 26 inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than program 0, or under a message none of the three gestures sent would read as inaudible here.",
-        "Anything about parts 4 to 16, or about the rhythm part at 40 10. The block is per part and three of them were swept.",
-        "Anything about 40 1n 17, which no pair of settings can be built for.",
-        "Anything a parameter about polyphony would answer. Two stimuli were built for it -- two notes at once, and one note struck twice -- and neither produced a yardstick that repeats, so the pass was withdrawn rather than read. See the entry on that."
+        "What any of the audible addresses does. Audible means the sound changed, not that the change was identified.",
+        "That the inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than the one used, or under a message none of the gestures sent would read as inaudible here.",
+        "Where the rhythm part holds the controllers it responds to, given that twelve of the addresses a melodic part holds them in are absent from its block.",
+        "Anything about parts 4 to 16. Three melodic blocks and the rhythm block were swept; the block is per part and the rest were not.",
+        "Anything about 40 1n 17, which no pair of settings can be built for in either kind of block.",
+        "Anything a parameter about polyphony would answer. Two stimuli were built for it and neither produces a yardstick that repeats, so the pass was withdrawn rather than read."
       ],
       "reproduced": "The 20 are the intersection of three independent block sweeps. Every address that appeared in one block and not the others was asked again, and none of those verdicts survived: 40 11 0D, 40 11 13 and 40 11 24 were each audible in one pass and inaudible when re-asked, the re-asks having yardsticks as good or better than the original. They are recorded here as not audible, and the disagreement is stated rather than averaged.",
-      "found_by": "Asking every address in one block rather than the ones a manual made interesting."
+      "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
+      "the_rhythm_block_is_a_subset": "Every address the rhythm block holds, a melodic block holds too, and every address audible in the rhythm block is audible in the melodic ones. Nothing is audible there and not here. Of the ten addresses audible in a melodic block and not in the rhythm block, seven are not in the rhythm block at all -- so only three exist in both and are heard in one: 40 1n 16, 35 and 36.",
+      "a_controller_can_be_heard_where_its_storage_does_not_exist": "CC91 is audible on the rhythm part, measured separately and recorded on its own. The address a melodic part stores CC91 in, 40 1n 22, is one of the twelve the rhythm block does not have. So the part responds to the controller without holding it where its melodic siblings do, and the entry naming twelve controllers and their addresses is a statement about part 1 rather than about parts in general."
     },
     {
       "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
@@ -900,12 +910,12 @@
       "found_by": "Asking whether a verdict that only one stimulus ever witnessed would come back."
     },
     {
-      "id": "a-signal-presented-to-the-analogue-input-reaches-the-output-and-bypasses-the-insertion-effect",
-      "summary": "A swept sine played into the analogue input comes back flat within 0.1 dB from 63 Hz to 8 kHz with distortion 86 dB down, and loading a distortion into the insertion effect and routing part 1 through it changes that by 0.2 dB. The same prepared state changes a note the machine plays by 26.0 dB over its yardstick.",
+      "id": "a-signal-presented-to-the-analogue-input-reaches-the-output-and-bypasses-the-effects",
+      "summary": "A swept sine played into the analogue input comes back flat within 0.1 dB from 63 Hz to 8 kHz with distortion 86 dB down. Loading a distortion into the insertion effect and routing part 1 through it changes that by 0.2 dB; raising the system reverb to a hall at maximum time changes it by 0.5 dB. The same states change a note the machine plays by 26.0 and 28.2 dB over its yardstick.",
       "method": "Two runs of three exponential sine sweeps each, deconvolved so the linear response and each harmonic order arrive separately; the second run with 40 03 00 set to a distortion type and 40 41 22 routing part 1 through it, both read back after writing. The control puts the same state to a struck note and compares the routing byte bypassed against routed.",
       "why_it_matters": "Characterising an effect by sweeping a known signal through it is the only route that separates a linear response from the harmonic orders it generates, and it is closed on this machine. What can be learned about the insertion effects has to come from the machine's own voices.",
       "not_established": [
-        "Anything about the system effects. Only the insertion effect was raised; whether the input reaches the reverb or the chorus has its own send and was not asked.",
+        "The chorus, which has its own send and was not raised.",
         "That the input path is stereo. One of the two return channels carried the sweep and the other carried essentially nothing, so this measures one channel."
       ],
       "reproduced": "Three sweeps per run, the floor sitting within 0.3 dB across them in the first and 0.1 dB in the second, so neither run is one disturbed sweep read as a result.",
