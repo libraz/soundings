@@ -316,6 +316,28 @@ CATALOGUE: dict[str, Stimulus] = {
         blind_to="everything the first-map form is blind to, and additionally anything "
         "the two maps happen to agree on, which at power-on is most of them",
     ),
+    # The same part and map as struck_kit, at the note the drum block's own
+    # controls address. A drum parameter is stored per note -- 41 04 24 is the
+    # panpot of note 36 and of nothing else -- so a verdict taken while a
+    # different note sounds is a fact about that other note. The catalogue had
+    # note 49 and note 38 on the rhythm part and note 36 only on a melodic one,
+    # where the same number is a pitched voice, so the four addresses the NRPN
+    # scan attributed at note 36 could not be asked at all.
+    "struck_kit_36": Stimulus(
+        name="struck_kit_36",
+        program=0,
+        note=36,
+        velocity=100,
+        hold=0.15,
+        seconds=4.0,
+        lead=0.6,
+        channel=1,
+        writes=(("40 12 15", 1),),
+        sees="a parameter stored against note 36 of the first drum map, which every "
+        "other rhythm-part stimulus here sounds a different note than",
+        blind_to="anything stored against another note, and anything needing the sound "
+        "to still be there after a moment",
+    ),
     # The two below are what a *switch* has to be asked with. Everything above
     # plays its note under whatever the setting left, which is the right question
     # for a parameter that shapes a voice and no question at all for one that

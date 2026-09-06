@@ -92,9 +92,10 @@ def test_a_drum_stimulus_carries_its_own_channel() -> None:
 def test_a_stimulus_that_needs_a_part_set_up_says_which_address() -> None:
     """Written after the reset and before the note, and undone by the next reset."""
     prepared = {s.name: s for s in stimuli.CATALOGUE.values() if s.writes}
-    assert set(prepared) == {"struck_kit", "struck_kit_map2"}
+    assert set(prepared) == {"struck_kit", "struck_kit_map2", "struck_kit_36"}
     assert prepared["struck_kit"].writes == (("40 12 15", 1),)
     assert prepared["struck_kit_map2"].writes == (("40 12 15", 2),)
+    assert prepared["struck_kit_36"].writes == (("40 12 15", 1),)
     for name, stimulus in prepared.items():
         # GS numbers the part blocks with the tenth first: 40 10 is the part on
         # channel 10, 40 11 to 40 19 are channels 1 to 9, and 40 1A to 40 1F are
