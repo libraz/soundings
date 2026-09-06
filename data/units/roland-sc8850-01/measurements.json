@@ -824,25 +824,28 @@
       "reproduced": "One capture per stimulus. The two stimuli disagree, and the note explains why."
     },
     {
-      "id": "twenty-one-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound",
-      "summary": "Part 1's block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 11 17 accepts one value only and cannot be asked at all. Of the 46, 21 changed the sound and 25 did not under anything tried. Nothing was left unasked.",
-      "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte.",
+      "id": "twenty-of-the-forty-six-askable-bytes-in-a-part-block-change-the-sound-and-three-blocks-agree",
+      "summary": "A part block holds 47 addresses. 46 can be asked at two settings the unit accepts; 40 1n 17 accepts one value only and cannot be asked at all. Of the 46, 20 changed the sound and 26 did not under anything tried. Parts 1, 2 and 3 were each swept in full and returned the same 20, address for address.",
+      "method": "Each address was asked on its own at the pair the write probe measured it to accept, four takes a setting, against the unit's own repeatability in the same run. A plain struck note first; the addresses it could not hear were asked again with messages moved after the setting -- a volume, panpot, hold and channel pressure gesture, a bank select, expression, filter, NRPN, RPN and pitch bend gesture, and a modulation gesture -- since a parameter that only decides whether a message is received has nothing to receive under a bare note. A gesture that writes the address under test was left out of that gesture and the omission recorded, because it would otherwise put both settings at its own byte. Each block was asked on the channel its own 40 1n 02 byte says it listens to, read from the unit rather than assumed: 00 for 40 11, 01 for 40 12, 02 for 40 13.",
       "results": {
-        "audible": "40 11 02, 08, 13, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
-        "not audible under what was tried": "40 11 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 14, 18, 1F, 20, 23, 24, 25, 37",
-        "cannot be asked": "40 11 17, which accepts 08 and nothing else",
-        "heard only by moving messages after the setting": "40 11 13 and 40 11 30",
-        "heard as a change in stereo balance": "40 11 13, 15, 16, 1C"
+        "audible": "40 1n 02, 08, 15, 16, 19, 1A, 1B, 1C, 1D, 1E, 21, 22, 30, 31, 32, 33, 34, 35, 36, 38",
+        "not audible under what was tried": "40 1n 00, 01, 03, 04, 05, 06, 07, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12, 13, 14, 18, 1F, 20, 23, 24, 25, 37",
+        "cannot be asked": "40 1n 17, which accepts 08 and nothing else",
+        "heard as a change in stereo balance": "40 1n 15, 16, 1C",
+        "identical across the three blocks swept": true
       },
-      "note": "The values each address was asked at come from this unit's own write probe rather than from a manual, and where the probe could not establish a range the pair defaults to 0 and 127. Three addresses do not hold what that default asks: 40 11 01 and 40 11 18 answer no one-byte read at all and are readable only inside a wider region, and 40 11 14 accepts 0 and 2. A setting is therefore judged by what the unit holds after the write rather than by what was asked, and only a pair that collapses to one byte is refused.",
-      "found_by": "Asking every address in one block rather than the ones a manual made interesting.",
+      "the_three_blocks_agree": "Parts 1, 2 and 3 were swept independently and answered with the same 20 addresses, with nothing left unasked in any of them. Three blocks agreeing is not the same as sixteen, and the remaining thirteen were not swept.",
+      "asking_the_channel_byte_needs_the_stimulus_channel": "40 1n 02 is the byte the part listens to a channel on, and the pair to ask it at cannot come from the write probe alone. The probe reports the accepted range and the plan picked 0 against 16 for all three blocks from it; the plan cannot know which channel the stimulus is on. For part 1 that pair happens to be its own channel against off, which is a question. For parts 2 and 3 both values take the part away from the note being played, so both settings are silent and the run refused to measure -- correctly, and in a way that reads as a failed capture rather than as a badly chosen pair. Asked at the part's own channel against off, all three answer audible on the level channel.",
+      "positive_control": "The plain note's own take-to-take repeatability is measured in every run and sat between -56 and -62 dB throughout, including in the runs taken to check a doubtful verdict. That is what says a stimulus returning no usable yardstick is a fact about the stimulus rather than about the chain that hour.",
       "not_established": [
-        "What any of the 23 audible addresses does. Audible means the sound changed, not that the change was identified.",
-        "That the 23 inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than program 0, or under a message none of the three gestures sent would read as inaudible here.",
-        "Anything about parts other than part 1. The block is per part and only part 1 was swept.",
-        "Anything about 40 11 17, which no pair of settings can be built for."
+        "What any of the 20 audible addresses does. Audible means the sound changed, not that the change was identified.",
+        "That the 26 inaudible ones do nothing. A parameter heard only on a longer note, at another velocity, after note-off, on a voice other than program 0, or under a message none of the three gestures sent would read as inaudible here.",
+        "Anything about parts 4 to 16, or about the rhythm part at 40 10. The block is per part and three of them were swept.",
+        "Anything about 40 1n 17, which no pair of settings can be built for.",
+        "Anything a parameter about polyphony would answer. Two stimuli were built for it -- two notes at once, and one note struck twice -- and neither produced a yardstick that repeats, so the pass was withdrawn rather than read. See the entry on that."
       ],
-      "reproduced": "One pass of four takes a setting per stimulus. 40 11 18 and 40 11 1F were measured twice: the first pass ran under a method that was then withdrawn -- it opened the audio device a second time before each take to listen for silence -- and under it both appeared to move the stereo balance. Measured again with the device opened once per take, as every other address in the block was, neither does. The second reading is the one published; what the first says about them is set aside rather than averaged in, since the two are not two draws from one method."
+      "reproduced": "The 20 are the intersection of three independent block sweeps. Every address that appeared in one block and not the others was asked again, and none of those verdicts survived: 40 11 0D, 40 11 13 and 40 11 24 were each audible in one pass and inaudible when re-asked, the re-asks having yardsticks as good or better than the original. They are recorded here as not audible, and the disagreement is stated rather than averaged.",
+      "found_by": "Asking every address in one block rather than the ones a manual made interesting."
     },
     {
       "id": "the-panpot-at-zero-places-each-note-somewhere-new-without-changing-its-level",
@@ -881,6 +884,20 @@
         "What 40 11 37 does. Both its settings modulate at 4.11 Hz and their depths scatter from 71.9 to 212.6 cents at each, so a depth taken over the whole take cannot separate them."
       ],
       "reproduced": "Four takes a setting, and the power-on rate seen again in two other addresses' takes."
+    },
+    {
+      "id": "the-two-stimuli-built-to-ask-about-polyphony-produce-no-yardstick-that-repeats",
+      "summary": "Two notes at once, and one note struck twice 0.4 s apart, were built to ask the questions a single note cannot put. Neither repeats: the plain note's takes agree within -56 to -62 dB, while the struck-again stimulus lands between -1.1 and -66 dB with 84 per cent of its figures worse than -10 dB. No verdict taken from either survived being asked a second time.",
+      "method": "Both stimuli were run over every address three block sweeps had left silent, four takes a setting, and the doubtful verdicts were then asked again -- including with the takes doubled to eight. A plain struck note was measured on the same chain in the same period as a control on the chain itself.",
+      "why_it_is_the_stimulus_and_not_the_chain": "The plain note measured 61.53 and 62.30 dB of agreement between its takes minutes after the failing runs, which is where it has always sat on this unit. A chain that had degraded would have taken the plain note down with it.",
+      "the_mechanism": "Two voices sounding together sum with whatever relative phase the trigger leaves them, and this chain's trigger scatter spans about 3.9 ms against a 3.8 ms period at the note used. The phase is therefore free from take to take, the level moves with it, and the channel that reads one setting's takes agreeing worse than the other's has nothing left to detect.",
+      "what_it_cost": "Sixteen addresses were reported audible across three blocks on this evidence, each witnessed by a single stimulus and on a different set of addresses in every block. A parameter cannot do that. The guard that already existed for the modulation gesture was keyed on that gesture's name rather than on the channel a verdict came from, so it passed all sixteen.",
+      "not_established": [
+        "That the questions themselves are unanswerable. What is established is that these two stimuli, judged this way, cannot answer them. A stimulus whose two voices are far enough apart in pitch to be separated, or a measurement that does not rest on take-to-take agreement, is untried.",
+        "Whether any of the sixteen addresses is in fact audible. They are recorded as not audible under what was tried, which is what the surviving evidence supports."
+      ],
+      "reproduced": "Eight addresses were asked a second time, six doubtful and two chosen because their first pass had looked sound. Neither of the two survived: one lost its steady yardstick entirely, the other kept an audible verdict while the setting that had been steady at -66.34 dB fell to -1.85. Three of the six changed answer as well.",
+      "found_by": "Asking whether a verdict that only one stimulus ever witnessed would come back."
     }
   ]
 }
