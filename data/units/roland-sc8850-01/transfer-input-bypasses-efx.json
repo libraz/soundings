@@ -1,5 +1,5 @@
 {
-  "question": "Whether a signal presented to the machine's analogue input passes through its insertion effect. Everything that would characterise an effect by sweeping a known signal through it rests on this, and no manual page settles it.",
+  "question": "Whether a signal presented to the machine's analogue input passes through its effects -- the insertion effect, and the system reverb. Everything that would characterise an effect by sweeping a known signal through it rests on this, and no manual page settles it.",
   "answer": "no",
   "method": "The same exponential sine sweep was played into the analogue input twice, three sweeps each, and the recordings deconvolved with the sweep's inverse filter so that the linear response and each order of harmonic distortion arrive separately. The first run had nothing raised. The second had a distortion type loaded into the insertion effect and part 1 routed through it, both written over MIDI and read back. A distortion in the path raises harmonic orders by tens of decibels, so it is the loudest thing this measurement can be asked to see.",
   "runs": {
@@ -64,12 +64,64 @@
     ],
     "result": "Audible on the shape channel at 26.0 dB over the yardstick. So the effect type is live, the routing byte works, and a note reaches the insertion effect under exactly the state the sweep was run in. Without this the null above would say only that something in the chain was not doing anything, and which thing would be open."
   },
-  "why_it_matters": "The analogue input reaches the output -- flat within 0.1 dB from 63 Hz to 8 kHz, with distortion 86 dB down -- and bypasses the effects on the way. So an effect cannot be characterised by sweeping a known signal through it on this machine. Anything to be learned about the 65 insertion types has to come from the machine's own voices, which excite a band at a few partials rather than across its width and do not repeat well enough to be divided out.",
+  "why_it_matters": "The analogue input reaches the output -- flat within 0.1 dB from 63 Hz to 8 kHz, with distortion 86 dB down -- and bypasses the effects on the way, both the insertion effect and the system reverb, each tested with a control proving the raised state does something to a played note. So an effect cannot be characterised by sweeping a known signal through it on this machine. Anything to be learned about the effects has to come from the machine's own voices, which excite a band at a few partials rather than across its width and do not repeat well enough to be divided out.",
   "not_established": [
-    "Anything about the system effects. Only the insertion effect at 40 03 00, routed with 40 41 22, was raised. Whether the input reaches the reverb or the chorus is a separate question with a separate send, and it was not asked.",
+    "The chorus, which has its own send and was not raised. The reverb and the insertion effect were, and both bypass the input.",
     "That the input path is stereo. Of the two inputs the return was captured on, one carried the sweep cleanly and the other carried essentially nothing, so this is a measurement of one channel of that path.",
     "The response outside 63 Hz to 8 kHz. Those are the octave bands the measurement reports.",
     "That the converters contribute nothing. No loopback reference was divided out, so every figure here is the machine and the converters in series. It bounds both: a chain flat within 0.1 dB cannot hold a converter response that the machine happens to cancel."
   ],
-  "found_by": "Asking whether the approach that the effect work was going to rest on could work at all, before spending device time on it."
+  "found_by": "Asking whether the approach that the effect work was going to rest on could work at all, before spending device time on it.",
+  "system_reverb": {
+    "reverb_down": {
+      "prepared": [
+        {
+          "address": "40 01 33",
+          "bytes": "00"
+        }
+      ],
+      "floor_db": -133.08,
+      "distortion_db": -85.72,
+      "latency_ms": 257.7083
+    },
+    "reverb_as_far_up_as_it_goes": {
+      "prepared": [
+        {
+          "address": "40 01 30",
+          "bytes": "04"
+        },
+        {
+          "address": "40 01 33",
+          "bytes": "7F"
+        },
+        {
+          "address": "40 01 34",
+          "bytes": "7F"
+        }
+      ],
+      "floor_db": -133.62,
+      "distortion_db": -86.12,
+      "latency_ms": 257.7083
+    },
+    "difference": "0.5 dB of floor and 0.4 dB of distortion. Deconvolution puts an effect's whole tail after the linear peak, so a hall at maximum time would raise the floor reported under that peak by tens of decibels rather than by a half.",
+    "positive_control": {
+      "address": "40 01 33",
+      "values": [
+        0,
+        127
+      ],
+      "prepared": [
+        {
+          "address": "40 01 30",
+          "bytes": "04"
+        },
+        {
+          "address": "40 01 34",
+          "bytes": "7F"
+        }
+      ],
+      "audible": true,
+      "result": "Audible on the shape channel at 28.2 dB over the yardstick. The reverb is live and a note the machine plays reaches it under exactly the state the sweep was run in."
+    }
+  }
 }
