@@ -554,7 +554,16 @@ def cmd_balance(args: argparse.Namespace) -> int:
         return 1
 
     moved = [n for n, v in found if v.moved_between_settings or v.did_not_repeat]
-    print(f"\n{len(moved)} of {len(found)} moved the balance: {' | '.join(moved) or 'none'}")
+    unmeasured = [n for n, v in found if v.not_measured]
+    # The two are counted apart because they mean opposite things. A run that was
+    # asked and said no belongs under the denominator; a run that could not be
+    # asked does not, and folding it in reports a null the measurement never made.
+    print(
+        f"\n{len(moved)} of {len(found) - len(unmeasured)} moved the balance: "
+        f"{' | '.join(moved) or 'none'}"
+    )
+    if unmeasured:
+        print(f"{len(unmeasured)} could not be measured: {' | '.join(unmeasured)}")
 
     report.write_json(
         args.out,

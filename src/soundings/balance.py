@@ -107,8 +107,16 @@ class SettingBalance:
 class Verdict:
     stimulus: str
     settings: list[SettingBalance]
-    channels: tuple[int, int]
+    channels: tuple[int, int] | None
     margin_db: float = 6.0
+    not_measured: str | None = None
+    """Why this stimulus has no verdict, when it has none.
+
+    Carried rather than dropped. A stimulus the run asked and this could not
+    answer is absent from a list of verdicts, and absent reads as never asked --
+    so a count of what moved would be taken over a denominator that quietly
+    shrank.
+    """
 
     @property
     def yardstick_db(self) -> float:
@@ -152,6 +160,8 @@ class Verdict:
         return bool(self.did_not_repeat and widest < max(s.spread_db for s in self.settings) / 2)
 
     def describe(self) -> str:
+        if self.not_measured:
+            return f"{self.stimulus}: not measured -- {self.not_measured}"
         shown = " against ".join(
             f"{s.setting}: {s.typical_db:+.1f} dB, spread {s.spread_db:.1f}" for s in self.settings
         )
@@ -174,9 +184,17 @@ class Verdict:
         return f"{self.stimulus} ({where}): {found}. {shown}"
 
     def to_json(self) -> dict:
+        if self.not_measured:
+            return {
+                "stimulus_name": self.stimulus,
+                "channels": None,
+                "measured": False,
+                "not_measured": self.not_measured,
+            }
         return {
             "stimulus_name": self.stimulus,
-            "channels": list(self.channels),
+            "channels": list(self.channels) if self.channels else None,
+            "measured": True,
             "margin_db": self.margin_db,
             "yardstick_db": round(self.yardstick_db, 2),
             "moved_between_settings": self.moved_between_settings,
@@ -198,14 +216,28 @@ def _spread(values: list[float]) -> float:
     return float(max(values) - min(values)) if len(values) > 1 else 0.0
 
 
-def _pair_of_channels(frames: np.ndarray, floor_db: float) -> tuple[int, int] | None:
+#: Why the channels are chosen from every take rather than from one of them.
+WHY_ACROSS_THE_SETTINGS = (
+    "A channel the unit arrived on is one that carried signal at some point in the run, so "
+    "each channel is taken at the loudest it ever reached. Asking a single take instead "
+    "cannot see a parameter that moves signal from one channel to the other: taken to its "
+    "two ends a panpot leaves every take with one live channel and one empty one, so "
+    "whichever take is asked answers mono -- and the one parameter this measurement exists "
+    "for is the one it would refuse."
+)
+
+
+def _pair_of_channels(takes: list[np.ndarray], floor_db: float) -> tuple[int, int] | None:
     """The two channels the unit arrived on, loudest first.
 
-    None when only one of them is over the floor: a mono source has no balance,
-    and computing one from a channel holding nothing but noise would report the
-    noise's own wander as a pan.
+    Each channel is taken at the loudest it reached across every take of every
+    setting, per WHY_ACROSS_THE_SETTINGS. None when only one of them clears the
+    floor anywhere in the run.
     """
-    levels = [_db(_rms(frames[:, c])) for c in range(frames.shape[1])]
+    if not takes:
+        return None
+    width = min(frames.shape[1] for frames in takes)
+    levels = [max(_db(_rms(frames[:, c])) for frames in takes) for c in range(width)]
     order = sorted(range(len(levels)), key=lambda c: levels[c], reverse=True)
     if len(order) < 2 or levels[order[1]] < floor_db + SECOND_CHANNEL_ABOVE_DB:
         return None
@@ -235,22 +267,24 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
     out = []
     for stimulus, settings in grouped.items():
         loaded = {k: [read(p) for p in v] for k, v in settings.items()}
-        # Which channels the unit arrived on is asked of the setting that sounded
-        # loudest, not of the first one. A parameter that silences its part at
-        # one of its two values leaves the other setting's takes holding nothing
-        # but noise, and choosing the pair from those picks whichever input
-        # carried the most of it -- then refuses the run for being mono. Measured
-        # here: one address in the part block silences the part at 127, which is
-        # the setting the plan asks first, and it was the one run of forty-six
-        # this returned nothing for.
+        # The rate and the noise floor come from the setting that sounded
+        # loudest, not from the first one: a parameter that silences its part at
+        # one of its two values would otherwise have its floor read out of noise.
+        # Measured here, one address in the part block silences the part at 127,
+        # which is the setting the plan asks first. The channels are a separate
+        # question and are asked of every take, per WHY_ACROSS_THE_SETTINGS.
         loudest = max(
             (loaded[s][0] for s in order[stimulus]), key=lambda t: float(np.abs(t[0]).max())
         )
         rate = loudest[1]
         lead = int((leads.get(stimulus, 0.6) * 0.8) * rate)
         floor = _db(_rms(loudest[0][:lead])) if lead > rate // 100 else -120.0
-        channels = _pair_of_channels(loudest[0], floor)
+        every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
+        channels = _pair_of_channels(every, floor)
         if channels is None:
+            out.append(
+                Verdict(stimulus=stimulus, settings=[], channels=None, not_measured=MONO_SOURCE)
+            )
             continue
         left, right = channels
         measured = []

@@ -121,13 +121,39 @@ def test_the_channels_are_chosen_from_the_setting_that_sounded(tmp_path) -> None
     assert set(found[0].channels) == {2, 3}
 
 
-def test_a_mono_source_is_passed_over_rather_than_given_a_number(tmp_path) -> None:
+def test_a_mono_source_is_given_no_number_and_says_why(tmp_path) -> None:
     """What a parameter does between two channels cannot be asked of one, and a
     balance computed against a channel holding only noise would report the
-    noise's own wander as a pan."""
+    noise's own wander as a pan. It carries that reason rather than being dropped:
+    a stimulus missing from the verdicts reads as one that was never asked, and a
+    count of what moved is then taken over a denominator that quietly shrank."""
     root = saved(tmp_path, {"0": [(-20.0, -300.0)] * 4, "127": [(-20.0, -300.0)] * 4})
 
-    assert balance.measure(root) == []
+    found = balance.measure(root)
+
+    assert len(found) == 1
+    assert found[0].not_measured == balance.MONO_SOURCE
+    assert found[0].settings == []
+    assert found[0].channels is None
+    assert found[0].to_json()["measured"] is False
+
+
+def test_a_parameter_that_pans_hard_is_not_mistaken_for_a_mono_source(tmp_path) -> None:
+    """Taken to its two ends a panpot leaves every take with one live channel and
+    one empty one, so a pair of channels chosen from any single take answers mono
+    -- and the one parameter this measurement exists for would be refused.
+
+    Measured on the unit at note 36 of the first drum map, asked at 1 against 127:
+    the balance sits at +58.3 dB and -58.5 dB, and the run was dropped before the
+    channels were asked of every take rather than of one."""
+    root = saved(tmp_path, {"1": [(-20.0, -300.0)] * 4, "127": [(-300.0, -20.0)] * 4})
+
+    found = balance.measure(root)
+
+    assert len(found) == 1
+    assert found[0].not_measured is None
+    assert set(found[0].channels) == {2, 3}
+    assert found[0].moved_between_settings
 
 
 def test_the_yardstick_is_the_steadier_setting_not_the_wider(tmp_path) -> None:
