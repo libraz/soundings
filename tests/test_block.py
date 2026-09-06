@@ -25,8 +25,17 @@ def record(
     inconclusive: tuple[str, ...] = (),
     unrepeatable: dict | None = None,
     values: tuple[int, int] = (0, 127),
+    grounds: dict | None = None,
 ) -> dict:
+    """A contrast record as the file holds one.
+
+    `grounds` says which of the three channels carried each stimulus, defaulting
+    to the repeatability channel for anything heard. That default is the case the
+    guard is about, and it is what the hardware produced for every verdict the
+    guard had to be widened to catch.
+    """
     names = list(heard) + list(deaf) + list(inconclusive)
+    grounds = grounds or {}
     return {
         "address": address,
         "values": list(values),
@@ -38,6 +47,13 @@ def record(
             {
                 "stimulus_name": name,
                 "each_setting_unrepeatable_db": (unrepeatable or {}).get(name, [-50.0, -50.0]),
+                "changed_the_shape": "shape" in grounds.get(name, []),
+                "changed_the_level": "level" in grounds.get(name, []),
+                "changed_the_repeatability": (
+                    "repeatability" in grounds.get(name, ["repeatability"])
+                    if name in heard
+                    else False
+                ),
             }
             for name in names
         ],
@@ -143,15 +159,56 @@ def test_the_guard_needs_the_plain_pass_and_refuses_without_it() -> None:
         )
     )
 
-    assert block.modulator_scatter(gesture, None)
+    assert block.scatter_not_a_gate("struck_vibrato", gesture, None)
 
 
-def test_the_guard_leaves_the_other_gestures_alone() -> None:
-    """Neither of them carries a modulator, so their repeatability channel means
-    what it always meant."""
-    gesture = block.read_one(record("40 11 0C", audible=True, heard=("struck_moved",), deaf=()))
+def test_a_verdict_backed_by_the_sound_itself_is_left_alone() -> None:
+    """The guard is about the repeatability channel and only about it. A change
+    of shape or of level is a measurement of the sound, so it stands however the
+    takes of either setting happened to scatter.
 
-    assert not block.modulator_scatter(gesture, None)
+    Written first as "the other gestures carry no modulator, so their
+    repeatability channel means what it always meant". The hardware refused that:
+    across three part blocks holding the same parameters, struck_again and
+    struck_retuned produced sixteen single-witness verdicts on a different set of
+    addresses in each, every one of them on the repeatability channel alone."""
+    heard_by_shape = block.read_one(
+        record(
+            "40 11 0C",
+            audible=True,
+            heard=("struck_moved",),
+            deaf=(),
+            unrepeatable={"struck_moved": [-3.0, -30.0]},
+            grounds={"struck_moved": ["shape"]},
+        )
+    )
+
+    assert not block.scatter_not_a_gate("struck_moved", heard_by_shape, None)
+
+
+def test_a_second_stimulus_scattering_is_caught_the_same_way() -> None:
+    """Measured: struck_again on 40 12 0E, settings scattering -1.68 and -13.85
+    dB against a plain note's -56 dB on this unit, called audible."""
+    plain = {
+        "40 12 0E": block.read_one(record("40 12 0E", unrepeatable={"struck": [-57.9, -61.4]}))
+    }
+    poly = {
+        "40 12 0E": block.read_one(
+            record(
+                "40 12 0E",
+                audible=True,
+                heard=("struck_again",),
+                deaf=("struck_pair",),
+                unrepeatable={"struck_again": [-1.68, -13.85]},
+            )
+        )
+    }
+
+    (joined,) = block.join(plain, {}, poly)
+
+    assert not joined.audible
+    assert joined.discounted == ["struck_again"]
+    assert "struck_again" in joined.inconclusive_under
 
 
 def test_a_block_shorter_than_its_plan_says_so() -> None:
@@ -321,30 +378,34 @@ def test_the_two_rescues_are_peers_and_both_are_named() -> None:
     assert joined.heard_by == ["struck_moved", "struck_again"]
 
 
-def test_the_modulator_guard_does_not_reach_the_polyphony_pass() -> None:
-    """The guard exists because both settings carry the modulator under the
-    vibrato gesture. The polyphony stimuli carry no modulator, so a verdict from
-    them is never scatter of a free-running phase and is not set aside."""
+def test_a_polyphony_verdict_whose_steady_setting_is_steady_survives() -> None:
+    """The guard has to have an outside here too, or the only stimulus that can
+    ask about polyphony can never answer and the question is unaskable.
+
+    The figures are the measured ones for 40 11 24, the address struck_again is
+    the sole witness for: one setting at -66.34 dB is as steady as a plain note
+    on this unit, and the other falls apart at -11.35. That asymmetry is what a
+    gate looks like, and it is the shape none of the sixteen discarded verdicts
+    had -- in those, both settings scattered."""
     plain = {
-        "40 11 0A": block.read_one(
-            record("40 11 0A", deaf=("struck",), unrepeatable={"struck": [-51.9, -51.9]})
-        )
+        "40 11 24": block.read_one(record("40 11 24", unrepeatable={"struck": [-56.4, -58.1]}))
     }
     poly = {
-        "40 11 0A": block.read_one(
+        "40 11 24": block.read_one(
             record(
-                "40 11 0A",
+                "40 11 24",
                 audible=True,
-                heard=("struck_pair",),
-                deaf=(),
-                unrepeatable={"struck_pair": [-14.5, -29.2]},
+                heard=("struck_again",),
+                deaf=("struck_pair",),
+                unrepeatable={"struck_again": [-66.34, -11.35]},
             )
         )
     }
 
     (joined,) = block.join(plain, {}, poly)
 
-    assert joined.audible and not joined.discounted
+    assert joined.audible and joined.heard_by == ["struck_again"]
+    assert joined.discounted == []
 
 
 def test_a_block_read_without_a_polyphony_pass_is_unchanged() -> None:

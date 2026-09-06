@@ -17,16 +17,25 @@ half a dozen messages moved, which is a narrower question whose verdict holds
 only in that state. So an address the plain note heard is answered by the plain
 note, and the gesture's job is the addresses it could not.
 
-**A modulator in the gesture makes the repeatability channel meaningless.** That
+**The repeatability channel is meaningless wherever both settings scatter.** That
 channel exists for a parameter that switches something moving on: one setting
-repeats, the other does not. Under the modulation gesture *both* settings have
-the modulator, so there is nothing for it to detect and the gap between the two
-settings is the scatter of a free-running phase. Measured on the first address
-asked: 29.2 dB against 14.5, which clears the bar comfortably, on an address the
-plain note found no difference in at all -- across 51.92 dB against a yardstick
-of 51.9 and a level difference of 0.001 dB. The gap is read as evidence only
-when the steadier setting is steady in absolute terms, which the plain pass
-measured for that same address.
+repeats, the other does not. But a stimulus in which *both* settings scatter has
+nothing for it to detect, and the gap between them is a free-running phase.
+Measured on the first address asked under the modulation gesture: 29.2 dB against
+14.5, which clears the bar comfortably, on an address the plain note found no
+difference in at all -- across 51.92 dB against a yardstick of 51.9 and a level
+difference of 0.001 dB. The gap is read as evidence only when the steadier
+setting is steady in absolute terms, which the plain pass measured for that same
+address.
+
+The rule was first written naming the modulation gesture, and that was too
+narrow. Any stimulus sounding more than one voice has the same problem for the
+same reason: the trigger cannot fix the relative phase of two voices, and this
+unit's trigger scatter is wider than a period of the note being played. Asked
+across three part blocks holding the same parameters, the name-based rule passed
+sixteen verdicts, each witnessed by a single stimulus, on a different set of
+addresses in every block. Parameters do not do that. So the guard is keyed on the
+channel a verdict came from rather than on which stimulus produced it.
 """
 
 from __future__ import annotations
@@ -61,12 +70,16 @@ WHY_POLYPHONY_PASS = (
     "the address, so until this pass has run those addresses are unasked rather than silent."
 )
 
-WHY_MODULATOR_SCATTER = (
-    "Under the modulation gesture both settings carry the modulator, so the channel that reads "
-    "one setting repeating worse than the other has nothing to detect and what it reports is "
-    "the scatter of a free-running phase. It is read as evidence only where the steadier "
-    "setting is steady against what the same address measured under the plain note, which is a "
-    "gate blocking the modulation rather than two draws from the same distribution."
+WHY_SCATTER_NOT_A_GATE = (
+    "This verdict rested on the channel that reads one setting's takes agreeing worse than the "
+    "other's, and on nothing else. That channel is evidence only where the steadier setting is "
+    "steady in absolute terms, against what the same address measured under the plain note: a "
+    "gate leaves the setting it blocks repeating as a plain note does, while two draws from a "
+    "free-running phase can sit any distance apart and mean nothing. Here both settings "
+    "scattered far worse than a plain note on this unit, so the gap between them is the phase "
+    "and not the parameter. Any stimulus sounding more than one voice can do this, because the "
+    "trigger cannot fix their relative phase and the scatter it does leave is wider than a "
+    "period of the note being played."
 )
 
 WHY_LEFT_OUT = (
@@ -100,6 +113,14 @@ class AddressVerdict:
     unrepeatable_db: dict[str, list] = field(default_factory=dict)
     discounted: list[str] = field(default_factory=list)
     """Stimuli whose audible verdict was set aside, with the reason in the record."""
+
+    grounds: dict[str, list[str]] = field(default_factory=dict)
+    """Which of the three channels carried each stimulus's verdict.
+
+    Kept because the repeatability channel is the one that can fire on nothing,
+    and a verdict resting on it alone has to be treated differently from the same
+    verdict backed by a change of shape or of level.
+    """
 
     left_out: dict = field(default_factory=dict)
     """Moves the gesture could not carry here, because they write this address.
@@ -137,7 +158,7 @@ class AddressVerdict:
         }
         if self.discounted:
             out["set_aside"] = self.discounted
-            out["why_set_aside"] = WHY_MODULATOR_SCATTER
+            out["why_set_aside"] = WHY_SCATTER_NOT_A_GATE
         if self.left_out:
             out["left_out_of_the_gesture"] = self.left_out
             out["why_left_out"] = WHY_LEFT_OUT
@@ -163,8 +184,21 @@ def read_one(record: dict) -> AddressVerdict | None:
         unrepeatable_db={
             name: list(e.get("each_setting_unrepeatable_db") or []) for name, e in entries.items()
         },
+        grounds={name: _grounds(e) for name, e in entries.items()},
         left_out=dict(record.get("left_out_of_the_gesture") or {}),
     )
+
+
+_CHANNELS = (
+    ("shape", "changed_the_shape"),
+    ("level", "changed_the_level"),
+    ("repeatability", "changed_the_repeatability"),
+)
+
+
+def _grounds(entry: dict) -> list[str]:
+    """Which of the three channels carried this stimulus's verdict."""
+    return [name for name, key in _CHANNELS if entry.get(key)]
 
 
 def survey(root: str | Path) -> dict[str, AddressVerdict]:
@@ -187,19 +221,33 @@ def _steadier(pair: list) -> float | None:
     return min(usable) if len(usable) == 2 else None
 
 
-def modulator_scatter(gesture: AddressVerdict, plain: AddressVerdict | None) -> bool:
-    """Whether the modulation gesture's verdict is scatter rather than a gate.
+def scatter_not_a_gate(name: str, rescue: AddressVerdict, plain: AddressVerdict | None) -> bool:
+    """Whether a verdict resting on the repeatability channel alone is scatter.
 
-    A gate on the modulation leaves the blocked setting repeating as the plain
-    note's takes do. Two draws from a free-running phase do not, however wide the
-    gap between them, so the plain pass's own figure for the same address is what
-    separates the two.
+    A gate leaves the blocked setting repeating as the plain note's takes do. Two
+    draws from a free-running phase do not, however wide the gap between them, so
+    the plain pass's own figure for the same address is what separates the two.
+
+    Keyed on the channel the verdict came from rather than on which stimulus
+    produced it. Naming the modulation gesture was the narrower rule and it was
+    wrong: any stimulus that plays more than one voice has a relative phase the
+    trigger cannot fix, and this unit's trigger scatter is wider than a period of
+    the note being played. Asked across three part blocks that hold the same
+    parameters, the name-based rule let through sixteen verdicts, every one of
+    them witnessed by a single stimulus, on a different set of addresses in each
+    block -- which is what a parameter cannot do and a coin can.
     """
-    if "struck_vibrato" not in gesture.heard_by:
+    if name not in rescue.heard_by:
+        return False
+    # A change of shape or of level is a measurement of the sound itself and
+    # stands on its own. Only a verdict with nothing but the repeatability
+    # channel behind it needs the steadier setting to be steady in absolute
+    # terms before the gap between the two means anything.
+    if rescue.grounds.get(name) != ["repeatability"]:
         return False
     if plain is None:
         return True
-    here = _steadier(gesture.unrepeatable_db.get("struck_vibrato") or [])
+    here = _steadier(rescue.unrepeatable_db.get(name) or [])
     there = _steadier(plain.unrepeatable_db.get("struck") or [])
     if here is None or there is None:
         return True
@@ -249,11 +297,14 @@ def join(
                 **{k: v for r in rescued for k, v in r.left_out.items()},
             },
         )
-        if second is not None and modulator_scatter(second, first):
-            merged.discounted.append("struck_vibrato")
-            merged.heard_by = [n for n in merged.heard_by if n != "struck_vibrato"]
-            merged.inconclusive_under = merged.inconclusive_under + ["struck_vibrato"]
-            merged.audible = bool(merged.heard_by)
+        for rescue in rescued:
+            for name in list(rescue.heard_by):
+                if not scatter_not_a_gate(name, rescue, first):
+                    continue
+                merged.discounted.append(name)
+                merged.heard_by = [n for n in merged.heard_by if n != name]
+                merged.inconclusive_under = merged.inconclusive_under + [name]
+        merged.audible = bool(merged.heard_by)
         out.append(merged)
     return out
 
@@ -337,14 +388,14 @@ __all__ = [
     "WHY_BALANCE_COUNTS",
     "WHY_LEFT_OUT",
     "STEADY_WITHIN_DB",
-    "WHY_MODULATOR_SCATTER",
+    "WHY_SCATTER_NOT_A_GATE",
     "WHY_POLYPHONY_PASS",
     "WHY_TWO_PASSES",
     "AddressVerdict",
     "against_plan",
     "with_balance",
     "join",
-    "modulator_scatter",
+    "scatter_not_a_gate",
     "read_one",
     "summarise",
     "survey",
