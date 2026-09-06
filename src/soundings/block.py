@@ -211,6 +211,27 @@ def survey(root: str | Path) -> dict[str, AddressVerdict]:
     return out
 
 
+#: Why a record under the directory can be one the plan does not name.
+WHY_OUTSIDE_THE_PLAN = (
+    "A run keeps its control beside its verdicts, which is what makes its nulls readable, and "
+    "the control is usually an address in another block. Folding one into the count would make "
+    "the block a byte wider than it is and one verdict better than it earned. Named rather than "
+    "dropped: a record the plan does not ask for is either a control or a mistake, and which of "
+    "those it is belongs to the reader."
+)
+
+
+def split_by_plan(found: dict[str, AddressVerdict], planned: dict) -> tuple[dict, list[str]]:
+    """The records the plan asked for, and the addresses of the ones it did not."""
+    asked = {a["address"] for a in planned.get("ask", [])}
+    for entry in planned.get("cannot_be_asked", []):
+        # Written either as the address with its reason beside it or as the two
+        # in one string, depending on which stage wrote the plan.
+        asked.add(entry["address"] if isinstance(entry, dict) else str(entry).split(" (")[0])
+    kept = {address: v for address, v in found.items() if address in asked}
+    return kept, sorted(set(found) - set(kept))
+
+
 def _steadier(pair: list) -> float | None:
     """The better of a setting pair's two repeatability figures, if it has two.
 

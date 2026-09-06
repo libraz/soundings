@@ -417,3 +417,28 @@ def test_a_block_read_without_a_polyphony_pass_is_unchanged() -> None:
     assert [f.to_json() for f in block.join(plain, gesture)] == [
         f.to_json() for f in block.join(plain, gesture, {})
     ]
+
+
+def test_a_control_kept_beside_the_verdicts_is_not_one_of_them() -> None:
+    """A run keeps its control in the same directory, and the control is another block's
+    address. Counting it would make the block a byte wider than it is."""
+    planned = {
+        "ask": [{"address": "40 03 17"}],
+        "cannot_be_asked": [{"address": "40 03 1A", "why": "accepts one value"}],
+    }
+    found = {
+        "40 03 17": object(),
+        "40 03 1A": object(),
+        "40 42 22": object(),
+    }
+    kept, outside = block.split_by_plan(found, planned)
+    assert sorted(kept) == ["40 03 17", "40 03 1A"]
+    assert outside == ["40 42 22"]
+
+
+def test_a_plan_naming_its_unaskable_address_as_a_string_still_matches() -> None:
+    """Two stages write that list differently, and neither shape may lose a record."""
+    planned = {"ask": [], "cannot_be_asked": ["40 03 1A (accepts one value)"]}
+    kept, outside = block.split_by_plan({"40 03 1A": object()}, planned)
+    assert sorted(kept) == ["40 03 1A"]
+    assert outside == []

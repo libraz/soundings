@@ -628,9 +628,17 @@ def cmd_block(args: argparse.Namespace) -> int:
     from .. import block
 
     planned = json.loads(Path(args.plan).read_text())
-    plain = block.survey(args.plain)
-    gesture = block.survey(args.gesture) if args.gesture else {}
-    polyphony = block.survey(args.polyphony) if args.polyphony else {}
+    plain, outside = block.split_by_plan(block.survey(args.plain), planned)
+    gesture, more = (
+        block.split_by_plan(block.survey(args.gesture), planned) if args.gesture else ({}, [])
+    )
+    outside += more
+    polyphony, more = (
+        block.split_by_plan(block.survey(args.polyphony), planned) if args.polyphony else ({}, [])
+    )
+    outside += more
+    for address in sorted(set(outside)):
+        print(f"  {address}: a record the plan does not name, left out of the block")
     if not plain and not gesture and not polyphony:
         print(f"no contrast records under {args.plain}")
         return 1
@@ -654,6 +662,14 @@ def cmd_block(args: argparse.Namespace) -> int:
         {
             "block": planned.get("block"),
             "method": block.METHOD,
+            **(
+                {
+                    "records_the_plan_does_not_name": sorted(set(outside)),
+                    "why_outside_the_plan": block.WHY_OUTSIDE_THE_PLAN,
+                }
+                if outside
+                else {}
+            ),
             "two_passes": block.WHY_TWO_PASSES,
             **({"polyphony_pass": block.WHY_POLYPHONY_PASS} if args.polyphony else {}),
             **({"balance_counts": block.WHY_BALANCE_COUNTS} if args.balance else {}),
