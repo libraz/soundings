@@ -134,6 +134,39 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_write_probe)
 
     p = sub.add_parser(
+        "boundary",
+        help="ask whether each mapped region ends where the map says it ends, by "
+        "reading past it one byte at a time",
+    )
+    p.add_argument("map", help="an address map, whose regions are the ones asked about")
+    p.add_argument(
+        "--reach",
+        type=int,
+        default=16,
+        help="addresses read past a region that answered past its end, before moving on. "
+        "A region that answers all of them is reported as reaching at least this far "
+        "rather than as ending here",
+    )
+    p.add_argument(
+        "--canary",
+        default=None,
+        help="an address known to answer, asked between regions. Every result here is a "
+        "negative, and a unit that stopped talking answers nothing to all of them. "
+        "Defaults to the first region the map holds",
+    )
+    p.add_argument("--every", type=int, default=25, help="regions between canary questions")
+    p.add_argument("--timeout", type=float, default=0.3)
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help="skip regions already in --out and add to it. A region is written as soon as "
+        "it is asked, so an interrupted run carries on from the last whole one",
+    )
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_boundary)
+
+    p = sub.add_parser(
         "window-probe",
         help="tell an address that holds a value from one that shows another address's, "
         "which writing to it and reading it back cannot",
@@ -562,6 +595,72 @@ def _address(spec: str) -> tuple[int, int, int]:
     if len(parts) != 3:
         raise SystemExit(f"an address is three hex bytes, not {spec!r}")
     return tuple(int(b, 16) for b in parts)
+
+
+def cmd_boundary(args: argparse.Namespace) -> int:
+    """Read one byte past every mapped region, and keep going where one answers."""
+    from .. import boundary, roland
+
+    regions = archive.regions(args.map)
+    canary = args.canary or " ".join(f"{b:02X}" for b in regions[0][0])
+    found: list[boundary.Region] = []
+    deaf = False
+    if args.resume and args.out and Path(args.out).exists():
+        found = [boundary.restore(r) for r in json.loads(Path(args.out).read_text())["regions"]]
+        already = {r.address for r in found}
+        before = len(regions)
+        regions = [r for r in regions if " ".join(f"{b:02X}" for b in r[0]) not in already]
+        print(f"resuming: {len(found)} regions already asked, {before - len(regions)} skipped")
+
+    def answers(address: str) -> list[int] | None:
+        reply = roland.parse_dt1(
+            link.exchange(roland.rq1(address, 1, device_id=args.device_id), timeout=args.timeout)
+        )
+        if reply is None or list(reply.address) != roland.address_bytes(address):
+            # A reply for another address is not an answer to this read. The
+            # sweeps all check it; a read that did not once came back holding a
+            # neighbour's byte.
+            return None
+        return list(reply.data)
+
+    def write_out() -> None:
+        # Written per region rather than at the end. A run this long is ended by
+        # things that do not come back to close a file: the MIDI layer refusing a
+        # client kills the process outright, and a record written only at the end
+        # is a record of nothing.
+        report.write_json(args.out, boundary.summarise(found, canary, deaf))
+
+    with verified_link(args, refusing="reading past the mapped regions", show_port=True) as link:
+        print(f"{len(regions)} regions, canary {canary}")
+        for asked, (address, size) in enumerate(regions):
+            start = " ".join(f"{b:02X}" for b in address)
+            region = boundary.Region(address=start, mapped_size=size)
+            packed = boundary.past_the_end(start, size)
+            for step in range(args.reach):
+                here = boundary.unpack(packed + step)
+                data = answers(here)
+                if data is None:
+                    break
+                if not region.answered_beyond:
+                    region.stopped_at = here
+                region.answered_beyond += 1
+                region.values.append(" ".join(f"{b:02X}" for b in data))
+            if region.short:
+                print(f"  {start}: mapped {size}, answered {region.answered_beyond} past the end")
+            found.append(region)
+            write_out()
+            if asked % args.every == args.every - 1 and answers(canary) is None:
+                deaf = True
+                print(f"\nSTOPPED: {canary} stopped answering")
+                break
+
+    result = boundary.summarise(found, canary, deaf)
+    print(
+        f"\n{result['regions_reaching_past_their_mapped_end']} of {result['asked']} regions "
+        f"reached past their mapped end, {result['addresses_found_that_way']} addresses in all"
+    )
+    report.write_json(args.out, result)
+    return 1 if deaf else 0
 
 
 def cmd_window_probe(args: argparse.Namespace) -> int:

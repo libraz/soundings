@@ -48,6 +48,7 @@
     "identity",
     "sweep",
     "write-probe",
+    "boundary",
     "window-probe",
     "hold-probe",
     "tone-map",
@@ -496,6 +497,128 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "boundary": {
+      "help": "ask whether each mapped region ends where the map says it ends, by reading past it one byte at a time",
+      "handler": "cmd_boundary",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "map",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "an address map, whose regions are the ones asked about",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--reach"
+          ],
+          "dest": "reach",
+          "nargs": null,
+          "default": "16",
+          "required": false,
+          "help": "addresses read past a region that answered past its end, before moving on. A region that answers all of them is reported as reaching at least this far rather than as ending here",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--canary"
+          ],
+          "dest": "canary",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "an address known to answer, asked between regions. Every result here is a negative, and a unit that stopped talking answers nothing to all of them. Defaults to the first region the map holds",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--every"
+          ],
+          "dest": "every",
+          "nargs": null,
+          "default": "25",
+          "required": false,
+          "help": "regions between canary questions",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--timeout"
+          ],
+          "dest": "timeout",
+          "nargs": null,
+          "default": "0.3",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--resume"
+          ],
+          "dest": "resume",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "skip regions already in --out and add to it. A region is written as soon as it is asked, so an interrupted run carries on from the last whole one",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
         },
         {
           "option_strings": [
