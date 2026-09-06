@@ -67,6 +67,47 @@ class Region:
         return out
 
 
+#: Why a block is asked at every offset rather than only past its mapped end.
+WHY_EVERY_OFFSET = (
+    "Reading forward from a region's end stops at the first address that answers nothing, so a "
+    "run of live addresses beyond a silent gap is invisible to it. This unit has at least one: "
+    "the byte that moves a part to the second output pair sits thirty bytes past a region whose "
+    "mapped end is where the map says. Asking every offset is what finds those, at the cost of "
+    "a read per offset whether or not anything is there."
+)
+
+
+@dataclass
+class Block:
+    """One block, and which of its offsets answered a single-byte read."""
+
+    address: str
+    asked: int = 0
+    answered: dict[str, str] = field(default_factory=dict)
+
+    def to_json(self) -> dict:
+        return {
+            "address": self.address,
+            "offsets_asked": self.asked,
+            "offsets_that_answered": len(self.answered),
+            "answered": self.answered,
+        }
+
+
+def scanned(blocks: list[Block], canary: str, deaf: bool) -> dict:
+    """Which offsets answered, and the bound on the ones that did not."""
+    return {
+        "blocks_asked": len(blocks),
+        "offsets_asked": sum(b.asked for b in blocks),
+        "offsets_that_answered": sum(len(b.answered) for b in blocks),
+        "note": LIMIT,
+        "why_every_offset": WHY_EVERY_OFFSET,
+        "positive_control": {"canary": canary, "why": WHY_THE_CANARY},
+        "stopped": WENT_DEAF if deaf else None,
+        "blocks": [b.to_json() for b in blocks],
+    }
+
+
 def restore(row: dict) -> Region:
     """A region read back from a record, so an interrupted run resumes rather than repeats."""
     return Region(

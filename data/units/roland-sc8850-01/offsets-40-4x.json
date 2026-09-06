@@ -1,0 +1,26 @@
+{
+  "blocks_asked": 1,
+  "offsets_asked": 128,
+  "offsets_that_answered": 5,
+  "note": "Every question here is a single-byte read. An address that answers one is there; an address that answers nothing may still be reached by a block read that starts earlier, which this unit is known to do. So a region reported as ending where the map says is bounded by what a single-byte read reaches.",
+  "why_every_offset": "Reading forward from a region's end stops at the first address that answers nothing, so a run of live addresses beyond a silent gap is invisible to it. This unit has at least one: the byte that moves a part to the second output pair sits thirty bytes past a region whose mapped end is where the map says. Asking every offset is what finds those, at the cost of a read per offset whether or not anything is there.",
+  "positive_control": {
+    "canary": "40 01 30",
+    "why": "An address known to answer, asked between regions. A unit that stops talking answers nothing to every question after that, which is exactly what a region ending where the map says looks like. Without this, a run that lost the unit early reports a whole map of regions confirmed."
+  },
+  "stopped": "the canary stopped answering, so nothing after the last one it answered was measured",
+  "blocks": [
+    {
+      "address": "40 40 00",
+      "offsets_asked": 128,
+      "offsets_that_answered": 5,
+      "answered": {
+        "40 40 00": "00",
+        "40 40 01": "04",
+        "40 40 20": "01",
+        "40 40 21": "00",
+        "40 40 22": "00"
+      }
+    }
+  ]
+}

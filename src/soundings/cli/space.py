@@ -167,6 +167,29 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_boundary)
 
     p = sub.add_parser(
+        "offsets",
+        help="find which addresses in a block answer a single-byte read, which neither a "
+        "map bounded by block reads nor a read forward from a region's end shows",
+    )
+    p.add_argument(
+        "blocks",
+        nargs="+",
+        metavar="ADDR:COUNT",
+        help="'40 40 00:128' asks all 128 offsets of that block",
+    )
+    p.add_argument(
+        "--canary",
+        required=True,
+        help="an address known to answer, asked between blocks. Most offsets answer nothing "
+        "and a unit that stopped talking answers nothing to all of them",
+    )
+    p.add_argument("--every", type=int, default=1, help="blocks between canary questions")
+    p.add_argument("--timeout", type=float, default=0.3)
+    options.add_verify_reads(p)
+    options.add_out(p)
+    p.set_defaults(func=cmd_offsets)
+
+    p = sub.add_parser(
         "window-probe",
         help="tell an address that holds a value from one that shows another address's, "
         "which writing to it and reading it back cannot",
@@ -597,20 +620,9 @@ def _address(spec: str) -> tuple[int, int, int]:
     return tuple(int(b, 16) for b in parts)
 
 
-def cmd_boundary(args: argparse.Namespace) -> int:
-    """Read one byte past every mapped region, and keep going where one answers."""
-    from .. import boundary, roland
-
-    regions = archive.regions(args.map)
-    canary = args.canary or " ".join(f"{b:02X}" for b in regions[0][0])
-    found: list[boundary.Region] = []
-    deaf = False
-    if args.resume and args.out and Path(args.out).exists():
-        found = [boundary.restore(r) for r in json.loads(Path(args.out).read_text())["regions"]]
-        already = {r.address for r in found}
-        before = len(regions)
-        regions = [r for r in regions if " ".join(f"{b:02X}" for b in r[0]) not in already]
-        print(f"resuming: {len(found)} regions already asked, {before - len(regions)} skipped")
+def _single_byte_reader(link, args):
+    """Ask one address for one byte, and hand back None for anything that is not its answer."""
+    from .. import roland
 
     def answers(address: str) -> list[int] | None:
         reply = roland.parse_dt1(
@@ -623,6 +635,56 @@ def cmd_boundary(args: argparse.Namespace) -> int:
             return None
         return list(reply.data)
 
+    return answers
+
+
+def cmd_offsets(args: argparse.Namespace) -> int:
+    """Ask every offset of a block, since reading forward from a region's end misses a gap."""
+    from .. import boundary
+
+    blocks: list[boundary.Block] = []
+    deaf = False
+    with verified_link(args, refusing="reading a block's offsets", show_port=True) as link:
+        answers = _single_byte_reader(link, args)
+        for asked, spec in enumerate(args.blocks):
+            start, _, count = spec.partition(":")
+            block = boundary.Block(address=start.strip())
+            packed = boundary.past_the_end(block.address, 0)
+            for step in range(int(count)):
+                here = boundary.unpack(packed + step)
+                block.asked += 1
+                data = answers(here)
+                if data is not None:
+                    block.answered[here] = " ".join(f"{b:02X}" for b in data)
+            print(f"  {block.address}: {len(block.answered)} of {block.asked} offsets answered")
+            blocks.append(block)
+            report.write_json(args.out, boundary.scanned(blocks, args.canary, deaf))
+            if asked % args.every == args.every - 1 and answers(args.canary) is None:
+                deaf = True
+                print(f"\nSTOPPED: {args.canary} stopped answering")
+                break
+
+    result = boundary.scanned(blocks, args.canary, deaf)
+    print(f"\n{result['offsets_that_answered']} of {result['offsets_asked']} offsets answered")
+    report.write_json(args.out, result)
+    return 1 if deaf else 0
+
+
+def cmd_boundary(args: argparse.Namespace) -> int:
+    """Read one byte past every mapped region, and keep going where one answers."""
+    from .. import boundary
+
+    regions = archive.regions(args.map)
+    canary = args.canary or " ".join(f"{b:02X}" for b in regions[0][0])
+    found: list[boundary.Region] = []
+    deaf = False
+    if args.resume and args.out and Path(args.out).exists():
+        found = [boundary.restore(r) for r in json.loads(Path(args.out).read_text())["regions"]]
+        already = {r.address for r in found}
+        before = len(regions)
+        regions = [r for r in regions if " ".join(f"{b:02X}" for b in r[0]) not in already]
+        print(f"resuming: {len(found)} regions already asked, {before - len(regions)} skipped")
+
     def write_out() -> None:
         # Written per region rather than at the end. A run this long is ended by
         # things that do not come back to close a file: the MIDI layer refusing a
@@ -631,6 +693,7 @@ def cmd_boundary(args: argparse.Namespace) -> int:
         report.write_json(args.out, boundary.summarise(found, canary, deaf))
 
     with verified_link(args, refusing="reading past the mapped regions", show_port=True) as link:
+        answers = _single_byte_reader(link, args)
         print(f"{len(regions)} regions, canary {canary}")
         for asked, (address, size) in enumerate(regions):
             start = " ".join(f"{b:02X}" for b in address)

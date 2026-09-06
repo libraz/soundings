@@ -49,6 +49,7 @@
     "sweep",
     "write-probe",
     "boundary",
+    "offsets",
     "window-probe",
     "hold-probe",
     "tone-map",
@@ -619,6 +620,102 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "offsets": {
+      "help": "find which addresses in a block answer a single-byte read, which neither a map bounded by block reads nor a read forward from a region's end shows",
+      "handler": "cmd_offsets",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "blocks",
+          "nargs": "+",
+          "default": "None",
+          "required": true,
+          "help": "'40 40 00:128' asks all 128 offsets of that block",
+          "metavar": "ADDR:COUNT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--canary"
+          ],
+          "dest": "canary",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "an address known to answer, asked between blocks. Most offsets answer nothing and a unit that stopped talking answers nothing to all of them",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--every"
+          ],
+          "dest": "every",
+          "nargs": null,
+          "default": "1",
+          "required": false,
+          "help": "blocks between canary questions",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--timeout"
+          ],
+          "dest": "timeout",
+          "nargs": null,
+          "default": "0.3",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
         },
         {
           "option_strings": [

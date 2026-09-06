@@ -1035,6 +1035,41 @@
       "positive_control": "An address known to answer, asked every twenty-five regions throughout, and answering every time. A run that lost the unit would otherwise report the rest of the map as regions ending exactly where the map says.",
       "reproduced": "One pass over every region the map holds, with the canary carried through it.",
       "found_by": "Two blocks in a row turning out to have live addresses above the size the map gave them."
+    },
+    {
+      "id": "asking-a-blocks-offsets-one-by-one-stopped-the-unit-answering-anything",
+      "summary": "Reading all 128 offsets of one block, a byte at a time, left the unit answering nothing -- not the address the run was asking about, not the address it carried as a control, and not an identity request. It did not come back on its own and was recovered by switching it off and on.",
+      "method": "One single-byte read per offset, from 40 40 00 through 40 40 7F, with a 0.3 s deadline. Five offsets answered and the rest did not, so most of the run was a request followed by a wait. The control was asked once the block was finished and had stopped answering by then; the selftest before the run had passed every check, including twenty identical reads with none unanswered and a round trip of 15.2 ms.",
+      "why_it_matters": "A scan of addresses nothing is known about is not a read-only operation on this unit. One address in the map is already recorded as a command rather than a readable location, so a request that looks like a read can be something the unit does. Any stage that walks addresses blind carries this risk, and a run that hangs the unit costs whatever else was in flight.",
+      "not_established": [
+        "Which offset did it. The run asked 128 of them and the control was asked once at the end, so the hang is bounded by the block rather than by an address. Narrowing it would mean hanging the unit again, once per bisection step.",
+        "That it was an offset at all. A rate, a depth of unanswered requests, or the 0.3 s deadline repeated 123 times are not separated from each other or from the addresses by this.",
+        "Whether it repeats. It was seen once.",
+        "Whether anything was left changed. The unit was power cycled, which is also what clears any state a command-like address may have set, so the two cannot be told apart afterwards."
+      ],
+      "positive_control": "The selftest immediately before the run passed, and the control address answered when the run began. So the silence afterwards was the run rather than a unit that was already gone.",
+      "reproduced": "Not reproduced. Recorded from one occurrence, because what it changes is how a run may be made rather than what the unit holds.",
+      "found_by": "Scanning a block's offsets to find addresses that sit past a silent gap, which reading forward from a region's end cannot reach."
+    },
+    {
+      "id": "a-parts-assign-block-holds-five-addresses-and-three-of-them-sit-past-a-silent-gap",
+      "summary": "Of the 128 offsets in one part's assign block, five answer a single-byte read: 00 and 01, which the map holds, and 20, 21 and 22, which it does not. A second such block answers at the same five offsets. 21 is the byte that moves the part to the second output pair and 22 the byte that routes it through the insertion effect.",
+      "method": "Every offset of 40 40 asked once at size 1. The same five offsets had already answered in 40 42, which was read by hand after the map's region for it turned out to end at two bytes.",
+      "results": {
+        "answered in 40 40": "00 holding 00, 01 holding 04, 20 holding 01, 21 holding 00, 22 holding 00",
+        "answered in 40 42": "the same five offsets",
+        "mapped": "00 and 01 only, the map giving the region two bytes",
+        "known": "21 moves the part to the second output pair; 22 routes it through the insertion effect",
+        "not known": "20, which accepts 00 to 01 and holds 01"
+      },
+      "why_it_matters": "Three of the five sit thirty-odd bytes above a region the map bounds at two, with silence in between. Reading forward from a region's end stops at that silence, so these are addresses no stage built from the map would ever ask about -- and two of them decide where a part's audio goes.",
+      "not_established": [
+        "That the other fourteen blocks of this kind answer at the same offsets. Two of sixteen were asked, and the scan that would have asked the rest stopped the unit answering.",
+        "What 40 4n 00, 01 and 20 hold or do. They answer a read; nothing was heard.",
+        "That five is all there is. Offsets above 7F are not addressable this way, and an address reachable only by a block read starting earlier would not answer here."
+      ],
+      "reproduced": "Two blocks of the kind, answering at the same five offsets.",
+      "found_by": "Asking every offset of a block, after a byte that decides a part's output turned up past a gap the map gave no reason to look beyond."
     }
   ]
 }
