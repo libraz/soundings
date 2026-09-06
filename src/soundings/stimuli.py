@@ -498,6 +498,15 @@ BROAD = ("struck", "released", "sustained", "soft", "loud")
 # What an effect is asked with, as opposed to a parameter. Neither repeats, so a
 # delay measured against them is unambiguous and a band is excited across its
 # width rather than at a few partials.
+#
+# Measured, on the block of system effect addresses: asked with `struck` and both
+# sends raised, takes of one setting came back 0.55 dB apart and 35 of 40
+# addresses could not be measured at all. Asked with `unpitched` and the reverb
+# send alone, the same addresses came back 34 dB apart. The 33 dB is the whole
+# difference between a sweep that answers and a sweep that spends its device time
+# and reports nothing, and it is two separate mistakes: a pitched note against an
+# effect, and a chorus send raised over a take that has to repeat, which puts a
+# free-running LFO at a new phase on every strike exactly as the modulator does.
 EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 
 # What a byte with two values is asked with. The plain note answers a parameter
