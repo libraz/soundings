@@ -58,6 +58,14 @@ def register(sub) -> None:
     p.add_argument("dry", help="a take with the effect off")
     p.add_argument("wet", help="the same note with the effect on")
     p.add_argument(
+        "--type",
+        metavar="MSB LSB",
+        help="the insertion effect type the pair was taken under. Without it the record "
+        "says how long a tail took to die without saying whose tail it was, and a "
+        "directory of them is identified by its filenames -- which is an index kept by "
+        "hand beside records that could carry it themselves",
+    )
+    p.add_argument(
         "--lead",
         type=float,
         default=0.5,
@@ -399,6 +407,7 @@ def cmd_decay(args: argparse.Namespace) -> int:
     report.write_json(
         args.out,
         {
+            "type_id": args.type,
             "dry": str(args.dry),
             "wet": str(args.wet),
             "sample_rate": rate,
