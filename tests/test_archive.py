@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from soundings import archive
 
 UNIT = Path(__file__).parents[1] / "data" / "units" / "roland-sc8850-01"
@@ -120,6 +122,21 @@ def test_a_stimulus_that_landed_nowhere_contributes_no_address(tmp_path):
     )
 
     assert archive.stores_reached([scan]) == []
+
+
+def test_a_scan_of_an_older_shape_is_refused_by_name(tmp_path):
+    """Skipping it would take the addresses it reached out of the list without
+    making the list look any shorter, and a scan aimed by that list would then
+    report a null over a space it never asked about.
+
+    Not hypothetical: this unit's whole-map control-change scan keeps its
+    attributions under `controls`, and reading it here raised a KeyError naming a
+    field rather than the file."""
+    old = tmp_path / "cc-wholemap.json"
+    old.write_text(json.dumps({"controls": [{"control": "CC7", "stores_verbatim": ["40 11 19"]}]}))
+
+    with pytest.raises(ValueError, match="cc-wholemap.json"):
+        archive.stores_reached([old])
 
 
 def test_a_bounded_mark_keeps_its_blocks_and_reports_everything_else():

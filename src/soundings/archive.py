@@ -13,6 +13,15 @@ from pathlib import Path
 
 Address = tuple[int, int, int]
 
+NOT_THIS_SHAPE = (
+    "{path} is an alias scan this cannot read: it keeps its attributions under a key the "
+    "current one does not write, so it was made by an earlier form of the tool. Re-run it "
+    "before reading it here. Passing over it instead would be worse than refusing: the "
+    "addresses it reached would be missing from the list without the list being any shorter "
+    "in a way a caller could see, and a scan aimed by that list would report a null over a "
+    "space it never asked about."
+)
+
 
 def stores_reached(paths: list[str | Path]) -> list[str]:
     """Every address these alias scans attributed a message to, verbatim.
@@ -27,10 +36,16 @@ def stores_reached(paths: list[str | Path]) -> list[str]:
     missed three that the same unit's scans had since attributed, included one
     that no scan in the archive attributes, and described itself as the bytes a
     control change and an NRPN both reach, which was true of eight of them.
+
+    A record of an older shape is refused by name rather than skipped, per
+    NOT_THIS_SHAPE. Written because one such record raised a KeyError naming a
+    field rather than the file it came from.
     """
     out: set[str] = set()
     for path in paths:
         data = json.loads(Path(path).read_text())
+        if "attributed" not in data:
+            raise ValueError(NOT_THIS_SHAPE.format(path=Path(path).name))
         for entry in data["attributed"]:
             out.update(entry.get("stores_verbatim") or [])
     return sorted(out)
