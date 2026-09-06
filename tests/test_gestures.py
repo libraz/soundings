@@ -85,7 +85,6 @@ def test_the_switch_stimuli_are_the_plain_note_and_the_ones_that_move() -> None:
         "struck_moved",
         "struck_retuned",
         "struck_vibrato",
-        "struck_pedalled",
     ]
     assert asked[0].moves == ()
     assert all(s.moves for s in asked[1:])

@@ -403,6 +403,16 @@ CATALOGUE: dict[str, Stimulus] = {
     # second is what the first slides to, and the further it travels the longer it
     # spends somewhere neither note is, which is the only part of it a comparison
     # against an unglided pair can see.
+    #
+    # **Measured, it does not reach the voice, and nothing taken under it alone
+    # is a verdict.** Takes of one setting came back 0.66 to 0.84 dB apart on
+    # every address tried -- a yardstick that is the whole signal, which no change
+    # of any size clears. The control that says it is the gesture rather than the
+    # switches: 40 11 06 gates control changes and is audible under all three of
+    # the others, and under this one it cannot be measured at all. The glide is
+    # the suspect, being a pitch sweep whose phase falls differently on each
+    # strike, which is how the modulator ruins a take a few entries above.
+    # Whether a soft pedal alone repeats has not been asked.
     "struck_pedalled": Stimulus(
         name="struck_pedalled",
         program=0,
@@ -413,12 +423,13 @@ CATALOGUE: dict[str, Stimulus] = {
         lead=0.6,
         moves=gestures.PEDALLED,
         also=((72, 100, 0.5, 1.0),),
-        sees="whether the part still acted on a portamento or a soft pedal after the "
-        "setting was written -- a glide between the two notes, or a change in what the "
-        "second one is struck like",
-        blind_to="which of the two it was, since they move together, and everything a "
-        "second note costs: two attacks scatter where one does, so the yardstick is "
-        "worse than the plain note's. " + gestures.CANNOT_ASK,
+        sees="nothing, measured. It was built to ask whether the part still acted on a "
+        "portamento or a soft pedal, and takes of one setting came back under a decibel "
+        "apart, so it has no power to answer that or anything else",
+        blind_to="everything, and not by omission: the yardstick it leaves is the whole "
+        "signal. A verdict taken under it alone is inconclusive rather than null, and the "
+        "run that showed this is the one where 40 11 06 -- audible under all three other "
+        "gestures -- could not be measured under this one. " + gestures.CANNOT_ASK,
     ),
     # The two below are what a parameter about *polyphony* has to be asked with,
     # and nothing above can ask one at all. Whether a part is monophonic, and
@@ -492,7 +503,7 @@ EFFECT = ("unpitched", "wash", "deep", "struck_kit")
 # What a byte with two values is asked with. The plain note answers a parameter
 # that shapes the voice; the other two answer one that gates a message, which the
 # plain note cannot ask at all.
-SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato", "struck_pedalled")
+SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
 
 # The three that move, without the plain note. A gesture is a rescue for a null:
 # it asks a much narrower question, in a state the verdict then only holds in, so
@@ -501,7 +512,12 @@ SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato", "struck_
 # only what the second pass covers, which is the addresses that came back
 # inaudible -- measured on this unit, 2 minutes 39 seconds an address against 40
 # seconds.
-GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato", "struck_pedalled")
+# struck_pedalled is deliberately not here. A gesture set is what a sweep spends
+# its device time on, and this one measured as unable to answer anything: adding
+# it to a block pass would buy a column of inconclusives at the same price as a
+# column of verdicts. It stays in the catalogue, askable by name, because the
+# thing to do next is find out whether the glide is what ruins it.
+GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato")
 
 # What a parameter about polyphony has to be asked with, and the only two notes
 # in the catalogue that play more than one note. Nothing else can ask one at all,
