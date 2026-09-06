@@ -231,6 +231,30 @@ something. Each record therefore states the controls the run carried:
 - **What was restored**, and what was skipped. What a run stopped covering is
   the caveat on everything it says.
 
+## Running a stage that takes hours
+
+The stages that sweep a whole block run for hours and are driven from
+`procedures/`, which is tracked. A driver specific to one unit is a working note
+and stays out; one that is part of the protocol belongs here, because a second
+unit measured by a script nobody else has is not measured the same way.
+
+```sh
+./procedures/part-block.sh "40 11" 0        # block, and the channel it listens on
+./procedures/stop-sweep.sh                  # stop it, and prove it stopped
+```
+
+**One address at a time as a fresh process, which is not an implementation
+detail.** The two failures a long unattended run hits both cost the whole
+address, and one of them ends the process outright, so asking again as a new
+process is the only recovery available for it.
+
+**Each stage is aimed by the previous stage's own record.** What the gesture pass
+asks is what `soundings block` named as still open, read from the file rather than
+written by hand: a list written twice is a judgement made twice, and the two
+drift. A stage refuses to start when the record it should have been aimed by is
+missing, because an empty list and a crashed read send the same thing to the next
+pass -- nothing -- and the run then reports a pass with nothing to do.
+
 ## Measurement chain
 
 The chain is part of the protocol. Interfaces, gain, cabling and capture method
