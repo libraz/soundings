@@ -15,12 +15,15 @@ import json
 from soundings import efxparams
 
 
-def _record(address: str, *, audible: bool, shape=None, level=None, repeats=(-40.0, -40.0)):
+def _record(
+    address: str, *, audible: bool, shape=None, level=None, repeats=(-40.0, -40.0), conclusive=True
+):
     """A contrast record shaped as the comparison writes one."""
     return {
         "address": address,
         "values": [0, 127],
         "audible": audible,
+        "conclusive": conclusive,
         "by_stimulus": [
             {
                 "stimulus": "a note",
@@ -50,6 +53,31 @@ def test_a_setting_that_stops_repeating_is_not_a_setting_that_sounds_different(t
     assert verdict["verdict"] == efxparams.UNREADABLE
     assert verdict["audible"] is False
     assert "asymmetry" in verdict["why"]
+
+
+def test_a_refusal_is_not_a_null(tmp_path) -> None:
+    """A comparison that could not separate its settings reports the same `audible` false
+    a real null does, and only `conclusive` tells them apart. Measured on type 01 20,
+    seventeen of twenty parameters arrived this way -- every take of one setting already
+    differing by most of the signal, because the type runs its modulator at the values it
+    powers up holding. Read as nulls they would say the type has three live parameters."""
+    record = _record(
+        "40 03 09", audible=False, shape=False, level=False, repeats=(-2.0, -2.5), conclusive=False
+    )
+    verdict = efxparams.row("01 20", 6, 0, record, None)
+    assert verdict["verdict"] == efxparams.NO_YARDSTICK
+    assert verdict["verdict"] != efxparams.NULL
+    assert verdict["audible"] is False
+    assert verdict["conclusive"] is False
+    assert "unasked, not inaudible" in verdict["why"]
+
+
+def test_a_null_that_had_a_yardstick_stays_a_null(tmp_path) -> None:
+    """The guard above must not swallow the negatives the archive exists to publish."""
+    record = _record("40 03 0A", audible=False, shape=False, level=False, repeats=(-44.0, -45.0))
+    verdict = efxparams.row("01 20", 7, 0, record, None)
+    assert verdict["verdict"] == efxparams.NULL
+    assert verdict["conclusive"] is True
 
 
 def test_a_verdict_that_stands_still_names_the_modulator_it_also_started(tmp_path) -> None:

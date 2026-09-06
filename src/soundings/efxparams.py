@@ -78,9 +78,19 @@ LIMITS = (
     "does sits behind the thing that removed the yardstick.",
 )
 
+#: An address whose settings were never separable, so nothing was asked of it.
+WHY_NO_YARDSTICK = (
+    "Takes of one setting already differed by most of the signal, so no change could have "
+    "cleared the bar and none did. The comparison refused a verdict rather than returning a "
+    "null, and this carries that refusal: the address is unasked, not inaudible. It is what "
+    "a free-running modulator does to every parameter of a type asked at the values it "
+    "powers up holding, and it is answered by asking again with the modulator parked."
+)
+
 AUDIBLE = "audible"
 NULL = "not audible under the note asked"
 UNREADABLE = "started something that does not repeat"
+NO_YARDSTICK = "no yardstick under the note asked, so not asked"
 
 #: Repeatability worse than this leaves a setting with no usable yardstick of its
 #: own, so a verdict resting on it is reported with the asymmetry rather than as a
@@ -100,7 +110,15 @@ def _verdict(record: dict, stimulus: dict) -> tuple[str, str | None]:
     channel it was heard on was repeatability: a setting that stops repeating is
     not a setting that sounds different, and reporting it as one would put a
     modulator's name on whatever parameter started it.
+
+    A refusal is read before a null, because the two arrive the same way. A
+    comparison that could not separate its settings reports `audible` false and
+    `conclusive` false, and reading the first without the second turns "this was
+    not asked" into "this does nothing" -- which is the one thing an archive of
+    negatives cannot afford to get wrong.
     """
+    if not record.get("conclusive", True):
+        return NO_YARDSTICK, WHY_NO_YARDSTICK
     if not record["audible"]:
         return NULL, None
     heard_as_a_difference = stimulus.get("changed_the_shape") or stimulus.get("changed_the_level")
@@ -126,6 +144,7 @@ def row(type_id: str, slot: int, default: int, record: dict, withdrawn: dict | N
         "asked_at": record["values"],
         "audible": verdict == AUDIBLE,
         "verdict": verdict,
+        "conclusive": record.get("conclusive", True),
         "takes_per_setting": stimulus["takes_per_setting"],
         "each_setting_unrepeatable_db": stimulus["each_setting_unrepeatable_db"],
         "same_setting_residual_db": stimulus["same_setting_residual_db"],
