@@ -1,0 +1,113 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": null,
+    "stage": "contrast",
+    "invocation": [
+      "contrast",
+      "--address",
+      "40 21 04",
+      "--values",
+      "0,127",
+      "--stimulus",
+      "struck_vibrato",
+      "--takes",
+      "4",
+      "--audio",
+      "Scarlett",
+      "--save",
+      ".cache/takes/audible-last-five/40-21-04",
+      "--out",
+      ".cache/audible-last-five/40-21-04.json"
+    ],
+    "measured_at": "2026-09-06T09:08:47+00:00",
+    "midi_device_id": "10"
+  },
+  "device_id": "10",
+  "controller": null,
+  "address": "40 21 04",
+  "values": [
+    0,
+    127
+  ],
+  "prepared": [],
+  "stimuli": [
+    {
+      "name": "struck_vibrato",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "also": [],
+      "moves": [
+        {
+          "kind": "cc",
+          "data": [
+            1,
+            127
+          ],
+          "means": "modulation",
+          "stores_at_part_offset": []
+        }
+      ],
+      "hold_s": 1.0,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "a switch that gates modulation, which shows as one setting's takes repeating far worse than the other's rather than as a difference between them",
+      "blind_to": "everything else, and not by omission: the modulation raises the yardstick to where no change of any size clears it, so anything not gating the modulation itself answers inconclusive here"
+    }
+  ],
+  "setting_read_back": [
+    {
+      "setting": 0,
+      "reads": "00",
+      "took": true
+    },
+    {
+      "setting": 127,
+      "reads": "7F",
+      "took": true
+    }
+  ],
+  "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
+  "method": "The same note was played several times under each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings are compared the same way to measure the change. The second must clear the first by the margin, so a unit that repeats badly cannot be read as a parameter that does something. Level is judged separately, because the alignment divides out the best fitting gain and a parameter that only changes level would otherwise leave no trace. A parameter is asked under one or more named stimuli, because a null is a fact about the note as much as about the parameter, and the answer over a set of them is a union.",
+  "label": "address 40 21 04 0 against 127",
+  "audible": true,
+  "heard_by": [
+    "struck_vibrato"
+  ],
+  "not_heard_by": [],
+  "inconclusive_under": [],
+  "conclusive": true,
+  "verdict_rule": "Audible under any stimulus is audible: one note hearing the change proves the parameter reaches the signal path, and the others failing to hear it says only that they asked the wrong question. The reverse does not hold, so a null carries the list of what was tried. A stimulus whose takes of one setting barely resemble each other is reported as inconclusive rather than as a null, since no change could have cleared that yardstick.",
+  "by_stimulus": [
+    {
+      "label": "address 40 21 04 0 against 127",
+      "stimulus": "program 0, note 60, velocity 100, held 1.00 s, captured 3.0 s, moved: cc 01 7F (modulation)",
+      "stimulus_name": "struck_vibrato",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -2.02,
+      "each_setting_unrepeatable_db": [
+        null,
+        -4.96
+      ],
+      "across_setting_residual_db": -0.03,
+      "same_setting_level_db": 4.233,
+      "across_setting_level_db": 21.858,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -52.53,
+      "changed_the_shape": false,
+      "changed_the_repeatability": true,
+      "changed_the_level": true,
+      "audible": true,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here.",
+      "beyond_measurement": {
+        "each_setting_unrepeatable_db[0]": "below anything this chain can measure, rather than a figure it measured"
+      },
+      "why_beyond_measurement": "JSON has no infinity and no not-a-number, so a figure that ran off the end of what could be measured is written as null with its direction named here. The three that occur are a level difference where one setting produced no signal at all, a repeatability figure whose residual was entirely accounted for by the noise floor, and a residual there were not enough takes to form. None of them is a missing reading."
+    }
+  ]
+}
