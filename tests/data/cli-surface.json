@@ -2143,16 +2143,16 @@
         },
         {
           "option_strings": [
-            "--restate"
+            "--reset-between-settings"
           ],
-          "dest": "restate",
-          "nargs": null,
-          "default": "[]",
+          "dest": "reset_between_settings",
+          "nargs": 0,
+          "default": "False",
           "required": false,
-          "help": "state to put back before EACH of the two settings rather than once before both, for a parameter that decides whether a message is received. Such a parameter is invisible otherwise: with it on the message lands and moves something, and with it off that something is still where the first setting's message left it, so the two settings sound alike however different they are. Written by SysEx, which no receive switch gates, and read back like --prepare. Give it the address the gated message stores at, which this unit's own alias scan attributes: '40 11 19=64' for the part level a control change reaches",
-          "metavar": "ADDR=BYTES",
+          "help": "reset the unit and set it up again before the second setting as well as before the first, for a parameter that decides whether a message is received. Such a parameter is invisible otherwise: with it on the message lands and moves something, and with it off that something is still where the first setting's message left it, so the two settings sound alike however different they are. A reset rather than putting one parameter back, because a message that is gated cannot be undone by another message of the same kind -- the switch ignores that one too -- and pitch bend, modulation and pressure have no address on this unit to put back by SysEx",
+          "metavar": null,
           "choices": null,
-          "class": "_AppendAction"
+          "class": "_StoreTrueAction"
         },
         {
           "option_strings": [

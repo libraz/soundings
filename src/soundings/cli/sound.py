@@ -30,20 +30,28 @@ WHY_READ_BACK = (
     "region and refusing them would drop them from the sweep for being unreadable."
 )
 
-WHY_RESTATED = (
-    "Put back before each of the two settings rather than once before both, because a parameter "
-    "that decides whether a message is received is invisible otherwise. The message moves "
-    "something; with the switch on it moves, and with the switch off that something is still "
-    "where the previous setting's message left it, so both settings sound alike whatever the "
-    "switch does. Written by SysEx, which no receive switch gates. The verdict holds in this "
-    "state as much as in the one --prepare establishes, and where a switch reads audible it is "
-    "audible as the difference between the message landing and this value standing."
-)
 
-RESTATE_IS_THE_TARGET = (
-    "{address} is both the address under test and one this run was told to put back before each "
-    "setting. Restating it would write the same byte before both, so the two sets of takes would "
-    "be takes of one setting and the null would be a fact about the restatement."
+def settings_reset_before(values, between: bool) -> list:
+    """Which of the two settings is preceded by a reset of its own.
+
+    The first is not: the run resets before the stimulus anyway, and resetting
+    again would cost a reset to reach the state it is already in. The second is,
+    and only where the run asked -- which is the whole difference between asking
+    a switch and asking it in the state the previous setting left.
+    """
+    return list(values[1:]) if between else []
+
+
+WHY_RESET_BETWEEN = (
+    "The unit was reset and set up again before the second setting as well as the first. Without "
+    "it the second setting inherits whatever the first one's takes left behind, which is what "
+    "makes a parameter that decides whether a message is received invisible: the message moves "
+    "something under the setting that receives it, and under the setting that ignores it that "
+    "something is still exactly where it was moved to. A reset rather than one parameter put "
+    "back, because a gated message cannot be undone by another message of the same kind -- the "
+    "switch ignores that one too -- and pitch bend, modulation and channel pressure have no "
+    "address on this unit for a write to reach. What it costs is that each setting is asked "
+    "from the power-on state rather than from the one before it."
 )
 
 WHY_AS_HELD = (
@@ -151,19 +159,17 @@ def register(sub) -> None:
         "since the verdict only holds in the state it was taken in",
     )
     p.add_argument(
-        "--restate",
-        type=options.write_spec,
-        action="append",
-        default=[],
-        metavar="ADDR=BYTES",
-        help="state to put back before EACH of the two settings rather than once before "
-        "both, for a parameter that decides whether a message is received. Such a "
-        "parameter is invisible otherwise: with it on the message lands and moves "
+        "--reset-between-settings",
+        action="store_true",
+        help="reset the unit and set it up again before the second setting as well as "
+        "before the first, for a parameter that decides whether a message is received. "
+        "Such a parameter is invisible otherwise: with it on the message lands and moves "
         "something, and with it off that something is still where the first setting's "
-        "message left it, so the two settings sound alike however different they are. "
-        "Written by SysEx, which no receive switch gates, and read back like --prepare. "
-        "Give it the address the gated message stores at, which this unit's own alias "
-        "scan attributes: '40 11 19=64' for the part level a control change reaches",
+        "message left it, so the two settings sound alike however different they are. A "
+        "reset rather than putting one parameter back, because a message that is gated "
+        "cannot be undone by another message of the same kind -- the switch ignores that "
+        "one too -- and pitch bend, modulation and pressure have no address on this unit "
+        "to put back by SysEx",
     )
     p.add_argument("--takes", type=int, default=4, help="takes per setting per stimulus")
     p.add_argument("--between", type=float, default=0.8)
@@ -262,13 +268,6 @@ def cmd_contrast(args: argparse.Namespace) -> int:
         print(exc)
         return 1
 
-    if args.address:
-        under_test = tuple(roland.address_bytes(args.address))
-        for address, _ in args.restate:
-            if tuple(roland.address_bytes(address)) == under_test:
-                print(RESTATE_IS_THE_TARGET.format(address=args.address))
-                return 1
-
     where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
     label = f"{where} {args.values[0]} against {args.values[1]}"
     overall = audible.Overall(label=label)
@@ -279,6 +278,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     left_out: dict[str, list] = {}
     read_back: list[dict] = []
     rests: list[dict] = []
+    resets_between: list[dict] = []
     as_held: list[int | None] = []
 
     with verified_link(args, refusing="recording") as link:
@@ -307,13 +307,30 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 overall = audible.Overall(label=label)
                 print(f"\n{args.address} lands on {landed}, not on what was asked. {WHY_AS_HELD}")
 
-        print(f"\n{label}\n  {len(asked)} stimulus/stimuli: {', '.join(s.name for s in asked)}")
-        for stim in asked:
-            # Reset between stimuli, so a setting left by the previous one cannot
-            # follow the parameter into the next and be read as part of it.
+        def from_the_top(stim, channel) -> bool:
+            """Put the unit back where a stimulus starts from.
+
+            The reset, the preparation, and the stimulus's own setup: one block,
+            because they are one state and re-establishing part of it is how a
+            run ends up measuring the part that was left. Called once per
+            stimulus, and once per setting as well where the run asks for it.
+            """
             prober.apply(gs_reset)
             if not prepare_state(link, args.prepare, device_id=args.device_id, settle=args.settle):
-                return 1
+                return False
+            for prepared, value in stim.writes:
+                link.send(roland.dt1(prepared, [value], device_id=args.device_id))
+            for message in (
+                [0xC0 | channel, stim.program & 0x7F],
+                [0xB0 | channel, 7, 127],
+                [0xB0 | channel, 11, 127],
+            ):
+                link.send(message)
+            time.sleep(0.3)
+            return True
+
+        print(f"\n{label}\n  {len(asked)} stimulus/stimuli: {', '.join(s.name for s in asked)}")
+        for stim in asked:
             channel = stim.on(args.channel)
             # A gesture that writes the address under test would put both
             # settings at its own value, so the run would measure the gesture.
@@ -325,32 +342,23 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 )
                 left_out.setdefault(stim.name, []).extend(m.to_json() for m in dropped)
             sent.append(stim)
-            # Not `where`: that names the parameter under test, and rebinding it
-            # here made every later line report the stimulus's own preparation
-            # address as the thing being set.
-            for prepared, value in stim.writes:
-                link.send(roland.dt1(prepared, [value], device_id=args.device_id))
-            for message in (
-                [0xC0 | channel, stim.program & 0x7F],
-                [0xB0 | channel, 7, 127],
-                [0xB0 | channel, 11, 127],
-            ):
-                link.send(message)
-            time.sleep(0.3)
+            # Reset between stimuli, so a setting left by the previous one cannot
+            # follow the parameter into the next and be read as part of it.
+            if not from_the_top(stim, channel):
+                return 1
             print(f"\n  {stim.name}: {stim.describe()}")
 
             captured: list[list] = []
             for value in args.values:
-                # Before the setting, and before each of the two rather than once
-                # before both. What a receive switch decides is whether a message
-                # is received, and the message moves something: with the switch on
-                # it moves, and with it off that something is still where the
-                # first setting's message left it. Put back here, the second
-                # setting starts where the first did.
-                if args.restate and not prepare_state(
-                    link, args.restate, device_id=args.device_id, settle=args.settle
-                ):
-                    return 1
+                # And again before the second setting, where the run asks for it.
+                # A parameter that decides whether a message is received is
+                # invisible without this: the message moves something under the
+                # first setting and, ignored under the second, leaves that
+                # something exactly where it put it.
+                if value in settings_reset_before(args.values, args.reset_between_settings):
+                    if not from_the_top(stim, channel):
+                        return 1
+                    resets_between.append({"stimulus": stim.name, "before_setting": value})
                 for message in setting(value, channel):
                     link.send(message)
                 time.sleep(args.settle)
@@ -495,10 +503,12 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],
             **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
-            "restated_before_each_setting": [
-                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.restate
-            ],
-            **({"why_restated": WHY_RESTATED} if args.restate else {}),
+            "reset_before_each_setting": bool(args.reset_between_settings),
+            **(
+                {"why_reset_between": WHY_RESET_BETWEEN, "reset_at": resets_between}
+                if resets_between
+                else {}
+            ),
             "stimuli": [stim.to_json() for stim in sent],
             **(
                 {"setting_read_back": read_back, "why_read_back": WHY_READ_BACK}
