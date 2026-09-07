@@ -6,6 +6,27 @@
     "invocation": [
       "efx-params",
       ".cache/efx-params-01-20-inmap",
+      "--slots",
+      "40 03 03",
+      "40 03 04",
+      "40 03 05",
+      "40 03 06",
+      "40 03 07",
+      "40 03 08",
+      "40 03 09",
+      "40 03 0A",
+      "40 03 0B",
+      "40 03 0C",
+      "40 03 0D",
+      "40 03 0E",
+      "40 03 0F",
+      "40 03 10",
+      "40 03 11",
+      "40 03 12",
+      "40 03 13",
+      "40 03 14",
+      "40 03 15",
+      "40 03 16",
       "--type",
       "01 20",
       "--types-from",
@@ -17,9 +38,9 @@
       "--prepare",
       "40 42 22=01",
       "--out",
-      "data/units/roland-sc8850-01/audible-efx-params-01-20.json"
+      ".cache/efxrefold/audible-efx-params-01-20.json"
     ],
-    "measured_at": "2026-09-06T08:34:58+00:00",
+    "measured_at": "2026-09-07T22:03:17+00:00",
     "midi_device_id": "10"
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
@@ -53,6 +74,14 @@
     "audible": 1,
     "asked": 20
   },
+  "coverage": {
+    "slots": 20,
+    "answered": 20,
+    "never_asked": [],
+    "outside_the_slots": []
+  },
+  "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
+  "why_slots_in_order": "Which slot each address is was given to the fold in order, not inferred from the records that happened to be present. A slot read off the sorted file names moves every later parameter up by one whenever a record is missing, and each of them is then reported against the default belonging to the slot before it -- a wrong number in the archive rather than a missing one.",
   "parameters": [
     {
       "type": "01 20",
