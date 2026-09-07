@@ -1,7 +1,7 @@
 {
   "record": {
     "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
+    "unit_id": null,
     "stage": "block",
     "invocation": [
       "block",
@@ -10,9 +10,9 @@
       "--balance",
       ".cache/balance-blk-40-00.json",
       "--out",
-      "data/units/roland-sc8850-01/audible-block-40-00.json"
+      ".cache/refold/audible-block-40-00.json"
     ],
-    "measured_at": "2026-09-07T04:23:06+00:00",
+    "measured_at": "2026-09-07T14:03:27+00:00",
     "midi_device_id": "10"
   },
   "block": "40 00",
@@ -73,6 +73,57 @@
           -38.85
         ]
       },
+      "decided_by": {
+        "struck": [],
+        "unpitched": []
+      },
+      "why_decided_by": "Which of the three channels carried each stimulus's verdict -- a change of shape, a change of level, or one setting repeating far worse than the other. The third is not the same kind of evidence as the first two: it fires on something having started moving rather than on the two settings sounding different, so a verdict resting on it alone is read differently from one a shape or a level change also carries. An empty list beside an audible verdict would be a contradiction and does not occur; an empty list beside a null is the ordinary case.",
+      "measured": {
+        "struck": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -41.22,
+          "across_setting_residual_db": -41.21,
+          "same_setting_level_db": -0.0,
+          "across_setting_level_db": 0.001,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -55.56
+        },
+        "unpitched": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -35.16,
+          "across_setting_residual_db": -37.94,
+          "same_setting_level_db": -0.028,
+          "across_setting_level_db": -0.021,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -48.15
+        }
+      },
+      "why_measured": "The quantities each verdict was decided from, so a reader can redo the decision instead of taking it. A difference is audible when the two settings differ by more than either differs from itself, by the stated margin: compare across_setting_residual_db with same_setting_residual_db, and across_setting_level_db with same_setting_level_db. The floor says what the chain could have heard at all. Without these a null states that nothing was found and gives no way to ask how hard it was looked for, which is a claim this archive treats as unfinished.",
+      "setting_read_back": [
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        }
+      ],
+      "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
       "how_it_had_to_be_asked": "the write probe never established a range here, because the address would not answer a one-byte read and there would have been nothing to put back. It is asked over the whole seven-bit span instead, and a null under it cannot separate an address that ignored the write from one that took it and reached nothing"
     },
     {
@@ -99,6 +150,57 @@
           -39.92
         ]
       },
+      "decided_by": {
+        "struck": [],
+        "unpitched": []
+      },
+      "why_decided_by": "Which of the three channels carried each stimulus's verdict -- a change of shape, a change of level, or one setting repeating far worse than the other. The third is not the same kind of evidence as the first two: it fires on something having started moving rather than on the two settings sounding different, so a verdict resting on it alone is read differently from one a shape or a level change also carries. An empty list beside an audible verdict would be a contradiction and does not occur; an empty list beside a null is the ordinary case.",
+      "measured": {
+        "struck": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -53.06,
+          "across_setting_residual_db": -53.92,
+          "same_setting_level_db": -0.0,
+          "across_setting_level_db": 0.0,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -55.55
+        },
+        "unpitched": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -32.66,
+          "across_setting_residual_db": -33.66,
+          "same_setting_level_db": 0.041,
+          "across_setting_level_db": 0.04,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -48.11
+        }
+      },
+      "why_measured": "The quantities each verdict was decided from, so a reader can redo the decision instead of taking it. A difference is audible when the two settings differ by more than either differs from itself, by the stated margin: compare across_setting_residual_db with same_setting_residual_db, and across_setting_level_db with same_setting_level_db. The floor says what the chain could have heard at all. Without these a null states that nothing was found and gives no way to ask how hard it was looked for, which is a claim this archive treats as unfinished.",
+      "setting_read_back": [
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        }
+      ],
+      "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
       "how_it_had_to_be_asked": "the write probe never established a range here, because the address would not answer a one-byte read and there would have been nothing to put back. It is asked over the whole seven-bit span instead, and a null under it cannot separate an address that ignored the write from one that took it and reached nothing"
     },
     {
@@ -125,6 +227,57 @@
           -42.49
         ]
       },
+      "decided_by": {
+        "struck": [],
+        "unpitched": []
+      },
+      "why_decided_by": "Which of the three channels carried each stimulus's verdict -- a change of shape, a change of level, or one setting repeating far worse than the other. The third is not the same kind of evidence as the first two: it fires on something having started moving rather than on the two settings sounding different, so a verdict resting on it alone is read differently from one a shape or a level change also carries. An empty list beside an audible verdict would be a contradiction and does not occur; an empty list beside a null is the ordinary case.",
+      "measured": {
+        "struck": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -53.18,
+          "across_setting_residual_db": -54.38,
+          "same_setting_level_db": 0.0,
+          "across_setting_level_db": 0.0,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -55.52
+        },
+        "unpitched": {
+          "takes_per_setting": 4,
+          "same_setting_residual_db": -35.51,
+          "across_setting_residual_db": -38.24,
+          "same_setting_level_db": -0.025,
+          "across_setting_level_db": -0.019,
+          "across_setting_level_is_a_lower_bound": false,
+          "margin_db": 6.0,
+          "noise_floor_db": -48.07
+        }
+      },
+      "why_measured": "The quantities each verdict was decided from, so a reader can redo the decision instead of taking it. A difference is audible when the two settings differ by more than either differs from itself, by the stated margin: compare across_setting_residual_db with same_setting_residual_db, and across_setting_level_db with same_setting_level_db. The floor says what the chain could have heard at all. Without these a null states that nothing was found and gives no way to ask how hard it was looked for, which is a claim this archive treats as unfinished.",
+      "setting_read_back": [
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 0,
+          "reads": "unreadable",
+          "took": true
+        },
+        {
+          "setting": 127,
+          "reads": "unreadable",
+          "took": true
+        }
+      ],
+      "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
       "how_it_had_to_be_asked": "the write probe never established a range here, because the address would not answer a one-byte read and there would have been nothing to put back. It is asked over the whole seven-bit span instead, and a null under it cannot separate an address that ignored the write from one that took it and reached nothing"
     }
   ]

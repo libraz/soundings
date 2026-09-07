@@ -126,6 +126,34 @@ plain note does, so the two are not near each other.
 """
 
 
+WHY_MEASURED = (
+    "The quantities each verdict was decided from, so a reader can redo the decision instead of "
+    "taking it. A difference is audible when the two settings differ by more than either differs "
+    "from itself, by the stated margin: compare across_setting_residual_db with "
+    "same_setting_residual_db, and across_setting_level_db with same_setting_level_db. The floor "
+    "says what the chain could have heard at all. Without these a null states that nothing was "
+    "found and gives no way to ask how hard it was looked for, which is a claim this archive "
+    "treats as unfinished."
+)
+
+WHY_DECIDED_BY = (
+    "Which of the three channels carried each stimulus's verdict -- a change of shape, a change "
+    "of level, or one setting repeating far worse than the other. The third is not the same kind "
+    "of evidence as the first two: it fires on something having started moving rather than on "
+    "the two settings sounding different, so a verdict resting on it alone is read differently "
+    "from one a shape or a level change also carries. An empty list beside an audible verdict "
+    "would be a contradiction and does not occur; an empty list beside a null is the ordinary case."
+)
+
+WHY_NO_REPEATABILITY_FIGURE = (
+    "A missing repeatability figure is one that could not be formed, not one that was not "
+    "measured. The figure is the median over the pairs of takes of a setting, and fewer than "
+    "three pairs leaves no median to take -- so a setting whose takes could not all be compared "
+    "reports nothing here rather than a number computed from too little. Read it as unknown for "
+    "that setting, and read the other setting's figure as still standing."
+)
+
+
 @dataclass
 class AddressVerdict:
     """One address, over every stimulus it was asked under."""
@@ -146,6 +174,34 @@ class AddressVerdict:
     Kept because the repeatability channel is the one that can fire on nothing,
     and a verdict resting on it alone has to be treated differently from the same
     verdict backed by a change of shape or of level.
+    """
+
+    measured: dict[str, dict] = field(default_factory=dict)
+    """The quantities each stimulus's verdict was decided from.
+
+    Carried rather than summarised into the verdict word. A null is a claim that
+    nothing was found, and this archive's own bar is that such a claim is worth
+    reading only when the record says what could have been found instead -- which
+    is the margin, the floor, and the two residuals the margin was applied to. A
+    reader with the verdict alone cannot tell a null that cleared the bar by a
+    decibel from one that cleared it by forty.
+    """
+
+    read_back: list = field(default_factory=list)
+    """What each setting read as after it was written.
+
+    The strongest control the run has: a null taken at an address that never took
+    the value is a fact about the write, not about the sound. Kept per address
+    because it is measured per address, and left empty rather than assumed for
+    the records taken before the contrast stage read settings back at all.
+    """
+
+    read_back_why: str = ""
+    """The contrast stage's own sentence about what a read-back means.
+
+    Carried from the record rather than restated here, so the block record and
+    the per-address record it was folded from cannot drift into two accounts of
+    the same control.
     """
 
     caveat: str = ""
@@ -192,6 +248,18 @@ class AddressVerdict:
             "inconclusive_under": self.inconclusive_under,
             "each_setting_unrepeatable_db": self.unrepeatable_db,
         }
+        if any(v is None for pair in self.unrepeatable_db.values() for v in pair):
+            out["why_a_repeatability_figure_can_be_absent"] = WHY_NO_REPEATABILITY_FIGURE
+        if self.grounds:
+            out["decided_by"] = self.grounds
+            out["why_decided_by"] = WHY_DECIDED_BY
+        if self.measured:
+            out["measured"] = self.measured
+            out["why_measured"] = WHY_MEASURED
+        if self.read_back:
+            out["setting_read_back"] = self.read_back
+            if self.read_back_why:
+                out["why_read_back"] = self.read_back_why
         if self.discounted:
             out["set_aside"] = self.discounted
             out["why_set_aside"] = WHY_SCATTER_NOT_A_GATE
@@ -223,6 +291,9 @@ def read_one(record: dict) -> AddressVerdict | None:
             name: list(e.get("each_setting_unrepeatable_db") or []) for name, e in entries.items()
         },
         grounds={name: _grounds(e) for name, e in entries.items()},
+        measured={name: _measured(e) for name, e in entries.items()},
+        read_back=list(record.get("setting_read_back") or []),
+        read_back_why=str(record.get("why_read_back") or ""),
         left_out=dict(record.get("left_out_of_the_gesture") or {}),
     )
 
@@ -237,6 +308,29 @@ _CHANNELS = (
 def _grounds(entry: dict) -> list[str]:
     """Which of the three channels carried this stimulus's verdict."""
     return [name for name, key in _CHANNELS if entry.get(key)]
+
+
+#: What a verdict was decided from, in the order the decision reads them.
+_MEASURED = (
+    "takes_per_setting",
+    "same_setting_residual_db",
+    "across_setting_residual_db",
+    "same_setting_level_db",
+    "across_setting_level_db",
+    "across_setting_level_is_a_lower_bound",
+    "margin_db",
+    "noise_floor_db",
+)
+
+
+def _measured(entry: dict) -> dict:
+    """The quantities behind one stimulus's verdict, absent keys left out.
+
+    Left out rather than filled with a placeholder: a record written before a
+    figure existed did not measure it, and a null standing in for that is a
+    number a reader would compare against the others.
+    """
+    return {key: entry[key] for key in _MEASURED if key in entry}
 
 
 def survey(root: str | Path) -> dict[str, AddressVerdict]:
@@ -386,6 +480,26 @@ def join(
                 **(first.unrepeatable_db if first else {}),
                 **{k: v for r in rescued for k, v in r.unrepeatable_db.items()},
             },
+            # Merged the same way as the figures they explain. Left behind, a
+            # rescued address would carry its stimuli's numbers and none of the
+            # grounds for them, which reads as a verdict with no channel.
+            grounds={
+                **(first.grounds if first else {}),
+                **{k: v for r in rescued for k, v in r.grounds.items()},
+            },
+            measured={
+                **(first.measured if first else {}),
+                **{k: v for r in rescued for k, v in r.measured.items()},
+            },
+            # The plain pass and each rescue read their own settings back, and a
+            # rescue that found nothing still proves its writes took. Keeping the
+            # plain pass's is not enough: an address answered only by a gesture
+            # would carry a control taken in a different run from its verdict.
+            read_back=(first.read_back if first else []) + [b for r in rescued for b in r.read_back],
+            read_back_why=next(
+                (r.read_back_why for r in (first, *rescued) if r is not None and r.read_back_why),
+                "",
+            ),
             left_out={
                 **(first.left_out if first else {}),
                 **{k: v for r in rescued for k, v in r.left_out.items()},
