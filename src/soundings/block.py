@@ -214,6 +214,16 @@ class AddressVerdict:
     the ones whose null means least and they arrive looking like every other null.
     """
 
+    did_not_reproduce: list[str] = field(default_factory=list)
+    """Stimuli asked more than once at this address that did not answer the same way.
+
+    An archive that asked a question twice and got two answers has to say so. The
+    verdict is withdrawn rather than settled by a majority or by whichever run is
+    newer: what the runs establish together is that the answer did not hold, and
+    every run's figures stay in the record so a reader can see how far apart they
+    were.
+    """
+
     left_out: dict = field(default_factory=dict)
     """Moves the gesture could not carry here, because they write this address.
 
@@ -260,6 +270,11 @@ class AddressVerdict:
             out["setting_read_back"] = self.read_back
             if self.read_back_why:
                 out["why_read_back"] = self.read_back_why
+        if any(" with " in n for n in self.heard_by + self.not_heard_by):
+            out["why_the_state_is_in_the_name"] = WHY_STATE_IN_THE_NAME
+        if self.did_not_reproduce:
+            out["did_not_reproduce"] = self.did_not_reproduce
+            out["why_did_not_reproduce"] = WHY_DID_NOT_REPRODUCE
         if self.discounted:
             out["set_aside"] = self.discounted
             out["why_set_aside"] = WHY_SCATTER_NOT_A_GATE
@@ -271,8 +286,28 @@ class AddressVerdict:
         return out
 
 
+WHY_STATE_IN_THE_NAME = (
+    "A stimulus asked in a prepared state is named with that state, because it is not the same "
+    "question as the same stimulus asked as the unit powers up. Two runs differing only in what "
+    "was written first would otherwise share one name, and the record would either drop one of "
+    "them or report the pair as a verdict that failed to reproduce -- when what they are is two "
+    "verdicts, each holding in its own state."
+)
+
+
+def _state(record: dict) -> str:
+    """What was written before the run, as the suffix that keeps its name apart."""
+    prepared = record.get("prepared") or []
+    if not prepared:
+        return ""
+    return " with " + ", ".join(
+        f"{e.get('address')} = {e.get('bytes')}" for e in prepared
+    )
+
+
 def _entries(record: dict) -> dict[str, dict]:
-    return {str(e.get("stimulus_name", "")): e for e in record.get("by_stimulus") or []}
+    state = _state(record)
+    return {str(e.get("stimulus_name", "")) + state: e for e in record.get("by_stimulus") or []}
 
 
 def read_one(record: dict) -> AddressVerdict | None:
@@ -284,9 +319,9 @@ def read_one(record: dict) -> AddressVerdict | None:
         address=str(record.get("address", "")),
         values=list(record.get("values") or []),
         audible=bool(record.get("audible")),
-        heard_by=list(record.get("heard_by") or []),
-        not_heard_by=list(record.get("not_heard_by") or []),
-        inconclusive_under=list(record.get("inconclusive_under") or []),
+        heard_by=[n + _state(record) for n in record.get("heard_by") or []],
+        not_heard_by=[n + _state(record) for n in record.get("not_heard_by") or []],
+        inconclusive_under=[n + _state(record) for n in record.get("inconclusive_under") or []],
         unrepeatable_db={
             name: list(e.get("each_setting_unrepeatable_db") or []) for name, e in entries.items()
         },
@@ -333,13 +368,68 @@ def _measured(entry: dict) -> dict:
     return {key: entry[key] for key in _MEASURED if key in entry}
 
 
+WHY_DID_NOT_REPRODUCE = (
+    "This address was asked more than once under this stimulus and did not answer the same way "
+    "each time, so the verdict under it is withdrawn rather than carried. It is not settled by "
+    "which run was later or by which answer occurred more often: a difference that appears in "
+    "one asking and not in another has not been shown to be a property of the parameter, and "
+    "the figures of every run stay in the record because how far apart they were is the whole "
+    "of what the disagreement says. An address audible under some other stimulus is still "
+    "audible; what is withdrawn is this stimulus's answer."
+)
+
+
+def _combine(first: AddressVerdict, second: AddressVerdict) -> AddressVerdict:
+    """Two askings of one address into one verdict, disagreements named.
+
+    A directory holding two records for an address holds two askings of it, and
+    keeping whichever sorted first would drop a measurement without anything
+    failing. Stimuli the two runs do not share simply join. A stimulus they both
+    asked has to agree with itself: where it does not, it is withdrawn from both
+    the heard and the unheard lists and named, since a verdict that did not
+    reproduce is neither.
+    """
+    heard = set(first.heard_by) | set(second.heard_by)
+    unheard = set(first.not_heard_by) | set(second.not_heard_by)
+    disagreed = sorted((heard & unheard) | set(first.did_not_reproduce) | set(second.did_not_reproduce))
+    keep = lambda names: [n for n in names if n not in disagreed]  # noqa: E731
+    joined = AddressVerdict(
+        address=first.address,
+        values=first.values or second.values,
+        audible=False,
+        heard_by=keep(sorted(heard)),
+        not_heard_by=keep(sorted(unheard)),
+        inconclusive_under=sorted(set(first.inconclusive_under) | set(second.inconclusive_under)),
+        # The later asking's figures do not replace the earlier one's: both are
+        # indexed by stimulus, and where the same stimulus was asked twice the
+        # run that disagreed is exactly the one a reader needs to see.
+        unrepeatable_db={**first.unrepeatable_db, **second.unrepeatable_db},
+        grounds={**first.grounds, **second.grounds},
+        measured={**first.measured, **second.measured},
+        read_back=first.read_back + second.read_back,
+        read_back_why=first.read_back_why or second.read_back_why,
+        did_not_reproduce=disagreed,
+        left_out={**first.left_out, **second.left_out},
+    )
+    joined.audible = bool(joined.heard_by)
+    return joined
+
+
 def survey(root: str | Path) -> dict[str, AddressVerdict]:
-    """Every record under a directory, keyed by the address it holds."""
+    """Every record under a directory, keyed by the address it holds.
+
+    Two records naming one address are two askings of it and are combined, not
+    deduplicated: a run asked again writes a second file, and keeping only the
+    first would answer with half the evidence and say nothing about the half it
+    dropped.
+    """
     out: dict[str, AddressVerdict] = {}
     for path in sorted(Path(root).glob("*.json")):
         found = read_one(json.loads(path.read_text()))
-        if found is not None and found.address:
-            out[found.address] = found
+        if found is None or not found.address:
+            continue
+        prior = out.get(found.address)
+        out[found.address] = _combine(prior, found) if prior is not None else found
     return out
 
 
@@ -496,6 +586,10 @@ def join(
             # plain pass's is not enough: an address answered only by a gesture
             # would carry a control taken in a different run from its verdict.
             read_back=(first.read_back if first else []) + [b for r in rescued for b in r.read_back],
+            did_not_reproduce=sorted(
+                set(first.did_not_reproduce if first else [])
+                | {n for r in rescued for n in r.did_not_reproduce}
+            ),
             read_back_why=next(
                 (r.read_back_why for r in (first, *rescued) if r is not None and r.read_back_why),
                 "",
