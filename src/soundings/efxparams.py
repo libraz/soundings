@@ -87,6 +87,25 @@ WHY_NO_YARDSTICK = (
     "powers up holding, and it is answered by asking again with the modulator parked."
 )
 
+#: Why a slot with no record is named rather than left out of the count.
+WHY_NEVER_ASKED = (
+    "A parameter slot the run set out to ask and has no record for. The comparison was "
+    "attempted and did not return one -- so this slot is unasked, and a record that simply "
+    "omitted it would report the type as having one parameter fewer than it has. Counted "
+    "against the slots the type map gives the type rather than against the files present, "
+    "since a directory holding nineteen records of a twenty slot type reads exactly like a "
+    "complete answer."
+)
+
+#: Why the slots are taken from the caller in order rather than from the directory.
+WHY_SLOTS_IN_ORDER = (
+    "Which slot each address is was given to the fold in order, not inferred from the records "
+    "that happened to be present. A slot read off the sorted file names moves every later "
+    "parameter up by one whenever a record is missing, and each of them is then reported "
+    "against the default belonging to the slot before it -- a wrong number in the archive "
+    "rather than a missing one."
+)
+
 AUDIBLE = "audible"
 NULL = "not audible under the note asked"
 UNREADABLE = "started something that does not repeat"
@@ -162,7 +181,13 @@ def row(type_id: str, slot: int, default: int, record: dict, withdrawn: dict | N
     return out
 
 
-def assemble(type_id: str, rows: list[dict], control: dict, prepared: list[dict]) -> dict:
+def assemble(
+    type_id: str,
+    rows: list[dict],
+    control: dict,
+    prepared: list[dict],
+    coverage: dict | None = None,
+) -> dict:
     """The type's parameters, the control that makes their nulls readable, and the limits."""
     stimulus = _first(control)
     counted: dict[str, int] = {}
@@ -186,6 +211,15 @@ def assemble(type_id: str, rows: list[dict], control: dict, prepared: list[dict]
             "why": WHY_THE_CONTROL,
         },
         "results": {**counted, "asked": len(rows)},
+        **(
+            {
+                "coverage": coverage,
+                "why_never_asked": WHY_NEVER_ASKED,
+                "why_slots_in_order": WHY_SLOTS_IN_ORDER,
+            }
+            if coverage is not None
+            else {}
+        ),
         "parameters": rows,
         "not_established": list(LIMITS),
         "reproduced": (
@@ -207,12 +241,21 @@ def read_directory(
     control: str | Path,
     prepared: list[dict],
     supersede: dict[str, str] | None = None,
+    slots: list[str] | None = None,
 ) -> dict:
     """Assemble from a directory of per-address contrast records.
 
     `supersede` names an address whose first pair was withdrawn and the record
     that replaced it, so the reason travels with the row rather than being
     remembered by whoever reads the directory.
+
+    `slots` is the type's parameter addresses in slot order, and it is what makes
+    a missing record readable. Without it the slot is the position in the sorted
+    file names, so an address the run failed to measure silently renumbers every
+    parameter after it and pairs each with the default of the slot before -- and
+    the count says the type has one parameter fewer than it has. The addresses
+    are passed in rather than derived here because which address is which slot is
+    a fact about the unit being measured.
     """
     where = Path(where)
     supersede = supersede or {}
@@ -234,11 +277,28 @@ def read_directory(
     # address written beside the code is a finding about one unit.
     watching = json.loads(Path(control).read_text())
     found.pop(watching["address"], None)
+    ordered = list(slots) if slots else sorted(found)
     rows = []
-    for slot, address in enumerate(sorted(found)):
+    missing = []
+    for slot, address in enumerate(ordered):
+        if address not in found:
+            missing.append(address)
+            continue
         record, withdrawn = found[address], None
         if address in supersede:
             withdrawn = {"values": record["values"], "why": WHY_SILENT_PAIR}
             record = json.loads(Path(supersede[address]).read_text())
         rows.append(row(type_id, slot, defaults[slot], record, withdrawn))
-    return assemble(type_id, rows, watching, prepared)
+    coverage = None
+    if slots:
+        coverage = {
+            "slots": len(ordered),
+            "answered": len(rows),
+            "never_asked": missing,
+            # A record under the directory that no slot claims. It is not folded
+            # in, because a slot number is what pairs a parameter with its
+            # default and this address has none -- but dropping it unnamed is how
+            # a directory comes to disagree with its own record.
+            "outside_the_slots": sorted(set(found) - set(ordered)),
+        }
+    return assemble(type_id, rows, watching, prepared, coverage)

@@ -96,6 +96,18 @@ def register(sub) -> None:
         "A pair that left one setting silent compares sound with silence, and the reason "
         "travels with the row rather than with whoever remembers the directory",
     )
+    p.add_argument(
+        "--slots",
+        nargs="+",
+        default=[],
+        metavar="ADDR",
+        help="the type's parameter addresses in slot order, which is what makes a missing "
+        "record readable. Without them the slot is the position in the sorted file names, so "
+        "an address the run could not measure renumbers every parameter after it and pairs "
+        "each with the default of the slot before, and the count reports the type as having "
+        "one parameter fewer than it has. Given rather than derived because which address is "
+        "which slot is a fact about the unit",
+    )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_params)
 
@@ -210,8 +222,11 @@ def cmd_efx_params(args) -> int:
         args.control,
         [{"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare],
         supersede=dict(s.split("=", 1) for s in args.supersede),
+        slots=args.slots or None,
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")
+    if (coverage := found.get("coverage")) and coverage["never_asked"]:
+        print(f"  => {len(coverage['never_asked'])} never asked: {' | '.join(coverage['never_asked'])}")
     report.write_json(args.out, found)
     return 0
