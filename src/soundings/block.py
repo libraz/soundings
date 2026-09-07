@@ -214,6 +214,16 @@ class AddressVerdict:
     the ones whose null means least and they arrive looking like every other null.
     """
 
+    superseded_by: dict = field(default_factory=dict)
+    """Another record in this archive that asked this address and answers for it.
+
+    The verdict here is kept rather than removed, because it was measured and
+    removing it would leave the archive claiming the address was never asked this
+    way. What it cannot do is stand unqualified beside a record that disagrees
+    with it: a reader landing on this file would take a null as the archive's
+    answer when the archive has a better one.
+    """
+
     did_not_reproduce: list[str] = field(default_factory=list)
     """Stimuli asked more than once at this address that did not answer the same way.
 
@@ -272,6 +282,9 @@ class AddressVerdict:
                 out["why_read_back"] = self.read_back_why
         if any(" with " in n for n in self.heard_by + self.not_heard_by):
             out["why_the_state_is_in_the_name"] = WHY_STATE_IN_THE_NAME
+        if self.superseded_by:
+            out["superseded_by"] = self.superseded_by
+            out["why_superseded"] = WHY_SUPERSEDED
         if self.did_not_reproduce:
             out["did_not_reproduce"] = self.did_not_reproduce
             out["why_did_not_reproduce"] = WHY_DID_NOT_REPRODUCE
@@ -377,6 +390,29 @@ WHY_DID_NOT_REPRODUCE = (
     "of what the disagreement says. An address audible under some other stimulus is still "
     "audible; what is withdrawn is this stimulus's answer."
 )
+
+
+WHY_SUPERSEDED = (
+    "Another record in this archive asked this address and its verdict is the one to read. This "
+    "one is kept because it was measured and because what a run found is not undone by a later "
+    "run finding more -- but the two disagree, and a reader landing here would otherwise take "
+    "this answer for the archive's. Which method separates them is stated in the method of each "
+    "record rather than asserted here: the named record says how it asked, and the difference "
+    "between that and the sentence above is the whole of why it answers and this does not."
+)
+
+
+def superseded(found: list, by: dict[str, dict]) -> list:
+    """Name, on each address, the record that answers for it instead.
+
+    `by` maps an address to the naming record and its verdict there. Applied
+    after the passes are joined, since what supersedes an address is a fact about
+    the archive rather than about any one of this record's passes.
+    """
+    for verdict in found:
+        if verdict is not None and verdict.address in by:
+            verdict.superseded_by = by[verdict.address]
+    return found
 
 
 def _combine(first: AddressVerdict, second: AddressVerdict) -> AddressVerdict:
@@ -586,6 +622,8 @@ def join(
             # plain pass's is not enough: an address answered only by a gesture
             # would carry a control taken in a different run from its verdict.
             read_back=(first.read_back if first else []) + [b for r in rescued for b in r.read_back],
+            superseded_by=(first.superseded_by if first else {})
+            or next((r.superseded_by for r in rescued if r.superseded_by), {}),
             did_not_reproduce=sorted(
                 set(first.did_not_reproduce if first else [])
                 | {n for r in rescued for n in r.did_not_reproduce}

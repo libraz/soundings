@@ -52,6 +52,16 @@ def register(sub) -> None:
         "by the one-note passes has not been asked rather than answered",
     )
     p.add_argument(
+        "--superseded-by",
+        action="append",
+        default=[],
+        metavar="RECORD",
+        help="a published record that asked some of these addresses and disagrees. Each such "
+        "address is named with that record and the verdict it carries there, so a reader "
+        "landing on this file does not take an answer the archive has since bettered. Only "
+        "disagreements are marked",
+    )
+    p.add_argument(
         "--balance",
         action="append",
         default=[],
@@ -163,6 +173,22 @@ def cmd_block(args: argparse.Namespace) -> int:
     for where in args.balance:
         found = block.with_balance(found, json.loads(Path(where).read_text()))
     found = block.with_the_plans_caveats(found, planned)
+    # Only where the two actually disagree. A record that asked the same address
+    # and answered the same way supersedes nothing, and marking it would tell a
+    # reader to go elsewhere for the answer already in front of them.
+    answered_elsewhere: dict[str, dict] = {}
+    for where in args.superseded_by:
+        other = json.loads(Path(where).read_text())
+        mine = {f.address: f.verdict for f in found}
+        for row in other.get("addresses", []):
+            if row["address"] in mine and row["verdict"] != mine[row["address"]]:
+                answered_elsewhere[row["address"]] = {
+                    "record": Path(where).name,
+                    "verdict": row["verdict"],
+                }
+    if answered_elsewhere:
+        found = block.superseded(found, answered_elsewhere)
+        print(f"  {len(answered_elsewhere)} addresses answered by another record")
     coverage = block.against_plan(found, planned)
     print(block.summarise(found, coverage))
     # Named rather than counted: an address left to try is the next run's list,

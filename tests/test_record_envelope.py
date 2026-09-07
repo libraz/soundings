@@ -25,7 +25,7 @@ UNITS = ROOT / "data" / "units"
 SCHEMA = json.loads((ROOT / "data" / "schema" / "record.json").read_text())
 PUBLISHED = sorted(UNITS.rglob("*.json"))
 
-RECORDS_WITHOUT_AN_ENVELOPE = 191
+RECORDS_WITHOUT_AN_ENVELOPE = 187
 """How many records predate the envelope. It may fall and it may not rise.
 
 Every writer stamps the envelope now, so a new record cannot lack one and this
