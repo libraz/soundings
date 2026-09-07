@@ -7,16 +7,20 @@
       "block",
       ".cache/plan-rx-40-10.json",
       ".cache/rx-40-10",
+      "--gesture",
+      ".cache/timed-40-10",
       "--balance",
       ".cache/balance-rx-40-10.json",
+      "--balance",
+      ".cache/balance-timed-40-10.json",
       "--out",
       "data/units/roland-sc8850-01/audible-receive-switches-40-10.json"
     ],
-    "measured_at": "2026-09-06T20:09:25+00:00",
+    "measured_at": "2026-09-07T06:11:36+00:00",
     "midi_device_id": "10"
   },
   "block": "40 10",
-  "method": "Each address in the block was asked on its own, at the pair the write probe measured it to accept, and the records are read back together here. The block is counted against the plan rather than against the files present, so an address that was never asked cannot read as one that answered.",
+  "method": "Each address in the block was asked on its own, at the pair the write probe measured it to accept, and the records are read back together here. An address the plain note heard is answered by the plain note; one it could not was asked again with messages moved after the setting, since a parameter that only decides whether a message is received has nothing to receive otherwise. The block is counted against the plan rather than against the files present, so an address that was never asked cannot read as one that answered.",
   "asked_in": {
     "plain": [
       {
@@ -28,9 +32,29 @@
         ],
         "addresses": 17
       }
+    ],
+    "gesture": [
+      {
+        "prepared": [],
+        "stimuli": [
+          "struck_pressed",
+          "struck_moved"
+        ],
+        "addresses": 2
+      },
+      {
+        "prepared": [],
+        "stimuli": [
+          "struck_softened",
+          "struck_damped",
+          "struck_moved"
+        ],
+        "addresses": 3
+      }
     ]
   },
   "why_asked_in": "A system effect is reached only through a part's send to it, so a block of effect parameters asked as the unit powers up answers about the send rather than about the addresses. What each pass raised first is therefore part of every verdict it produced, and a null taken without it is bounded by a state the record would otherwise not carry. Read back from the contrast records rather than written beside them, so it says what the runs did and not what the driver meant to do -- listed per distinct state, since a pass whose records disagree about it is two passes wearing one name.",
+  "two_passes": "A gesture is a rescue for a null rather than a better question. It asks the address with half a dozen messages moved, which is a state the verdict then holds only in, so it is spent on the addresses the plain note could not hear and on nothing else. Where both passes spoke, the plain one is the verdict and the gesture is what it took to hear it.",
   "balance_counts": "A parameter that moves signal between the two channels is invisible to a comparison made in one of them, and does not read as nothing there: a balance landing somewhere new on each take reads as the unit failing to repeat itself. So a balance the same run measured moving counts as the parameter having reached the signal path, which is what audible means here, and the stimulus it was found under carries the route it was found by.",
   "chose_the_values": "The two settings come from the write probe's own rows rather than from a manual: it wrote to every address and read it back, so the range it recorded is what this unit accepted. The pair is the two ends of that range, ordered so the value nearer the one the unit powers up holding is asked first, since that setting fixes the reference every other take is aligned against and the power-on value is the one known to make a sound.",
   "coverage": {
@@ -94,15 +118,17 @@
       "heard_by": [],
       "not_heard_by": [
         "struck_moved",
-        "struck_retuned"
+        "struck_retuned",
+        "struck_pressed",
+        "struck_moved"
       ],
       "inconclusive_under": [
         "struck_vibrato"
       ],
       "each_setting_unrepeatable_db": {
         "struck_moved": [
-          -43.86,
-          -41.34
+          -31.14,
+          -38.56
         ],
         "struck_retuned": [
           null,
@@ -111,6 +137,10 @@
         "struck_vibrato": [
           -9.37,
           -12.97
+        ],
+        "struck_pressed": [
+          -50.49,
+          -46.08
         ]
       }
     },
@@ -187,15 +217,17 @@
       "heard_by": [],
       "not_heard_by": [
         "struck_moved",
-        "struck_retuned"
+        "struck_retuned",
+        "struck_pressed",
+        "struck_moved"
       ],
       "inconclusive_under": [
         "struck_vibrato"
       ],
       "each_setting_unrepeatable_db": {
         "struck_moved": [
-          null,
-          -48.94
+          -37.17,
+          null
         ],
         "struck_retuned": [
           -47.23,
@@ -204,6 +236,10 @@
         "struck_vibrato": [
           -14.06,
           -16.43
+        ],
+        "struck_pressed": [
+          -36.19,
+          -37.28
         ]
       }
     },
@@ -471,15 +507,18 @@
       "heard_by": [],
       "not_heard_by": [
         "struck_moved",
-        "struck_retuned"
+        "struck_retuned",
+        "struck_softened",
+        "struck_damped",
+        "struck_moved"
       ],
       "inconclusive_under": [
         "struck_vibrato"
       ],
       "each_setting_unrepeatable_db": {
         "struck_moved": [
-          -40.04,
-          null
+          -58.31,
+          -38.85
         ],
         "struck_retuned": [
           -49.44,
@@ -488,6 +527,14 @@
         "struck_vibrato": [
           -15.56,
           -18.09
+        ],
+        "struck_softened": [
+          -46.63,
+          -44.78
+        ],
+        "struck_damped": [
+          -44.12,
+          -44.44
         ]
       }
     },
@@ -502,14 +549,17 @@
       "heard_by": [],
       "not_heard_by": [
         "struck_moved",
-        "struck_retuned"
+        "struck_retuned",
+        "struck_softened",
+        "struck_damped",
+        "struck_moved"
       ],
       "inconclusive_under": [
         "struck_vibrato"
       ],
       "each_setting_unrepeatable_db": {
         "struck_moved": [
-          -38.25,
+          -36.14,
           null
         ],
         "struck_retuned": [
@@ -519,6 +569,14 @@
         "struck_vibrato": [
           -18.99,
           -10.25
+        ],
+        "struck_softened": [
+          -42.28,
+          -37.39
+        ],
+        "struck_damped": [
+          -48.08,
+          -36.38
         ]
       }
     },
@@ -533,15 +591,18 @@
       "heard_by": [],
       "not_heard_by": [
         "struck_moved",
-        "struck_retuned"
+        "struck_retuned",
+        "struck_softened",
+        "struck_damped",
+        "struck_moved"
       ],
       "inconclusive_under": [
         "struck_vibrato"
       ],
       "each_setting_unrepeatable_db": {
         "struck_moved": [
-          -38.41,
-          null
+          -39.24,
+          -39.19
         ],
         "struck_retuned": [
           -46.56,
@@ -550,6 +611,14 @@
         "struck_vibrato": [
           -14.71,
           -13.86
+        ],
+        "struck_softened": [
+          -46.24,
+          -44.12
+        ],
+        "struck_damped": [
+          -46.69,
+          -46.7
         ]
       }
     },
