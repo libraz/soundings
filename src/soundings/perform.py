@@ -18,6 +18,28 @@ from .capture import Recording
 from .midi import MidiLink
 
 
+def schedule(channel: int, notes, during=()) -> list[tuple[float, list[int]]]:
+    """Every message a take sends, with its time from the first note-on.
+
+    Pulled out of the recording so it can be read without a device. What it holds
+    is the whole of what a stimulus does to the unit, and the two failures it can
+    have are both silent: a message sent at the wrong moment sounds like a
+    parameter that does nothing, and a message not sent at all sounds the same.
+    """
+    status = channel & 0x0F
+    events: list[tuple[float, list[int]]] = []
+    for note, velocity, at, hold in notes:
+        events.append((at, [0x90 | status, note & 0x7F, velocity & 0x7F]))
+        events.append((at + hold, [0x80 | status, note & 0x7F, 0]))
+    for at, move in during:
+        events.extend((at, message) for message in move.messages(channel))
+    # On the time alone, and the sort is stable, so a move sharing an instant
+    # with a note-off is sent after it rather than in whichever order a tiebreak
+    # on the message bytes happened to pick.
+    events.sort(key=lambda e: e[0])
+    return events
+
+
 def record_notes(
     link: MidiLink,
     *,
@@ -26,6 +48,7 @@ def record_notes(
     notes,
     seconds: float,
     lead: float,
+    during=(),
 ) -> Recording:
     """Record while a set of notes is played, with silence before them for the floor.
 
@@ -41,14 +64,18 @@ def record_notes(
     The note-offs are sorted in with the note-ons rather than sent per note,
     since two notes that overlap have their events interleaved and sending each
     note's pair in turn would hold the first until the second was over.
+
+    `during` is `(at, move)` pairs on the same clock, and they go through the
+    same sorted list for the same reason. Two kinds of message cannot be asked
+    any other way -- polyphonic pressure names a note, and a pedal released after
+    the key has to be released after something -- so sending them up front
+    answers inaudible at every address whatever the address does. A move whose
+    time falls after the last note-off is kept and waited for: a pedal lifted
+    after the key is the point of it, and dropping the tail would take the note
+    off the end of the take.
     """
     ready = threading.Event()
-    status = channel & 0x0F
-    events: list[tuple[float, list[int]]] = []
-    for note, velocity, at, hold in notes:
-        events.append((at, [0x90 | status, note & 0x7F, velocity & 0x7F]))
-        events.append((at + hold, [0x80 | status, note & 0x7F, 0]))
-    events.sort(key=lambda e: e[0])
+    events = schedule(channel, notes, during)
     last = events[-1][0] if events else 0.0
 
     def play() -> None:

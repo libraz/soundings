@@ -135,6 +135,14 @@ def register(sub) -> None:
     target = p.add_mutually_exclusive_group(required=True)
     target.add_argument("--cc", type=int, help="controller number to change")
     target.add_argument("--address", help="three hex bytes to write instead, e.g. '40 01 30'")
+    target.add_argument(
+        "--polypressure",
+        action="store_true",
+        help="change the polyphonic pressure on the sounding note instead, which is the "
+        "control a switch over that message needs: a run of nothing but nulls cannot say "
+        "whether the switch is silent or the message does nothing here to begin with. The "
+        "two values are pressures, and they go in mid-note rather than before it",
+    )
     p.add_argument(
         "--values",
         type=options.pair,
@@ -246,10 +254,44 @@ def _without_the_address(stim, args: argparse.Namespace):
     """The stimulus with any move that writes the address under test taken out."""
     import dataclasses
 
-    kept, dropped = gestures.without(stim.moves, _part_offset(args, stim.on(args.channel)))
+    offset = _part_offset(args, stim.on(args.channel))
+    kept, dropped = gestures.without(stim.moves, offset)
+    # The timed moves are filtered on the same rule. Nothing in the catalogue
+    # writes a part byte from one today, but the reason a move is dropped is
+    # where it stores and not when it is sent, so a timed one added later that
+    # aliases the address under test would otherwise put both settings at its own
+    # value and the run would measure the gesture.
+    timed_kept, timed_dropped = gestures.without(tuple(m for _, m in stim.during), offset)
+    dropped = dropped + timed_dropped
     if not dropped:
         return stim, []
-    return dataclasses.replace(stim, moves=kept), dropped
+    return (
+        dataclasses.replace(
+            stim,
+            moves=kept,
+            during=tuple((at, m) for at, m in stim.during if m in timed_kept),
+        ),
+        dropped,
+    )
+
+
+def _pressure_axis(args: argparse.Namespace, stim, value: int):
+    """What a pressure run sends before the note, and the stimulus it then plays.
+
+    Nothing before the note. The message names a note and there is none yet, so
+    sent up front it is a setting that never landed -- which reads in the record
+    exactly like a parameter that does nothing, and telling those two apart is
+    the whole reason this axis exists. The value rides in the stimulus's own
+    `during` instead, on the note that stimulus plays.
+
+    Every other axis gets `None` back and the stimulus untouched, so adding this
+    one cannot have moved what an address or a controller run asks.
+    """
+    if not args.polypressure:
+        return None, stim
+    import dataclasses
+
+    return [], dataclasses.replace(stim, during=gestures.pressed_on(stim.note, value))
 
 
 def cmd_contrast(args: argparse.Namespace) -> int:
@@ -279,7 +321,12 @@ def cmd_contrast(args: argparse.Namespace) -> int:
         print(exc)
         return 1
 
-    where = f"CC{args.cc}" if args.cc is not None else f"address {args.address}"
+    if args.polypressure:
+        where = "polyphonic pressure"
+    elif args.cc is not None:
+        where = f"CC{args.cc}"
+    else:
+        where = f"address {args.address}"
     label = f"{where} {args.values[0]} against {args.values[1]}"
     overall = audible.Overall(label=label)
     store = _store(args.save)
@@ -361,6 +408,10 @@ def cmd_contrast(args: argparse.Namespace) -> int:
 
             captured: list[list] = []
             for value in args.values:
+                # The pressure axis is the one setting that is not sent before
+                # the note, so it rides in the stimulus rather than in
+                # `setting`. Every other axis leaves this the stimulus itself.
+                before, playing = _pressure_axis(args, stim, value)
                 # And again before the second setting, where the run asks for it.
                 # A parameter that decides whether a message is received is
                 # invisible without this: the message moves something under the
@@ -370,7 +421,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                     if not from_the_top(stim, channel):
                         return 1
                     resets_between.append({"stimulus": stim.name, "before_setting": value})
-                for message in setting(value, channel):
+                for message in setting(value, channel) if before is None else before:
                     link.send(message)
                 time.sleep(args.settle)
                 # Read the setting back, as the preparation already is. Against
@@ -412,7 +463,8 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                             link,
                             device=args.audio,
                             channel=channel,
-                            notes=stim.played(),
+                            notes=playing.played(),
+                            during=playing.during,
                             seconds=stim.seconds,
                             lead=stim.lead,
                         )

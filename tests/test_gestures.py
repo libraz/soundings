@@ -232,3 +232,144 @@ def test_the_notes_a_stimulus_plays_travel_in_its_json() -> None:
     """A verdict taken on two notes is not the same claim as one taken on one."""
     assert stimuli.CATALOGUE["struck_pair"].to_json()["also"] == [[67, 100, 0.0, 1.0]]
     assert stimuli.CATALOGUE["struck"].to_json()["also"] == []
+
+
+# The messages that have to be timed into a sounding note, and what goes wrong
+# when they are not. Both failures are silent and both look like a null.
+
+
+def test_polyphonic_pressure_names_the_note_it_presses() -> None:
+    """Channel pressure carries a value and nothing else; this one carries the
+    note as well, and a pressure addressed to a note nothing is playing is a run
+    with no pressure in it at all."""
+    assert gestures.Move("polypressure", (60, 127), "").messages(2) == [[0xA2, 60, 127]]
+
+
+def test_the_pressure_is_addressed_to_a_note_its_own_stimulus_plays() -> None:
+    """The one way this fails silently. A stimulus whose pressure names some
+    other note answers inaudible at every address, whatever the address does, and
+    nothing in the record says the pressure never landed."""
+    for stim in stimuli.CATALOGUE.values():
+        played = {n for n, _, _, _ in stim.played()}
+        for _, move in stim.during:
+            if move.kind == "polypressure":
+                assert move.data[0] in played, stim.name
+
+
+def test_the_pressure_lands_while_the_note_is_still_held() -> None:
+    """Sent after the key it presses nothing, which is the same null the field
+    exists to remove."""
+    stim = stimuli.CATALOGUE["struck_pressed"]
+
+    assert [at for at, m in stim.during if m.kind == "polypressure"] == [gestures.PRESSED_AT_S]
+    assert 0.0 < gestures.PRESSED_AT_S < stim.hold
+
+
+def test_the_pedal_is_lifted_after_the_key_rather_than_before_it() -> None:
+    """Lifted before the note-off it never held anything and the take is the
+    plain note. What a comparison sees is the tail a damper took, so the release
+    has to fall between the key and the end of the capture."""
+    stim = stimuli.CATALOGUE["struck_damped"]
+    (at, move) = stim.during[0]
+
+    assert move.data == (64, 0)
+    assert stim.hold < at < stim.seconds
+    # And held before the note, or there is nothing to lift.
+    assert (64, 127) in [m.data for m in stim.moves]
+
+
+def test_a_timed_move_is_sent_between_the_note_on_and_the_end_of_the_take() -> None:
+    """The schedule is where the timing is decided, and a message at the wrong
+    moment sounds exactly like a parameter that does nothing."""
+    from soundings import perform
+
+    stim = stimuli.CATALOGUE["struck_pressed"]
+    events = perform.schedule(0, stim.played(), stim.during)
+    pressures = [i for i, (_, m) in enumerate(events) if m[0] & 0xF0 == 0xA0]
+
+    assert len(pressures) == 1
+    assert 0 < pressures[0] < len(events) - 1
+
+
+def test_a_move_timed_past_the_last_note_off_is_still_sent() -> None:
+    """A pedal lifted after the key is the point of that stimulus. Dropping
+    anything past the last note-off would take the release off the end."""
+    from soundings import perform
+
+    stim = stimuli.CATALOGUE["struck_damped"]
+    events = perform.schedule(0, stim.played(), stim.during)
+
+    assert events[-1][1] == [0xB0, 64, 0]
+
+
+def test_the_timed_moves_travel_in_the_stimulus_json_with_their_times() -> None:
+    """A message sent into the note is a different question from the same message
+    sent before it, so a record that folded the two together would report the one
+    the run could not ask."""
+    written = stimuli.CATALOGUE["struck_damped"].to_json()
+
+    assert written["moves"] and [m["kind"] for m in written["during"]] == ["cc"]
+    assert written["during"][0]["at_s"] > written["hold_s"]
+    assert "at " in stimuli.CATALOGUE["struck_damped"].describe()
+
+
+def test_a_timed_move_that_writes_the_address_under_test_is_taken_out_too() -> None:
+    """The reason a move is dropped is where it stores, not when it is sent.
+    Nothing in the catalogue times a message that aliases a part byte today, and
+    the filter has to cover it before one does rather than after."""
+    import dataclasses
+    from argparse import Namespace
+
+    from soundings.cli.sound import _without_the_address
+
+    volume = gestures.cc(7, 40, "volume", (0x19,))
+    stim = dataclasses.replace(stimuli.CATALOGUE["struck_pressed"], during=((0.3, volume),))
+
+    kept, dropped = _without_the_address(stim, Namespace(cc=None, address="40 11 19", channel=0))
+
+    assert kept.during == () and [m.data[0] for m in dropped] == [7]
+
+
+def test_the_pressure_axis_sends_nothing_before_the_note() -> None:
+    """A run over polyphonic pressure has no setting to write up front: the
+    message names a note and there is none yet. Sent before the note it is a
+    setting that never landed, which is indistinguishable in the record from a
+    parameter that does nothing -- and this axis exists to tell those apart."""
+    from argparse import Namespace
+
+    from soundings.cli.sound import _pressure_axis
+
+    stim = stimuli.CATALOGUE["struck"]
+    before, playing = _pressure_axis(Namespace(polypressure=True), stim, 127)
+
+    assert before == []
+    assert [m.data for _, m in playing.during] == [(stim.note, 127)]
+
+
+def test_every_other_axis_leaves_the_stimulus_alone() -> None:
+    """Adding the axis must not have changed what any other run asks, or every
+    verdict already in the archive was taken under a different question."""
+    from argparse import Namespace
+
+    from soundings.cli.sound import _pressure_axis
+
+    stim = stimuli.CATALOGUE["struck_moved"]
+
+    assert _pressure_axis(Namespace(polypressure=False), stim, 127)[1] is stim
+
+
+def test_the_one_message_stimuli_carry_one_message() -> None:
+    """Each was built for a question already one message wide, and a second
+    message in the gesture takes that back: a verdict under it would name the
+    list rather than the message, which is what the three gestures accept and
+    these do not."""
+    for name in ("struck_softened", "struck_damped", "struck_pressed"):
+        stim = stimuli.CATALOGUE[name]
+        assert len(stim.moves) + len(stim.during) <= 2, name
+        assert (
+            len(
+                {m.data[0] if m.kind == "cc" else m.kind for m in stim.moves}
+                | {m.data[0] if m.kind == "cc" else m.kind for _, m in stim.during}
+            )
+            == 1
+        ), name

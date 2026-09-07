@@ -82,6 +82,17 @@ class Stimulus:
     to receive without them, and reads as inaudible.
     """
 
+    during: tuple[tuple[float, gestures.Move], ...] = ()
+    """Messages sent while the note sounds, each `(seconds from the first note-on, move)`.
+
+    The third order, after `writes` and `moves`, and the only one that can carry
+    two kinds of message at all: polyphonic pressure names a note and has nowhere
+    to land before there is one, and a pedal released after the key has to be
+    released after something. Sent up front they answer inaudible at every
+    address whatever it does, which is a fact about when the harness sends things
+    rather than about the unit.
+    """
+
     also: tuple[tuple[int, int, float, float], ...] = ()
     """Further notes, each `(note, velocity, seconds after the first, hold)`.
 
@@ -111,13 +122,18 @@ class Stimulus:
         # same note played under power-on defaults, and a verdict that did not
         # say so would read as the plain note's.
         moved = f", moved: {gestures.describe(self.moves)}" if self.moves else ""
+        # And the timed ones separately, with their times. A message sent into a
+        # sounding note is a different question from the same message sent before
+        # it -- that is the whole reason the field exists -- so a description that
+        # folded the two together would report the one the run could not ask.
+        timed = "".join(f", at {at:.2f} s: {m.describe()}" for at, m in self.during)
         beside = "".join(
             f", with note {n} at velocity {v} {a:.2f} s later held {h:.2f} s"
             for n, v, a, h in self.also
         )
         return (
             f"{where}program {self.program}, note {self.note}, velocity {self.velocity}, "
-            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}{beside}{moved}"
+            f"held {self.hold:.2f} s, captured {self.seconds:.1f} s{prepared}{beside}{moved}{timed}"
         )
 
     def to_json(self) -> dict:
@@ -130,6 +146,7 @@ class Stimulus:
             "writes": [[a, v] for a, v in self.writes],
             "also": [list(n) for n in self.also],
             "moves": [m.to_json() for m in self.moves],
+            "during": [{"at_s": at, **m.to_json()} for at, m in self.during],
             "hold_s": self.hold,
             "captured_s": self.seconds,
             "lead_s": self.lead,
@@ -431,6 +448,71 @@ CATALOGUE: dict[str, Stimulus] = {
         "run that showed this is the one where 40 11 06 -- audible under all three other "
         "gestures -- could not be measured under this one. " + gestures.CANNOT_ASK,
     ),
+    # The three below carry one message each, which the three gestures above
+    # deliberately do not. A gesture is several messages at once because asking
+    # one per run would need a guess about which address gates which, and that
+    # guess is the manual's table -- reconstructing it would make the measurement
+    # a check on the reading. None of these needs it: each was built for a
+    # question already one message wide, so a verdict under it names the message
+    # rather than the list.
+    #
+    # The soft pedal alone is the half of `struck_pedalled` the glide did not
+    # ruin. That stimulus measured with a yardstick that was the whole signal and
+    # the portamento was the suspect, being a pitch sweep landing somewhere
+    # different on every strike; whether a soft pedal alone repeats was left
+    # unasked, and this asks it.
+    "struck_softened": Stimulus(
+        name="struck_softened",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.0,
+        lead=0.6,
+        moves=gestures.SOFTENED,
+        sees="whether the part still acted on the soft pedal after the setting was written",
+        blind_to="every other pedal, and every message the three gestures carry. It is one "
+        "controller, which is what makes an answer here name it",
+    ),
+    # The two below are timed into the note, which is the only way the two
+    # messages `gestures.CANNOT_ASK` names can be sent at all.
+    #
+    # A pedal lifted after the key is a pedal; lifted before it, it never held
+    # anything and the take is the plain note. What a comparison sees is the tail
+    # that stops, so the stimulus captures well past the release.
+    "struck_damped": Stimulus(
+        name="struck_damped",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.5,
+        lead=0.6,
+        moves=(gestures.cc(64, 127, "hold, which outlasts the note on a decaying voice"),),
+        during=gestures.released_after(1.0),
+        sees="whether the part still acted on the hold pedal, asked as a pedal rather than "
+        "as a controller sent before the note: the key is lifted under it and the pedal a "
+        "moment after, so what the takes differ by is the tail a damper took or did not",
+        blind_to="every other pedal. " + gestures.WHY_TIMED,
+    ),
+    # Polyphonic pressure, on the note the stimulus itself plays. Named rather
+    # than derived at the call: a pressure addressed to a note nothing is playing
+    # is a run with no pressure in it, and it would answer inaudible everywhere
+    # with nothing saying why.
+    "struck_pressed": Stimulus(
+        name="struck_pressed",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.5,
+        seconds=3.5,
+        lead=0.6,
+        during=gestures.pressed_on(60),
+        sees="whether the part still acted on polyphonic pressure, which nothing else here "
+        "can send at all",
+        blind_to="channel pressure, which is a different message and is what the moved "
+        "gesture carries. " + gestures.WHY_TIMED,
+    ),
     # The two below are what a parameter about *polyphony* has to be asked with,
     # and nothing above can ask one at all. Whether a part is monophonic, and
     # what it does when the same voice is asked for a second time, sound
@@ -547,6 +629,11 @@ SWITCH = ("struck", "struck_moved", "struck_retuned", "struck_vibrato")
 # it to a block pass would buy a column of inconclusives at the same price as a
 # column of verdicts. It stays in the catalogue, askable by name, because the
 # thing to do next is find out whether the glide is what ruins it.
+#
+# Neither are the three one-message stimuli, and for the weaker reason: what a
+# gesture set costs is a whole extra column per address, so a stimulus joins one
+# once a run has shown it repeats well enough to answer anything. Until then they
+# are asked by name, on the addresses that need them.
 GESTURE = ("struck_moved", "struck_retuned", "struck_vibrato")
 
 # What a parameter about polyphony has to be asked with, and the only two notes

@@ -41,11 +41,17 @@ came back sounding 31.8 dB over the lead-in, because the volume in the gesture
 had put it back. `without` takes such a move out for that run, and what it took
 out is reported, since the gesture is a weaker question one message short.
 
-**What a gesture cannot ask.** A pedal needs a note already sounding under it,
-polyphonic pressure needs one to name, and portamento needs a second note to
-glide to. All three are sent before the note or not at all, so a switch gating
-one of them reads as inaudible here. That is a limit of sending everything up
-front, not a null about the switch.
+**A move can also be timed into the note.** Everything above is sent before the
+note, which is the whole reason two kinds of message were long unaskable:
+polyphonic pressure names a note and has nowhere to land before there is one,
+and a pedal released after the note has to be released after something. A move
+carried in a stimulus's `during` is sent at a stated time from the first
+note-on instead, which is the same list of messages with a clock against it.
+
+The gestures that are sent up front say so themselves, in `CANNOT_ASK`, and that
+sentence is still true of each of them: it is a statement about one gesture, not
+about the harness. A null taken under `MOVED` is still bounded by the fact that
+nothing in `MOVED` arrives while the note sounds.
 """
 
 from __future__ import annotations
@@ -93,6 +99,9 @@ class Move:
         if self.kind == "pressure":
             (value,) = self.data
             return [[0xD0 | status, value & 0x7F]]
+        if self.kind == "polypressure":
+            note, value = self.data
+            return [[0xA0 | status, note & 0x7F, value & 0x7F]]
         if self.kind == "program":
             (program,) = self.data
             return [[0xC0 | status, program & 0x7F]]
@@ -201,9 +210,70 @@ PEDALLED: tuple[Move, ...] = (
     cc(67, 127, "the soft pedal, which shapes what is struck after it"),
 )
 
+# The soft pedal on its own, which is the half of `PEDALLED` the glide did not
+# ruin. `PEDALLED` measured with a yardstick that was the whole signal and the
+# portamento was the suspect, being a pitch sweep landing at a different place on
+# every strike; whether a soft pedal alone repeats was left unasked, and this is
+# what asks it. One message, so a verdict under it names the message.
+SOFTENED: tuple[Move, ...] = (cc(67, 127, "the soft pedal, which shapes what is struck after it"),)
+
+# The two below are timed into the note rather than sent before it. Each entry is
+# `(seconds from the first note-on, the move)`.
+#
+# **One message each, against the practice above.** A gesture carries several
+# messages at once because asking one per run would need a guess about which
+# address gates which, and a guess reconstructed from the manual makes the
+# measurement a check on the reading. Neither of these needs such a guess: the
+# question is already one message wide -- whether the part still acts on
+# polyphonic pressure, whether it still acts on a pedal lifted after the key --
+# and a second message in the gesture would take that back for nothing.
+
+PRESSED_AT_S = 0.35
+"""Where in the note the pressure lands: past the attack, inside the hold."""
+
+
+def pressed_on(note: int, value: int = 127) -> tuple[tuple[float, Move], ...]:
+    """Polyphonic pressure on a note, sent while that note is sounding.
+
+    The note is passed in rather than assumed, because polyphonic pressure names
+    one: a pressure addressed to a note the stimulus does not play is a run with
+    no pressure in it, and it would answer inaudible at every address without
+    anything saying why.
+    """
+    return (
+        (
+            PRESSED_AT_S,
+            Move("polypressure", (note, value), "polyphonic pressure on the sounding note"),
+        ),
+    )
+
+
+RELEASED_AFTER_S = 0.15
+"""How long after the key is lifted the pedal is, which is what makes it a pedal.
+
+Lifted before the note-off it is a pedal that never held anything and the take is
+the plain note. Kept short because the voice is decaying: the further past the
+key the release goes, the less tail is left for the damper to take, and the tail
+that stops is the whole of what a comparison can see.
+"""
+
+
+def released_after(hold: float) -> tuple[tuple[float, Move], ...]:
+    """Hold down before the note, up a moment after the key, so a damper falls."""
+    return ((hold + RELEASED_AFTER_S, cc(64, 0, "the hold pedal lifted, after the key")),)
+
+
 CANNOT_ASK = (
     "polyphonic pressure and a pedal released after the note -- each needs a message timed into "
     "a note already sounding, and everything here is sent before the note"
+)
+
+WHY_TIMED = (
+    "This move was sent at a stated time from the first note-on rather than before the note. Two "
+    "kinds of message have nowhere to land otherwise: polyphonic pressure names a note, and a "
+    "pedal released after the key has to be released after something. A gesture sent up front "
+    "answers inaudible for either of them whatever the address does, and the null is a fact about "
+    "when the harness sends things."
 )
 
 WHY_DROPPED = (
@@ -234,11 +304,18 @@ def describe(moves: tuple[Move, ...]) -> str:
 __all__ = [
     "CANNOT_ASK",
     "MOVED",
+    "PEDALLED",
+    "PRESSED_AT_S",
+    "RELEASED_AFTER_S",
     "RETUNED",
+    "SOFTENED",
     "VIBRATO",
     "WHY_DROPPED",
+    "WHY_TIMED",
     "Move",
     "cc",
     "describe",
+    "pressed_on",
+    "released_after",
     "without",
 ]
