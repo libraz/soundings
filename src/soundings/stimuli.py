@@ -495,6 +495,29 @@ CATALOGUE: dict[str, Stimulus] = {
         "moment after, so what the takes differ by is the tail a damper took or did not",
         blind_to="every other pedal. " + gestures.WHY_TIMED,
     ),
+    # Sostenuto, which is not the hold pedal with a different controller number
+    # however much the two look alike in a table. Hold works pressed before the
+    # note; sostenuto holds what was already sounding when it went down and
+    # nothing struck after, so the same stimulus with 64 swapped for 66 catches
+    # nothing and returns the plain note at every setting of every address. The
+    # press is therefore timed into the note as well as the release, and that is
+    # the whole difference between asking this and not asking it.
+    "struck_caught": Stimulus(
+        name="struck_caught",
+        program=0,
+        note=60,
+        velocity=100,
+        hold=1.0,
+        seconds=3.5,
+        lead=0.6,
+        during=gestures.caught_after(1.0),
+        sees="whether the part still acted on the sostenuto pedal, asked with the pedal "
+        "pressed onto a note already sounding and lifted after the key, so what the takes "
+        "differ by is the tail sostenuto held or did not",
+        blind_to="every other pedal, and the hold pedal in particular: this is a different "
+        "message and a different order, not the same question at another controller number. "
+        + gestures.WHY_TIMED,
+    ),
     # Polyphonic pressure, on the note the stimulus itself plays. Named rather
     # than derived at the call: a pressure addressed to a note nothing is playing
     # is a run with no pressure in it, and it would answer inaudible everywhere

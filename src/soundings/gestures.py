@@ -263,6 +263,30 @@ def released_after(hold: float) -> tuple[tuple[float, Move], ...]:
     return ((hold + RELEASED_AFTER_S, cc(64, 0, "the hold pedal lifted, after the key")),)
 
 
+CAUGHT_AT_S = 0.35
+"""Where in the note the sostenuto pedal goes down, which is what makes it sostenuto.
+
+Sostenuto holds the notes already sounding when it is pressed and nothing struck
+afterwards, so a pedal pressed before the note has caught nothing and the take is
+the plain note whatever the address is set to. That is a null no setting can
+clear, and it would read as a fact about the parameter. Pressed here it is past
+the attack and inside the hold, so there is a note for it to catch.
+"""
+
+
+def caught_after(hold: float) -> tuple[tuple[float, Move], ...]:
+    """Sostenuto down while the note sounds, up after the key, so it catches something.
+
+    Both messages are timed rather than one, which is what separates this from
+    `released_after`: the hold pedal works pressed before the note and sostenuto
+    does not, so the press is as much a part of the timing as the release.
+    """
+    return (
+        (CAUGHT_AT_S, cc(66, 127, "sostenuto, pressed onto the note already sounding")),
+        (hold + RELEASED_AFTER_S, cc(66, 0, "sostenuto lifted, after the key")),
+    )
+
+
 CANNOT_ASK = (
     "polyphonic pressure and a pedal released after the note -- each needs a message timed into "
     "a note already sounding, and everything here is sent before the note"
@@ -303,6 +327,7 @@ def describe(moves: tuple[Move, ...]) -> str:
 
 __all__ = [
     "CANNOT_ASK",
+    "CAUGHT_AT_S",
     "MOVED",
     "PEDALLED",
     "PRESSED_AT_S",
@@ -313,6 +338,7 @@ __all__ = [
     "WHY_DROPPED",
     "WHY_TIMED",
     "Move",
+    "caught_after",
     "cc",
     "describe",
     "pressed_on",
