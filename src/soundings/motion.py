@@ -95,7 +95,22 @@ than a delay track does, and the largest bin of a rattle stands ten or fifteen d
 over the median of the band as readily as a tremolo does. Both a static reverb
 and a chorus were reported as having a level modulation on that evidence, at
 shape errors of 6.8 and 23.9 -- lines that a sinusoid explained essentially none
-of.
+of. On synthetic pairs whose answer is known, a static single delay reached 13.8
+dB over its band and a pair with no return at all reached 11.9; this is what
+turned both away.
+
+**It measures two things and only one of them is shape.** A track carrying a real
+modulation smaller than its own frame-to-frame scatter fails here, and fails for
+the scatter rather than for the waveform: a pair measured at 41 dB over its band
+at 1.156 Hz, with a swing of 0.4 ms inside 1.7 ms of scatter, is refused at 8.5.
+That is a real cost and it is paid deliberately, because the obvious repair does
+not work. Folding the track into one cycle at the found rate and reading the
+shape off the average brings that pair to 0.37 -- and brings a pair of takes of
+the same signal, with no effect in it at all, to 0.53, which is inside this
+threshold. The rate was chosen as the largest bin of that same track, so folding
+at it concentrates whatever accidental periodicity the noise had; the fold cannot
+be a test of the line that selected it. Loosening this gate without a test that
+survives the no-return pair publishes modulations that are not there.
 """
 
 WHY_FLOOR_GATE = (
@@ -278,6 +293,23 @@ def _normalised_lags(reference: np.ndarray, take: np.ndarray, span: int) -> np.n
     return correlation[: span + 1] / np.sqrt(energy * np.maximum(overlap, 1e-30))
 
 
+def _vertex(left: float, centre: float, right: float) -> float:
+    """Where a parabola through three samples has its top, in bins from the middle.
+
+    Zero where the three do not describe a peak at all. The offset is bounded to
+    half a bin because that is the whole of what interpolation can mean: the top
+    of a parabola whose middle sample is the largest cannot lie outside its own
+    neighbours. Unbounded, a nearly flat top divides by a denominator near zero
+    and returns an offset of thousands of bins -- which reached a published
+    record as a modulation rate of minus twelve thousand hertz, a number no
+    search band contains and no gate downstream rejects for being impossible.
+    """
+    denominator = left - 2.0 * centre + right
+    if denominator >= 0:
+        return 0.0
+    return float(np.clip(0.5 * (left - right) / denominator, -0.5, 0.5))
+
+
 def _peak(curve: np.ndarray, lo: int) -> tuple[float, float]:
     """Interpolated position and height of the largest value at or after `lo`."""
     if curve.size <= lo:
@@ -286,10 +318,8 @@ def _peak(curve: np.ndarray, lo: int) -> tuple[float, float]:
     height = float(curve[index])
     if index <= 0 or index >= curve.size - 1:
         return float(index), height
-    left, centre, right = curve[index - 1], curve[index], curve[index + 1]
-    denominator = left - 2.0 * centre + right
-    offset = 0.0 if denominator == 0 else 0.5 * (left - right) / denominator
-    return float(index) + float(offset), height
+    offset = _vertex(curve[index - 1], curve[index], curve[index + 1])
+    return float(index) + offset, height
 
 
 def periodicity(
@@ -485,12 +515,11 @@ def _find_line(
     above = 20.0 * np.log10(spectrum[peak] / background)
 
     resolution = float(bins[1] - bins[0])
-    if 0 < peak < spectrum.size - 1:
-        left, centre, right = spectrum[peak - 1], spectrum[peak], spectrum[peak + 1]
-        denominator = left - 2.0 * centre + right
-        offset = 0.0 if denominator == 0 else 0.5 * (left - right) / denominator
-    else:
-        offset = 0.0
+    offset = (
+        _vertex(spectrum[peak - 1], spectrum[peak], spectrum[peak + 1])
+        if 0 < peak < spectrum.size - 1
+        else 0.0
+    )
     return float(bins[peak]) + offset * resolution, above, resolution
 
 

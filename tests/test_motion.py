@@ -213,6 +213,35 @@ def test_a_track_of_pure_noise_produces_no_line() -> None:
     assert motion.fit_lfo(track) is None
 
 
+def test_an_interpolated_peak_stays_between_its_own_neighbours() -> None:
+    """A flat top divides by nearly nothing, and the answer left the search band.
+
+    The offset is a position between three samples, so half a bin is the whole of
+    what it can mean. Unbounded it reached a published record as a modulation
+    rate of minus twelve thousand hertz -- a number outside every band that was
+    searched, which nothing downstream rejected for being impossible.
+    """
+    assert motion._vertex(1.0, 1.0, 1.0) == 0.0
+    assert motion._vertex(1.0, 1.0 + 1e-15, 1.0) == 0.0
+    assert motion._vertex(0.0, 1.0, 0.0) == 0.0
+    assert motion._vertex(1.0, 2.0, 0.0) == pytest.approx(-1.0 / 6.0)
+    assert motion._vertex(0.0, 2.0, 1.0) == pytest.approx(1.0 / 6.0)
+    for triple in ((1.0, 1.0 + 1e-12, 1.0 - 1e-13), (0.9, 1.0, 0.9999999)):
+        assert -0.5 <= motion._vertex(*triple) <= 0.5
+
+
+def test_a_line_is_reported_at_a_rate_inside_the_band_that_was_searched() -> None:
+    """Whatever the spectrum's shape, the rate has to be one that was looked for."""
+    rng = np.random.default_rng(11)
+    for seed in range(20):
+        series = rng.standard_normal(300) * 10 + 900
+        line = motion._find_line(series, 200.0, (0.05, 20.0))
+        if line is None:
+            continue
+        rate, _, _ = line
+        assert 0.0 < rate <= 20.0 + 1e-9, f"seed {seed} gave {rate} Hz"
+
+
 def test_a_track_that_found_almost_nothing_is_refused() -> None:
     track = motion.DelayTrack(
         times=np.arange(200) * 0.01,
