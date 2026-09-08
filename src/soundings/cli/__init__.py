@@ -75,6 +75,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    # A device id only where the run addressed one. The flag that says so is the
+    # same one that decides whether the unit is held: a command reading saved
+    # takes or a published document never opens a port, and stamping the option's
+    # default on its record would say a device answered when none was asked.
+    asks_the_unit = getattr(args, "needs_unit", True)
     # Declared once, here, because this is the only place that knows both what
     # was asked for and what it was asked of. Every record written by the run
     # takes its identity from it without its writer being told to.
@@ -82,11 +87,11 @@ def main(argv: list[str] | None = None) -> int:
         record.Invocation(
             stage=args.command,
             argv=list(argv if argv is not None else sys.argv[1:]),
-            midi_device_id=f"{args.device_id:02X}",
+            midi_device_id=f"{args.device_id:02X}" if asks_the_unit else None,
         )
     )
     try:
-        if not getattr(args, "needs_unit", True):
+        if not asks_the_unit:
             return args.func(args)
         with hardware.held(args.command):
             return args.func(args)
