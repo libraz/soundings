@@ -252,7 +252,7 @@ def cmd_efx_params(args) -> int:
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")
-    if (coverage := found.get("coverage")) and coverage["never_asked"]:
-        print(f"  => {len(coverage['never_asked'])} never asked: {' | '.join(coverage['never_asked'])}")
+    if (coverage := found.get("coverage")) and (missing := coverage["never_asked"]):
+        print(f"  => {len(missing)} never asked: {' | '.join(missing)}")
     report.write_json(args.out, found)
     return 0

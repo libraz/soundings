@@ -313,9 +313,7 @@ def _state(record: dict) -> str:
     prepared = record.get("prepared") or []
     if not prepared:
         return ""
-    return " with " + ", ".join(
-        f"{e.get('address')} = {e.get('bytes')}" for e in prepared
-    )
+    return " with " + ", ".join(f"{e.get('address')} = {e.get('bytes')}" for e in prepared)
 
 
 def _entries(record: dict) -> dict[str, dict]:
@@ -427,7 +425,9 @@ def _combine(first: AddressVerdict, second: AddressVerdict) -> AddressVerdict:
     """
     heard = set(first.heard_by) | set(second.heard_by)
     unheard = set(first.not_heard_by) | set(second.not_heard_by)
-    disagreed = sorted((heard & unheard) | set(first.did_not_reproduce) | set(second.did_not_reproduce))
+    disagreed = sorted(
+        (heard & unheard) | set(first.did_not_reproduce) | set(second.did_not_reproduce)
+    )
     keep = lambda names: [n for n in names if n not in disagreed]  # noqa: E731
     joined = AddressVerdict(
         address=first.address,
@@ -621,7 +621,8 @@ def join(
             # rescue that found nothing still proves its writes took. Keeping the
             # plain pass's is not enough: an address answered only by a gesture
             # would carry a control taken in a different run from its verdict.
-            read_back=(first.read_back if first else []) + [b for r in rescued for b in r.read_back],
+            read_back=(first.read_back if first else [])
+            + [b for r in rescued for b in r.read_back],
             superseded_by=(first.superseded_by if first else {})
             or next((r.superseded_by for r in rescued if r.superseded_by), {}),
             did_not_reproduce=sorted(
