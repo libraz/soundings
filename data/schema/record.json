@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/libraz/soundings/data/schema/record.json",
   "title": "The envelope a published record carries",
-  "description": "Every file under data/units is one run's record. The envelope says which run: the unit measured, the stage, the invocation and the moment. What the run found is the rest of the file, whose shape is the stage's own and is not described here. A record written before the envelope existed has no `record` key, which is what a migration reads to find it.",
+  "description": "Every file under data/units is one run's record. The envelope says which run: the unit measured, the stage, the invocation and the moment. What the run found is the rest of the file, whose shape is the stage's own and is not described here. A record written before the envelope existed carries one all the same, with the fields that cannot be recovered set to null and named under `not_recorded` -- an absence a consumer citing the record as provenance can read, rather than one it has to infer from a missing key.",
   "type": "object",
   "required": ["record"],
   "properties": {
@@ -31,14 +31,36 @@
           "description": "The arguments the run was given, with the operator's home directory removed. This is where the parameters of a run are recorded: a scope encoded in the file name instead is a parameter no reader can ask for."
         },
         "measured_at": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date-time",
-          "description": "When the record was written, UTC. Named measured_at rather than captured because captured is already a prose description of a moment in power-on-state.json, and one name must not carry two meanings."
+          "description": "When the record was written, UTC. Named measured_at rather than captured because captured is already a prose description of a moment in the power-on record, and one name must not carry two meanings. Null only where `not_recorded` names it."
         },
         "midi_device_id": {
           "type": ["string", "null"],
           "pattern": "^[0-9A-F]{2}$",
           "description": "The Roland device ID the run addressed. Held here rather than in the payload, where it was spelled device_id and collided with meta.json's device_id object."
+        },
+        "not_recorded": {
+          "type": "object",
+          "required": ["fields", "why", "first_published"],
+          "additionalProperties": false,
+          "description": "Present only where a field above is null because the run did not record it. A record written before the envelope existed, or kept by hand rather than written by a command, has no invocation and no moment to carry; stating which fields those are, and why, is what keeps the absence readable instead of inviting a value to be invented for it.",
+          "properties": {
+            "fields": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "The envelope fields that are null for this reason, and no others. A field null for any other reason is a defect."
+            },
+            "why": {
+              "type": "string",
+              "description": "Why they cannot be recovered. Not a promise to fill them in later: the values are not held anywhere, so filling them in would mean inventing them."
+            },
+            "first_published": {
+              "type": "string",
+              "format": "date",
+              "description": "The day this record first entered the repository, which bounds the measurement from above. It is not when the measurement was taken and must not be read as one; it is the nearest thing to a moment that survives."
+            }
+          }
         }
       }
     },

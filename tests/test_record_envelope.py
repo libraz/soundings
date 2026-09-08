@@ -1,13 +1,16 @@
 """The archive's shape, gated where prose cannot gate it.
 
-Three things are held here, and each of them is a ratchet rather than a state:
-they are green on the archive as it stands and they fail on the next record that
-makes it worse. That is deliberate. The records written before the envelope
-existed are migrated in one pass, not one test run at a time, and a gate that
-went red until then would be turned off long before it was satisfied.
+Each of these is a ratchet rather than a state: green on the archive as it stands
+and red on the next record that makes it worse.
 
-What must not happen meanwhile is the archive growing another record with no
-identity, or another finding spelled as a key name. Those are what these check.
+Every record now carries an envelope, including the ones whose run predates it --
+those carry null where the invocation and the moment would be, and name those
+fields as ones the run did not record. That is the distinction the gates below
+hold: a null that is accounted for is a stated absence, and a null that is not is
+a field somebody will eventually fill in with a value nothing holds.
+
+What must not happen is the archive growing a record with no identity, an
+envelope with an unexplained hole in it, or another finding spelled as a key name.
 """
 
 from __future__ import annotations
@@ -24,12 +27,13 @@ UNITS = ROOT / "data" / "units"
 SCHEMA = json.loads((ROOT / "data" / "schema" / "record.json").read_text())
 PUBLISHED = sorted(UNITS.rglob("*.json"))
 
-RECORDS_WITHOUT_AN_ENVELOPE = 186
-"""How many records predate the envelope. It may fall and it may not rise.
+RECORDS_WITHOUT_AN_ENVELOPE = 0
+"""How many records carry no envelope at all. It is zero and may not rise.
 
-Every writer stamps the envelope now, so a new record cannot lack one and this
-number can only come down -- by migrating a record, which is an edit to the file
-and a decrement here in the same change.
+Every writer stamps one, and the records made before the envelope existed carry
+one that says which of its fields their run did not record. So a file here with
+no `record` key is a writer that bypassed report.write_json, not a record too old
+to have been stamped.
 """
 
 SENTENCE_KEYS = frozenset(
@@ -84,11 +88,48 @@ def test_the_schema_describes_the_envelope_that_is_actually_written(tmp_path) ->
     comparing its fields is what keeps the file honest.
     """
     written = record.envelope({}, out_path=tmp_path / "any.json")["record"]
+    stated = record.unrecorded(unit_id="somebody-01", stage="sweep", first_published="2026-01-01")
     described = SCHEMA["properties"]["record"]["properties"]
+    required = set(SCHEMA["properties"]["record"]["required"])
 
-    assert set(written) == set(described), "the envelope and its schema name different fields"
-    assert set(SCHEMA["properties"]["record"]["required"]) <= set(written)
-    assert written["schema_version"] == record.SCHEMA_VERSION
+    # Two shapes, and between them they are exactly what the schema describes: a
+    # run that recorded itself, and one that says which of its fields it did not.
+    assert set(written) | set(stated) == set(described), (
+        "the envelope and its schema name different fields"
+    )
+    assert required <= set(written) and required <= set(stated)
+    assert set(described) - set(written) == {"not_recorded"}
+    assert written["schema_version"] == record.SCHEMA_VERSION == stated["schema_version"]
+
+
+def test_a_field_the_run_did_not_record_is_the_only_one_left_null() -> None:
+    """A stated absence and an unexplained hole read the same in a listing.
+
+    They are opposite. The first says a value does not exist and cannot be
+    recovered; the second is a field somebody will eventually fill in, and the
+    only values available to fill it with would be invented. So every null among
+    the required fields has to be one this record named.
+    """
+    unaccounted = []
+    for path, stamp in _envelopes():
+        named = set(stamp.get("not_recorded", {}).get("fields", []))
+        for field in SCHEMA["properties"]["record"]["required"]:
+            if stamp.get(field) is None and field not in named:
+                unaccounted.append(f"{path.relative_to(UNITS)}: {field}")
+    assert not unaccounted, (
+        "envelope fields that are null without the record saying its run did not "
+        "record them:\n  " + "\n  ".join(unaccounted)
+    )
+
+
+def test_a_record_naming_no_absent_field_carries_no_reason_for_one() -> None:
+    """The reason travels with the absence, so a record with neither is complete."""
+    stray = [
+        str(path.relative_to(UNITS))
+        for path, stamp in _envelopes()
+        if "not_recorded" in stamp and not stamp["not_recorded"].get("fields")
+    ]
+    assert not stray, f"records explaining an absence they do not have: {stray}"
 
 
 @pytest.mark.parametrize("path,stamp", list(_envelopes()), ids=lambda v: str(v))

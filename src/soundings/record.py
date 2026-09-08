@@ -113,6 +113,61 @@ def unit_of(path: str | Path) -> str | None:
     return None
 
 
+#: Why a run made before the envelope existed carries null where its invocation
+#: and its moment would be. Stated in the record rather than left as a missing
+#: key, because a consumer citing the record as the measurement a claim rests on
+#: needs the absence to be readable -- and because an absence that reads as an
+#: oversight invites somebody to fill it in with a value nothing holds.
+NOT_RECORDED = (
+    "This run predates the record envelope. Neither the arguments it was given nor the "
+    "moment it was taken is held anywhere in what it wrote, so neither can be recovered "
+    "without inventing it. Everything here that is not null was recovered from the record "
+    "and the directory it sits in. The date below is the day the record first entered the "
+    "repository, which bounds the measurement from above and is not when it was taken."
+)
+
+#: The same, for a record no command wrote at all.
+KEPT_BY_HAND = (
+    "No command wrote this record: it is kept by hand, so there is no stage that produced "
+    "it, no arguments it was given and no moment it was captured at. The date below is the "
+    "day it first entered the repository."
+)
+
+
+def unrecorded(
+    *,
+    unit_id: str | None,
+    stage: str | None,
+    first_published: str,
+    midi_device_id: str | None = None,
+) -> dict:
+    """The envelope of a record whose run did not record one.
+
+    Every field that can be recovered is filled from the record and from where it
+    sits; the rest are null and named, with the reason beside them. That is the
+    whole difference between this and no envelope at all: a reader is told which
+    values do not exist, rather than left to discover that a key is missing and
+    guess whether it was an oversight.
+
+    A record with no stage is one no command wrote, which is a different absence
+    from a run whose arguments were not kept, so it carries a different reason.
+    """
+    absent = ["invocation", MEASURED_AT] if stage else ["stage", "invocation", MEASURED_AT]
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "unit_id": unit_id,
+        "stage": stage,
+        "invocation": None,
+        MEASURED_AT: None,
+        "midi_device_id": midi_device_id,
+        "not_recorded": {
+            "fields": absent,
+            "why": NOT_RECORDED if stage else KEPT_BY_HAND,
+            "first_published": first_published,
+        },
+    }
+
+
 def envelope(payload: dict, *, out_path: str | Path) -> dict:
     """The payload with its envelope in front of it.
 
