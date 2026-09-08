@@ -39,7 +39,12 @@ def register(sub) -> None:
         "address, counted against the plan the block was asked from",
     )
     p.add_argument("plan", help="the plan the block was asked from, which says how many")
-    p.add_argument("plain", help="records from the pass that asked the plain note")
+    p.add_argument(
+        "plain",
+        nargs="?",
+        help="records from the pass that asked the plain note. Omitted only for a block "
+        "whose plan asks nothing, where there is no pass to point at",
+    )
     p.add_argument(
         "--gesture",
         help="records from the pass that moved messages after the setting. A gesture "
@@ -151,7 +156,9 @@ def cmd_block(args: argparse.Namespace) -> int:
     from .. import block
 
     planned = json.loads(Path(args.plan).read_text())
-    plain, outside = block.split_by_plan(block.survey(args.plain), planned)
+    plain, outside = (
+        block.split_by_plan(block.survey(args.plain), planned) if args.plain else ({}, [])
+    )
     gesture, more = (
         block.split_by_plan(block.survey(args.gesture), planned) if args.gesture else ({}, [])
     )
@@ -162,7 +169,12 @@ def cmd_block(args: argparse.Namespace) -> int:
     outside += more
     for address in sorted(set(outside)):
         print(f"  {address}: a record the plan does not name, left out of the block")
-    if not plain and not gesture and not polyphony:
+    # An empty pass is a mistake only where the plan expected one. A block whose
+    # every address accepts a single value has no pair to compare and so no
+    # contrast record to point at, and refusing to fold it would leave the one
+    # thing measured about it -- that nothing there can be moved -- unpublished,
+    # while the block went on being counted as a sweep somebody still owes.
+    if not plain and not gesture and not polyphony and planned.get("ask"):
         print(f"no contrast records under {args.plain}")
         return 1
 
@@ -201,7 +213,12 @@ def cmd_block(args: argparse.Namespace) -> int:
         args.out,
         {
             "block": planned.get("block"),
-            "method": block.method_for(bool(args.gesture)),
+            "method": block.method_for(bool(args.gesture), asked=bool(planned.get("ask"))),
+            # Where the addresses came from, which for a block nothing could be
+            # asked of is the whole of its evidence: the record holds no verdict
+            # of its own, and a reader has to be able to reach the run that
+            # established there was nothing to ask.
+            "planned_from": planned.get("from"),
             "asked_in": {
                 name: found_states
                 for name, where in (

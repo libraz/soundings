@@ -67,7 +67,19 @@ METHOD_ONE_PASS = (
 )
 
 
-def method_for(gesture: bool) -> str:
+# A third form, for a block nothing could be asked of. Written out in full for
+# the reason above, and separate because the other two describe listening: a
+# block that was never sounded must not publish an account of having been.
+METHOD_NOTHING_TO_ASK = (
+    "Nothing in this block was sounded. The write probe wrote to each of its addresses and read "
+    "each one back holding the value it started at, so there is no pair of settings to compare "
+    "and the audible question cannot be put here at all. What the block is counted against is "
+    "the same plan every other block is, and the plan asked for nothing -- which is a bound on "
+    "the addresses rather than a run that found nothing."
+)
+
+
+def method_for(gesture: bool, *, asked: bool = True) -> str:
     """The method sentence, saying only what this fold was actually given.
 
     The gesture half used to be part of one fixed string, so a block folded from
@@ -75,7 +87,13 @@ def method_for(gesture: bool) -> str:
     Nothing downstream compares a method against the directories it was handed,
     so the sentence is the run's own account of itself and there was nothing to
     catch it -- which is the whole reason a record is allowed to make claims.
+
+    The same holds one step further out. A block whose addresses accept a single
+    value each is folded from no passes at all, and either of the sentences above
+    would tell a reader it had been listened to.
     """
+    if not asked:
+        return METHOD_NOTHING_TO_ASK
     return METHOD if gesture else METHOD_ONE_PASS
 
 
