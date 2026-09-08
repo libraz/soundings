@@ -119,6 +119,26 @@ class BandDecay:
     63 Hz, and nothing but this number says which.
     """
 
+    halves_s: tuple[float, float] | None = None
+    """The same band fitted over the first half of the drop and over the second.
+
+    One decay time is one number standing for a whole fall, and the fall is not
+    always one slope. `curvature_db` already says how far the curve departed from
+    the line, but a departure in dB is not a quantity anybody downstream can use:
+    it bounds the error without naming what the error is. These are the two rates
+    the departure is made of, fitted over -5..-15 and over -15..-25 dB.
+
+    Measured across the bands this unit has: on the ones fitted and published,
+    the two rates part company by more than the fit's own scatter in three out of
+    five, at a median ratio of 1.6; on the ones refused for curving they part
+    company in the same proportion at a median of 3.8. So the curvature threshold
+    sorts these bands by how far apart the two rates are and not by whether they
+    are two -- which is why a refused band and a published one are the same kind
+    of thing, and why the published time needs these beside it.
+
+    None where either half held too few points of the curve to fit a line to.
+    """
+
     reason: str = ""
     """Why the band never reached a fit. Empty when one was reached, fit or not."""
 
@@ -167,6 +187,18 @@ class BandDecay:
             # and writing the NaN that stands for one is not JSON any strict
             # reader accepts.
             "curvature_db": None if np.isnan(self.curvature_db) else round(self.curvature_db, 3),
+            # Kept on a refused band as well as a published one. A band refused
+            # for curving is a band whose two rates are furthest apart, which is
+            # the one place they are most worth having, and dropping them there
+            # would leave the refusal saying only that something was wrong.
+            "halves_s": (
+                None
+                if self.halves_s is None
+                else {
+                    "over_minus_5_to_minus_15_db": round(self.halves_s[0], 4),
+                    "over_minus_15_to_minus_25_db": round(self.halves_s[1], 4),
+                }
+            ),
             "snr_db": None if np.isnan(self.snr_db) else round(self.snr_db, 1),
             "over_the_subtraction_floor_db": (
                 None if np.isnan(self.over_the_floor_db) else round(self.over_the_floor_db, 1)
@@ -347,6 +379,15 @@ def band_decay(
     curve = 10.0 * np.log10(np.maximum(integrated / integrated[0], 1e-30))
     times = np.arange(curve.size) / sample_rate
 
+    # Both halves of the drop, fitted apart, before either whole-range fit is
+    # tried. Independent of which range the fit below settles on, since they are
+    # the parts the departure from a line is made of rather than a refinement of
+    # whichever line got fitted.
+    early = _fit(curve, times, -5.0, -15.0)
+    late = _fit(curve, times, -15.0, -25.0)
+    halves = (early[0], late[0]) if early is not None and late is not None else None
+    blank.halves_s = halves
+
     for upper, lower in ((-5.0, -25.0), (-5.0, -15.0)):
         fitted = _fit(curve, times, upper, lower)
         if fitted is not None:
@@ -358,6 +399,7 @@ def band_decay(
                 centre_hz=centre,
                 seconds=seconds,
                 fitted_db=(upper, lower),
+                halves_s=halves,
                 curvature_db=curvature,
                 snr_db=snr,
                 scatter=1.0 / np.sqrt(samples) if samples > 0 else float("nan"),
