@@ -4,11 +4,19 @@
   "title": "The envelope a published record carries",
   "description": "Every file under data/units is one run's record. The envelope says which run: the unit measured, the stage, the invocation and the moment. What the run found is the rest of the file, whose shape is the stage's own and is not described here. A record written before the envelope existed carries one all the same, with the fields that cannot be recovered set to null and named under `not_recorded` -- an absence a consumer citing the record as provenance can read, rather than one it has to infer from a missing key.",
   "type": "object",
-  "required": ["record"],
+  "required": [
+    "record"
+  ],
   "properties": {
     "record": {
       "type": "object",
-      "required": ["schema_version", "unit_id", "stage", "invocation", "measured_at"],
+      "required": [
+        "schema_version",
+        "unit_id",
+        "stage",
+        "invocation",
+        "measured_at"
+      ],
       "additionalProperties": false,
       "properties": {
         "schema_version": {
@@ -17,38 +25,61 @@
           "description": "The envelope's version, which is not the archive's and not a unit's. It moves when the envelope gains or loses a field."
         },
         "unit_id": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-          "description": "The individual unit measured, as its meta.json declares it and its directory is named. Null only for a record written outside data/units, which is not published."
+          "description": "The individual unit measured, as its meta.json declares it and its directory is named. Null where the record is not a measurement of a unit: a scratch file outside the archive, and the published records under documents/, which are what a document states rather than what a unit did."
         },
         "stage": {
-          "type": ["string", "null"],
-          "description": "The measurement stage that produced the record, named as the command line names it. The protocol page is the list."
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The command that produced the record, named as the command line names it. For a measurement that is the stage that took it, and the protocol page is the list; for a record read out of a document it is the command that read it."
         },
         "invocation": {
-          "type": ["array", "null"],
-          "items": { "type": "string" },
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
           "description": "The arguments the run was given, with the operator's home directory removed. This is where the parameters of a run are recorded: a scope encoded in the file name instead is a parameter no reader can ask for."
         },
         "measured_at": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time",
           "description": "When the record was written, UTC. Named measured_at rather than captured because captured is already a prose description of a moment in the power-on record, and one name must not carry two meanings. Null only where `not_recorded` names it."
         },
         "midi_device_id": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[0-9A-F]{2}$",
           "description": "The Roland device ID the run addressed. Held here rather than in the payload, where it was spelled device_id and collided with meta.json's device_id object."
         },
         "not_recorded": {
           "type": "object",
-          "required": ["fields", "why", "first_published"],
+          "required": [
+            "fields",
+            "why",
+            "first_published"
+          ],
           "additionalProperties": false,
           "description": "Present only where a field above is null because the run did not record it. A record written before the envelope existed, or kept by hand rather than written by a command, has no invocation and no moment to carry; stating which fields those are, and why, is what keeps the absence readable instead of inviting a value to be invented for it.",
           "properties": {
             "fields": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "The envelope fields that are null for this reason, and no others. A field null for any other reason is a defect."
             },
             "why": {
@@ -69,7 +100,9 @@
       "description": "What the run established, each entry naming its own kind. Optional: a stage whose whole payload is its result has no separate list. A finding must not be spelled as a key name -- the next unit's answer to the same question is worded differently, and a consumer would have to match key names per unit instead of reading a value.",
       "items": {
         "type": "object",
-        "required": ["kind"],
+        "required": [
+          "kind"
+        ],
         "properties": {
           "kind": {
             "type": "string",

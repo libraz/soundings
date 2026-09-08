@@ -113,4 +113,6 @@ Result files preserve the method, settings, and limits of each measurement. A cl
 
 The measurement harness is [MIT](LICENSE). Data under `data/` is [CC0 1.0](data/LICENSE). Citation is appreciated but not required.
 
+`documents/` is neither, and sits outside `data/` for that reason: it holds factual tables read out of published documentation so that what a document states can be held against what a unit was measured to do. The documents themselves are their publishers' and are not distributed here — see [documents/LICENSE](documents/LICENSE).
+
 This project is not affiliated with, endorsed by, or connected to any instrument manufacturer. Product names identify measured equipment.
