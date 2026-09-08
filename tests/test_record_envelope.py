@@ -40,7 +40,6 @@ SENTENCE_KEYS = frozenset(
     {
         "answered_here_and_declined_there",
         "does_not_see_a_mirrored_block",
-        "each_key_based_control_reached_one_store",
         "input_is_asserted_not_measured",
         "landed_outside_its_own_block",
         "left_out_of_the_gesture",
@@ -50,26 +49,31 @@ SENTENCE_KEYS = frozenset(
         "records_the_plan_does_not_name",
         "regions_reaching_past_their_mapped_end",
         "shallower_than_the_control_recovered",
-        "the_window_in_this_unit_is_such_a_block",
         "why_one_setting_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
         "why_the_total_is_reported",
     }
 )
-"""Top-level keys that state a finding instead of holding one.
+"""Top-level keys shaped like a sentence, which is a signal and not a verdict.
 
-The clearest of them has already come out: a key spelling which blocks of this
-unit are a window put the fact in the key, so a reader had to know the answer in
-order to ask the question, and the next unit -- whose window, if it has one, is
-at other blocks -- would spell it differently. A consumer would then match key
-names per unit rather than read a value, which is the archive's own rule about
-one unit's findings turned on its own records. It is now a `findings` entry whose
-kind is the question and whose fields are this unit's answer.
+The defect this guards against is a key that spells this unit's answer: a reader
+has to know the answer in order to ask the question, and the next unit -- whose
+window, if it has one, is at other blocks -- spells the same question
+differently. A consumer would then match key names per unit rather than read a
+value, which is the archive's own rule about one unit's findings turned on its
+own records. Three such keys have come out into `findings` entries, whose kind is
+the question and whose fields are this unit's answer to it.
 
-These sixteen are what the archive still carries. Fourteen of them are written by
-a command rather than by hand, so each comes out with its writer and the records
-it has already reached. A seventeenth is a new instance of a known defect and
-fails here.
+The fourteen left are not that. The test cannot tell them apart, because what it
+measures is how many underscores a key has, so it catches verbosity and the
+defect alike. Each of these was read: some are a limitation of the stage rather
+than a finding of it, some are a caveat about how the run was made, and the rest
+name a question whose answer is in the value and whose spelling would not change
+on the next unit. Moving them would put method statements under `findings`, where
+they are not findings, and churn the archive for no reader's benefit.
+
+So a fifteenth entry is a key to go and look at, not a key that is wrong. Read the
+value, decide which of the two it is, and either migrate it or add it here.
 """
 
 

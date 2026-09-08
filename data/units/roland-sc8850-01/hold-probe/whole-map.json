@@ -96796,5 +96796,28 @@
     }
   ],
   "does_not_see_a_mirrored_block": "This does not find a block that mirrors another block. A window that redirects a block while keeping the offset reaches a different cell for each address within it, so its neighbours really are distinct and every region of one passes here as holding independently. What this finds is the other shape: a run of addresses backed by one cell. The two questions are separate and neither answer covers the other; window-probe is what asks the first.",
-  "the_window_in_this_unit_is_such_a_block": "The window at 42 through 47 and 4A through 4F of this unit is the case the line above describes. It redirects the block and keeps the offset, so 42 04 20 and 42 04 21 reach two different cells of the store they point at: neighbours there really are distinct, and every one of those 504 regions passes this run as holding independently without any of them holding anything. What the window is and how it was measured is in window-probe/04-24.json."
+  "findings": [
+    {
+      "kind": "a-window-passes-as-independent-storage",
+      "blocks": [
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "4A",
+        "4B",
+        "4C",
+        "4D",
+        "4E",
+        "4F"
+      ],
+      "regions": 504,
+      "measured_in": [
+        "window-probe/04-24.json"
+      ],
+      "how_it_reads": "The window at 42 through 47 and 4A through 4F of this unit is the case the line above describes. It redirects the block and keeps the offset, so 42 04 20 and 42 04 21 reach two different cells of the store they point at: neighbours there really are distinct, and every one of those 504 regions passes this run as holding independently without any of them holding anything. What the window is and how it was measured is in window-probe/04-24.json."
+    }
+  ]
 }
