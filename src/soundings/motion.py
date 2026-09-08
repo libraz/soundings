@@ -637,7 +637,14 @@ class Motion:
 
     @property
     def answered(self) -> bool:
-        """Whether "nothing moves" is something this pair of takes can support."""
+        """Whether the tracks are worth reading at all, which is not a verdict.
+
+        Everything a `Motion` holds comes from one pass over the takes, and the
+        control is a second pass that this object never sees. So the most this
+        can say is that nothing structural stopped the track from being read: a
+        wrapped one says nothing whichever way it came out. Whether a null is a
+        finding needs the control as well, and that is `is_conclusive`.
+        """
         return self.moves or self.delay_answered
 
     def describe(self) -> str:
@@ -686,7 +693,7 @@ class Motion:
             "level_lfo": self.level.to_json() if self.level else None,
             "moves": self.moves,
             "delay_answered": self.delay_answered,
-            "conclusive": self.answered,
+            "track_readable": self.answered,
             "method": "The wet take is aligned to the dry take as a whole, the best scalar "
             "copy of the dry take is subtracted to leave the effect's return alone, and the "
             "return's delay against the dry signal is measured in independent frames. A "
@@ -696,6 +703,23 @@ class Motion:
             "for the delay when the input's own period folded the track, since a search that "
             "could not have found a line reports the same emptiness as one that looked.",
         }
+
+
+def is_conclusive(found: Motion, vouched: dict) -> bool:
+    """Whether this pair of takes settled anything, the control counted in.
+
+    Stated once because it was stated twice and the two drifted: a per-pair
+    record published a verdict that read only the track, beside the sentence
+    saying the control had failed and nothing there was a finding about the
+    effect. A consumer filtering on the field got the opposite of what the prose
+    beside it said, which is the worse way round -- the field is what gets read.
+
+    A type that moved is settled by having moved; demanding a control of a
+    positive would throw away a real modulator because the search happened to
+    have a narrow band around it. A null needs both: a track that could be read
+    at all, and a ladder that showed this material able to give up a modulation.
+    """
+    return found.moves or (found.answered and vouched["detectable_ms"] is not None)
 
 
 def measure(

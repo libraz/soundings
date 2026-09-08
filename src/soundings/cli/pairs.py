@@ -140,6 +140,11 @@ def cmd_motion(args: argparse.Namespace) -> int:
                 else {}
             ),
             **found.to_json(),
+            # After the track's own fields, because it is the one verdict here
+            # that reads both of them: a track that could be followed says
+            # nothing on its own until the control says this material could have
+            # given a modulation up.
+            "conclusive": motion.is_conclusive(found, vouched),
         },
     )
     return 0 if vouched["detectable_ms"] is not None else 1

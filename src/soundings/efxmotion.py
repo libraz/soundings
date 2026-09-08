@@ -176,18 +176,14 @@ def measure_type(
         type_id=type_id,
         stimulus=stimulus,
         moves=found.moves,
-        # A type that moved is sorted by having moved; the control is what a null
-        # needs, and demanding it of a positive would discard a real modulator
-        # for the search having a narrow band around it.
-        #
-        # `answered` as well as the control, and it is the wrapped track this
+        # The track as well as the control, and it is the wrapped track this
         # guards. A swing wider than half the input's own period folds, and a
         # folded line can vanish -- which is the shape a static effect has. The
         # control cannot stand in for that: its shallowest rungs are too small to
         # fold, so they come back recovered and would sort a wrapped modulator as
         # standing still, with a detectable band that excludes the depth it
         # actually swung.
-        conclusive=found.moves or (found.answered and vouched["detectable_ms"] is not None),
+        conclusive=motion.is_conclusive(found, vouched),
         rate_hz=round(fit.rate_hz, 4) if fit and where else None,
         depth=f"{fit.depth:.4f} {fit.unit}" if fit and where else None,
         shape=("sine" if fit.sinusoidal else f"shape error {fit.shape_error:.2f}")

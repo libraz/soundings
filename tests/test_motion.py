@@ -229,8 +229,10 @@ def test_a_track_that_found_almost_nothing_is_refused() -> None:
 
 
 # A null and an unanswerable question look identical coming out of the tracker:
-# both are an absent LfoFit. Only the wrap flag separates them, and the verdict
-# is where that separation has to land, since the verdict is what gets read.
+# both are an absent LfoFit. The wrap flag is what separates them here, and it
+# has to land in a field rather than in prose, since the field is what gets read.
+# It is not the whole verdict: a track can be readable and the material still
+# have been unable to give a modulation up, which only the control can say.
 
 
 def test_a_wrapped_track_with_no_line_is_not_a_finding_of_no_motion() -> None:
@@ -246,7 +248,7 @@ def test_a_wrapped_track_with_no_line_is_not_a_finding_of_no_motion() -> None:
     assert not found.answered
     assert "no answer" in found.describe()
     assert "nothing moves" not in found.describe()
-    assert found.to_json()["conclusive"] is False
+    assert found.to_json()["track_readable"] is False
 
 
 def test_a_wrapped_track_can_fit_a_rate_that_is_simply_wrong() -> None:
@@ -270,7 +272,32 @@ def test_a_static_effect_on_broadband_material_still_answers() -> None:
     assert found.delay_answered
     assert found.answered
     assert "nothing moves" in found.describe()
-    assert found.to_json()["conclusive"] is True
+    assert found.to_json()["track_readable"] is True
+
+
+def test_a_readable_track_settles_nothing_while_the_control_has_failed() -> None:
+    """The field a consumer filters on has to agree with the sentence beside it.
+
+    A pair whose ladder recovered nothing was never shown able to report a
+    modulation, so its silence is not the effect standing still. The track being
+    followable says only that nothing structural stopped the search -- and a
+    record that called that conclusive published the opposite of its own prose.
+    """
+    dry = source()
+    found = motion.measure(dry, reverberated(dry), SR)
+    assert found.answered and not found.moves
+
+    assert motion.is_conclusive(found, {"detectable_ms": None}) is False
+    assert motion.is_conclusive(found, {"detectable_ms": [3.0, 0.75]}) is True
+
+
+def test_an_effect_that_moved_needs_no_control_to_have_settled_it() -> None:
+    """Having moved is the finding. Demanding a ladder of a positive would throw
+    away a real modulator because the search happened to bracket it narrowly."""
+    dry = source()
+    found = motion.measure(dry, chorused(dry, rate=1.1, depth_ms=3.0, centre_ms=8.0), SR)
+    assert found.moves
+    assert motion.is_conclusive(found, {"detectable_ms": None}) is True
 
 
 def test_a_rate_read_off_a_wrapped_track_still_counts_as_an_answer() -> None:
