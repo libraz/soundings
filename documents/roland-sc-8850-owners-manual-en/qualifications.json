@@ -1,0 +1,116 @@
+{
+  "note": "Hand-kept, not extracted. The notes printed under these tables are prose, and the parser marks the rows they qualify without copying them. What a note states is restated here in this project's own words, together with the part of it a measurement can be held against. Nothing here is a transcription, and nothing here is a measurement.",
+  "why_it_matters": "The initial-value column is not the value a unit powers up holding. It is what the document says the unit is left at, and these notes are where it says which message leaves it there. Read without them, a row like 40 1x 0A reads as a document disagreeing with a measurement -- its cell says 00 and the unit powers up holding 01 -- when what the document actually states is what two of this unit's three resets were measured to do.",
+  "document_id": "roland-sc-8850-owners-manual-en",
+  "qualifications": [
+    {
+      "address": "00 00 7F",
+      "page": 235,
+      "qualifies": "behaviour",
+      "restated": "The document states that receiving the value 00 here does what receiving GS Reset does."
+    },
+    {
+      "address": "40 03 17",
+      "page": 237,
+      "qualifies": "initial",
+      "restated": "The document states elsewhere on this page that selecting an insertion effect type sets that effect's parameters as a group. The initial value in this row is therefore what selecting a type leaves here, not what the unit powers up holding -- and the archive's own effect map records every one of the sixty-five types this unit accepted loading 40 into this address, which is the value stated."
+    },
+    {
+      "address": "40 1x 0A",
+      "page": 237,
+      "qualifies": "initial",
+      "restated": "The document states that this is set off by GM1 System On and by GM2 System On, and on by GS Reset.",
+      "leaves": {
+        "GM1 System On": "00",
+        "GM2 System On": "00",
+        "GS Reset": "01"
+      }
+    },
+    {
+      "address": "40 1x 14",
+      "page": 238,
+      "qualifies": "initial",
+      "restated": "The document states no single initial value for this address. It states one for the SC-8850, SC-88Pro and SC-88 maps, and another for the SC-55 map that depends on whether the part is the drum part."
+    },
+    {
+      "address": "40 1x 15",
+      "page": 238,
+      "qualifies": "initial",
+      "restated": "The document states no single initial value for this address: it depends on the part number."
+    },
+    {
+      "address": "40 1x 23",
+      "page": 238,
+      "qualifies": "initial",
+      "restated": "The document states that this is set off by GM1 System On, and on by GS Reset and by GM2 System On.",
+      "leaves": {
+        "GM1 System On": "00",
+        "GM2 System On": "01",
+        "GS Reset": "01"
+      }
+    },
+    {
+      "address": "40 1x 24",
+      "page": 238,
+      "qualifies": "behaviour",
+      "restated": "The document states that while this is off, a Bank Select LSB message is treated as though its value were 00 whatever it carries."
+    },
+    {
+      "address": "40 4x 00",
+      "page": 240,
+      "qualifies": "initial",
+      "restated": "The document states that GS Reset leaves this at 00.",
+      "leaves": {
+        "GS Reset": "00"
+      }
+    }
+  ],
+  "not_restated": [
+    {
+      "page": 234,
+      "about": "how a received string is displayed, and how the dot data maps onto the display",
+      "why": "describes the front panel rather than anything a message can be held against"
+    },
+    {
+      "page": 235,
+      "about": "which MIDI port a block receives channel messages on",
+      "why": "advice about how to set the unit up, not a statement about what an address does"
+    },
+    {
+      "page": 235,
+      "about": "two cross-references to other pages",
+      "why": "a pointer rather than a claim"
+    },
+    {
+      "page": 235,
+      "about": "REVERB MACRO and REVERB CHARACTER as macro parameters",
+      "why": "explains what selecting a type does to other parameters; the archive measures the parameters themselves rather than the grouping"
+    },
+    {
+      "page": 236,
+      "about": "CHORUS MACRO and DELAY MACRO as macro parameters, and how DELAY TIME CENTER and the two ratios relate",
+      "why": "the same: a relation between stated values rather than a claim about a message"
+    },
+    {
+      "page": 237,
+      "about": "a cross-reference to the pages listing the effects and their parameters",
+      "why": "a pointer rather than a claim. The note beside it, that selecting an effect type sets the effect's parameters as a group, is restated above against 40 03 17: it is what makes that row's initial value comparable with the archive's effect map rather than with a power-on reading"
+    },
+    {
+      "page": 238,
+      "about": "what ASSIGN MODE, the drum map parameter and PITCH OFFSET FINE are for",
+      "why": "explains the purpose of a parameter; the archive measures what it does"
+    },
+    {
+      "page": 239,
+      "about": "what SCALE TUNING adjusts",
+      "why": "explains the purpose of a parameter"
+    },
+    {
+      "page": 240,
+      "about": "that the LFO parameters may not always give the intended effect, that changing the drum set initialises the drum setup parameters, and that a drum instrument cannot use chorus send and delay send at once",
+      "why": "these state behaviour and are worth measuring, but the document attaches them to a table rather than to one address, and this file is keyed by address. They are named here so that they are not lost, and belong in the archive as behaviours once something asks about them."
+    }
+  ],
+  "qualifies_note": "Each entry says what its note qualifies. `initial` means the note is about the initial value, so the value in that cell is not the whole of what the document states there and no verdict is put on it. `behaviour` means the note is about what the setting does, which leaves the initial value comparable as printed -- a note is not a reason to stop comparing something it says nothing about."
+}
