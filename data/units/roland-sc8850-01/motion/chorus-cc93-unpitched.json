@@ -1,0 +1,98 @@
+{
+  "dry": ".cache/takes/cc93-effect/unpitched-0-00.wav",
+  "wet": ".cache/takes/cc93-effect/unpitched-100-00.wav",
+  "sample_rate": 48000,
+  "searched_rate_hz": [
+    0.05,
+    20.0
+  ],
+  "lead_s": 0.6,
+  "positive_control": {
+    "injected_rate_hz": 1.3,
+    "injected_depths_ms": [
+      24.0,
+      12.0,
+      6.0,
+      3.0,
+      1.5,
+      0.75,
+      0.375
+    ],
+    "return_level_db": -42.21,
+    "no_return_to_carry_a_control": false,
+    "attempts": [
+      {
+        "injected_depth_ms": 24.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 12.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 6.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 3.0,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 1.5,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.75,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.375,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      }
+    ],
+    "detectable_ms": null,
+    "detectable_why": "No rung of the ladder recovered, so these takes have no measured sensitivity and the band is absent rather than wide. What that silence is not is a reason: the ladder closes at both ends and for different ones. Below it there is too little return to follow. Above it the delay moves too far inside a single tracking frame, which smears that frame's correlation peak until nothing clears the confidence threshold. A ladder that failed at every depth failed for at least one of those and does not say which, so it cannot be read as the return having been too quiet.",
+    "recovered": false,
+    "tolerance": 0.25,
+    "why": "Modulations of known rate and a ladder of known depths were built from this run's own dry take and put through the same tracker, each at the level the real return was measured to have. Without it a null here is unreadable: a track that found no line because the effect stands still and one that found no line because the tracker could not follow it are the same empty result, and the second is not rare -- a quiet send, a diffuse return or a short take all look like it. What the ladder adds is the bound the null holds inside. It is a bound on a null and only on a null: where the effect already moves, the sweep is added to a motion that was there, and a recovered line cannot be told from the one the effect was making anyway."
+  },
+  "control_failed": "No injected swing was recovered at any depth on the ladder, so this pair of takes was never shown able to report a modulation at all. Nothing here is a finding about the effect: an effect that moves and an effect that stands still would both be reported as standing still.",
+  "track": {
+    "frames": 597,
+    "frames_found": 195,
+    "coverage": 0.327,
+    "frame_rate_hz": 200.0,
+    "searched_ms": [
+      0.0,
+      60.0
+    ],
+    "excursion_ms": 59.507,
+    "input_repeats_every_ms": 10.085,
+    "input_periodicity": 0.384,
+    "may_have_wrapped": false,
+    "trigger_scatter_ms": -3.207,
+    "noise_floor_db": -109.98,
+    "frames_below_floor": 340,
+    "frames_gated_on_level": "Frames were dropped for holding no signal as well as for finding no peak. The per-frame correlation is normalised, so it says how well two frames match and not how much sound was in them, and a frame of the recorder's own noise matches itself: it clears the confidence gate and reports a delay at whatever lag that noise happened to peak. A take that decays into silence is mostly such frames, and their delays are scattered across the whole searched range, which is enough to bury a real line. Each frame is therefore also required to stand over the noise floor measured in this take's own silent lead-in."
+  },
+  "delay_lfo": null,
+  "level_lfo": null,
+  "moves": false,
+  "delay_answered": true,
+  "conclusive": true,
+  "method": "The wet take is aligned to the dry take as a whole, the best scalar copy of the dry take is subtracted to leave the effect's return alone, and the return's delay against the dry signal is measured in independent frames. A periodic motion is a line in that track's spectrum standing clear of the rest of the searched band. Level is searched the same way, for effects that move no delay. A null names the rates and delays that were looked in, and is withheld for the delay when the input's own period folded the track, since a search that could not have found a line reports the same emptiness as one that looked."
+}

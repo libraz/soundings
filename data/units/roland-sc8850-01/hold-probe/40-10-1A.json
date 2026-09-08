@@ -1,0 +1,50 @@
+{
+  "device_id": "10",
+  "method": "Neighbouring addresses are given different values before any of them is read, and then the whole run is read back. This is what a probe that writes to one address and reads it straight back cannot do: on a window the write points it and the read follows, so the address answers with what it was just given and looks like a store. Written apart from read, a window can only show the value it was given last, and a run of them all answers the same.",
+  "caveat": "Two addresses that answer differently are not one address. That is all this shows. It does not say either of them holds what its own address is supposed to, nor that anything here is used for anything. Neighbours that answer the same are not shown to be one address either: an address bounded to a single value answers with it whichever extreme it was given, so it cannot be told from its neighbour by this and is reported as indistinguishable rather than as shared.",
+  "does_not_see_a_mirrored_block": "This does not find a block that mirrors another block. A window that redirects a block while keeping the offset reaches a different cell for each address within it, so its neighbours really are distinct and every region of one passes here as holding independently. What this finds is the other shape: a run of addresses backed by one cell. The two questions are separate and neither answer covers the other; window-probe is what asks the first.",
+  "verdicts": {
+    "every address answered differently from its neighbours": 1
+  },
+  "regions": [
+    {
+      "start": "40 10 1A",
+      "length": 12,
+      "addresses_asked": 12,
+      "distinct_values_read_back": 4,
+      "kept_exactly_what_they_were_given": 9,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 10 1A": "00",
+        "40 10 1B": "7F",
+        "40 10 1C": "00",
+        "40 10 1D": "7F",
+        "40 10 1E": "00",
+        "40 10 1F": "7F",
+        "40 10 20": "00",
+        "40 10 21": "7F",
+        "40 10 22": "00",
+        "40 10 23": "7F",
+        "40 10 24": "00",
+        "40 10 25": "7F"
+      },
+      "read_back": {
+        "40 10 1A": "00",
+        "40 10 1B": "7F",
+        "40 10 1C": "00",
+        "40 10 1D": "7F",
+        "40 10 1E": "00",
+        "40 10 1F": "5F",
+        "40 10 20": "00",
+        "40 10 21": "7F",
+        "40 10 22": "00",
+        "40 10 23": "01",
+        "40 10 24": "00",
+        "40 10 25": "01"
+      }
+    }
+  ]
+}

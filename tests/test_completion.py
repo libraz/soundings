@@ -16,7 +16,8 @@ from soundings import completion
 
 
 def _write(unit: Path, name: str, payload: dict) -> None:
-    unit.mkdir(parents=True, exist_ok=True)
+    """A record at its path under the unit, which is a stage's directory and a name."""
+    (unit / name).parent.mkdir(parents=True, exist_ok=True)
     (unit / name).write_text(json.dumps(payload))
 
 
@@ -54,7 +55,7 @@ def test_a_stage_whose_bar_is_about_controls_is_not_passed_by_a_file_being_there
     tmp_path,
 ) -> None:
     """A file listing cannot see whether a null carried its bound."""
-    _write(tmp_path, "reset-probe-wholemap.json", {"resets": []})
+    _write(tmp_path, "reset-probe/whole-map.json", {"resets": []})
     stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
     assert stages["resets"]["verdict"] == completion.UNDECIDED
 
@@ -62,10 +63,10 @@ def test_a_stage_whose_bar_is_about_controls_is_not_passed_by_a_file_being_there
 def test_a_whole_map_stage_is_short_until_it_covers_the_map(tmp_path) -> None:
     _write(
         tmp_path,
-        "address-map.json",
+        "sweep/whole-map.json",
         {"complete": True, "trustworthy": True, "regions": _regions(("40 11", [47, 9]))},
     )
-    _write(tmp_path, "write-probe-wholemap.json", {"regions": [{"start": "40 11 00"}]})
+    _write(tmp_path, "write-probe/whole-map.json", {"regions": [{"start": "40 11 00"}]})
     stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
     assert stages["accepted values"]["verdict"] == completion.UNMET
     assert stages["accepted values"]["remaining"] == {"regions not covered": 1}
@@ -78,7 +79,7 @@ def test_blocks_of_one_shape_are_one_kind_so_a_window_is_not_counted_twelve_time
     blocks = [(f"4{n:X} 01", [2, 64]) for n in range(1, 13)]
     _write(
         tmp_path,
-        "address-map.json",
+        "sweep/whole-map.json",
         {"complete": True, "trustworthy": True, "regions": _regions(*blocks)},
     )
     kinds = completion.block_kinds(tmp_path)
@@ -91,14 +92,14 @@ def test_blocks_of_one_shape_are_one_kind_so_a_window_is_not_counted_twelve_time
 def test_a_swept_block_answers_for_every_block_of_its_shape(tmp_path) -> None:
     _write(
         tmp_path,
-        "address-map.json",
+        "sweep/whole-map.json",
         {
             "complete": True,
             "trustworthy": True,
             "regions": _regions(("40 11", [47, 9]), ("40 12", [47, 9]), ("40 01", [16, 24])),
         },
     )
-    _write(tmp_path, "audible-part-1.json", {"block": "40 11"})
+    _write(tmp_path, "block/40-11.json", {"block": "40 11"})
     stage = completion.whole_blocks(tmp_path)
     assert stage.verdict == completion.UNMET
     assert stage.remaining["addresses in one block of each"] == 40
@@ -109,22 +110,22 @@ def test_an_effect_screen_that_admits_every_type_has_bounded_nothing(tmp_path) -
     """The count of parameters left to ask must not fall because a type was audible."""
     _write(
         tmp_path,
-        "efx-type-map.json",
+        "efx-map/types.json",
         {"accepted": 2, "effects": [{"parameters": [0] * 20}, {"parameters": [0] * 20}]},
     )
-    _write(tmp_path, "transfer-input.json", {"answer": "no"})
-    _write(tmp_path, "efx-motion.json", {"types": [{"type": "00 00", "audible": True}]})
+    _write(tmp_path, "transfer/analogue-input.json", {"answer": "no"})
+    _write(tmp_path, "efx-motion/tracked.json", {"types": [{"type": "00 00", "audible": True}]})
     stage = completion.effect_response(tmp_path)
     assert stage.verdict == completion.UNMET
     assert stage.remaining == {"effect parameters to screen": 40}
 
 
 def test_a_parameter_carrying_its_own_verdict_is_counted(tmp_path) -> None:
-    _write(tmp_path, "efx-type-map.json", {"accepted": 1, "effects": [{"parameters": [0, 0]}]})
-    _write(tmp_path, "transfer-input.json", {"answer": "no"})
+    _write(tmp_path, "efx-map/types.json", {"accepted": 1, "effects": [{"parameters": [0, 0]}]})
+    _write(tmp_path, "transfer/analogue-input.json", {"answer": "no"})
     _write(
         tmp_path,
-        "audible-efx-00-00.json",
+        "efx-params/00-00.json",
         {
             "parameters": [
                 {"type": "00 00", "parameter": 0, "audible": True},
@@ -140,7 +141,7 @@ def test_the_route_has_to_be_established_before_the_stage_can_be_short_of_it(
     tmp_path,
 ) -> None:
     """Without it, nothing says whether a known signal can be swept through at all."""
-    _write(tmp_path, "efx-type-map.json", {"accepted": 1, "effects": [{"parameters": [0]}]})
+    _write(tmp_path, "efx-map/types.json", {"accepted": 1, "effects": [{"parameters": [0]}]})
     stage = completion.effect_response(tmp_path)
     assert stage.verdict == completion.UNMET
     assert "unasked" in stage.evidence

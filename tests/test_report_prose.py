@@ -41,22 +41,27 @@ PROSE = frozenset(
 )
 
 # Files no command writes, so there is no source literal for them to match.
-# meta.json and measurements.json are kept by hand; power-on-state.json was read
-# out before there was a command that reads a whole map;
-# transfer-input-bypasses-efx.json is one question answered by composing three
-# runs and a control, which no single command produces and whose prose would
-# only pollute the source if it were put there to satisfy this gate.
+# meta.json and measurements.json are kept by hand; power-on/ was read out before
+# there was a command that reads a whole map; transfer/input-bypasses-efx.json is
+# one question answered by composing three runs and a control, which no single
+# command produces and whose prose would only pollute the source if it were put
+# there to satisfy this gate.
+#
+# By path from the unit rather than by file name: several stages each hold a
+# record of the whole map, so they share a file name and differ only in the
+# directory. Keyed by name, one exclusion here would silently excuse them all.
 BY_HAND = {
     "meta.json",
     "measurements.json",
-    "power-on-state.json",
-    "transfer-input-bypasses-efx.json",
+    "index.json",
+    "power-on/whole-map.json",
+    "transfer/input-bypasses-efx.json",
 }
 
 # Written by an earlier form of alias-scan, whose prose the current code no
 # longer contains. Left in the archive because it is a record of a run that
 # happened; excluded here because it does not describe the code as it stands.
-SUPERSEDED = {"cc-aliases-ch1-wholemap.json"}
+SUPERSEDED = {"alias-scan/cc-ch1-whole-map.json"}
 
 
 def _literals() -> set[str]:
@@ -98,14 +103,14 @@ def _prose(obj, path: str = "") -> list[tuple[str, str]]:
     return []
 
 
-# rglob, not glob: the per-address records live in audible/ and were not being
-# checked at all, which is most of the archive by file count.
+# rglob, not glob: every record but the hand-kept ones lives under a stage, which
+# is most of the archive by file count.
 GENERATED = sorted(
-    p for p in UNIT.rglob("*.json") if p.name not in BY_HAND and p.name not in SUPERSEDED
+    p for p in UNIT.rglob("*.json") if str(p.relative_to(UNIT)) not in BY_HAND | SUPERSEDED
 )
 
 
-@pytest.mark.parametrize("path", GENERATED, ids=lambda p: p.name)
+@pytest.mark.parametrize("path", GENERATED, ids=lambda p: str(p))
 def test_published_prose_still_exists_in_the_source(path: Path):
     literals = _literals()
     missing = [

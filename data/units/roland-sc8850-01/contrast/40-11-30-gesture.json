@@ -1,0 +1,292 @@
+{
+  "device_id": "10",
+  "controller": null,
+  "address": "40 11 30",
+  "values": [
+    127,
+    0
+  ],
+  "prepared": [],
+  "stimuli": [
+    {
+      "name": "struck_moved",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "also": [],
+      "moves": [
+        {
+          "kind": "cc",
+          "data": [
+            7,
+            40
+          ],
+          "means": "volume, about 20 dB down",
+          "stores_at_part_offset": [
+            25
+          ]
+        },
+        {
+          "kind": "cc",
+          "data": [
+            10,
+            0
+          ],
+          "means": "panpot hard to one side",
+          "stores_at_part_offset": [
+            28
+          ]
+        },
+        {
+          "kind": "cc",
+          "data": [
+            64,
+            127
+          ],
+          "means": "hold, which outlasts the note on a decaying voice",
+          "stores_at_part_offset": []
+        },
+        {
+          "kind": "pressure",
+          "data": [
+            127
+          ],
+          "means": "channel pressure",
+          "stores_at_part_offset": []
+        }
+      ],
+      "hold_s": 1.0,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "whether the part still acted on a controller, a pedal or channel pressure after the setting was written -- something in the list reached the voice, or nothing did",
+      "blind_to": "which of them it was, since they move together; a pedal released after the note, polyphonic pressure, and portamento -- each needs a note already sounding or a second note to move to, and everything here is sent before the note"
+    },
+    {
+      "name": "struck_retuned",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "also": [],
+      "moves": [
+        {
+          "kind": "bank",
+          "data": [
+            8,
+            0,
+            12
+          ],
+          "means": "a bank select and a program change together, to a tone the tone map records this unit having in bank 8",
+          "stores_at_part_offset": [
+            0,
+            1
+          ]
+        },
+        {
+          "kind": "cc",
+          "data": [
+            11,
+            60
+          ],
+          "means": "expression",
+          "stores_at_part_offset": []
+        },
+        {
+          "kind": "cc",
+          "data": [
+            74,
+            48
+          ],
+          "means": "the filter",
+          "stores_at_part_offset": [
+            50
+          ]
+        },
+        {
+          "kind": "nrpn",
+          "data": [
+            1,
+            33,
+            96
+          ],
+          "means": "a non-registered parameter",
+          "stores_at_part_offset": [
+            51
+          ]
+        },
+        {
+          "kind": "rpn",
+          "data": [
+            0,
+            0,
+            12
+          ],
+          "means": "a registered parameter, the range the bend below is read in",
+          "stores_at_part_offset": []
+        },
+        {
+          "kind": "bend",
+          "data": [
+            8191
+          ],
+          "means": "pitch bend to the top of its range",
+          "stores_at_part_offset": []
+        }
+      ],
+      "hold_s": 1.0,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "whether the part still acted on a bank select, a program change, a registered or non-registered parameter or a bend after the setting was written",
+      "blind_to": "which of them it was; a pedal released after the note, polyphonic pressure, and portamento -- each needs a note already sounding or a second note to move to, and everything here is sent before the note. The program change also decides what voice everything else here is heard through, so a switch that gates it hides the rest behind itself"
+    },
+    {
+      "name": "struck_vibrato",
+      "program": 0,
+      "note": 60,
+      "velocity": 100,
+      "channel": null,
+      "writes": [],
+      "also": [],
+      "moves": [
+        {
+          "kind": "cc",
+          "data": [
+            1,
+            127
+          ],
+          "means": "modulation",
+          "stores_at_part_offset": []
+        }
+      ],
+      "hold_s": 1.0,
+      "captured_s": 3.0,
+      "lead_s": 0.6,
+      "sees": "a switch that gates modulation, which shows as one setting's takes repeating far worse than the other's rather than as a difference between them",
+      "blind_to": "everything else, and not by omission: the modulation raises the yardstick to where no change of any size clears it, so anything not gating the modulation itself answers inconclusive here"
+    }
+  ],
+  "setting_read_back": [
+    {
+      "setting": 127,
+      "reads": "7F",
+      "took": true
+    },
+    {
+      "setting": 0,
+      "reads": "00",
+      "took": true
+    },
+    {
+      "setting": 127,
+      "reads": "7F",
+      "took": true
+    },
+    {
+      "setting": 0,
+      "reads": "00",
+      "took": true
+    },
+    {
+      "setting": 127,
+      "reads": "7F",
+      "took": true
+    },
+    {
+      "setting": 0,
+      "reads": "00",
+      "took": true
+    }
+  ],
+  "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
+  "method": "The same note was played several times under each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings are compared the same way to measure the change. The second must clear the first by the margin, so a unit that repeats badly cannot be read as a parameter that does something. Level is judged separately, because the alignment divides out the best fitting gain and a parameter that only changes level would otherwise leave no trace. A parameter is asked under one or more named stimuli, because a null is a fact about the note as much as about the parameter, and the answer over a set of them is a union.",
+  "label": "address 40 11 30 127 against 0",
+  "audible": true,
+  "heard_by": [
+    "struck_vibrato"
+  ],
+  "not_heard_by": [
+    "struck_moved",
+    "struck_retuned"
+  ],
+  "inconclusive_under": [],
+  "conclusive": true,
+  "verdict_rule": "Audible under any stimulus is audible: one note hearing the change proves the parameter reaches the signal path, and the others failing to hear it says only that they asked the wrong question. The reverse does not hold, so a null carries the list of what was tried. A stimulus whose takes of one setting barely resemble each other is reported as inconclusive rather than as a null, since no change could have cleared that yardstick.",
+  "by_stimulus": [
+    {
+      "label": "address 40 11 30 127 against 0",
+      "stimulus": "program 0, note 60, velocity 100, held 1.00 s, captured 3.0 s, moved: cc 07 28 (volume, about 20 dB down), cc 0A 00 (panpot hard to one side), cc 40 7F (hold, which outlasts the note on a decaying voice), pressure 7F (channel pressure)",
+      "stimulus_name": "struck_moved",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -29.63,
+      "each_setting_unrepeatable_db": [
+        -34.28,
+        null
+      ],
+      "across_setting_residual_db": -31.15,
+      "same_setting_level_db": 0.06,
+      "across_setting_level_db": 0.032,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -37.3,
+      "changed_the_shape": false,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": false,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here.",
+      "beyond_measurement": {
+        "each_setting_unrepeatable_db[1]": "below anything this chain can measure, rather than a figure it measured"
+      },
+      "why_beyond_measurement": "JSON has no infinity and no not-a-number, so a figure that ran off the end of what could be measured is written as null with its direction named here. The three that occur are a level difference where one setting produced no signal at all, a repeatability figure whose residual was entirely accounted for by the noise floor, and a residual there were not enough takes to form. None of them is a missing reading."
+    },
+    {
+      "label": "address 40 11 30 127 against 0",
+      "stimulus": "program 0, note 60, velocity 100, held 1.00 s, captured 3.0 s, moved: bank 08 00 0C (a bank select and a program change together, to a tone the tone map records this unit having in bank 8), cc 0B 3C (expression), cc 4A 30 (the filter), nrpn 01 21 60 (a non-registered parameter), rpn 00 00 0C (a registered parameter, the range the bend below is read in), bend 1FFF (pitch bend to the top of its range)",
+      "stimulus_name": "struck_retuned",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -23.96,
+      "each_setting_unrepeatable_db": [
+        -30.23,
+        -37.71
+      ],
+      "across_setting_residual_db": -24.72,
+      "same_setting_level_db": 0.307,
+      "across_setting_level_db": 0.401,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -42.29,
+      "changed_the_shape": false,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": false,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    },
+    {
+      "label": "address 40 11 30 127 against 0",
+      "stimulus": "program 0, note 60, velocity 100, held 1.00 s, captured 3.0 s, moved: cc 01 7F (modulation)",
+      "stimulus_name": "struck_vibrato",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -9.39,
+      "each_setting_unrepeatable_db": [
+        -10.18,
+        -64.22
+      ],
+      "across_setting_residual_db": -4.77,
+      "same_setting_level_db": 0.507,
+      "across_setting_level_db": 1.843,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -54.12,
+      "changed_the_shape": false,
+      "changed_the_repeatability": true,
+      "changed_the_level": false,
+      "audible": true,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    }
+  ]
+}

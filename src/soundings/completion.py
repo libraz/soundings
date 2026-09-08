@@ -4,6 +4,12 @@ The bar is in the completing-a-unit page. This says where one unit stands agains
 it, so that what is left is read out of the records rather than remembered, and
 so that a stage nobody ran is not mistaken for one that did not apply.
 
+A unit's records sit in a directory named after the command that wrote them, so
+what is looked for here is a stage's directory rather than a file whose name
+happens to start with the right word. The difference matters: a glob over names
+finds whatever a later run chose to call itself, and misses a record that answers
+the stage under another name.
+
 **Every check here is structural**: a file is present, a flag is set, one count
 agrees with another. A structural pass is not a reading of the record's prose.
 Where a criterion turns on something only a reader can settle -- whether a
@@ -64,6 +70,21 @@ def _missing(name: str, file: str) -> Stage:
     return Stage(name, UNMET, f"no {file} in this directory")
 
 
+#: What a stage calls the record that covers the whole of the address map, as
+#: against one covering a block or an address. Several stages have one each.
+WHOLE_MAP = "whole-map.json"
+
+
+def _records(unit: Path, stage: str) -> list[Path]:
+    """Every record one stage left behind, which is its directory's contents.
+
+    A stage that never ran and one whose records were named something else are
+    the same absence here, and that is the intended reading: a record answers for
+    a stage by being filed under it, not by being called after it.
+    """
+    return sorted((unit / stage).glob("*.json"))
+
+
 def identity(unit: Path) -> Stage:
     """The plate, the chain and the reply, or a statement that one is unresolved."""
     meta = _load(unit, "meta.json")
@@ -83,9 +104,9 @@ def identity(unit: Path) -> Stage:
 
 def address_map(unit: Path) -> Stage:
     """The sweep's own account of itself, which is the only one that can be checked."""
-    found = _load(unit, "address-map.json")
+    found = _load(unit, f"sweep/{WHOLE_MAP}")
     if found is None:
-        return _missing("address map", "address-map.json")
+        return _missing("address map", f"sweep/{WHOLE_MAP}")
     if not found.get("complete") or not found.get("trustworthy") or found.get("aborted"):
         return Stage(
             "address map",
@@ -105,9 +126,9 @@ def address_map(unit: Path) -> Stage:
 
 def power_on(unit: Path) -> Stage:
     """A capture with nothing left unread, since an unread region has no baseline."""
-    found = _load(unit, "power-on-state.json")
+    found = _load(unit, f"power-on/{WHOLE_MAP}")
     if found is None:
-        return _missing("power-on state", "power-on-state.json")
+        return _missing("power-on state", f"power-on/{WHOLE_MAP}")
     unread = found.get("regions_unread")
     if unread:
         return Stage(
@@ -125,7 +146,7 @@ def power_on(unit: Path) -> Stage:
 
 def _covers_the_map(unit: Path, file: str, name: str) -> Stage:
     """A whole-map stage is complete when it saw as many regions as the map has."""
-    mapped = _load(unit, "address-map.json")
+    mapped = _load(unit, f"sweep/{WHOLE_MAP}")
     found = _load(unit, file)
     if found is None:
         return _missing(name, file)
@@ -143,21 +164,21 @@ def _covers_the_map(unit: Path, file: str, name: str) -> Stage:
 
 
 def accepted_values(unit: Path) -> Stage:
-    return _covers_the_map(unit, "write-probe-wholemap.json", "accepted values")
+    return _covers_the_map(unit, f"write-probe/{WHOLE_MAP}", "accepted values")
 
 
 def independent_storage(unit: Path) -> Stage:
-    return _covers_the_map(unit, "hold-probe-wholemap.json", "independent storage")
+    return _covers_the_map(unit, f"hold-probe/{WHOLE_MAP}", "independent storage")
 
 
 def tones_and_effects(unit: Path) -> Stage:
     """A tone map per map-select the unit accepts, and every effect type asked."""
-    maps = sorted(unit.glob("tone-map-m*.json"))
-    efx = _load(unit, "efx-type-map.json")
+    maps = _records(unit, "tone-map")
+    efx = _load(unit, "efx-map/types.json")
     if not maps:
-        return _missing("tones and effects", "tone-map-m*.json")
+        return _missing("tones and effects", "tone-map/")
     if efx is None:
-        return _missing("tones and effects", "efx-type-map.json")
+        return _missing("tones and effects", "efx-map/types.json")
     asked, accepted = efx.get("asked"), efx.get("accepted")
     if efx.get("unanswered"):
         return Stage(
@@ -175,9 +196,9 @@ def tones_and_effects(unit: Path) -> Stage:
 
 def repeatability(unit: Path) -> Stage:
     """A floor for this unit on this chain, which every later figure is read against."""
-    floors = sorted(unit.glob("repeatability-*.json"))
+    floors = _records(unit, "repeat")
     if not floors:
-        return _missing("repeatability", "repeatability-*.json")
+        return _missing("repeatability", "repeat/")
     return Stage(
         "repeatability",
         MET,
@@ -201,7 +222,7 @@ def block_kinds(unit: Path) -> dict[tuple, list[str]]:
     channel byte each of them holds, so no two would ever merge.
     """
     shape: dict[str, list[int]] = defaultdict(list)
-    mapped = _load(unit, "address-map.json")
+    mapped = _load(unit, f"sweep/{WHOLE_MAP}")
     for region in (mapped or {}).get("regions", []):
         top, second, _ = region["address"].split()
         shape[f"{top} {second}"].append(region["size"])
@@ -219,11 +240,14 @@ def _kind_name(kind: tuple, blocks: list[str]) -> str:
 
 def whole_blocks(unit: Path) -> Stage:
     """One block of each kind swept in full, the rest named rather than swept."""
-    if _load(unit, "address-map.json") is None:
-        return _missing("whole blocks", "address-map.json")
+    if _load(unit, f"sweep/{WHOLE_MAP}") is None:
+        return _missing("whole blocks", f"sweep/{WHOLE_MAP}")
     swept = set()
-    for path in unit.glob("*.json"):
-        found = _load(unit, path.name)
+    # Over the whole unit rather than one stage: a block is swept by whatever
+    # named a block, and reading only the fold's own directory would miss a
+    # record that covered one on the way to answering something else.
+    for path in unit.rglob("*.json"):
+        found = _load(unit, path.relative_to(unit))
         if isinstance(found, dict) and isinstance(found.get("block"), str):
             swept.add(found["block"])
     kinds = block_kinds(unit)
@@ -255,10 +279,10 @@ def effect_response(unit: Path) -> Stage:
     type has turned nothing away, and the count of parameters left to ask stands
     exactly where it started.
     """
-    efx = _load(unit, "efx-type-map.json")
-    route = [p for p in unit.glob("transfer-*.json") if _load(unit, p.name)]
+    efx = _load(unit, "efx-map/types.json")
+    route = _records(unit, "transfer")
     if efx is None:
-        return _missing("effect response", "efx-type-map.json")
+        return _missing("effect response", "efx-map/types.json")
     if not route:
         return Stage(
             "effect response",
@@ -291,8 +315,8 @@ def _parameters_screened(unit: Path) -> int:
     record that sorts types is not counted here.
     """
     seen = set()
-    for path in unit.glob("*.json"):
-        found = _load(unit, path.name)
+    for path in unit.rglob("*.json"):
+        found = _load(unit, path.relative_to(unit))
         if not isinstance(found, dict):
             continue
         for row in found.get("parameters", []):
@@ -301,16 +325,22 @@ def _parameters_screened(unit: Path) -> int:
     return len(seen)
 
 
-def _by_reading(name: str, unit: Path, files: list[str]) -> Stage:
-    """A stage whose bar is about controls and bounds, which a file listing cannot see."""
-    present = [f for f in files if (unit / f).exists()]
+def _by_reading(name: str, unit: Path, *stages: str) -> Stage:
+    """A stage whose bar is about controls and bounds, which a file listing cannot see.
+
+    Several of these are answered by more than one command -- an audible verdict
+    is reached at an address, at a block and at an effect parameter -- so the
+    directories are given together rather than one line of the bar per command.
+    """
+    present = [p for stage in stages for p in _records(unit, stage)]
+    where = ", ".join(f"{stage}/" for stage in stages)
     if not present:
-        return Stage(name, UNMET, f"none of {', '.join(files)} is in this directory")
+        return Stage(name, UNMET, f"nothing under {where} in this directory")
     return Stage(
         name,
         UNDECIDED,
-        f"{', '.join(present)} present. Whether the controls and the coverage meet "
-        "the bar is read from the record, not from the file being there",
+        f"{len(present)} records under {where}. Whether the controls and the coverage "
+        "meet the bar is read from the record, not from the file being there",
     )
 
 
@@ -323,16 +353,14 @@ def survey(unit: Path) -> dict:
         identity(unit),
         address_map(unit),
         power_on(unit),
-        _by_reading("windows", unit, sorted(p.name for p in unit.glob("*window*.json"))),
+        _by_reading("windows", unit, "window-probe"),
         accepted_values(unit),
         independent_storage(unit),
-        _by_reading("aliases", unit, sorted(p.name for p in unit.glob("*aliases*.json"))),
-        _by_reading("resets", unit, ["reset-probe-wholemap.json", "reset-probe.json"]),
+        _by_reading("aliases", unit, "alias-scan"),
+        _by_reading("resets", unit, "reset-probe"),
         tones_and_effects(unit),
         repeatability(unit),
-        _by_reading(
-            "audible differences", unit, sorted(p.name for p in unit.glob("audible-*.json"))
-        ),
+        _by_reading("audible differences", unit, "contrast", "block", "efx-params"),
         whole_blocks(unit),
         effect_response(unit),
     ]

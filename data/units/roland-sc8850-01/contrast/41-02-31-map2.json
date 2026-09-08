@@ -1,0 +1,65 @@
+{
+  "device_id": "10",
+  "controller": null,
+  "address": "41 02 31",
+  "values": [
+    0,
+    127
+  ],
+  "prepared": [],
+  "stimuli": [
+    {
+      "name": "struck_kit_map2",
+      "program": 0,
+      "note": 49,
+      "velocity": 100,
+      "channel": 1,
+      "writes": [
+        [
+          "40 12 15",
+          2
+        ]
+      ],
+      "hold_s": 0.15,
+      "captured_s": 4.0,
+      "lead_s": 0.6,
+      "sees": "whether an address in the second half of a drum block is read, which the first-map form cannot ask at all",
+      "blind_to": "everything the first-map form is blind to, and additionally anything the two maps happen to agree on, which at power-on is most of them"
+    }
+  ],
+  "method": "The same note was played several times under each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings are compared the same way to measure the change. The second must clear the first by the margin, so a unit that repeats badly cannot be read as a parameter that does something. Level is judged separately, because the alignment divides out the best fitting gain and a parameter that only changes level would otherwise leave no trace. A parameter is asked under one or more named stimuli, because a null is a fact about the note as much as about the parameter, and the answer over a set of them is a union.",
+  "label": "address 41 02 31 0 against 127",
+  "audible": false,
+  "heard_by": [],
+  "not_heard_by": [
+    "struck_kit_map2"
+  ],
+  "inconclusive_under": [],
+  "conclusive": true,
+  "verdict_rule": "Audible under any stimulus is audible: one note hearing the change proves the parameter reaches the signal path, and the others failing to hear it says only that they asked the wrong question. The reverse does not hold, so a null carries the list of what was tried. A stimulus whose takes of one setting barely resemble each other is reported as inconclusive rather than as a null, since no change could have cleared that yardstick.",
+  "by_stimulus": [
+    {
+      "label": "address 41 02 31 0 against 127",
+      "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 2",
+      "stimulus_name": "struck_kit_map2",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -40.18,
+      "each_setting_unrepeatable_db": [
+        -49.73,
+        -42.71
+      ],
+      "across_setting_residual_db": -40.91,
+      "same_setting_level_db": 0.011,
+      "across_setting_level_db": 0.005,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -53.49,
+      "changed_the_shape": false,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": false,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    }
+  ]
+}

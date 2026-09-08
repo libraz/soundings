@@ -1,8 +1,9 @@
-"""Where a unit stands against the bar for a finished one.
+"""What a unit's directory holds, and where it stands against the bar.
 
-The only command whose subject is a unit rather than a run. Everything else here
-reads what one measurement left behind; this counts a whole directory of them
-against the stages a unit is finished when it has, and names what is left.
+The two commands whose subject is a unit rather than a run. Everything else here
+reads what one measurement left behind; these read a whole directory of them --
+one listing what is in it, the other counting it against the stages a unit is
+finished when it has, and naming what is left.
 
 It exits non-zero while the unit is short of the bar, which is what lets the
 question be asked mechanically rather than read: a stage quietly missing from a
@@ -26,6 +27,15 @@ def register(sub) -> None:
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_complete)
 
+    p = sub.add_parser(
+        "index",
+        help="list what a unit's directory holds, one entry per record, grouped by the "
+        "stage that wrote it, with no machine attached",
+    )
+    p.add_argument("unit", help="a directory under data/units")
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_index)
+
 
 def cmd_complete(args: argparse.Namespace) -> int:
     """Say where a unit stands, and fail while it is short of the bar.
@@ -39,3 +49,13 @@ def cmd_complete(args: argparse.Namespace) -> int:
     print(completion.render(found))
     report.write_json(args.out, found)
     return 0 if found["complete"] else 1
+
+
+def cmd_index(args: argparse.Namespace) -> int:
+    """List a unit's records, generated from the records themselves."""
+    from .. import index
+
+    found = index.survey(args.unit)
+    print(index.render(found))
+    report.write_json(args.out, found)
+    return 0

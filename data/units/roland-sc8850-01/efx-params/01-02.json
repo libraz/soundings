@@ -1,0 +1,575 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-params",
+    "invocation": [
+      "efx-params",
+      ".cache/efx-params-01-02-inmap",
+      "--slots",
+      "40 03 03",
+      "40 03 04",
+      "40 03 05",
+      "40 03 06",
+      "40 03 07",
+      "40 03 08",
+      "40 03 09",
+      "40 03 0A",
+      "40 03 0B",
+      "40 03 0C",
+      "40 03 0D",
+      "40 03 0E",
+      "40 03 0F",
+      "40 03 10",
+      "40 03 11",
+      "40 03 12",
+      "40 03 13",
+      "40 03 14",
+      "40 03 15",
+      "40 03 16",
+      "--type",
+      "01 02",
+      "--types-from",
+      "data/units/roland-sc8850-01/efx-map/types.json",
+      "--control",
+      ".cache/efx-params-01-02-inmap/control-routing.json",
+      "--prepare",
+      "40 03 00=01 02",
+      "--prepare",
+      "40 42 22=01",
+      "--out",
+      "data/units/roland-sc8850-01/efx-params/01-02.json"
+    ],
+    "measured_at": "2026-09-08T01:50:09+00:00",
+    "midi_device_id": "10"
+  },
+  "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
+  "type": "01 02",
+  "prepared": [
+    {
+      "address": "40 03 00",
+      "bytes": "01 02"
+    },
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    }
+  ],
+  "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
+  "method": "Each of the type's parameter addresses was written at two settings, four takes each, and the takes of one setting compared with each other to measure what the unit fails to repeat before the two settings were compared with each other. The change has to clear that by the margin. Level is judged apart from shape, because the alignment divides out the best fitting gain and a parameter that only moves the level would otherwise read as no change at all. The accepted range for each address was measured with this type loaded rather than carried from a probe taken with no effect loaded, since what an address accepts can depend on what is in it.",
+  "positive_control": {
+    "address": "40 42 22",
+    "values": [
+      0,
+      1
+    ],
+    "audible": true,
+    "shape_db": -4.41,
+    "repeatability_db": -31.99,
+    "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
+  },
+  "results": {
+    "audible": 5,
+    "not audible under the note asked": 15,
+    "asked": 20
+  },
+  "coverage": {
+    "slots": 20,
+    "answered": 20,
+    "never_asked": [],
+    "outside_the_slots": []
+  },
+  "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
+  "why_slots_in_order": "Which slot each address is was given to the fold in order, not inferred from the records that happened to be present. A slot read off the sorted file names moves every later parameter up by one whenever a record is missing, and each of them is then reported against the default belonging to the slot before it -- a wrong number in the archive rather than a missing one.",
+  "parameters": [
+    {
+      "type": "01 02",
+      "parameter": 0,
+      "address": "40 03 03",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -34.91,
+        -41.47
+      ],
+      "same_setting_residual_db": -32.54,
+      "across_setting_residual_db": -2.39,
+      "across_setting_level_db": -4.473,
+      "noise_floor_db": -60.9,
+      "changed_the_shape": true,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 1,
+      "address": "40 03 04",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -42.56,
+        -46.1
+      ],
+      "same_setting_residual_db": -37.73,
+      "across_setting_residual_db": -4.39,
+      "across_setting_level_db": -1.707,
+      "noise_floor_db": -56.51,
+      "changed_the_shape": true,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 2,
+      "address": "40 03 05",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -33.09,
+        -34.94
+      ],
+      "same_setting_residual_db": -32.0,
+      "across_setting_residual_db": -32.91,
+      "across_setting_level_db": 0.014,
+      "noise_floor_db": -56.49,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 3,
+      "address": "40 03 06",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -31.87,
+        -40.61
+      ],
+      "same_setting_residual_db": -31.55,
+      "across_setting_residual_db": -33.75,
+      "across_setting_level_db": 0.016,
+      "noise_floor_db": -56.37,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 4,
+      "address": "40 03 07",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -36.04,
+        -40.06
+      ],
+      "same_setting_residual_db": -35.02,
+      "across_setting_residual_db": -35.61,
+      "across_setting_level_db": -0.021,
+      "noise_floor_db": -56.43,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 5,
+      "address": "40 03 08",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -39.21,
+        -39.11
+      ],
+      "same_setting_residual_db": -31.94,
+      "across_setting_residual_db": -32.99,
+      "across_setting_level_db": -0.006,
+      "noise_floor_db": -56.47,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 6,
+      "address": "40 03 09",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.8,
+        -36.67
+      ],
+      "same_setting_residual_db": -31.98,
+      "across_setting_residual_db": -31.77,
+      "across_setting_level_db": -0.007,
+      "noise_floor_db": -56.45,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 7,
+      "address": "40 03 0A",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.48,
+        -36.5
+      ],
+      "same_setting_residual_db": -31.97,
+      "across_setting_residual_db": -33.97,
+      "across_setting_level_db": -0.004,
+      "noise_floor_db": -56.39,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 8,
+      "address": "40 03 0B",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.83,
+        -44.68
+      ],
+      "same_setting_residual_db": -31.73,
+      "across_setting_residual_db": -35.07,
+      "across_setting_level_db": -0.014,
+      "noise_floor_db": -56.42,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 9,
+      "address": "40 03 0C",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -31.99,
+        -41.88
+      ],
+      "same_setting_residual_db": -31.53,
+      "across_setting_residual_db": -34.34,
+      "across_setting_level_db": -0.016,
+      "noise_floor_db": -56.45,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 10,
+      "address": "40 03 0D",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -35.46,
+        -31.71
+      ],
+      "same_setting_residual_db": -31.58,
+      "across_setting_residual_db": -31.45,
+      "across_setting_level_db": -0.012,
+      "noise_floor_db": -56.44,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 11,
+      "address": "40 03 0E",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -34.1,
+        -34.03
+      ],
+      "same_setting_residual_db": -31.71,
+      "across_setting_residual_db": -32.33,
+      "across_setting_level_db": -0.014,
+      "noise_floor_db": -56.38,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 12,
+      "address": "40 03 0F",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -38.48,
+        -39.33
+      ],
+      "same_setting_residual_db": -34.99,
+      "across_setting_residual_db": -32.15,
+      "across_setting_level_db": 0.011,
+      "noise_floor_db": -56.38,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 13,
+      "address": "40 03 10",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.05,
+        -36.25
+      ],
+      "same_setting_residual_db": -31.7,
+      "across_setting_residual_db": -35.4,
+      "across_setting_level_db": 0.014,
+      "noise_floor_db": -56.31,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 14,
+      "address": "40 03 11",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.38,
+        -36.38
+      ],
+      "same_setting_residual_db": -31.72,
+      "across_setting_residual_db": -38.05,
+      "across_setting_level_db": 0.017,
+      "noise_floor_db": -56.24,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 15,
+      "address": "40 03 12",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -37.11,
+        -32.14
+      ],
+      "same_setting_residual_db": -31.78,
+      "across_setting_residual_db": -31.71,
+      "across_setting_level_db": 0.007,
+      "noise_floor_db": -56.51,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 16,
+      "address": "40 03 13",
+      "default": 67,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -34.46,
+        -46.08
+      ],
+      "same_setting_residual_db": -32.94,
+      "across_setting_residual_db": -19.07,
+      "across_setting_level_db": 0.013,
+      "noise_floor_db": -56.45,
+      "changed_the_shape": true,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 17,
+      "address": "40 03 14",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -28.79,
+        -37.81
+      ],
+      "same_setting_residual_db": -28.6,
+      "across_setting_residual_db": -3.6,
+      "across_setting_level_db": -9.718,
+      "noise_floor_db": -63.34,
+      "changed_the_shape": true,
+      "changed_the_level": true
+    },
+    {
+      "type": "01 02",
+      "parameter": 18,
+      "address": "40 03 15",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -39.1,
+        -42.96
+      ],
+      "same_setting_residual_db": -36.53,
+      "across_setting_residual_db": -31.71,
+      "across_setting_level_db": -0.005,
+      "noise_floor_db": -56.51,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 02",
+      "parameter": 19,
+      "address": "40 03 16",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -45.29,
+        null
+      ],
+      "same_setting_residual_db": -0.37,
+      "across_setting_residual_db": -0.0,
+      "across_setting_level_db": -58.475,
+      "noise_floor_db": -56.39,
+      "changed_the_shape": false,
+      "changed_the_level": true,
+      "why": "Heard on the level and not on the shape: once the best fitting gain is divided out the two settings are the same sound. What this address moves is how much of it there is."
+    }
+  ],
+  "not_established": [
+    "What any audible parameter is, or by how much it moves anything. Two settings were compared and no curve was measured between them.",
+    "Anything about the types not asked. The parameter addresses are shared across types and what each of them holds is not, so this is one type's answer at those addresses.",
+    "That a null does nothing. A parameter heard only on a longer note, at another velocity, under another type's settings, or between two values neither of which is an end of its range would read as inaudible here.",
+    "That a parameter which broke its own yardstick does nothing besides. Whatever else it does sits behind the thing that removed the yardstick."
+  ],
+  "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be one. An address asked a second time names the pair that was withdrawn and why.",
+  "found_by": "Asking the parameters of one type, after the sort that was meant to bound them passed every type the unit has."
+}

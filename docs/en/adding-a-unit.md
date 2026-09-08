@@ -11,6 +11,25 @@ measured from it lives in `data/units/<unit-id>/`. The trailing number
 distinguishes two units of the same model, which is the case the archive is
 built for: a measurement describes the unit it was taken from, not the model.
 
+Inside that directory there is one subdirectory per stage, named after the
+command that wrote the records in it — `sweep/`, `write-probe/`, `alias-scan/`,
+`contrast/`, `block/`, and the rest of the commands `soundings --help` lists. A
+record is filed under the command that produced it and named after what it is
+about: the address, block, effect type or controller the run asked at, with the
+hex cased as the records write it. A run covering the whole of the address map
+rather than one part of it is `whole-map.json`.
+
+Two files sit above the stages, because they are the unit rather than a
+measurement of it: `meta.json`, which is its identity, and `measurements.json`,
+which is the behaviours established about it and is kept by hand. A third,
+`index.json`, lists everything in the directory and is generated —
+`soundings index data/units/<unit-id> --out data/units/<unit-id>/index.json`
+rewrites it, and a test fails while it disagrees with what is there.
+
+Nothing is named after what it found. A file called after a verdict has to be
+believed before it can be opened, it spells the finding differently on the next
+unit, and it stops being true if the record is ever reissued.
+
 ## Before power-on
 
 **Read the rear-panel rating plate and record it verbatim.** Model suffixes and

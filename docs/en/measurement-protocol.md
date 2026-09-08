@@ -45,7 +45,7 @@ record.
 ### 2. Address map
 
 ```sh
-rye run soundings sweep --out data/units/<unit-id>/address-map.json
+rye run soundings sweep --out data/units/<unit-id>/sweep/whole-map.json
 ```
 
 Asks the unit which addresses answer. The map is what the unit answered, not
@@ -55,8 +55,8 @@ region absent from the map is absent from everything measured afterwards.
 ### 3. Power-on state
 
 ```sh
-rye run soundings power-on --map data/units/<unit-id>/address-map.json \
-  --unit-id <unit-id> --out data/units/<unit-id>/power-on-state.json
+rye run soundings power-on --map data/units/<unit-id>/sweep/whole-map.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/whole-map.json
 ```
 
 Reads the space twice over and writes nothing. What this produces is the state
@@ -98,8 +98,8 @@ over under names that keep none of it.
 ### 5. Accepted values
 
 ```sh
-rye run soundings write-probe --map data/units/<unit-id>/address-map.json \
-  --resume --out data/units/<unit-id>/write-probe-wholemap.json
+rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
+  --resume --out data/units/<unit-id>/write-probe/whole-map.json
 ```
 
 Writes each byte on its own and reads it back, recording what each address
@@ -114,8 +114,8 @@ by this stage.
 ### 6. Independent storage
 
 ```sh
-rye run soundings hold-probe --map data/units/<unit-id>/address-map.json \
-  --out data/units/<unit-id>/hold-probe-wholemap.json
+rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
+  --out data/units/<unit-id>/hold-probe/whole-map.json
 ```
 
 Gives neighbouring addresses different values before reading any of them back,
@@ -130,8 +130,8 @@ asks.
 ### 7. Aliases
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
+rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+  --kind cc --out data/units/<unit-id>/alias-scan/cc-ch1.json
 ```
 
 Sends each message of a family and diffs the address space around it, which
@@ -148,18 +148,18 @@ whether a location has a third way in. It takes them from that unit's own
 records:
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --kind address --addresses-from data/units/<unit-id>/cc-aliases-ch1.json \
-  --out data/units/<unit-id>/sysex-aliases-ch1.json
+rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+  --kind address --addresses-from data/units/<unit-id>/alias-scan/cc-ch1.json \
+  --out data/units/<unit-id>/alias-scan/sysex-ch1.json
 ```
 
 ### 8. Resets
 
 ```sh
-rye run soundings reset-probe --baseline data/units/<unit-id>/power-on-state.json \
-  --map data/units/<unit-id>/address-map.json \
-  --write-probe data/units/<unit-id>/write-probe-wholemap.json \
-  --out data/units/<unit-id>/reset-probe.json
+rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/whole-map.json \
+  --map data/units/<unit-id>/sweep/whole-map.json \
+  --write-probe data/units/<unit-id>/write-probe/whole-map.json \
+  --out data/units/<unit-id>/reset-probe/whole-map.json
 ```
 
 Breaks the state before each reset and reads the space afterwards, which
@@ -175,8 +175,8 @@ unit.
 ### 9. Tones and effects
 
 ```sh
-rye run soundings tone-map --out data/units/<unit-id>/tone-map-m0.json
-rye run soundings efx-map --out data/units/<unit-id>/efx-type-map.json
+rye run soundings tone-map --out data/units/<unit-id>/tone-map/map-select-0.json
+rye run soundings efx-map --out data/units/<unit-id>/efx-map/types.json
 ```
 
 Asks for each tone and each insertion effect and reads back whether it was
@@ -188,7 +188,7 @@ nothing to caveat.
 
 ```sh
 rye run soundings repeat --audio "<audio interface>" \
-  --out data/units/<unit-id>/repeatability-p0.json
+  --out data/units/<unit-id>/repeat/program-0.json
 ```
 
 Plays one stimulus twice and measures how closely the two takes agree. That
@@ -202,7 +202,7 @@ per unit and re-measured whenever the chain changes.
 
 ```sh
 rye run soundings contrast --cc 91 --audio "<audio interface>" \
-  --out data/units/<unit-id>/audible-cc91.json
+  --out data/units/<unit-id>/contrast/cc-91.json
 ```
 
 Compares two settings of one parameter against the repeatability floor, which
@@ -216,10 +216,10 @@ and an effect's tail. `motion` and `decay` read takes and need no unit attached.
 ### 12. Whole blocks
 
 ```sh
-rye run soundings plan data/units/<unit-id>/write-probe-wholemap.json "40 11" \
+rye run soundings plan data/units/<unit-id>/write-probe/whole-map.json "40 11" \
   --out plan-40-11.json
 rye run soundings block plan-40-11.json <plain records> --gesture <gesture records> \
-  --balance <balance record> --out data/units/<unit-id>/audible-part-1.json
+  --balance <balance record> --out data/units/<unit-id>/block/40-11.json
 ```
 
 Asks every address in one block whether changing it changes the sound, rather

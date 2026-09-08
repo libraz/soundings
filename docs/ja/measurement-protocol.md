@@ -30,7 +30,7 @@ Identity Request に対してユニットが返すものを記録します。返
 ### 2. アドレスマップ
 
 ```sh
-rye run soundings sweep --out data/units/<unit-id>/address-map.json
+rye run soundings sweep --out data/units/<unit-id>/sweep/whole-map.json
 ```
 
 どのアドレスが応答するかをユニットに問います。このマップは文書が列挙するものではなくユニットが答えたものであり、以降の段階はこれを狙って実行されます。マップに無い領域は、以降に測定されるすべてから外れます。
@@ -38,8 +38,8 @@ rye run soundings sweep --out data/units/<unit-id>/address-map.json
 ### 3. 電源投入時の状態
 
 ```sh
-rye run soundings power-on --map data/units/<unit-id>/address-map.json \
-  --unit-id <unit-id> --out data/units/<unit-id>/power-on-state.json
+rye run soundings power-on --map data/units/<unit-id>/sweep/whole-map.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/whole-map.json
 ```
 
 空間を 2 度読み取り、何も書き込みません。得られるのは、ユニットが電源投入時に置かれている状態です。
@@ -63,8 +63,8 @@ rye run soundings window-probe --stores <addr> <addr> <candidate>...
 ### 5. 受理される値
 
 ```sh
-rye run soundings write-probe --map data/units/<unit-id>/address-map.json \
-  --resume --out data/units/<unit-id>/write-probe-wholemap.json
+rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
+  --resume --out data/units/<unit-id>/write-probe/whole-map.json
 ```
 
 各バイトを単独で書いて読み戻し、そのアドレスが何を受理し、何をクランプし、何を拒否するかを記録して、元に戻します。領域は終わった順に書き出されるため、中断した実行は最後に完了した領域から再開できます。
@@ -74,8 +74,8 @@ rye run soundings write-probe --map data/units/<unit-id>/address-map.json \
 ### 6. 独立した格納
 
 ```sh
-rye run soundings hold-probe --map data/units/<unit-id>/address-map.json \
-  --out data/units/<unit-id>/hold-probe-wholemap.json
+rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
+  --out data/units/<unit-id>/hold-probe/whole-map.json
 ```
 
 隣接するアドレスへ異なる値を与えてから、どれも読まずに全部を読み戻します。これにより、1 つのセルに支えられた連続アドレスと、それぞれが別のセルである連続アドレスとを分離できます。順序そのものが手法です。書きと読みを分ければ、近傍へ最後に書かれた値しか見せないアドレスはその 1 つの値を答え、隣接アドレスはそれぞれ自分の値を答えます。
@@ -85,8 +85,8 @@ rye run soundings hold-probe --map data/units/<unit-id>/address-map.json \
 ### 7. エイリアス
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --kind cc --out data/units/<unit-id>/cc-aliases-ch1.json
+rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+  --kind cc --out data/units/<unit-id>/alias-scan/cc-ch1.json
 ```
 
 ある系統のメッセージを 1 つずつ送り、その前後でアドレス空間を差分して、メッセージが到達する格納場所を特定します。系統ごとに 1 回ずつ実行します。`cc`、`nrpn`、`rpn`、`channel`、`drum-nrpn`、および SysEx による書き込みの `address` です。
@@ -96,18 +96,18 @@ rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
 `--kind address` は、先行する走査が到達を確認したアドレスへ書き込み、その場所に第三の入口があるかどうかを問います。書き込み先は、そのユニット自身の記録から取ります。
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/address-map.json \
-  --kind address --addresses-from data/units/<unit-id>/cc-aliases-ch1.json \
-  --out data/units/<unit-id>/sysex-aliases-ch1.json
+rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+  --kind address --addresses-from data/units/<unit-id>/alias-scan/cc-ch1.json \
+  --out data/units/<unit-id>/alias-scan/sysex-ch1.json
 ```
 
 ### 8. リセット
 
 ```sh
-rye run soundings reset-probe --baseline data/units/<unit-id>/power-on-state.json \
-  --map data/units/<unit-id>/address-map.json \
-  --write-probe data/units/<unit-id>/write-probe-wholemap.json \
-  --out data/units/<unit-id>/reset-probe.json
+rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/whole-map.json \
+  --map data/units/<unit-id>/sweep/whole-map.json \
+  --write-probe data/units/<unit-id>/write-probe/whole-map.json \
+  --out data/units/<unit-id>/reset-probe/whole-map.json
 ```
 
 各リセットの前に状態を壊し、後で空間を読みます。これにより、文書がリセットについて述べていることではなく、そのリセットが実際に復元するものを測定します。マークを置くのは、書き込み探索が「任意の値を受理する」と判定したアドレスに限ります。クランプするアドレスは元の値を保ったままかもしれず、壊されなかったバイトはリセットについて何も語らないためです。
@@ -117,8 +117,8 @@ rye run soundings reset-probe --baseline data/units/<unit-id>/power-on-state.jso
 ### 9. 音色とエフェクト
 
 ```sh
-rye run soundings tone-map --out data/units/<unit-id>/tone-map-m0.json
-rye run soundings efx-map --out data/units/<unit-id>/efx-type-map.json
+rye run soundings tone-map --out data/units/<unit-id>/tone-map/map-select-0.json
+rye run soundings efx-map --out data/units/<unit-id>/efx-map/types.json
 ```
 
 各音色と各挿入エフェクトを要求し、受理されたかどうかを読み戻します。走査前に標本抽出を行うマップは、その標本抽出を但し書きとして持ちます。`--exhaustive` は全バンクに 128 プログラムすべてを問うもので、但し書きの付かない唯一の形式です。
@@ -127,7 +127,7 @@ rye run soundings efx-map --out data/units/<unit-id>/efx-type-map.json
 
 ```sh
 rye run soundings repeat --audio "<audio interface>" \
-  --out data/units/<unit-id>/repeatability-p0.json
+  --out data/units/<unit-id>/repeat/program-0.json
 ```
 
 同一の刺激を 2 回鳴らし、2 つのテイクがどれだけ一致するかを測定します。この数値が、以降のあらゆる差分測定の床になります。床を下回る領域では、「差が無い」と「差を見る解像度が無い」は同じ読みです。
@@ -138,7 +138,7 @@ rye run soundings repeat --audio "<audio interface>" \
 
 ```sh
 rye run soundings contrast --cc 91 --audio "<audio interface>" \
-  --out data/units/<unit-id>/audible-cc91.json
+  --out data/units/<unit-id>/contrast/cc-91.json
 ```
 
 1 つのパラメータの 2 つの設定を、再現性の床を基準に比較します。これにより、ユニットが格納するパラメータと、それを通して実際に聞こえるパラメータとを分離できます。格納されていて可聴でないパラメータは存在します。アドレス空間側の段階はその区別をつけられず、この段階はつけられます。
@@ -148,10 +148,10 @@ rye run soundings contrast --cc 91 --audio "<audio interface>" \
 ### 12. ブロック全体
 
 ```sh
-rye run soundings plan data/units/<unit-id>/write-probe-wholemap.json "40 11" \
+rye run soundings plan data/units/<unit-id>/write-probe/whole-map.json "40 11" \
   --out plan-40-11.json
 rye run soundings block plan-40-11.json <plain records> --gesture <gesture records> \
-  --balance <balance record> --out data/units/<unit-id>/audible-part-1.json
+  --balance <balance record> --out data/units/<unit-id>/block/40-11.json
 ```
 
 マニュアルが面白そうに見せたアドレスではなく、ブロック内の全アドレスに対して「変えると音が変わるか」を問います。2 パス構成です。まず素の打音、次にそれで聞こえなかったアドレスを、設定の後にメッセージを動かした状態で問い直します。メッセージが受信されるかどうかだけを決めるパラメータは、素の音では受信するものを持たないからです。

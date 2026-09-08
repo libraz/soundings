@@ -33,7 +33,7 @@ import pytest
 UNITS = Path(__file__).resolve().parents[1] / "data" / "units"
 
 KNOWN_TO_DISAGREE = {
-    "roland-sc8850-01/cc-aliases-ch1-wholemap.json": (
+    "roland-sc8850-01/alias-scan/cc-ch1-whole-map.json": (
         "Over the 101 controllers this run and a bounded run of the same kind and channel both "
         "sent, it lost eleven stores the bounded run found, keeping only the positive control's. "
         "The eleven are every one of that run's attributions above 40 11 19, and 40 11 19 is the "

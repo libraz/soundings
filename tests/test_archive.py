@@ -10,8 +10,8 @@ import pytest
 from soundings import archive
 
 UNIT = Path(__file__).parents[1] / "data" / "units" / "roland-sc8850-01"
-MAP = UNIT / "address-map.json"
-WRITE_PROBE = UNIT / "write-probe.json"
+MAP = UNIT / "sweep" / "whole-map.json"
+WRITE_PROBE = UNIT / "write-probe" / "first-pass.json"
 
 
 def test_every_region_in_the_map_is_read():

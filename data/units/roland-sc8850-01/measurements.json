@@ -1,7 +1,7 @@
 {
   "unit_id": "roland-sc8850-01",
   "schema_version": 0,
-  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is address-map.json, produced by two independent sweeps that agreed byte for byte. power-on-state.json holds the whole readable map as read immediately after a power cycle, before anything but RQ1 had been sent.",
+  "note": "Behaviours of this unit, each with the method that established it. The systematic record of which addresses are readable and what they hold is sweep/whole-map.json, produced by two independent sweeps that agreed byte for byte. power-on/whole-map.json holds the whole readable map as read immediately after a power cycle, before anything but RQ1 had been sent.",
   "withdrawn": {
     "what": "An earlier hand measured table of addresses and region sizes.",
     "why": "It was taken before the reply deadline was understood, so replies were running one request behind and its sizes and values were the previous probe's answer. Three of its rows were re-read cleanly and all three were wrong: 40 00 00 was recorded as 7 bytes reading 00 04 00 00 and is 4 bytes reading 00 00 04 07; 40 00 04 was recorded as readable holding 7F and does not answer at any size; 40 01 30 was recorded as returning 64 bytes and bounds at 24, refusing 64. The rest is not individually retracted because it was produced the same way and none of it is needed -- the sweep covers it.",
@@ -45,7 +45,7 @@
     {
       "address": "40 03 1D",
       "readable": true,
-      "note": "Answers a one byte read and takes any value, yet lies outside every region the sweep bounded, so it is absent from address-map.json and from the power-on capture. The mirror image of 40 01 41 to 47, which a block read reaches and a one byte read does not: neither kind of read alone bounds a region."
+      "note": "Answers a one byte read and takes any value, yet lies outside every region the sweep bounded, so it is absent from sweep/whole-map.json and from the power-on capture. The mirror image of 40 01 41 to 47, which a block read reaches and a one byte read does not: neither kind of read alone bounds a region."
     }
   ],
   "behaviours": [
@@ -658,7 +658,7 @@
     {
       "id": "gs-reset-reproduces-the-power-on-state-and-the-two-gm-resets-do-not",
       "summary": "GS Reset returns all 37502 readable bytes to exactly what the unit held after a power cycle. GM1 System On leaves 88 of them elsewhere and GM2 System On leaves 974, and the two GM resets are not nested: they share 32 changes, GM1 makes 56 the other does not, and GM2 makes 942 the other does not. All three restore every marked byte, so the difference is not in what they reset but in what they additionally set.",
-      "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on-state.json.",
+      "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on/whole-map.json.",
       "results": {
         "GS Reset": {
           "message": "F0 41 10 42 12 40 00 7F 00 41 F7",
