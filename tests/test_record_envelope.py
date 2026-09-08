@@ -2,10 +2,9 @@
 
 Three things are held here, and each of them is a ratchet rather than a state:
 they are green on the archive as it stands and they fail on the next record that
-makes it worse. That is deliberate. The hundred and ninety-one records written
-before the envelope existed are migrated in one pass, not one test run at a time,
-and a gate that went red until then would be turned off long before it was
-satisfied.
+makes it worse. That is deliberate. The records written before the envelope
+existed are migrated in one pass, not one test run at a time, and a gate that
+went red until then would be turned off long before it was satisfied.
 
 What must not happen meanwhile is the archive growing another record with no
 identity, or another finding spelled as a key name. Those are what these check.
@@ -36,7 +35,6 @@ and a decrement here in the same change.
 SENTENCE_KEYS = frozenset(
     {
         "answered_here_and_declined_there",
-        "blocks_42_to_47_and_4a_to_4f_are_a_window",
         "does_not_see_a_mirrored_block",
         "each_key_based_control_reached_one_store",
         "input_is_asserted_not_measured",
@@ -56,16 +54,18 @@ SENTENCE_KEYS = frozenset(
 )
 """Top-level keys that state a finding instead of holding one.
 
-`blocks_42_to_47_and_4a_to_4f_are_a_window` is the clearest of them: the fact is
-in the key, so a reader has to know the answer in order to ask the question, and
-the next unit -- whose window, if it has one, is at other blocks -- spells it
-differently. A consumer would then match key names per unit rather than read a
-value, which is the archive's own rule about one unit's findings turned on its
-own records.
+The clearest of them has already come out: a key spelling which blocks of this
+unit are a window put the fact in the key, so a reader had to know the answer in
+order to ask the question, and the next unit -- whose window, if it has one, is
+at other blocks -- would spell it differently. A consumer would then match key
+names per unit rather than read a value, which is the archive's own rule about
+one unit's findings turned on its own records. It is now a `findings` entry whose
+kind is the question and whose fields are this unit's answer.
 
-These seventeen are what the archive already carries. They come out as the
-records are migrated, into `findings` entries that name their kind. An eighteenth
-is a new instance of a known defect and fails here.
+These sixteen are what the archive still carries. Fourteen of them are written by
+a command rather than by hand, so each comes out with its writer and the records
+it has already reached. A seventeenth is a new instance of a known defect and
+fails here.
 """
 
 

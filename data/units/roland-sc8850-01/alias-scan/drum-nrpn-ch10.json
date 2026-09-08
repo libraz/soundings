@@ -669,5 +669,45 @@
       }
     }
   ],
-  "blocks_42_to_47_and_4a_to_4f_are_a_window": "Blocks 42 through 47 and 4A through 4F of this unit are not storage. Every address in them is a window onto whichever of the two drum setup stores, 41 and 51, was addressed last -- for writes as well as for reads. That is why they answered as 12 blocks identical to each other and to 41, and why writing to an address and reading it straight back made every one of them look like it held what it had been given: the write points the window and the read follows it. Anything an earlier record says about an address in those blocks is about the window and not about a store of its own. Measured at three offsets, in window-probe/04-24.json, window-probe/05-10.json and window-probe/11-7B.json. Blocks 48 and 49 are not among the twelve and nothing here is measured about them: they answer no single byte read, so they were never candidates. That is not the same as their being absent from the unit. A one byte request at 0C 00 00 makes it transmit 48 and 49, among four pairs of blocks shaped alike, which measurements.json records."
+  "findings": [
+    {
+      "kind": "blocks-that-are-a-window",
+      "blocks": [
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "4A",
+        "4B",
+        "4C",
+        "4D",
+        "4E",
+        "4F"
+      ],
+      "onto": [
+        "41",
+        "51"
+      ],
+      "selected_by": "whichever of the two was addressed last",
+      "applies_to": [
+        "read",
+        "write"
+      ],
+      "measured_in": [
+        "window-probe/04-24.json",
+        "window-probe/05-10.json",
+        "window-probe/11-7B.json"
+      ],
+      "how_it_reads": "Blocks 42 through 47 and 4A through 4F of this unit are not storage. Every address in them is a window onto whichever of the two drum setup stores, 41 and 51, was addressed last -- for writes as well as for reads. That is why they answered as 12 blocks identical to each other and to 41, and why writing to an address and reading it straight back made every one of them look like it held what it had been given: the write points the window and the read follows it. Anything an earlier record says about an address in those blocks is about the window and not about a store of its own. Measured at three offsets, in window-probe/04-24.json, window-probe/05-10.json and window-probe/11-7B.json.",
+      "blocks_that_were_never_candidates": {
+        "blocks": [
+          "48",
+          "49"
+        ],
+        "how_it_reads": "Blocks 48 and 49 are not among the twelve and nothing here is measured about them: they answer no single byte read, so they were never candidates. That is not the same as their being absent from the unit. A one byte request at 0C 00 00 makes it transmit 48 and 49, among four pairs of blocks shaped alike, which measurements.json records."
+      }
+    }
+  ]
 }
