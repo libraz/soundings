@@ -1,0 +1,143 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "alias-scan",
+    "invocation": [
+      "alias-scan",
+      "--map",
+      "data/units/roland-sc8850-01/sweep/whole-map.json",
+      "--kind",
+      "channel",
+      "--channel",
+      "0",
+      "--out",
+      "data/units/roland-sc8850-01/alias-scan/channel-ch1-whole-map.json"
+    ],
+    "measured_at": "2026-09-08T07:06:23+00:00",
+    "midi_device_id": "10"
+  },
+  "device_id": "10",
+  "channel": 1,
+  "kind": "channel",
+  "positive_control": {
+    "controller": 7,
+    "sent": 2,
+    "detected": 2,
+    "at": [
+      "40 11 19"
+    ],
+    "why": "Sent before the first stimulus and after the last. Without it a scan that finds nothing cannot be told from a scan that cannot find anything; sent only once, it says nothing about the rest of the run."
+  },
+  "left_changed_afterwards": {
+    "by_stimulus": {},
+    "why": "Every stimulus ends on the value it started with, so anything listed here is state one message carried into the next."
+  },
+  "missed_by_the_first_pass": {
+    "stimuli": [],
+    "why": "Each stimulus that lands nothing is retried with its two values swapped. Anything listed here is something a single pass would have reported as absent."
+  },
+  "kind_reached": {
+    "value": true,
+    "why": "The control is a control change, so it cannot show that a message of another kind arrived. Where this is false, every negative in the run is about the path, not about the unit."
+  },
+  "method": "Each stimulus was sent at its low value, snapshotted, sent at its high value, snapshotted, and sent at its low value again. A byte is listed only if it moved both times, to a different value each time.",
+  "region_prefix": "",
+  "regions_watched": 854,
+  "stimuli_sent": [
+    "CC7",
+    "program change",
+    "CC0 then program change",
+    "CC32 then program change",
+    "pitch bend",
+    "channel pressure",
+    "CC7"
+  ],
+  "restless_addresses": [],
+  "region_reads_failed": 0,
+  "region_reads": {
+    "attempted": 26474,
+    "unanswered": 0,
+    "by_stimulus": {},
+    "why": "A region that did not answer is left out of the comparison, so a stimulus whose snapshots were short of regions could have moved a byte in one of them and be reported as landing nothing. A total says the run had unanswered reads; only the count per stimulus says whose null is weakened by them, and a stimulus with none here has a null the reads support in full."
+  },
+  "not_scanned": "Controllers 120 to 127 are channel mode messages. Sending one resets the channel state every later attribution is measured against, so they need a scan of their own.",
+  "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
+  "bank_latch_on_exit": "committed bank 0, map 0, program 0",
+  "written_bytes_restored": "nothing written",
+  "note": "A byte listed here followed the stimulus out and back. That says where the value is kept, not that anything uses it.",
+  "attributed": [
+    {
+      "stimulus": "program change",
+      "kind": "channel",
+      "primed_then_sent": [
+        "00",
+        "30"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 01"
+      ],
+      "bytes": {
+        "40 11 01": [
+          [
+            "30",
+            "30"
+          ],
+          [
+            "00",
+            "00"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "CC0 then program change",
+      "kind": "channel",
+      "primed_then_sent": [
+        "00",
+        "08"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 00"
+      ],
+      "bytes": {
+        "40 11 00": [
+          [
+            "08",
+            "08"
+          ],
+          [
+            "00",
+            "00"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "CC32 then program change",
+      "kind": "channel",
+      "primed_then_sent": [
+        "00",
+        "03"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 41 00"
+      ],
+      "bytes": {
+        "40 41 00": [
+          [
+            "03",
+            "03"
+          ],
+          [
+            "00",
+            "00"
+          ]
+        ]
+      }
+    }
+  ]
+}

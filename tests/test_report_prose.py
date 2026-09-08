@@ -58,10 +58,11 @@ BY_HAND = {
     "transfer/input-bypasses-efx.json",
 }
 
-# Written by an earlier form of alias-scan, whose prose the current code no
-# longer contains. Left in the archive because it is a record of a run that
-# happened; excluded here because it does not describe the code as it stands.
-SUPERSEDED = {"alias-scan/cc-ch1-whole-map.json"}
+# Records whose prose the current code no longer contains, because an earlier
+# form of the stage wrote them. Empty: the one entry it held was reissued by the
+# stage as it stands. An entry belongs here only while the record it names is
+# worth keeping as a run that happened, and it goes when that run is repeated.
+SUPERSEDED: set[str] = set()
 
 
 def _literals() -> set[str]:

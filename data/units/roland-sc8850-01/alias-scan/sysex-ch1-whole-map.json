@@ -8,18 +8,23 @@
       "--map",
       "data/units/roland-sc8850-01/sweep/whole-map.json",
       "--kind",
-      "cc",
+      "address",
       "--channel",
       "0",
+      "--addresses-from",
+      "data/units/roland-sc8850-01/alias-scan/cc-ch1-whole-map.json",
+      "data/units/roland-sc8850-01/alias-scan/nrpn-ch1-whole-map.json",
+      "data/units/roland-sc8850-01/alias-scan/rpn-ch1-whole-map.json",
+      "data/units/roland-sc8850-01/alias-scan/channel-ch1-whole-map.json",
       "--out",
-      "data/units/roland-sc8850-01/alias-scan/cc-ch1-whole-map.json"
+      "data/units/roland-sc8850-01/alias-scan/sysex-ch1-whole-map.json"
     ],
-    "measured_at": "2026-09-08T06:29:55+00:00",
+    "measured_at": "2026-09-08T07:27:14+00:00",
     "midi_device_id": "10"
   },
   "device_id": "10",
   "channel": 1,
-  "kind": "cc",
+  "kind": "address",
   "positive_control": {
     "controller": 7,
     "sent": 2,
@@ -41,140 +46,35 @@
     "value": true,
     "why": "The control is a control change, so it cannot show that a message of another kind arrived. Where this is false, every negative in the run is about the path, not about the unit."
   },
+  "landed_outside_its_own_block": {
+    "by_stimulus": {},
+    "why": "A run that writes to an address and sees only that address move is evidence nothing mirrors it, but only if a write that did land elsewhere would have been seen. So a stimulus whose value turned up under another top byte is the demonstration, made by the run on itself. Where this is empty the negatives are about a scan never shown able to report a landing outside the block it wrote to."
+  },
   "method": "Each stimulus was sent at its low value, snapshotted, sent at its high value, snapshotted, and sent at its low value again. A byte is listed only if it moved both times, to a different value each time.",
   "region_prefix": "",
   "regions_watched": 854,
   "stimuli_sent": [
     "CC7",
-    "CC0",
-    "CC1",
-    "CC2",
-    "CC3",
-    "CC4",
-    "CC5",
-    "CC6",
-    "CC7",
-    "CC8",
-    "CC9",
-    "CC10",
-    "CC11",
-    "CC12",
-    "CC13",
-    "CC14",
-    "CC15",
-    "CC16",
-    "CC17",
-    "CC18",
-    "CC19",
-    "CC20",
-    "CC21",
-    "CC22",
-    "CC23",
-    "CC24",
-    "CC25",
-    "CC26",
-    "CC27",
-    "CC28",
-    "CC29",
-    "CC30",
-    "CC31",
-    "CC32",
-    "CC33",
-    "CC34",
-    "CC35",
-    "CC36",
-    "CC37",
-    "CC38",
-    "CC39",
-    "CC40",
-    "CC41",
-    "CC42",
-    "CC43",
-    "CC44",
-    "CC45",
-    "CC46",
-    "CC47",
-    "CC48",
-    "CC49",
-    "CC50",
-    "CC51",
-    "CC52",
-    "CC53",
-    "CC54",
-    "CC55",
-    "CC56",
-    "CC57",
-    "CC58",
-    "CC59",
-    "CC60",
-    "CC61",
-    "CC62",
-    "CC63",
-    "CC64",
-    "CC65",
-    "CC66",
-    "CC67",
-    "CC68",
-    "CC69",
-    "CC70",
-    "CC71",
-    "CC72",
-    "CC73",
-    "CC74",
-    "CC75",
-    "CC76",
-    "CC77",
-    "CC78",
-    "CC79",
-    "CC80",
-    "CC81",
-    "CC82",
-    "CC83",
-    "CC84",
-    "CC85",
-    "CC86",
-    "CC87",
-    "CC88",
-    "CC89",
-    "CC90",
-    "CC91",
-    "CC92",
-    "CC93",
-    "CC94",
-    "CC95",
-    "CC96",
-    "CC97",
-    "CC98",
-    "CC99",
-    "CC100",
-    "CC101",
-    "CC102",
-    "CC103",
-    "CC104",
-    "CC105",
-    "CC106",
-    "CC107",
-    "CC108",
-    "CC109",
-    "CC110",
-    "CC111",
-    "CC112",
-    "CC113",
-    "CC114",
-    "CC115",
-    "CC116",
-    "CC117",
-    "CC118",
-    "CC119",
+    "DT1 40 11 00",
+    "DT1 40 11 19",
+    "DT1 40 11 1C",
+    "DT1 40 11 21",
+    "DT1 40 11 22",
+    "DT1 40 11 30",
+    "DT1 40 11 31",
+    "DT1 40 11 32",
+    "DT1 40 11 33",
+    "DT1 40 11 34",
+    "DT1 40 11 35",
+    "DT1 40 11 36",
+    "DT1 40 11 37",
+    "DT1 40 41 00",
     "CC7"
   ],
-  "restless_addresses": [
-    "40 03 00",
-    "40 03 01"
-  ],
+  "restless_addresses": [],
   "region_reads_failed": 0,
   "region_reads": {
-    "attempted": 592676,
+    "attempted": 46970,
     "unanswered": 0,
     "by_stimulus": {},
     "why": "A region that did not answer is left out of the comparison, so a stimulus whose snapshots were short of regions could have moved a byte in one of them and be reported as landing nothing. A total says the run had unanswered reads; only the count per stimulus says whose null is weakened by them, and a stimulus with none here has a null the reads support in full."
@@ -182,12 +82,36 @@
   "not_scanned": "Controllers 120 to 127 are channel mode messages. Sending one resets the channel state every later attribution is measured against, so they need a scan of their own.",
   "rpn_parked": "RPN and NRPN were set to 7F 7F before the scan.",
   "bank_latch_on_exit": "committed bank 0, map 0, program 0",
-  "written_bytes_restored": "nothing written",
+  "written_bytes_restored": "14 bytes put back and re-read",
   "note": "A byte listed here followed the stimulus out and back. That says where the value is kept, not that anything uses it.",
   "attributed": [
     {
-      "stimulus": "CC7",
-      "kind": "cc",
+      "stimulus": "DT1 40 11 00",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 00"
+      ],
+      "bytes": {
+        "40 11 00": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 19",
+      "kind": "address",
       "primed_then_sent": [
         "20",
         "60"
@@ -210,8 +134,8 @@
       }
     },
     {
-      "stimulus": "CC10",
-      "kind": "cc",
+      "stimulus": "DT1 40 11 1C",
+      "kind": "address",
       "primed_then_sent": [
         "20",
         "60"
@@ -234,18 +158,18 @@
       }
     },
     {
-      "stimulus": "CC71",
-      "kind": "cc",
+      "stimulus": "DT1 40 11 21",
+      "kind": "address",
       "primed_then_sent": [
         "20",
         "60"
       ],
       "found_only_on_the_second_attempt": false,
       "stores_verbatim": [
-        "40 11 33"
+        "40 11 21"
       ],
       "bytes": {
-        "40 11 33": [
+        "40 11 21": [
           [
             "60",
             "60"
@@ -258,176 +182,8 @@
       }
     },
     {
-      "stimulus": "CC72",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 36"
-      ],
-      "bytes": {
-        "40 11 36": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC73",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 34"
-      ],
-      "bytes": {
-        "40 11 34": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC74",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 32"
-      ],
-      "bytes": {
-        "40 11 32": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC75",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 35"
-      ],
-      "bytes": {
-        "40 11 35": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC76",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 30"
-      ],
-      "bytes": {
-        "40 11 30": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC77",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 31"
-      ],
-      "bytes": {
-        "40 11 31": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC78",
-      "kind": "cc",
-      "primed_then_sent": [
-        "20",
-        "60"
-      ],
-      "found_only_on_the_second_attempt": false,
-      "stores_verbatim": [
-        "40 11 37"
-      ],
-      "bytes": {
-        "40 11 37": [
-          [
-            "60",
-            "60"
-          ],
-          [
-            "20",
-            "20"
-          ]
-        ]
-      }
-    },
-    {
-      "stimulus": "CC91",
-      "kind": "cc",
+      "stimulus": "DT1 40 11 22",
+      "kind": "address",
       "primed_then_sent": [
         "20",
         "60"
@@ -450,18 +206,186 @@
       }
     },
     {
-      "stimulus": "CC93",
-      "kind": "cc",
+      "stimulus": "DT1 40 11 30",
+      "kind": "address",
       "primed_then_sent": [
         "20",
         "60"
       ],
       "found_only_on_the_second_attempt": false,
       "stores_verbatim": [
-        "40 11 21"
+        "40 11 30"
       ],
       "bytes": {
-        "40 11 21": [
+        "40 11 30": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 31",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 31"
+      ],
+      "bytes": {
+        "40 11 31": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 32",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 32"
+      ],
+      "bytes": {
+        "40 11 32": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 33",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 33"
+      ],
+      "bytes": {
+        "40 11 33": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 34",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 34"
+      ],
+      "bytes": {
+        "40 11 34": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 35",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 35"
+      ],
+      "bytes": {
+        "40 11 35": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 36",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 36"
+      ],
+      "bytes": {
+        "40 11 36": [
+          [
+            "60",
+            "60"
+          ],
+          [
+            "20",
+            "20"
+          ]
+        ]
+      }
+    },
+    {
+      "stimulus": "DT1 40 11 37",
+      "kind": "address",
+      "primed_then_sent": [
+        "20",
+        "60"
+      ],
+      "found_only_on_the_second_attempt": false,
+      "stores_verbatim": [
+        "40 11 37"
+      ],
+      "bytes": {
+        "40 11 37": [
           [
             "60",
             "60"

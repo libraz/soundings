@@ -32,20 +32,7 @@ import pytest
 
 UNITS = Path(__file__).resolve().parents[1] / "data" / "units"
 
-KNOWN_TO_DISAGREE = {
-    "roland-sc8850-01/alias-scan/cc-ch1-whole-map.json": (
-        "Over the 101 controllers this run and a bounded run of the same kind and channel both "
-        "sent, it lost eleven stores the bounded run found, keeping only the positive control's. "
-        "The eleven are every one of that run's attributions above 40 11 19, and 40 11 19 is the "
-        "lowest of the twelve -- the shape a region read truncated at its start would leave, "
-        "which this unit is separately known to do to some oversized requests. That is a "
-        "hypothesis and not the finding: a whole-map channel scan attributed everything its "
-        "bounded counterpart did, so watching all 854 regions does not cost attributions by "
-        "itself, and this run records how many regions it watched without recording which, so "
-        "the truncation cannot be tested against it. Its negatives should not be relied on. The "
-        "entry goes when the run is repeated."
-    ),
-}
+KNOWN_TO_DISAGREE: dict[str, str] = {}
 """Records that break the rule, each with what is known about why.
 
 An entry is not a pass. It says the disagreement was looked at and what was
