@@ -94,6 +94,28 @@ class Block:
         }
 
 
+def restore_blocks(record: dict) -> list[Block]:
+    """The blocks of an interrupted offset scan, minus the one its canary did not vouch for.
+
+    The canary is asked after a block is written, so the last block of a run
+    that went deaf is the one block in the file no canary ever answered for. Its
+    positives are safe -- a unit that has stopped talking answers nothing, and
+    that block reported answers -- but its silences are exactly what a dead unit
+    produces, and silences are most of what a scan like this records. Carrying
+    them forward would turn one unvouched block into part of a record that says
+    it was vouched for throughout.
+
+    So the block is dropped and asked again rather than trusted or annotated.
+    Re-asking it costs a minute; annotating it would put a hole in the middle of
+    a record whose whole claim is that every offset was asked under a control.
+    """
+    blocks = [
+        Block(address=row["address"], asked=row["offsets_asked"], answered=dict(row["answered"]))
+        for row in record["blocks"]
+    ]
+    return blocks[:-1] if record.get("stopped") and blocks else blocks
+
+
 def scanned(blocks: list[Block], canary: str, deaf: bool) -> dict:
     """Which offsets answered, and the bound on the ones that did not."""
     return {

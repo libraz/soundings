@@ -115,6 +115,12 @@ def register(sub) -> None:
         "and a unit that stopped talking answers nothing to all of them",
     )
     p.add_argument("--every", type=int, default=1, help="blocks between canary questions")
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help="keep the blocks already in --out and ask only the rest. The block a stopped "
+        "run ended on is asked again, since it is the one no canary answered for",
+    )
     p.add_argument("--timeout", type=float, default=0.3)
     options.add_verify_reads(p)
     options.add_out(p)
@@ -182,9 +188,21 @@ def cmd_offsets(args: argparse.Namespace) -> int:
 
     blocks: list[boundary.Block] = []
     deaf = False
+    wanted = args.blocks
+    if args.resume and args.out and Path(args.out).exists():
+        blocks = boundary.restore_blocks(json.loads(Path(args.out).read_text()))
+        already = {(b.address, b.asked) for b in blocks}
+        before = len(wanted)
+        wanted = [
+            spec
+            for spec in wanted
+            if (spec.partition(":")[0].strip(), int(spec.partition(":")[2])) not in already
+        ]
+        print(f"resuming: {len(blocks)} blocks already asked, {before - len(wanted)} skipped")
+
     with verified_link(args, refusing="reading a block's offsets", show_port=True) as link:
         answers = _single_byte_reader(link, args)
-        for asked, spec in enumerate(args.blocks):
+        for asked, spec in enumerate(wanted):
             start, _, count = spec.partition(":")
             block = boundary.Block(address=start.strip())
             packed = boundary.past_the_end(block.address, 0)

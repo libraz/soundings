@@ -48,3 +48,27 @@ def test_a_run_that_lost_the_unit_says_so_rather_than_reporting_a_clean_map() ->
     result = boundary.summarise([boundary.Region("40 01 00", 40)], "40 01 00", deaf=True)
     assert result["stopped"] == boundary.WENT_DEAF
     assert "stops talking" in result["positive_control"]["why"]
+
+
+def test_a_resumed_scan_keeps_the_blocks_a_canary_answered_for() -> None:
+    blocks = [boundary.Block(address=f"40 4{d} 00", asked=128) for d in range(3)]
+    blocks[1].answered["40 41 20"] = "01"
+    record = boundary.scanned(blocks, "40 01 30", deaf=False)
+    assert [b.address for b in boundary.restore_blocks(record)] == [
+        "40 40 00",
+        "40 41 00",
+        "40 42 00",
+    ]
+    assert boundary.restore_blocks(record)[1].answered == {"40 41 20": "01"}
+
+
+def test_a_resumed_scan_asks_again_the_block_the_canary_stopped_on() -> None:
+    """Its silences are what a unit that has stopped talking produces."""
+    blocks = [boundary.Block(address=f"40 4{d} 00", asked=128) for d in range(3)]
+    record = boundary.scanned(blocks, "40 01 30", deaf=True)
+    assert [b.address for b in boundary.restore_blocks(record)] == ["40 40 00", "40 41 00"]
+
+
+def test_a_scan_that_stopped_on_its_first_block_resumes_with_nothing() -> None:
+    record = boundary.scanned([boundary.Block(address="40 40 00", asked=128)], "40 01 30", True)
+    assert boundary.restore_blocks(record) == []
