@@ -60,16 +60,92 @@ def test_a_stage_whose_bar_is_about_controls_is_not_passed_by_a_file_being_there
     assert stages["resets"]["verdict"] == completion.UNDECIDED
 
 
-def test_a_whole_map_stage_is_short_until_it_covers_the_map(tmp_path) -> None:
+def _offsets(*blocks) -> dict:
+    """An offsets record, given (block, [offsets that answered]) pairs."""
+    return {
+        "blocks_asked": len(blocks),
+        "stopped": None,
+        "blocks": [
+            {"address": f"{block} 00", "answered": {f"{block} {off}": "00" for off in answering}}
+            for block, answering in blocks
+        ],
+    }
+
+
+def test_a_whole_space_stage_is_short_until_it_covers_every_shape(tmp_path) -> None:
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 11", ["00", "2A"]), ("40 21", ["00"])))
+    _write(
+        tmp_path,
+        "write-probe/whole-map.json",
+        {"regions": [{"start": "40 11 00", "bytes": [{"address": "40 11 00"}]}]},
+    )
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["accepted values"]["verdict"] == completion.UNMET
+    assert stages["accepted values"]["remaining"] == {
+        "offsets not covered, by representative": {"40 11": 1, "40 21": 1}
+    }
+
+
+def test_a_stage_counts_every_record_it_filed_not_only_the_whole_map_one(tmp_path) -> None:
+    """The offsets stage adds addresses a later run probes into its own file."""
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 11", ["00", "2A"])))
+    _write(
+        tmp_path,
+        "write-probe/whole-map.json",
+        {"regions": [{"start": "40 11 00", "bytes": [{"address": "40 11 00"}]}]},
+    )
+    _write(
+        tmp_path,
+        "write-probe/offsets-gaps.json",
+        {"regions": [{"start": "40 11 2A", "bytes": [{"address": "40 11 2A"}]}]},
+    )
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["accepted values"]["verdict"] == completion.MET
+
+
+def test_a_stage_counted_over_shapes_does_not_grow_with_the_number_of_parts(tmp_path) -> None:
+    """Sixteen parts of one shape are one representative's worth of coverage."""
+    parts = [(f"40 1{n:X}", ["00", "2A"]) for n in range(16)]
+    _write(tmp_path, "offsets/whole-map.json", _offsets(*parts))
+    _write(
+        tmp_path,
+        "write-probe/whole-map.json",
+        {
+            "regions": [
+                {"start": "40 10 00", "bytes": [{"address": "40 10 00"}, {"address": "40 10 2A"}]}
+            ]
+        },
+    )
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["accepted values"]["verdict"] == completion.MET
+    assert "all 1 shapes" in stages["accepted values"]["evidence"]
+
+
+def test_a_block_measured_to_be_a_window_is_not_counted_as_one_left_to_ask(tmp_path) -> None:
+    """Asking it would ask the store it points at a second time."""
     _write(
         tmp_path,
         "sweep/whole-map.json",
-        {"complete": True, "trustworthy": True, "regions": _regions(("40 11", [47, 9]))},
+        {
+            "complete": True,
+            "trustworthy": True,
+            "regions": _regions(("40 11", [2]), ("42 11", [2])),
+            "findings": [{"kind": "blocks-that-are-a-window", "blocks": ["42"]}],
+        },
     )
-    _write(tmp_path, "write-probe/whole-map.json", {"regions": [{"start": "40 11 00"}]})
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 11", ["00"])))
     stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
-    assert stages["accepted values"]["verdict"] == completion.UNMET
-    assert stages["accepted values"]["remaining"] == {"regions not covered": 1}
+    # Counting the window would leave one block short, and the only way to make
+    # that up would be to measure the store it points at a second time.
+    assert stages["offsets and shapes"]["verdict"] != completion.UNMET
+
+
+def test_an_offsets_run_that_lost_the_unit_does_not_stand_as_coverage(tmp_path) -> None:
+    record = _offsets(("40 11", ["00"]))
+    record["stopped"] = "the canary stopped answering"
+    _write(tmp_path, "offsets/whole-map.json", record)
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["offsets and shapes"]["verdict"] == completion.UNMET
 
 
 def test_blocks_of_one_shape_are_one_kind_so_a_window_is_not_counted_twelve_times(

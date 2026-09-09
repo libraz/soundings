@@ -144,31 +144,144 @@ def power_on(unit: Path) -> Stage:
     )
 
 
-def _covers_the_map(unit: Path, file: str, name: str) -> Stage:
-    """A whole-map stage is complete when it saw as many regions as the map has."""
-    mapped = _load(unit, f"sweep/{WHOLE_MAP}")
-    found = _load(unit, file)
+def _shapes(unit: Path) -> dict[tuple, list[str]] | None:
+    """Blocks grouped by the set of offsets that answered in them.
+
+    An address space repeats, and by a large factor: on the first unit counted
+    this way 461 blocks answered and held twelve shapes between them, one of
+    them 204 times. Counting a stage's coverage over addresses would then be
+    mostly counting how many times it measured the same thing, and the figure
+    would move when a unit has more parts rather than when more is known.
+
+    Grouped from the offsets record rather than the address map, because the
+    map bounds which blocks exist and not which addresses do: it asks a named
+    set of third bytes under each block, so a region beginning elsewhere is
+    absent from it. A stage counted against the map is counted against a
+    narrower question than it asked.
+    """
+    found = _load(unit, f"offsets/{WHOLE_MAP}")
     if found is None:
-        return _missing(name, file)
-    if mapped is None:
-        return Stage(name, UNDECIDED, "there is no address map to count its coverage against")
-    want, got = len(mapped.get("regions", [])), len(found.get("regions", []))
-    if got < want:
+        return None
+    grouped: dict[tuple, list[str]] = defaultdict(list)
+    for block in found.get("blocks", []):
+        answering = tuple(sorted(a.split()[-1] for a in block.get("answered", {})))
+        if answering:
+            grouped[answering].append(block["address"])
+    return dict(grouped)
+
+
+def _representatives(shapes: dict[tuple, list[str]]) -> dict[str, tuple]:
+    """One block per shape, and the offsets a stage has to cover in it."""
+    return {sorted(blocks)[0].rsplit(" ", 1)[0]: offsets for offsets, blocks in shapes.items()}
+
+
+def offsets_and_shapes(unit: Path) -> Stage:
+    """Every offset of every block asked, and the shapes those answers fall into."""
+    name = "offsets and shapes"
+    found = _load(unit, f"offsets/{WHOLE_MAP}")
+    if found is None:
+        return _missing(name, f"offsets/{WHOLE_MAP}")
+    if found.get("stopped"):
         return Stage(
             name,
             UNMET,
-            f"{got} of the map's {want} regions were covered",
-            {"regions not covered": want - got},
+            "the run stopped before it finished, so its silences are not vouched for",
+            {"blocks asked before it stopped": found.get("blocks_asked", 0)},
         )
-    return Stage(name, MET, f"all {want} regions of the map were covered")
+    mapped = _load(unit, f"sweep/{WHOLE_MAP}")
+    # A block measured to be a window onto another block holds no store of its
+    # own, so asking its offsets asks the store it points at once more. Counting
+    # those as unasked would leave this unmeetable by measuring, and the only way
+    # to meet it would be to measure the same thing again under a name that
+    # keeps none of it.
+    windows = {
+        top
+        for finding in (mapped or {}).get("findings", [])
+        if finding.get("kind") == "blocks-that-are-a-window"
+        for top in finding.get("blocks", [])
+    }
+    want = len(
+        {
+            " ".join(r["address"].split()[:2])
+            for r in (mapped or {}).get("regions", [])
+            if r["address"].split()[0] not in windows
+        }
+    )
+    got = found.get("blocks_asked", 0)
+    shapes = _shapes(unit) or {}
+    if mapped is not None and got < want:
+        return Stage(
+            name,
+            UNMET,
+            f"{got} of the map's {want} blocks were asked at every offset",
+            {"blocks not asked": want - got},
+        )
+    return Stage(
+        name,
+        UNDECIDED,
+        f"{got} blocks asked, falling into {len(shapes)} shapes. Whether each shape's "
+        "fold was checked against a second block of that shape is read from the record",
+    )
+
+
+def _covers_the_shapes(unit: Path, stage: str, name: str) -> Stage:
+    """A whole-space stage is complete when it covered one block of every shape.
+
+    Measuring the rest of a shape's blocks measures the same thing again, so
+    they are not counted for or against. What is counted is whether every shape
+    has a block this stage reached, and every offset of it.
+
+    Every record the stage filed counts, not one named whole-map: a space the
+    map missed is reached by a later run against a different file, and reading
+    only the first would report the addresses it added as never covered.
+    """
+    records = _records(unit, stage)
+    if not records:
+        return _missing(name, f"{stage}/")
+    found = {
+        "regions": [
+            region
+            for path in records
+            for region in (_load(unit, f"{stage}/{path.name}") or {}).get("regions", [])
+        ]
+    }
+    shapes = _shapes(unit)
+    if shapes is None:
+        return Stage(
+            name,
+            UNDECIDED,
+            f"there is no offsets/{WHOLE_MAP} to group the space into shapes, and the "
+            "address map alone bounds which blocks exist rather than which addresses do",
+        )
+    reached: set[str] = set()
+    for region in found.get("regions", []):
+        for byte in region.get("bytes", []):
+            reached.add(byte["address"])
+        for skipped in region.get("skipped", []):
+            reached.add(skipped.split(" (")[0])
+    want = _representatives(shapes)
+    short = {
+        block: sum(1 for off in offsets if f"{block} {off}" not in reached)
+        for block, offsets in want.items()
+    }
+    missing = {block: n for block, n in short.items() if n}
+    if missing:
+        return Stage(
+            name,
+            UNMET,
+            f"{len(want) - len(missing)} of the {len(want)} shapes were covered at "
+            "every offset of their representative block",
+            {"offsets not covered, by representative": missing},
+        )
+    return Stage(name, MET, f"every offset of all {len(want)} shapes' representatives was covered")
 
 
 def accepted_values(unit: Path) -> Stage:
-    return _covers_the_map(unit, f"write-probe/{WHOLE_MAP}", "accepted values")
+    return _covers_the_shapes(unit, "write-probe", "accepted values")
 
 
 def independent_storage(unit: Path) -> Stage:
-    return _covers_the_map(unit, f"hold-probe/{WHOLE_MAP}", "independent storage")
+    return _covers_the_shapes(unit, "hold-probe", "independent storage")
 
 
 def tones_and_effects(unit: Path) -> Stage:
@@ -352,6 +465,7 @@ def survey(unit: Path) -> dict:
     stages = [
         identity(unit),
         address_map(unit),
+        offsets_and_shapes(unit),
         power_on(unit),
         _by_reading("windows", unit, "window-probe"),
         accepted_values(unit),
