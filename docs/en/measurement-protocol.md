@@ -49,10 +49,40 @@ rye run soundings sweep --out data/units/<unit-id>/sweep/whole-map.json
 ```
 
 Asks the unit which addresses answer. The map is what the unit answered, not
-what a document lists, and it is what the following stages are aimed at. A
-region absent from the map is absent from everything measured afterwards.
+what a document lists, and it is what the following stages are aimed at.
 
-### 3. Power-on state
+The sweep asks a named set of third bytes under each block, so it finds where a
+block begins only if a block begins where it looked. **What it produces is a
+list of blocks, not a list of addresses**, and reading it as the latter puts a
+hole in every stage aimed at it. Stage 3 is what turns it into the second.
+
+### 3. Offsets, and the shapes they fall into
+
+```sh
+rye run soundings offsets "40 10 00:128" ... --canary <addr> \
+  --resume --out data/units/<unit-id>/offsets/whole-map.json
+```
+
+Asks every offset of every block the sweep found, one single-byte read each.
+Reading forward from a region's end stops at the first address that answers
+nothing, so a run of live addresses past a silent gap is invisible to it; only
+asking every offset finds those.
+
+Blocks whose answering offsets are the same set are the same **shape**, and an
+address space repeats: on the first unit measured this way, 461 blocks held
+twelve shapes and one of them appeared 204 times. Every stage after this one is
+aimed at one representative per shape, and reports its coverage as a fraction
+over shapes. Measuring all of them measures the same thing over again and
+produces a figure that says nothing about how much is known.
+
+The fold is checked rather than assumed: beside the representative, one further
+block of the shape is asked and the agreement recorded. Where the two disagree
+the shape was drawn wrongly and is split.
+
+**Sends reads only, so it belongs before the power-on capture.** Ordering it
+after a stage that writes would cost that capture, which cannot be rebuilt.
+
+### 4. Power-on state
 
 ```sh
 rye run soundings power-on --map data/units/<unit-id>/sweep/whole-map.json \
@@ -63,8 +93,8 @@ Reads the space twice over and writes nothing. What this produces is the state
 the unit powers up in.
 
 **This is the last stage that may be run before a stage that writes.** Stages 1
-to 3 send reads only, so the capture is still a power-on capture when it is
-taken after the sweep. From stage 4 onwards the unit is written to, and the
+to 4 send reads only, so the capture is still a power-on capture when it is
+taken after the sweep. From stage 5 onwards the unit is written to, and the
 power-on state is then unavailable until the next power cycle. A map costs a
 sweep to rebuild; this capture cannot be rebuilt at all.
 
@@ -79,7 +109,7 @@ afterwards -- the byte simply reads as having been changed by whichever reset is
 measured against this capture next. Every later reset measurement is compared
 against this file.
 
-### 4. Windows
+### 5. Windows
 
 ```sh
 rye run soundings window-probe --stores <addr> <addr> <candidate>...
@@ -95,7 +125,7 @@ A block found to be a window is named in the records that describe it, and is
 skipped by the stages that would otherwise measure the same store many times
 over under names that keep none of it.
 
-### 5. Accepted values
+### 6. Accepted values
 
 ```sh
 rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
@@ -111,7 +141,7 @@ would be nothing to put back. Those are recorded as skipped: which of them are
 undefined, rather than reachable only as part of a larger block, is not settled
 by this stage.
 
-### 6. Independent storage
+### 7. Independent storage
 
 ```sh
 rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
@@ -124,10 +154,10 @@ ones. The order is the method: written apart from read, an address that only
 shows the last value written near it answers with that one value while its
 neighbours answer with their own.
 
-This does not find a block that mirrors another block, which is what stage 4
+This does not find a block that mirrors another block, which is what stage 5
 asks.
 
-### 7. Aliases
+### 8. Aliases
 
 ```sh
 rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
@@ -153,7 +183,7 @@ rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
   --out data/units/<unit-id>/alias-scan/sysex-ch1.json
 ```
 
-### 8. Resets
+### 9. Resets
 
 ```sh
 rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/whole-map.json \
@@ -172,7 +202,7 @@ Every reset is preceded by the same one, so the results are comparable with each
 other rather than each being read against wherever the previous reset left the
 unit.
 
-### 9. Tones and effects
+### 10. Tones and effects
 
 ```sh
 rye run soundings tone-map --out data/units/<unit-id>/tone-map/map-select-0.json
@@ -184,7 +214,7 @@ taken. A map that samples before sweeping carries the sampling as a caveat;
 `--exhaustive` asks every bank for all 128 programs and is the only form with
 nothing to caveat.
 
-### 10. Repeatability, before any audio comparison
+### 11. Repeatability, before any audio comparison
 
 ```sh
 rye run soundings repeat --audio "<audio interface>" \
@@ -198,7 +228,7 @@ difference" and "no resolution to see one" are the same reading.
 The floor is a property of the unit and the chain together, so it is measured
 per unit and re-measured whenever the chain changes.
 
-### 11. Audible differences
+### 12. Audible differences
 
 ```sh
 rye run soundings contrast --cc 91 --audio "<audio interface>" \
@@ -213,7 +243,7 @@ and this one can.
 `transfer`, `motion` and `decay` measure an analogue path, a time-varying effect
 and an effect's tail. `motion` and `decay` read takes and need no unit attached.
 
-### 12. Whole blocks
+### 13. Whole blocks
 
 ```sh
 rye run soundings plan data/units/<unit-id>/write-probe/whole-map.json "40 11" \
@@ -259,7 +289,7 @@ plain note does; two draws from a free-running phase can sit any distance apart
 and mean nothing.
 
 **A stimulus has to establish its own repeatability before its verdicts count.**
-Stage 10 measures the floor for one stimulus. A stimulus that sounds more than one
+Stage 11 measures the floor for one stimulus. A stimulus that sounds more than one
 voice has a relative phase the trigger cannot fix, and where the trigger scatter
 is wider than a period of the note being played, the phase is free from take to
 take and the level moves with it. Measured on one unit: a plain note agreed within
