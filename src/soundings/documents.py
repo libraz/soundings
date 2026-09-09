@@ -36,6 +36,7 @@ import json
 import re
 import subprocess
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -168,12 +169,35 @@ which language the description column is written in. A second parser would be a
 second thing to keep right about a structure that is not in fact different.
 """
 
-#: An address as the tables print it. The first byte is always a literal -- every
-#: region of the map is entered at a fixed one -- and the two after it may carry
-#: the document's own placeholder letters instead of digits: `x` for a part, `b`
-#: for a bank, `pp` for a program, and others per table. They are kept as printed
-#: rather than expanded, so that one row stays one statement.
-_ADDRESS = re.compile(r"^[0-9A-F]{2} [0-9A-Fa-z]{2} [0-9A-Fa-z]{2}#?$")
+OPENING = ("address", "size", "data", "parameter")
+"""The columns a table opens with, and the point past which a miscount is silent.
+
+A header naming no more than these can be read against a row holding more cells
+than it names: the cells past the parameter are then under no heading at all and
+are kept verbatim, which is a reading nothing can shift. A header naming more
+than these cannot, because the extra column may sit between two of the ones it
+names, and then every value after it reads as the column to its left -- an
+initial value under `description`, a range under `default`. That row is refused
+and read by hand instead.
+"""
+
+#: An address as the tables print it. Any of the three bytes may carry the
+#: document's own placeholder letters instead of digits: `x` for a part, `b` for a
+#: bank, `pp` for a program, and others per table. They are kept as printed rather
+#: than expanded, so that one row stays one statement.
+#:
+#: The first byte was taken to be a literal at first, on the reasoning that every
+#: region of the map is entered at a fixed one. One document states a whole table
+#: family at `2a pp xx`, where the letter is the part number and the region it
+#: names depends on it. Under the narrower pattern not one of those rows was an
+#: address, so the grid could not be learnt from them either and two pages came
+#: out as tables that could not be read at all.
+_ADDRESS = re.compile(r"^[0-9A-Fa-z]{2} [0-9A-Fa-z]{2} [0-9A-Fa-z]{2}#?$")
+#: A size as the tables print it: three bytes, always literal. Unlike an address
+#: it never carries a placeholder, because a family of addresses is the same size
+#: at every one of them.
+_SIZE = re.compile(r"^[0-9A-F]{2} [0-9A-F]{2} [0-9A-F]{2}$")
+
 _CELL = re.compile(r"\S(?:\s(?!\s)|\S)*")
 
 #: How far apart two positions can be and still be one column. The grid is set in
@@ -202,6 +226,12 @@ OFF_THE_GRID = (
     "table's columns would put values under the wrong headings."
 )
 
+SIZE_SPANS_COLUMNS = (
+    "this row's size cell holds more than the three bytes a size is, so the cut that made "
+    "it took in the column beside it -- and every value after it sits under the heading of "
+    "the column to its left."
+)
+
 NO_GRID = (
     "the rows under this header do not agree on where their columns begin, so there is no "
     "grid to cut them at. A table this cannot read, rather than one to read approximately."
@@ -212,6 +242,20 @@ SPANS_COLUMNS = (
     "which column it continues is not settled by where it begins. Kept verbatim under "
     "`unresolved` rather than cut at the columns, which would file its fragments under "
     "headings they have nothing to do with."
+)
+
+UNNAMED_COLUMN = (
+    "{found} cells right of the `{named}` column, which is the last one this table's "
+    "header names. The table has a column the header does not, so what these hold is not "
+    "settled by any heading: they are kept verbatim under `unresolved`, in the order the "
+    "page prints them."
+)
+
+UNNAMED_COLUMN_INSIDE = (
+    "this row holds more cells than its header names columns, and the header names columns "
+    "past the ones a table opens with -- so the extra column may sit anywhere among them, "
+    "and reading the cells in the header's order would put every value after it under the "
+    "heading of the column to its left. Which cell is which is a question for a reader."
 )
 
 UNRESOLVED_TAIL = (
@@ -284,10 +328,17 @@ class Grid:
                 out[name] = value
         return out
 
-    def rest_cells(self, line: str, starts: list[int]) -> list[str]:
+    def rest_cells(self, line: str, starts: list[int]) -> list[tuple[int, str]]:
+        """The cells right of the fixed part, each with the column it begins at.
+
+        The column comes back with the text because the first of these cells is
+        the only one whose heading can be told from where it sits: it is in the
+        last column the grid pinned down. Everything further right is set against
+        its own contents.
+        """
         edge = starts[len(self.head) - 1]
         return [
-            found.group().strip()
+            (_column_of(line, found.start()), found.group().strip())
             for found in _CELL.finditer(line)
             if _column_of(line, found.start()) >= edge
         ]
@@ -300,17 +351,46 @@ def header_columns(line: str) -> list[str] | None:
     rest are optional and several tables do without them: a drum setup table
     states no initial value, so a parser requiring one would read its rows as
     malformed rather than as rows of a table that states less.
+
+    Matched a printed cell at a time rather than by searching the line for each
+    label in turn. The two columns a table can leave out are both called
+    `Description`, and a search takes the first one it finds: on a table printing
+    `Parameter | Default Value (H) | Description` the search read the trailing
+    label as the description column, found no `Default` after it, and named five
+    columns for a table that prints six. Every row under it then had the marker
+    beside its parameter filed as a description -- a heading the page states
+    nothing under, on rows nothing flagged.
+
+    A cell may name more than one column, because a page set in two columns can
+    put `Address(H) Size(H)` a single space apart and that is one cell; and a
+    label is matched with the printing's own hyphenation taken out, because a
+    header breaking `Descrip-tion` across two lines names the column its rows are
+    set under just the same.
     """
     names: list[str] = []
-    cursor = 0
-    for name, labels in HEADINGS:
-        for label in labels:
-            index = line.find(label, cursor)
-            if index >= 0:
-                names.append(name)
-                cursor = index + len(label)
-                break
+    heading = 0
+    for found in _CELL.finditer(line):
+        cell = found.group().replace("-", "")
+        cursor = 0
+        while (hit := _labelled(cell, cursor, heading)) is not None:
+            heading, name, cursor = hit[0] + 1, hit[1], hit[2] + 1
+            names.append(name)
     return names if {"address", "data"} <= set(names) else None
+
+
+def _labelled(cell: str, cursor: int, heading: int) -> tuple[int, str, int] | None:
+    """The first heading from `heading` on whose label this cell carries.
+
+    Headings with no label in the cell are passed over rather than consumed, so a
+    cell holding none of them leaves the search where it was. Consuming them would
+    let one line of prose use up the headings the header two lines below it names.
+    """
+    for position in range(heading, len(HEADINGS)):
+        name, labels = HEADINGS[position]
+        found = [at for label in labels if (at := cell.find(label, cursor)) >= 0]
+        if found:
+            return position, name, min(found)
+    return None
 
 
 def last_header(text: str) -> list[str] | None:
@@ -328,6 +408,50 @@ def last_header(text: str) -> list[str] | None:
         if names:
             found = names
     return found
+
+
+def header_above(page_text_of: Callable[[int], str], page: int) -> list[str] | None:
+    """The columns of the table still open above this page, if any.
+
+    A table carries its header once and its rows on every page after, so a page
+    inside one opens with rows under nothing. Looking only at the page before
+    finds the header for the second page of a table and nothing for the third,
+    which is how the last page of a fourteen-page map came out as a page holding
+    no table at all.
+
+    So the walk goes back until a page names a header. It stops at any page
+    holding no row this could be a continuation of: a page of prose ends a table,
+    and carrying a heading across one would head a later table with the columns of
+    an earlier one.
+
+    @param page_text_of the document's pages, by the file's own numbering
+    @param page the page being read, which is not itself looked at
+    """
+    while page > 1:
+        page -= 1
+        text = page_text_of(page)
+        names = last_header(text)
+        if names:
+            return names
+        if not holds_rows(text):
+            return None
+    return None
+
+
+def holds_rows(text: str) -> bool:
+    """Whether any line on this page opens with something shaped like an address.
+
+    Asked of the pages between a table's header and the page being read, to tell a
+    page still under that header from one that ended it. A page of prose holds no
+    such line, and a table's rows are nothing but such lines.
+    """
+    for line in text.splitlines():
+        starts = cell_starts(line)
+        if not starts:
+            continue
+        if _ADDRESS.match(_cut(line, starts[0], starts[1] if len(starts) > 1 else None)):
+            return True
+    return False
 
 
 def grid_of(lines: list[str], names: list[str], page: int) -> Grid | None:
@@ -441,8 +565,26 @@ def read_address_map(text: str, page: int, carried: list[str] | None = None) -> 
                 out.not_extracted.append({"page": page, "line": line.strip(), "why": OFF_THE_GRID})
                 row = None
                 continue
-            row = {**grid.fixed_cells(line, starts), "page": page, "read_by": "parser"}
-            _fill(row, grid, grid.rest_cells(line, starts))
+            if len(starts) > len(grid.names) > len(OPENING):
+                out.not_extracted.append(
+                    {"page": page, "line": line.strip(), "why": UNNAMED_COLUMN_INSIDE}
+                )
+                row = None
+                continue
+            cells = grid.fixed_cells(line, starts)
+            # A page set in two columns puts an unrelated line beside this one, and
+            # the extraction can join two printed cells with a single space -- so
+            # the grid agrees, the cut is one column wide, and it holds two values.
+            # Nothing about the position says so; the size is the one cell whose
+            # shape does, and it is the cell the join lands in.
+            if "size" in cells and not _SIZE.match(cells["size"]):
+                out.not_extracted.append(
+                    {"page": page, "line": line.strip(), "why": SIZE_SPANS_COLUMNS}
+                )
+                row = None
+                continue
+            row = {**cells, "page": page, "read_by": "parser"}
+            _fill(row, grid, grid.rest_cells(line, starts), starts[len(grid.head) - 1])
             out.rows.append(row)
 
     for row in out.rows:
@@ -451,22 +593,37 @@ def read_address_map(text: str, page: int, carried: list[str] | None = None) -> 
     return out
 
 
-def _fill(row: dict, grid: Grid, cells: list[str]) -> None:
+def _fill(row: dict, grid: Grid, cells: list[tuple[int, str]], edge: int) -> None:
     """Put a row's right-hand cells in the columns the header names for them.
 
     In order when there are as many as there are columns, which is the ordinary
     case. Otherwise nothing is assigned: the cells are kept verbatim and the row
     says which columns are unsettled, because a value put in the wrong one of
     three columns reads exactly like a value in the right one.
+
+    The one exception is a table with a column its header does not name. There the
+    header names a single column after the fixed part and the rows carry two or
+    three cells, and which of them is the named one is not in doubt: the first one
+    begins in the column the grid pinned down, and everything after it is set
+    against its own contents further right. Refusing those left two hundred rows
+    of one document stating no parameter at all -- not because the reading was
+    unsettled, but because the count did not match.
+
+    @param edge the column the fixed part ends at, which the named cell begins in
     """
     wanted = grid.rest
     if len(cells) == len(wanted):
-        for name, value in zip(wanted, cells, strict=True):
+        for name, (_, value) in zip(wanted, cells, strict=True):
             if value:
                 row[name] = value
         return
+    if len(wanted) == 1 and len(cells) > 1 and abs(cells[0][0] - edge) <= NEARBY:
+        row[wanted[0]] = cells[0][1]
+        row["unresolved"] = [value for _, value in cells[1:]]
+        row["needs_review"] = UNNAMED_COLUMN.format(found=len(cells) - 1, named=wanted[0])
+        return
     if cells:
-        row["unresolved"] = cells
+        row["unresolved"] = [value for _, value in cells]
         row["needs_review"] = UNRESOLVED_TAIL.format(found=len(cells), wanted=len(wanted))
 
 

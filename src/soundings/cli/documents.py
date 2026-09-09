@@ -183,15 +183,12 @@ def _in_file(meta: dict, printed: int) -> int:
 
 
 def _carried(pdf: str, page: int) -> list[str] | None:
-    """The columns the page before this one left open, if any.
+    """The columns of the table still open above this page, if any.
 
-    A table longer than a page carries its header only on the first of them, so
-    the page after opens with rows under nothing. Costs one more read of the
-    document and is the difference between reading those rows and losing them.
+    Costs a read of each page walked back over, and is the difference between
+    reading the rows on a table's later pages and losing them.
     """
-    if page <= 1:
-        return None
-    return documents.last_header(documents.page_text(pdf, page - 1))
+    return documents.header_above(lambda at: documents.page_text(pdf, at), page)
 
 
 def _read(args, meta: dict) -> documents.Reading:
@@ -223,6 +220,31 @@ def _show(args) -> int:
     return 0
 
 
+def _forget(path: Path, args) -> int:
+    """Drop what the parser filed against a page a reader says holds no table.
+
+    A page of prose set in two columns puts an unrelated line beside another and
+    reads as a table header, and the parser then files a note saying the table
+    under it could not be read. Left in place beside a `no tables` verdict the
+    two contradict each other, and the note is the one that gets counted: it
+    names a table nobody claims is there.
+    """
+    table_path = path.parent / f"{args.table}.json"
+    if not table_path.exists():
+        return 0
+    table = documents.load(table_path)
+    kept = {
+        "rows": [row for row in table["rows"] if row["page"] != args.page],
+        "not_extracted": [
+            missed for missed in table["not_extracted"] if missed["page"] != args.page
+        ],
+    }
+    dropped = sum(len(table[name]) - len(kept[name]) for name in kept)
+    if dropped:
+        documents.save(table_path, {k: kept.get(k, v) for k, v in table.items() if k != "record"})
+    return dropped
+
+
 def _add(args) -> int:
     path = _record_path(args)
     meta = documents.load(path)
@@ -231,7 +253,9 @@ def _add(args) -> int:
     if args.no_tables:
         meta["pages"][page] = documents.NO_TABLES
         documents.save(path, {k: v for k, v in meta.items() if k != "record"})
-        print(f"page {page}: no tables")
+        dropped = _forget(path, args)
+        also = f", {dropped} parser notes dropped" if dropped else ""
+        print(f"page {args.page}: no tables{also}")
         return 0
 
     reading = _read(args, meta)
