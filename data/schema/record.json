@@ -57,6 +57,14 @@
           "format": "date-time",
           "description": "When the record was written, UTC. Named measured_at rather than captured because captured is already a prose description of a moment in the power-on record, and one name must not carry two meanings. Null only where `not_recorded` names it."
         },
+        "elapsed_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Seconds from the start of the run to the moment this file was written, which for a stage that writes as it goes is how far it had got rather than how long it took in the end. Null where the run predates the field, which is not the same as a run that took no time. Measured on a monotonic clock, so a clock adjustment during a long run cannot shorten it."
+        },
         "midi_device_id": {
           "type": [
             "string",
@@ -93,7 +101,8 @@
             }
           }
         }
-      }
+      },
+      "description": null
     },
     "findings": {
       "type": "array",

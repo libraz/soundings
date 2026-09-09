@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +38,14 @@ SCHEMA_VERSION = 1
 It moves when the envelope gains or loses a field, so a reader can say which
 shape it is holding. A stage's payload changing shape is not this version's
 business: the payloads are many and this is one.
+"""
+
+ELAPSED = "elapsed_s"
+"""How long the run had been going when this record was written.
+
+Null where a run predates the field, which is not the same as a run that took no
+time; those records name it in `not_recorded` alongside the rest of what they
+cannot say.
 """
 
 MEASURED_AT = "measured_at"
@@ -63,6 +72,19 @@ class Invocation:
     stage: str
     argv: list[str] = field(default_factory=list)
     midi_device_id: str | None = None
+    started: float = field(default_factory=time.monotonic)
+    """When the run began, so a record can say how long it took to produce.
+
+    Kept because the archive could not answer that question about itself. Of the
+    records written before this field existed, one carried an elapsed time, and
+    every estimate of what a stage costs on the next unit had to be recovered
+    from the timestamps in a shell log -- where most runs left none at all. A
+    plan is then built on guesses about work already done.
+
+    Monotonic, so a clock adjustment during an overnight run cannot produce a
+    negative duration or a jump. The wall-clock moment is `measured_at`, which
+    is a different question and answers it separately.
+    """
 
 
 _current: Invocation | None = None
@@ -182,6 +204,12 @@ def envelope(payload: dict, *, out_path: str | Path) -> dict:
         "stage": invocation.stage if invocation else None,
         "invocation": _tidied(invocation.argv) if invocation else None,
         MEASURED_AT: datetime.now(UTC).replace(microsecond=0).isoformat(),
+        # Seconds from the start of the run to this write, not to its end. A
+        # stage that writes as it goes -- and the long ones all do, so that an
+        # interruption keeps what it had -- writes this many times, and the last
+        # value is the one that describes the whole run. An earlier one describes
+        # how far it had got, which is what a reader of a stopped record wants.
+        ELAPSED: round(time.monotonic() - invocation.started, 1) if invocation else None,
         "midi_device_id": invocation.midi_device_id if invocation else None,
     }
     return {"record": stamp, **payload}
