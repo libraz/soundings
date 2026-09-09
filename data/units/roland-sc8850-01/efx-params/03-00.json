@@ -1,0 +1,571 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-params",
+    "invocation": [
+      "efx-params",
+      ".cache/efx-params-03-00-inmap",
+      "--slots",
+      "40 03 03",
+      "40 03 04",
+      "40 03 05",
+      "40 03 06",
+      "40 03 07",
+      "40 03 08",
+      "40 03 09",
+      "40 03 0A",
+      "40 03 0B",
+      "40 03 0C",
+      "40 03 0D",
+      "40 03 0E",
+      "40 03 0F",
+      "40 03 10",
+      "40 03 11",
+      "40 03 12",
+      "40 03 13",
+      "40 03 14",
+      "40 03 15",
+      "40 03 16",
+      "--type",
+      "03 00",
+      "--types-from",
+      "data/units/roland-sc8850-01/efx-map/types.json",
+      "--control",
+      ".cache/efx-params-03-00-inmap/control-routing.json",
+      "--prepare",
+      "40 03 00=03 00",
+      "--prepare",
+      "40 42 22=01",
+      "--out",
+      "data/units/roland-sc8850-01/efx-params/03-00.json"
+    ],
+    "measured_at": "2026-09-08T20:59:02+00:00",
+    "midi_device_id": null
+  },
+  "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
+  "type": "03 00",
+  "prepared": [
+    {
+      "address": "40 03 00",
+      "bytes": "03 00"
+    },
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    }
+  ],
+  "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
+  "method": "Each of the type's parameter addresses was written at two settings, four takes each, and the takes of one setting compared with each other to measure what the unit fails to repeat before the two settings were compared with each other. The change has to clear that by the margin. Level is judged apart from shape, because the alignment divides out the best fitting gain and a parameter that only moves the level would otherwise read as no change at all. The accepted range for each address was measured with this type loaded rather than carried from a probe taken with no effect loaded, since what an address accepts can depend on what is in it.",
+  "positive_control": {
+    "address": "40 42 22",
+    "values": [
+      0,
+      1
+    ],
+    "audible": true,
+    "shape_db": -0.53,
+    "repeatability_db": -0.89,
+    "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
+  },
+  "results": {
+    "audible": 2,
+    "no yardstick under the note asked, so not asked": 17,
+    "asked": 19
+  },
+  "coverage": {
+    "slots": 20,
+    "answered": 19,
+    "never_asked": [
+      "40 03 14"
+    ],
+    "outside_the_slots": []
+  },
+  "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
+  "why_slots_in_order": "Which slot each address is was given to the fold in order, not inferred from the records that happened to be present. A slot read off the sorted file names moves every later parameter up by one whenever a record is missing, and each of them is then reported against the default belonging to the slot before it -- a wrong number in the archive rather than a missing one.",
+  "parameters": [
+    {
+      "type": "03 00",
+      "parameter": 0,
+      "address": "40 03 03",
+      "default": 13,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.99,
+        -1.4
+      ],
+      "same_setting_residual_db": -0.72,
+      "across_setting_residual_db": -0.53,
+      "across_setting_level_db": 24.485,
+      "noise_floor_db": -42.64,
+      "changed_the_shape": false,
+      "changed_the_level": true,
+      "why": "The two settings differ by more than the takes of either do, so the verdict stands. The setting away from the default also repeats far worse than the one at it, which is what a free-running modulator does, so this address started something moving as well as changing the sound."
+    },
+    {
+      "type": "03 00",
+      "parameter": 1,
+      "address": "40 03 04",
+      "default": 1,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.86,
+        -1.21
+      ],
+      "same_setting_residual_db": -0.68,
+      "across_setting_residual_db": -0.74,
+      "across_setting_level_db": 6.575,
+      "noise_floor_db": -50.8,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 2,
+      "address": "40 03 05",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.98,
+        -0.66
+      ],
+      "same_setting_residual_db": -0.62,
+      "across_setting_residual_db": -0.72,
+      "across_setting_level_db": 6.219,
+      "noise_floor_db": -49.0,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 3,
+      "address": "40 03 06",
+      "default": 72,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.08,
+        -1.37
+      ],
+      "same_setting_residual_db": -0.74,
+      "across_setting_residual_db": -0.75,
+      "across_setting_level_db": 6.531,
+      "noise_floor_db": -48.75,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 4,
+      "address": "40 03 07",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.9,
+        -1.03
+      ],
+      "same_setting_residual_db": -0.69,
+      "across_setting_residual_db": -0.75,
+      "across_setting_level_db": 6.406,
+      "noise_floor_db": -48.77,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 5,
+      "address": "40 03 08",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.15,
+        -0.9
+      ],
+      "same_setting_residual_db": -0.7,
+      "across_setting_residual_db": -0.21,
+      "across_setting_level_db": -11.27,
+      "noise_floor_db": -58.18,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 6,
+      "address": "40 03 09",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.99,
+        -1.71
+      ],
+      "same_setting_residual_db": -0.85,
+      "across_setting_residual_db": -0.51,
+      "across_setting_level_db": 2.314,
+      "noise_floor_db": -51.79,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 7,
+      "address": "40 03 0A",
+      "default": 6,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.98,
+        -0.99
+      ],
+      "same_setting_residual_db": -0.82,
+      "across_setting_residual_db": -0.96,
+      "across_setting_level_db": 7.055,
+      "noise_floor_db": -48.86,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 8,
+      "address": "40 03 0B",
+      "default": 113,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.23,
+        -0.86
+      ],
+      "same_setting_residual_db": -0.7,
+      "across_setting_residual_db": -0.74,
+      "across_setting_level_db": 6.1,
+      "noise_floor_db": -48.72,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 9,
+      "address": "40 03 0C",
+      "default": 24,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.66,
+        -1.11
+      ],
+      "same_setting_residual_db": -0.62,
+      "across_setting_residual_db": -0.9,
+      "across_setting_level_db": 6.393,
+      "noise_floor_db": -48.59,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 10,
+      "address": "40 03 0D",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.86,
+        -1.14
+      ],
+      "same_setting_residual_db": -0.74,
+      "across_setting_residual_db": -0.7,
+      "across_setting_level_db": 6.821,
+      "noise_floor_db": -48.79,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 11,
+      "address": "40 03 0E",
+      "default": 17,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.21,
+        -0.99
+      ],
+      "same_setting_residual_db": -0.73,
+      "across_setting_residual_db": -1.04,
+      "across_setting_level_db": 6.752,
+      "noise_floor_db": -47.83,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 12,
+      "address": "40 03 0F",
+      "default": 120,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.05,
+        -0.89
+      ],
+      "same_setting_residual_db": -0.67,
+      "across_setting_residual_db": -0.71,
+      "across_setting_level_db": 6.539,
+      "noise_floor_db": -48.83,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 13,
+      "address": "40 03 10",
+      "default": 88,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.48,
+        -3.09
+      ],
+      "same_setting_residual_db": -1.07,
+      "across_setting_residual_db": -0.69,
+      "across_setting_level_db": 10.86,
+      "noise_floor_db": -46.38,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 14,
+      "address": "40 03 11",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.18,
+        -3.22
+      ],
+      "same_setting_residual_db": -0.96,
+      "across_setting_residual_db": -0.24,
+      "across_setting_level_db": 1.381,
+      "noise_floor_db": -54.98,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 15,
+      "address": "40 03 12",
+      "default": 96,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.89,
+        -1.55
+      ],
+      "same_setting_residual_db": -0.69,
+      "across_setting_residual_db": -0.48,
+      "across_setting_level_db": 14.768,
+      "noise_floor_db": -45.15,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 16,
+      "address": "40 03 13",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.21,
+        -1.04
+      ],
+      "same_setting_residual_db": -0.88,
+      "across_setting_residual_db": -1.1,
+      "across_setting_level_db": 5.453,
+      "noise_floor_db": -48.86,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 18,
+      "address": "40 03 15",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.91,
+        -1.07
+      ],
+      "same_setting_residual_db": -0.7,
+      "across_setting_residual_db": -0.8,
+      "across_setting_level_db": 6.257,
+      "noise_floor_db": -48.84,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "03 00",
+      "parameter": 19,
+      "address": "40 03 16",
+      "default": 96,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.06,
+        null
+      ],
+      "same_setting_residual_db": -0.46,
+      "across_setting_residual_db": -0.0,
+      "across_setting_level_db": -54.16,
+      "noise_floor_db": -52.17,
+      "changed_the_shape": false,
+      "changed_the_level": true,
+      "why": "The two settings differ by more than the takes of either do, so the verdict stands. The setting away from the default also repeats far worse than the one at it, which is what a free-running modulator does, so this address started something moving as well as changing the sound."
+    }
+  ],
+  "not_established": [
+    "What any audible parameter is, or by how much it moves anything. Two settings were compared and no curve was measured between them.",
+    "Anything about the types not asked. The parameter addresses are shared across types and what each of them holds is not, so this is one type's answer at those addresses.",
+    "That a null does nothing. A parameter heard only on a longer note, at another velocity, under another type's settings, or between two values neither of which is an end of its range would read as inaudible here.",
+    "That a parameter which broke its own yardstick does nothing besides. Whatever else it does sits behind the thing that removed the yardstick."
+  ],
+  "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be one. An address asked a second time names the pair that was withdrawn and why.",
+  "found_by": "Asking the parameters of one type, after the sort that was meant to bound them passed every type the unit has."
+}

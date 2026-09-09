@@ -1,0 +1,584 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-params",
+    "invocation": [
+      "efx-params",
+      ".cache/efx-params-11-04-inmap",
+      "--slots",
+      "40 03 03",
+      "40 03 04",
+      "40 03 05",
+      "40 03 06",
+      "40 03 07",
+      "40 03 08",
+      "40 03 09",
+      "40 03 0A",
+      "40 03 0B",
+      "40 03 0C",
+      "40 03 0D",
+      "40 03 0E",
+      "40 03 0F",
+      "40 03 10",
+      "40 03 11",
+      "40 03 12",
+      "40 03 13",
+      "40 03 14",
+      "40 03 15",
+      "40 03 16",
+      "--type",
+      "11 04",
+      "--types-from",
+      "data/units/roland-sc8850-01/efx-map/types.json",
+      "--control",
+      ".cache/efx-params-11-04-inmap/control-routing.json",
+      "--prepare",
+      "40 03 00=11 04",
+      "--prepare",
+      "40 42 22=01",
+      "--out",
+      "data/units/roland-sc8850-01/efx-params/11-04.json"
+    ],
+    "measured_at": "2026-09-09T00:21:28+00:00",
+    "midi_device_id": null
+  },
+  "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
+  "type": "11 04",
+  "prepared": [
+    {
+      "address": "40 03 00",
+      "bytes": "11 04"
+    },
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    }
+  ],
+  "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
+  "method": "Each of the type's parameter addresses was written at two settings, four takes each, and the takes of one setting compared with each other to measure what the unit fails to repeat before the two settings were compared with each other. The change has to clear that by the margin. Level is judged apart from shape, because the alignment divides out the best fitting gain and a parameter that only moves the level would otherwise read as no change at all. The accepted range for each address was measured with this type loaded rather than carried from a probe taken with no effect loaded, since what an address accepts can depend on what is in it.",
+  "positive_control": {
+    "address": "40 42 22",
+    "values": [
+      0,
+      1
+    ],
+    "audible": true,
+    "shape_db": -0.59,
+    "repeatability_db": -1.18,
+    "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
+  },
+  "results": {
+    "not audible under the note asked": 12,
+    "audible": 3,
+    "no yardstick under the note asked, so not asked": 3,
+    "started something that does not repeat": 2,
+    "asked": 20
+  },
+  "coverage": {
+    "slots": 20,
+    "answered": 20,
+    "never_asked": [],
+    "outside_the_slots": []
+  },
+  "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
+  "why_slots_in_order": "Which slot each address is was given to the fold in order, not inferred from the records that happened to be present. A slot read off the sorted file names moves every later parameter up by one whenever a record is missing, and each of them is then reported against the default belonging to the slot before it -- a wrong number in the archive rather than a missing one.",
+  "parameters": [
+    {
+      "type": "11 04",
+      "parameter": 0,
+      "address": "40 03 03",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.94,
+        -30.85
+      ],
+      "same_setting_residual_db": -30.13,
+      "across_setting_residual_db": -30.47,
+      "across_setting_level_db": 0.027,
+      "noise_floor_db": -58.99,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 1,
+      "address": "40 03 04",
+      "default": 48,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -17.01,
+        -33.45
+      ],
+      "same_setting_residual_db": -16.67,
+      "across_setting_residual_db": -4.1,
+      "across_setting_level_db": 18.476,
+      "noise_floor_db": -44.82,
+      "changed_the_shape": true,
+      "changed_the_level": true,
+      "why": "The two settings differ by more than the takes of either do, so the verdict stands. The setting away from the default also repeats far worse than the one at it, which is what a free-running modulator does, so this address started something moving as well as changing the sound."
+    },
+    {
+      "type": "11 04",
+      "parameter": 2,
+      "address": "40 03 05",
+      "default": 1,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.36,
+        -1.09
+      ],
+      "same_setting_residual_db": -0.63,
+      "across_setting_residual_db": -0.61,
+      "across_setting_level_db": 9.787,
+      "noise_floor_db": -47.82,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "11 04",
+      "parameter": 3,
+      "address": "40 03 06",
+      "default": 1,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -28.16,
+        -28.48
+      ],
+      "same_setting_residual_db": -27.23,
+      "across_setting_residual_db": -27.56,
+      "across_setting_level_db": 0.025,
+      "noise_floor_db": -56.3,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 4,
+      "address": "40 03 07",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.72,
+        -31.03
+      ],
+      "same_setting_residual_db": -30.03,
+      "across_setting_residual_db": -30.39,
+      "across_setting_level_db": 0.032,
+      "noise_floor_db": -59.01,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 5,
+      "address": "40 03 08",
+      "default": 6,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.48,
+        -31.52
+      ],
+      "same_setting_residual_db": -30.34,
+      "across_setting_residual_db": -30.66,
+      "across_setting_level_db": 0.016,
+      "noise_floor_db": -59.0,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 6,
+      "address": "40 03 09",
+      "default": 113,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.9,
+        -30.93
+      ],
+      "same_setting_residual_db": -29.98,
+      "across_setting_residual_db": -30.45,
+      "across_setting_level_db": -0.03,
+      "noise_floor_db": -59.01,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 7,
+      "address": "40 03 0A",
+      "default": 24,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.62,
+        -31.24
+      ],
+      "same_setting_residual_db": -29.47,
+      "across_setting_residual_db": -30.61,
+      "across_setting_level_db": -0.026,
+      "noise_floor_db": -59.03,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 8,
+      "address": "40 03 0B",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.96,
+        -34.18
+      ],
+      "same_setting_residual_db": -30.88,
+      "across_setting_residual_db": -30.8,
+      "across_setting_level_db": 0.005,
+      "noise_floor_db": -58.96,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 9,
+      "address": "40 03 0C",
+      "default": 17,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -31.45,
+        -31.18
+      ],
+      "same_setting_residual_db": -29.73,
+      "across_setting_residual_db": -30.61,
+      "across_setting_level_db": 0.018,
+      "noise_floor_db": -59.06,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 10,
+      "address": "40 03 0D",
+      "default": 120,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -31.03,
+        -31.55
+      ],
+      "same_setting_residual_db": -29.68,
+      "across_setting_residual_db": -29.8,
+      "across_setting_level_db": -0.018,
+      "noise_floor_db": -59.05,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 11,
+      "address": "40 03 0E",
+      "default": 88,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -32.58,
+        -33.04
+      ],
+      "same_setting_residual_db": -31.93,
+      "across_setting_residual_db": -30.11,
+      "across_setting_level_db": -0.034,
+      "noise_floor_db": -59.01,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 12,
+      "address": "40 03 0F",
+      "default": 64,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.18,
+        -1.75
+      ],
+      "same_setting_residual_db": -0.99,
+      "across_setting_residual_db": -0.26,
+      "across_setting_level_db": 5.051,
+      "noise_floor_db": -53.02,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "11 04",
+      "parameter": 13,
+      "address": "40 03 10",
+      "default": 96,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "no yardstick under the note asked, so not asked",
+      "conclusive": false,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -0.98,
+        -1.25
+      ],
+      "same_setting_residual_db": -0.68,
+      "across_setting_residual_db": -0.49,
+      "across_setting_level_db": 14.489,
+      "noise_floor_db": -46.91,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "11 04",
+      "parameter": 14,
+      "address": "40 03 11",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.66,
+        -30.83
+      ],
+      "same_setting_residual_db": -30.37,
+      "across_setting_residual_db": -31.07,
+      "across_setting_level_db": 0.011,
+      "noise_floor_db": -59.02,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 15,
+      "address": "40 03 12",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -1.51,
+        -10.49
+      ],
+      "same_setting_residual_db": -0.76,
+      "across_setting_residual_db": -0.28,
+      "across_setting_level_db": 23.568,
+      "noise_floor_db": -48.16,
+      "changed_the_shape": false,
+      "changed_the_level": true,
+      "why": "The two settings differ by more than the takes of either do, so the verdict stands. The setting away from the default also repeats far worse than the one at it, which is what a free-running modulator does, so this address started something moving as well as changing the sound."
+    },
+    {
+      "type": "11 04",
+      "parameter": 16,
+      "address": "40 03 13",
+      "default": 96,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "started something that does not repeat",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -34.18,
+        -0.75
+      ],
+      "same_setting_residual_db": -0.68,
+      "across_setting_residual_db": -0.03,
+      "across_setting_level_db": -16.135,
+      "noise_floor_db": -62.23,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "The change does not clear this address's own repeatability, so nothing here is a difference between the settings. What separates them is that one setting repeats and the other does not. A free-running modulator makes the difference method blind, and the asymmetry is what is left to read."
+    },
+    {
+      "type": "11 04",
+      "parameter": 17,
+      "address": "40 03 14",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "started something that does not repeat",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.95,
+        -9.57
+      ],
+      "same_setting_residual_db": -9.05,
+      "across_setting_residual_db": -9.33,
+      "across_setting_level_db": 1.12,
+      "noise_floor_db": -59.06,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "The change does not clear this address's own repeatability, so nothing here is a difference between the settings. What separates them is that one setting repeats and the other does not. A free-running modulator makes the difference method blind, and the asymmetry is what is left to read."
+    },
+    {
+      "type": "11 04",
+      "parameter": 18,
+      "address": "40 03 15",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -30.92,
+        -49.24
+      ],
+      "same_setting_residual_db": -30.91,
+      "across_setting_residual_db": -31.97,
+      "across_setting_level_db": 0.028,
+      "noise_floor_db": -58.97,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "11 04",
+      "parameter": 19,
+      "address": "40 03 16",
+      "default": 127,
+      "asked_at": [
+        127,
+        0
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -31.0,
+        null
+      ],
+      "same_setting_residual_db": -0.42,
+      "across_setting_residual_db": -0.0,
+      "across_setting_level_db": -60.973,
+      "noise_floor_db": -58.99,
+      "changed_the_shape": false,
+      "changed_the_level": true,
+      "why": "Heard on the level and not on the shape: once the best fitting gain is divided out the two settings are the same sound. What this address moves is how much of it there is."
+    }
+  ],
+  "not_established": [
+    "What any audible parameter is, or by how much it moves anything. Two settings were compared and no curve was measured between them.",
+    "Anything about the types not asked. The parameter addresses are shared across types and what each of them holds is not, so this is one type's answer at those addresses.",
+    "That a null does nothing. A parameter heard only on a longer note, at another velocity, under another type's settings, or between two values neither of which is an end of its range would read as inaudible here.",
+    "That a parameter which broke its own yardstick does nothing besides. Whatever else it does sits behind the thing that removed the yardstick."
+  ],
+  "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be one. An address asked a second time names the pair that was withdrawn and why.",
+  "found_by": "Asking the parameters of one type, after the sort that was meant to bound them passed every type the unit has."
+}
