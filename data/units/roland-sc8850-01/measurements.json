@@ -1170,6 +1170,26 @@
         "Whether the offset answers on a rhythm part under some other note. Part 10 was asked with the same melodic stimuli every other part got, and a soft pedal on a drum part is a question those notes may simply not carry."
       ],
       "reproduced": "An earlier pass asked these same five offsets on part 1 with a stimulus that sent a soft pedal together with a portamento, and could measure nothing at all: the glide is a pitch sweep landing differently on every strike, and it took takes of one setting to under a decibel apart. Splitting the pedal out is what made the address answerable, and the split is what the two yardsticks either side of it record."
+    },
+    {
+      "id": "a-region-read-and-a-single-read-reach-different-bytes-of-one-block",
+      "summary": "40 03 and 50 03 each hold thirty bytes a read can reach and they are not the same thirty. A region read starting at 00 reaches offsets 00 and 01 and 03 through 1E; a single-byte read answers at 00 and at 03 through 1F. So 01 comes back only inside a longer read, 1F only when asked on its own, and 02 is reached by neither. A request that spans what it cannot return is answered with fewer bytes than it asked for, and the reply carries only the address it starts at -- so counting up from that start puts every byte after the gap on the address below its own.",
+      "method": "Every start from 00 to 05 asked at every size from 1 to 32, on both blocks, and every start from 40 02 7C to 7F asked at every size from 1 to 40, which is where a request from the block before would have to begin to run into 40 03 02. Each request is asked twice and recorded only where the two replies agree. Reads only; a canary is asked before and after each block.",
+      "results": {
+        "from 00": "sizes 1 and 2 answered exactly; size 3 answered nothing at all; sizes 4 to 31 answered one byte short; size 32 answered two short, returning 30",
+        "from 01 and from 02": "no reply at any of the 32 sizes, on either block",
+        "from 03": "sizes 1 to 28 answered exactly; 29 and above answered 28, so a region read from 03 stops at 1E",
+        "the arithmetic": "00 and 01, then 03 to 1E, is thirty bytes, which is what a request for 32 from 00 returns",
+        "checksums": "every reply that came back verified",
+        "the two asks": "agreed at every one of the 424 shapes",
+        "50 03": "identical to 40 03 at every shape"
+      },
+      "not_established": [
+        "What 40 03 02 holds, or whether it holds anything. No shape among the 232 asked of each block covers it and is answered exactly, and the four starts at the end of the block before answer nothing at any size, so there is no request left to ask it with.",
+        "Whether this is true of any block other than these two. They are the only two the power-on capture found answering short, out of 851 regions.",
+        "Why the unit answers this way. The reply is well formed and its checksum verifies, so this is what the unit sends rather than what the path did to it."
+      ],
+      "reproduced": true
     }
   ]
 }
