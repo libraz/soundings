@@ -275,6 +275,22 @@ class ResetResult:
         }
 
 
+def _mark_for(current: int | None, accepted: list[int] | None) -> int:
+    """A value this address will take that is not the one it is holding.
+
+    The point of a mark is that the address stops holding what it held, so the
+    only thing that disqualifies a value is being the current one. Where a write
+    probe measured which values the address takes, the mark comes from that list;
+    where it did not, the two fixed marks are used and one of them is always
+    different from the other.
+    """
+    if accepted:
+        for value in accepted:
+            if value != current:
+                return value
+    return MARKS[0] if current != MARKS[0] else MARKS[1]
+
+
 class Prober:
     def __init__(
         self,
@@ -305,6 +321,7 @@ class Prober:
         progress=None,
         canary: Address | None = None,
         every: int = 250,
+        accepts: dict[Address, list[int]] | None = None,
     ) -> tuple[dict[Address, int], list[Address]]:
         """Write a mark to each address and keep only the ones that took it.
 
@@ -313,6 +330,14 @@ class Prober:
         the run would go on to credit the subject with restoring a space it never
         broke. The one thing it must not do is fail silently: a loop this long
         with nothing coming out of it is where an abort has no location.
+
+        `accepts` gives, per address, the values a write probe measured it to
+        take. Where an address has an entry the mark is chosen from that list
+        rather than from the two below, because the two are outside the range of
+        every address that has one -- and an address with a range is what a
+        document describes. Marking those with a value they refuse would report
+        the whole documented space as refusing the mark, which reads as a unit
+        that cannot be broken rather than a probe asking with the wrong value.
         """
         marked: dict[Address, int] = {}
         refused: list[Address] = []
@@ -326,7 +351,7 @@ class Prober:
                 if progress:
                     progress(f"marked {len(marked)} of {i} offered")
             current = self.read_byte(address)
-            value = MARKS[0] if current != MARKS[0] else MARKS[1]
+            value = _mark_for(current, (accepts or {}).get(address))
             self.link.send(roland.dt1(address, [value], device_id=self.device_id))
             time.sleep(0.02)
             if self.read_byte(address) == value:

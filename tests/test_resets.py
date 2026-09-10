@@ -328,3 +328,64 @@ def test_a_single_subject_cannot_agree_with_anything():
         ]
     }
     assert not outcomes_agree(payload)["every_subject_sorted_every_byte_the_same_way"]
+
+
+def test_a_mark_comes_from_what_the_address_was_measured_to_take() -> None:
+    """The fixed marks are outside the range of every address that has one.
+
+    A parameter with four settings refuses 2A, so marking the documented space
+    with it reports a unit that cannot be broken rather than a probe asking with
+    the wrong value.
+    """
+    from soundings.resets import MARKS, _mark_for
+
+    # Nothing measured about it: the two fixed marks, and never the one it holds.
+    assert _mark_for(0x00, None) == MARKS[0]
+    assert _mark_for(MARKS[0], None) == MARKS[1]
+
+    # A range it was measured to take: a value from that range, not from MARKS.
+    assert _mark_for(0x00, [0x00, 0x01, 0x02, 0x03]) == 0x01
+    assert _mark_for(0x01, [0x00, 0x01]) == 0x00
+
+    # One value only is no mark at all -- writing what it holds breaks nothing --
+    # and such an address is left out before it gets here.
+    assert _mark_for(0x00, [0x00]) in MARKS
+
+
+def test_the_addresses_a_mark_can_go_in_are_not_only_the_ones_taking_any_value(
+    tmp_path,
+) -> None:
+    """A byte with a range is a byte a document gives a function to."""
+    import json
+
+    from soundings import archive
+
+    probe = tmp_path / "probe.json"
+    probe.write_text(
+        json.dumps(
+            {
+                "regions": [
+                    {
+                        "start": "40 40 20",
+                        "bytes": [
+                            {"address": "40 40 20", "accepted": ["00", "01"],
+                             "classification": "clamps", "restored": True},
+                            {"address": "40 40 21", "accepted": ["00", "01", "02", "03"],
+                             "classification": "refuses out of range", "restored": True},
+                            {"address": "40 40 22", "accepted": ["00", "7F"],
+                             "classification": "accepts", "restored": True},
+                            {"address": "40 40 23", "accepted": ["00"],
+                             "classification": "unchanging", "restored": True},
+                            {"address": "40 40 24", "accepted": ["00", "01"],
+                             "classification": "clamps", "restored": False},
+                        ],
+                    }
+                ]
+            }
+        )
+    )
+    markable = archive.markable_bytes(probe)
+    assert sorted(markable) == ["40 40 20", "40 40 21", "40 40 22"]
+    assert markable["40 40 21"] == [0, 1, 2, 3]
+    # The old reading, kept for what it is: only the byte that takes any value.
+    assert archive.accepting_bytes(probe) == ["40 40 22"]

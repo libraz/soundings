@@ -145,6 +145,31 @@ def accepting_bytes(path: str | Path) -> list[str]:
     ]
 
 
+def markable_bytes(path: str | Path) -> dict[str, list[int]]:
+    """Every address a mark can be put in, and the values it was measured to take.
+
+    Wider than `accepting_bytes`, and the difference is most of the documented
+    space. A reset probe needs a value the address does not already hold; it does
+    not need an address that takes any value at all. Asking only for the latter
+    leaves out every byte with a range -- which is to say every byte a document
+    gives a function to, since a parameter with four settings clamps and a byte
+    nobody defined is the one that accepts anything. On the unit this was written
+    against, 25643 bytes accept any value and a further 11686 hold two or more,
+    so a third of what the write probe reached was outside every reset probe in
+    the archive without anything saying so.
+
+    A byte that took one value has no mark: writing what it already holds breaks
+    nothing, and a reset leaving it alone would read as a reset restoring it.
+    """
+    data = json.loads(Path(path).read_text())
+    return {
+        b["address"]: [int(v, 16) for v in b["accepted"]]
+        for region in data["regions"]
+        for b in region["bytes"]
+        if b.get("restored") and len(b.get("accepted") or []) > 1
+    }
+
+
 def split_off_prefixes(addresses: list[str], prefixes: list[str]) -> tuple[list[str], list[str]]:
     """The addresses to keep, and the ones a prefix asked to leave alone.
 

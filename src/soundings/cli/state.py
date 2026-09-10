@@ -191,7 +191,12 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
     # one block: none of those thirteen were in that probe's accepting set and
     # all of them are in a whole-map one, so the addition was covering for the
     # probe rather than adding to it.
-    wanted = archive.accepting_bytes(args.write_probe)
+    # Every address that can hold a value it is not already holding, which is
+    # what a mark is. Read as "accepts any value" this left out every byte with
+    # a range -- and a byte with a range is a byte a document gives a function
+    # to, since the ones that take anything are mostly the ones nobody defined.
+    accepts = archive.markable_bytes(args.write_probe)
+    wanted = sorted(accepts)
     if args.mark_prefix:
         kept, skipped = archive.keep_only_prefixes(wanted, args.mark_prefix)
     else:
@@ -235,7 +240,12 @@ def cmd_reset_probe(args: argparse.Namespace) -> int:
             prober.apply(opener)
             try:
                 marked, refused = prober.mark(
-                    targets, progress=lambda m: print(f"  {m}"), canary=canary
+                    targets,
+                    progress=lambda m: print(f"  {m}"),
+                    canary=canary,
+                    accepts={
+                        tuple(int(b, 16) for b in a.split()): v for a, v in accepts.items()
+                    },
                 )
             except UnitWentQuiet as exc:
                 # Nothing after this point would be a measurement: the subject
