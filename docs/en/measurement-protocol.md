@@ -82,19 +82,66 @@ the shape was drawn wrongly and is split.
 **Sends reads only, so it belongs before the power-on capture.** Ordering it
 after a stage that writes would cost that capture, which cannot be rebuilt.
 
-### 4. Power-on state
+### 4. What each later stage watches
 
 ```sh
-rye run soundings power-on --map data/units/<unit-id>/sweep/whole-map.json \
-  --unit-id <unit-id> --out data/units/<unit-id>/power-on/whole-map.json
+rye run soundings watch-set data/units/<unit-id> \
+  --out data/units/<unit-id>/watch-set/reachable.json
+rye run soundings watch-set data/units/<unit-id> --keep-windows \
+  --out data/units/<unit-id>/watch-set/with-windows.json
+rye run soundings watch-set data/units/<unit-id> --one-at-a-time \
+  --out data/units/<unit-id>/watch-set/one-at-a-time.json
+```
+
+Asks the records rather than the unit. Every stage from here on takes a `--map`,
+and that map is what bounds every negative finding the stage goes on to make --
+so which map it is given is part of what its records mean.
+
+**It is the union of both reads, and it has to be: neither contains the other.**
+A region read returns one reply for a run of addresses and reaches addresses that
+answer nothing when asked on their own. A single-byte read asks one address and
+reaches addresses that begin where no region does, which is what stage 3 was
+written to find. Giving a stage either half alone leaves a message able to land
+where nothing is looking, and its record then says the message is stored
+nowhere. On the first unit measured this way the sweep's map missed 3650
+addresses that answer a read, and five stages were aimed at it before anyone
+noticed.
+
+Blocks measured to be a window are left out, since a value landing in one lands
+in the store it points at and that store is already watched. `--keep-windows`
+puts them back, for a capture of what each address held rather than of where a
+message goes. `--one-at-a-time` holds only what a single read answers, each its
+own region: a reply to a single read is answered for the address it was asked
+about or not at all, so no byte in it can land on the address below its own.
+
+Nothing here is measured, and the file says so. It is rebuilt from the unit's own
+records whenever those change, and it names them.
+
+### 5. Power-on state
+
+```sh
+rye run soundings power-on --map data/units/<unit-id>/watch-set/with-windows.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/regions.json
+rye run soundings power-on --map data/units/<unit-id>/watch-set/one-at-a-time.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/one-at-a-time.json
 ```
 
 Reads the space twice over and writes nothing. What this produces is the state
 the unit powers up in.
 
+**Taken both ways, after one power cycle, because the two reach different
+addresses.** A region read reaches the ones that answer no single read; a single
+read reaches the ones a short reply would otherwise misplace. One unit answers a
+thirty-two byte request with thirty bytes, reproducibly and with a checksum that
+verifies -- and the two addresses it leaves out are not the two that go silent
+when the same block is asked an offset at a time. Such a reply cannot be laid
+down over the addresses asked for, so it is refused and the region is recorded as
+answered short. The baseline is the union of the two captures, and `soundings
+complete` counts it that way.
+
 **This is the last stage that may be run before a stage that writes.** Stages 1
-to 4 send reads only, so the capture is still a power-on capture when it is
-taken after the sweep. From stage 5 onwards the unit is written to, and the
+to 4 send reads or nothing at all, so the capture is still a power-on capture
+when it is taken after them. From stage 6 onwards the unit is written to, and the
 power-on state is then unavailable until the next power cycle. A map costs a
 sweep to rebuild; this capture cannot be rebuilt at all.
 
@@ -109,7 +156,7 @@ afterwards -- the byte simply reads as having been changed by whichever reset is
 measured against this capture next. Every later reset measurement is compared
 against this file.
 
-### 5. Windows
+### 6. Windows
 
 ```sh
 rye run soundings window-probe --stores <addr> <addr> <candidate>...
@@ -125,10 +172,10 @@ A block found to be a window is named in the records that describe it, and is
 skipped by the stages that would otherwise measure the same store many times
 over under names that keep none of it.
 
-### 6. Accepted values
+### 7. Accepted values
 
 ```sh
-rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings write-probe --map data/units/<unit-id>/watch-set/reachable.json \
   --resume --out data/units/<unit-id>/write-probe/whole-map.json
 ```
 
@@ -141,10 +188,10 @@ would be nothing to put back. Those are recorded as skipped: which of them are
 undefined, rather than reachable only as part of a larger block, is not settled
 by this stage.
 
-### 7. Independent storage
+### 8. Independent storage
 
 ```sh
-rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings hold-probe --map data/units/<unit-id>/watch-set/reachable.json \
   --out data/units/<unit-id>/hold-probe/whole-map.json
 ```
 
@@ -157,10 +204,10 @@ neighbours answer with their own.
 This does not find a block that mirrors another block, which is what stage 5
 asks.
 
-### 8. Aliases
+### 9. Aliases
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings alias-scan --map data/units/<unit-id>/watch-set/reachable.json \
   --kind cc --out data/units/<unit-id>/alias-scan/cc-ch1.json
 ```
 
@@ -178,31 +225,35 @@ whether a location has a third way in. It takes them from that unit's own
 records:
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings alias-scan --map data/units/<unit-id>/watch-set/reachable.json \
   --kind address --addresses-from data/units/<unit-id>/alias-scan/cc-ch1.json \
   --out data/units/<unit-id>/alias-scan/sysex-ch1.json
 ```
 
-### 9. Resets
+### 10. Resets
 
 ```sh
-rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/whole-map.json \
-  --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/one-at-a-time.json \
+  --map data/units/<unit-id>/watch-set/reachable.json \
   --write-probe data/units/<unit-id>/write-probe/whole-map.json \
   --out data/units/<unit-id>/reset-probe/whole-map.json
 ```
 
 Breaks the state before each reset and reads the space afterwards, which
 measures what each reset restores rather than what it is documented to restore.
-Marks are placed only in addresses the write probe found take any value: an
-address that clamps may keep what it had, and a byte that was never broken says
-nothing about the reset.
+A mark is a value the address does not already hold, and it is taken from what
+the write probe measured that address to accept. Read as "any address that takes
+any value" this left out every byte with a range -- which is every byte a
+document gives a function to, since the ones that accept anything are mostly the
+ones nobody defined. A byte measured to take one value has no mark at all and is
+left out: writing what it holds breaks nothing, and a reset leaving it alone
+would then read as a reset restoring it.
 
 Every reset is preceded by the same one, so the results are comparable with each
 other rather than each being read against wherever the previous reset left the
 unit.
 
-### 10. Tones and effects
+### 11. Tones and effects
 
 ```sh
 rye run soundings tone-map --out data/units/<unit-id>/tone-map/map-select-0.json
@@ -214,7 +265,7 @@ taken. A map that samples before sweeping carries the sampling as a caveat;
 `--exhaustive` asks every bank for all 128 programs and is the only form with
 nothing to caveat.
 
-### 11. Repeatability, before any audio comparison
+### 12. Repeatability, before any audio comparison
 
 ```sh
 rye run soundings repeat --audio "<audio interface>" \
@@ -228,7 +279,7 @@ difference" and "no resolution to see one" are the same reading.
 The floor is a property of the unit and the chain together, so it is measured
 per unit and re-measured whenever the chain changes.
 
-### 12. Audible differences
+### 13. Audible differences
 
 ```sh
 rye run soundings contrast --cc 91 --audio "<audio interface>" \
@@ -243,7 +294,7 @@ and this one can.
 `transfer`, `motion` and `decay` measure an analogue path, a time-varying effect
 and an effect's tail. `motion` and `decay` read takes and need no unit attached.
 
-### 13. Whole blocks
+### 14. Whole blocks
 
 ```sh
 rye run soundings plan data/units/<unit-id>/write-probe/whole-map.json "40 11" \

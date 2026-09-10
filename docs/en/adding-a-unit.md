@@ -19,6 +19,13 @@ about: the address, block, effect type or controller the run asked at, with the
 hex cased as the records write it. A run covering the whole of the address map
 rather than one part of it is `whole-map.json`.
 
+One directory under the stages holds no measurement: `watch-set/` is assembled
+from the unit's own sweep and offsets records and says which addresses a later
+stage should watch. It is named after the command that writes it like the rest,
+and each file in it says in its own words that it is not a measurement and which
+records it was built from. Rebuild it whenever those records change; a stage
+aimed at a stale one is bounded by a space the unit is no longer known by.
+
 Two files sit above the stages, because they are the unit rather than a
 measurement of it: `meta.json`, which is its identity, and `measurements.json`,
 which is the behaviours established about it and is kept by hand. A third,

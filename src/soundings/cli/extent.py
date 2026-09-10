@@ -1,10 +1,15 @@
-"""Which addresses are there, and how far a region actually reaches.
+"""Which addresses are there, how far a region reaches, and what to watch for them.
 
-Three commands that write nothing. Each asks the unit for a byte and takes an
-answer as the address existing, so every result here is a negative with one
-positive control behind it: an address known to answer, asked between questions,
-because a unit that stopped talking answers nothing to all of them and that is
-indistinguishable from a space that holds nothing.
+Four commands that write nothing. Three of them ask the unit for a byte and take
+an answer as the address existing, so every result they give is a negative with
+one positive control behind it: an address known to answer, asked between
+questions, because a unit that stopped talking answers nothing to all of them and
+that is indistinguishable from a space that holds nothing.
+
+The fourth asks the records rather than the unit. What it produces is the set of
+addresses a later stage watches, which is what bounds every negative that stage
+goes on to make -- so it belongs beside the commands that established the space,
+and it is built from that unit's own records rather than carried between units.
 """
 
 from __future__ import annotations
@@ -125,6 +130,33 @@ def register(sub) -> None:
     options.add_verify_reads(p)
     options.add_out(p)
     p.set_defaults(func=cmd_offsets)
+
+    p = sub.add_parser(
+        "watch-set",
+        help="assemble the addresses a stage should watch, out of what this unit has "
+        "answered, since the sweep alone bounds which blocks exist and not which "
+        "addresses do",
+    )
+    p.add_argument("unit", help="the unit's directory, whose sweep and offsets records are read")
+    p.add_argument(
+        "--keep-windows",
+        action="store_true",
+        help="keep the blocks measured to be a window onto another block. For a capture of "
+        "what each address held, where a window holding what it points at is a value worth "
+        "having. Wrong for a scan that attributes a message to a store, which would then "
+        "report one store as two",
+    )
+    p.add_argument(
+        "--one-at-a-time",
+        action="store_true",
+        help="only the addresses an offsets record has seen answer a single-byte read, each "
+        "its own region. A reply to a single read is answered for the address it was asked "
+        "about or not at all, so no byte in it can land on the address below its own -- which "
+        "a reply shorter than a region read has been measured to do. It reaches less, so it "
+        "is one half of a capture rather than a capture",
+    )
+    options.add_out(p)
+    p.set_defaults(func=cmd_watch_set)
 
 
 def cmd_sweep(args: argparse.Namespace) -> int:
@@ -280,3 +312,23 @@ def cmd_boundary(args: argparse.Namespace) -> int:
     )
     report.write_json(args.out, result)
     return 1 if deaf else 0
+
+
+def cmd_watch_set(args: argparse.Namespace) -> int:
+    """Assemble the addresses a later stage should watch, out of this unit's records."""
+    from .. import watching
+
+    unit = Path(args.unit)
+    try:
+        built = watching.build(
+            unit, keep_windows=args.keep_windows, one_at_a_time=args.one_at_a_time
+        )
+    except FileNotFoundError as exc:
+        raise SystemExit(str(exc)) from exc
+    print(
+        f"{built['addresses']} addresses in {len(built['regions'])} regions, "
+        f"windows {'kept' if args.keep_windows else 'left out'}, "
+        f"asked {'one at a time' if args.one_at_a_time else 'as runs'}"
+    )
+    report.write_json(args.out, built)
+    return 0

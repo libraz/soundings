@@ -52,22 +52,45 @@ rye run soundings offsets "40 10 00:128" ... --canary <addr> \
 
 **読み出ししか送らないので、電源投入時の状態を取得するより前に置きます。** 書き込みを行う段階の後ろに置くと、その取得の機会を失います。取得はやり直せません。
 
-### 4. 電源投入時の状態
+### 4. 以降の各段階が見張る集合
 
 ```sh
-rye run soundings power-on --map data/units/<unit-id>/sweep/whole-map.json \
-  --unit-id <unit-id> --out data/units/<unit-id>/power-on/whole-map.json
+rye run soundings watch-set data/units/<unit-id> \
+  --out data/units/<unit-id>/watch-set/reachable.json
+rye run soundings watch-set data/units/<unit-id> --keep-windows \
+  --out data/units/<unit-id>/watch-set/with-windows.json
+rye run soundings watch-set data/units/<unit-id> --one-at-a-time \
+  --out data/units/<unit-id>/watch-set/one-at-a-time.json
+```
+
+機体ではなく記録に問い合わせます。ここから先の段階はすべて `--map` を取り、**その地図が、その段階の出すあらゆる否定的所見の範囲を決めます**。どの地図を渡したかは、その記録が何を意味するかの一部です。
+
+**これは 2 種類の読みの合併であり、そうでなければなりません。どちらも他方を含まないからです。** 領域読みは連続したアドレスに 1 つの返答を返し、単体で問うと何も答えないアドレスに届きます。単体読みは 1 アドレスを問い、どの領域も始まっていない場所から始まるアドレスに届きます——段階 3 が見つけるのはこれです。片方だけを渡すと、メッセージが「誰も見ていない場所」に着地でき、記録は「どこにも保存されない」と言います。この方法で最初に測った機体では、スイープの地図は**応答するアドレスを 3,650 個取りこぼしており**、5 つの段階がそれを狙って走った後で気づきました。
+
+窓と判定されたブロックは外します。そこに着地した値は、窓が指している記憶領域に着地し、その記憶領域はすでに見張られているからです。`--keep-windows` は戻します——メッセージの行き先ではなく、各アドレスが**保持していた値**を捕捉する用途です。`--one-at-a-time` は単体読みが答えるものだけを、1 アドレス 1 領域で持ちます。単体読みへの返答は、問うたアドレスについて答えるか、何も答えないかのどちらかなので、**バイトが 1 つ下のアドレスに載ることが原理的に起きません**。
+
+ここには測定は 1 つもなく、ファイル自身がそう述べます。元の記録が変われば作り直すもので、その元も名指しします。
+
+### 5. 電源投入時の状態
+
+```sh
+rye run soundings power-on --map data/units/<unit-id>/watch-set/with-windows.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/regions.json
+rye run soundings power-on --map data/units/<unit-id>/watch-set/one-at-a-time.json \
+  --unit-id <unit-id> --out data/units/<unit-id>/power-on/one-at-a-time.json
 ```
 
 空間を 2 度読み出し、何も書き込みません。得られるのは、電源を入れた直後に機体が置かれている状態です。
 
-**書き込みを行う段階より前に走らせられる、最後の段階です。** 段階 1 から 4 は読み出ししか送らないので、スイープの後に取得しても電源投入時の状態のままです。段階 5 以降は機体へ書き込むので、そこから先は次に電源を入れ直すまで取得できません。マップはスイープをやり直せば作れますが、この取得はやり直せません。
+**1 回の電源再投入で、2 通りとも取ります。届くアドレスが違うからです。** 領域読みは単体読みが答えないアドレスに届き、単体読みは短い返答が取り違えるアドレスを正しく取ります。ある機体は 32 バイトの要求に 30 バイトを返します——再現し、チェックサムも通ります。しかも省かれる 2 つは、同じブロックをオフセットごとに問うたときに無応答になる 2 つとは**別**です。そういう返答は要求したアドレス列に敷けないので、敷かずに拒否し、「短く答えた領域」として記録します。基準値は 2 つの捕捉の合併で、`soundings complete` もそう数えます。
+
+**書き込みを行う段階より前に走らせられる、最後の段階です。** 段階 1 から 4 は読み出ししか送らないか、何も送りません。ですからその後に取得しても電源投入時の状態のままです。段階 6 以降は機体へ書き込むので、そこから先は次に電源を入れ直すまで取得できません。マップはスイープをやり直せば作れますが、この取得はやり直せません。
 
 この実行は、電源を入れた直後の機体と、以前の実行が書き込んだ後の機体とを区別できません。どちらも読み出しに対して同じように答えるからです。ですから記録するのは「実行前に何をしたか」という測定者の申告であり、それを申告だと明示したうえで、この実行自身が言えること——自分では何も書いていないこと——を併記します。
 
 2 回の読み出しが食い違ったアドレスは、決着させずに一覧として残します。どちらかに決めるには 3 度目の読み出しが必要で、しかも間違った決め方をしても後から見えません。そのバイトは、次にこの取得と比較されるリセットが書き換えたもの、として読めてしまいます。以降のリセット測定はすべて、このファイルと比較します。
 
-### 5. 窓
+### 6. 窓
 
 ```sh
 rye run soundings window-probe --stores <addr> <addr> <candidate>...
@@ -77,10 +100,10 @@ rye run soundings window-probe --stores <addr> <addr> <candidate>...
 
 窓と判定したブロックは、それを記述する記録の中で名指しし、以降の段階からは除外します。除外しないと、同じ記憶領域を、その素性が残らない名前で何度も測ることになります。
 
-### 6. 受け付ける値
+### 7. 受け付ける値
 
 ```sh
-rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings write-probe --map data/units/<unit-id>/watch-set/reachable.json \
   --resume --out data/units/<unit-id>/write-probe/whole-map.json
 ```
 
@@ -88,10 +111,10 @@ rye run soundings write-probe --map data/units/<unit-id>/sweep/whole-map.json \
 
 1 バイト読みに応答しないアドレスへは書き込みません。元に戻すべき値が存在しないからです。それらは skipped として記録します。そのうちどれが未定義で、どれが「もっと大きなブロックとしてしか読めない」ものなのかは、この段階では決着しません。
 
-### 7. 独立した記憶領域
+### 8. 独立した記憶領域
 
 ```sh
-rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings hold-probe --map data/units/<unit-id>/watch-set/reachable.json \
   --out data/units/<unit-id>/hold-probe/whole-map.json
 ```
 
@@ -99,10 +122,10 @@ rye run soundings hold-probe --map data/units/<unit-id>/sweep/whole-map.json \
 
 この段階は、別のブロックを映しているブロックを見つけません。それは段階 5 が調べることです。
 
-### 8. エイリアス
+### 9. エイリアス
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings alias-scan --map data/units/<unit-id>/watch-set/reachable.json \
   --kind cc --out data/units/<unit-id>/alias-scan/cc-ch1.json
 ```
 
@@ -113,25 +136,25 @@ rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
 `--kind address` は、先に走らせた走査が到達を確認したアドレスへ書き込み、その場所に 3 つめの入口があるかどうかを調べます。書き込み先は、その機体自身の記録から取ります。
 
 ```sh
-rye run soundings alias-scan --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings alias-scan --map data/units/<unit-id>/watch-set/reachable.json \
   --kind address --addresses-from data/units/<unit-id>/alias-scan/cc-ch1.json \
   --out data/units/<unit-id>/alias-scan/sysex-ch1.json
 ```
 
-### 9. リセット
+### 10. リセット
 
 ```sh
-rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/whole-map.json \
-  --map data/units/<unit-id>/sweep/whole-map.json \
+rye run soundings reset-probe --baseline data/units/<unit-id>/power-on/one-at-a-time.json \
+  --map data/units/<unit-id>/watch-set/reachable.json \
   --write-probe data/units/<unit-id>/write-probe/whole-map.json \
   --out data/units/<unit-id>/reset-probe/whole-map.json
 ```
 
-各リセットの前に状態を崩し、後で空間を読みます。こうすると、文書がリセットについて述べていることではなく、そのリセットが実際に戻すものを測定できます。目印を置くのは、ライトプローブが「どんな値でも受け付ける」と判定したアドレスに限ります。値を丸めるアドレスは元の値のままかもしれず、崩れなかったバイトはリセットについて何も語らないからです。
+各リセットの前に状態を崩し、後で空間を読みます。こうすると、文書がリセットについて述べていることではなく、そのリセットが実際に戻すものを測定できます。目印とは「そのアドレスがいま保持していない値」で、**ライトプローブがそのアドレスについて実測した受理値から選びます**。これを「どんな値でも受け付けるアドレス」と読むと、範囲を持つバイトがまるごと外れます——そして範囲を持つバイトこそ、文書が機能を与えている側です。何でも受け取るバイトは、たいてい誰も定義していないバイトなので。1 値しか受け取らないと実測されたバイトには目印が存在しないので外します。保持している値を書いても何も崩れず、リセットが手を触れなかった場合に「戻した」と読めてしまうからです。
 
 すべてのリセットは、同じリセットを先に送ってから走らせます。そうすることで、結果どうしを比べられます。先に送らないと、それぞれの結果を「直前のリセットがたまたま残した状態」を基準に読むことになります。
 
-### 10. 音色とエフェクト
+### 11. 音色とエフェクト
 
 ```sh
 rye run soundings tone-map --out data/units/<unit-id>/tone-map/map-select-0.json
@@ -140,7 +163,7 @@ rye run soundings efx-map --out data/units/<unit-id>/efx-map/types.json
 
 各音色と各インサーションエフェクトを要求し、受け付けられたかどうかを読み戻します。走査の前に間引きを行ったマップは、その間引きを但し書きとして持ちます。`--exhaustive` は全バンクに 128 プログラムすべてを問い合わせるもので、但し書きの付かない唯一の形式です。
 
-### 11. 再現性——音を比べる前に必ず
+### 12. 再現性——音を比べる前に必ず
 
 ```sh
 rye run soundings repeat --audio "<audio interface>" \
@@ -151,7 +174,7 @@ rye run soundings repeat --audio "<audio interface>" \
 
 検出下限は機体と測定経路の両方の性質なので、機体ごとに測定し、経路を変えたときは測り直します。
 
-### 12. 音の変化
+### 13. 音の変化
 
 ```sh
 rye run soundings contrast --cc 91 --audio "<audio interface>" \
@@ -162,7 +185,7 @@ rye run soundings contrast --cc 91 --audio "<audio interface>" \
 
 `transfer`、`motion`、`decay` はそれぞれ、アナログ経路、時間とともに変化するエフェクト、エフェクトの減衰を測定します。`motion` と `decay` はテイクを読むだけなので、機体の接続を必要としません。
 
-### 13. ブロック全体
+### 14. ブロック全体
 
 ```sh
 rye run soundings plan data/units/<unit-id>/write-probe/whole-map.json "40 11" \

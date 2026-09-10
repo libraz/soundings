@@ -49,6 +49,7 @@
     "sweep",
     "boundary",
     "offsets",
+    "watch-set",
     "write-probe",
     "window-probe",
     "hold-probe",
@@ -596,6 +597,76 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "watch-set": {
+      "help": "assemble the addresses a stage should watch, out of what this unit has answered, since the sweep alone bounds which blocks exist and not which addresses do",
+      "handler": "cmd_watch_set",
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "unit",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the unit's directory, whose sweep and offsets records are read",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--keep-windows"
+          ],
+          "dest": "keep_windows",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "keep the blocks measured to be a window onto another block. For a capture of what each address held, where a window holding what it points at is a value worth having. Wrong for a scan that attributes a message to a store, which would then report one store as two",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--one-at-a-time"
+          ],
+          "dest": "one_at_a_time",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "only the addresses an offsets record has seen answer a single-byte read, each its own region. A reply to a single read is answered for the address it was asked about or not at all, so no byte in it can land on the address below its own -- which a reply shorter than a region read has been measured to do. It reaches less, so it is one half of a capture rather than a capture",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
         },
         {
           "option_strings": [

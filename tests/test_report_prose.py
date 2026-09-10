@@ -32,6 +32,7 @@ PROSE = frozenset(
         "note",
         "why",
         "why_preceded",
+        "why_windows",
         "caveat",
         "verdict_rule",
         "sampling_caveat",
