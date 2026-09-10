@@ -121,25 +121,35 @@ class Prober:
         link: MidiLink,
         *,
         device_id: int = roland.DEFAULT_DEVICE_ID,
+        model_id: int = roland.GS_MODEL_ID,
         settle: float = 0.05,
         read_timeout: float = 0.5,
     ):
         self.link = link
         self.device_id = device_id
+        self.model_id = model_id
         self.settle = settle
         self.read_timeout = read_timeout
 
     def read(self, address: Address) -> int | None:
         raw = self.link.exchange(
-            roland.rq1(address, 1, device_id=self.device_id), timeout=self.read_timeout
+            roland.rq1(address, 1, device_id=self.device_id, model_id=self.model_id),
+            timeout=self.read_timeout,
         )
         reply = roland.parse_dt1(raw)
-        if reply is None or reply.address != address or reply.size != 1:
+        if (
+            reply is None
+            or reply.address != address
+            or reply.model_id != self.model_id
+            or reply.size != 1
+        ):
             return None
         return reply.data[0]
 
     def write(self, address: Address, value: int) -> None:
-        self.link.send(roland.dt1(address, [value], device_id=self.device_id))
+        self.link.send(
+            roland.dt1(address, [value], device_id=self.device_id, model_id=self.model_id)
+        )
         time.sleep(self.settle)
 
     def run(

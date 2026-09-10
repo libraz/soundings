@@ -65,6 +65,24 @@ selector is read only at power-on.
 Confirm both directions explicitly, and record the selector position used in
 `meta.json`.
 
+## Which address spaces it answers in
+
+A unit may answer under more than one model ID, and each one is a separate
+address space in which the same three bytes name something else. Which ones this
+unit answers in is established by asking, before the sweep, because a sweep is
+aimed at one space and a space nobody asked about is missing from the archive
+without anything failing.
+
+```sh
+rye run soundings --model-id <id> read <address>
+```
+
+Where a published document names blocks under more than one model ID, those are
+the ones to try first -- what it names is where to look, never a bound on what
+is there. Record every model ID that answered in `meta.json` beside the identity
+reply, and record the ones asked that did not, since a negative is only usable
+with the question that produced it.
+
 ## First runs
 
 The first stages fix what everything else is measured against, and two of them

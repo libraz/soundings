@@ -37,6 +37,14 @@ def verified_link(
     `refusing` is the verb the refusal is phrased with -- "sweeping", "writing"
     -- so that a reader who sees the message knows what did not happen rather
     than only that something did not.
+
+    The proof is made in the space the probe address is known to answer in, not
+    in the one the run is about to ask in. They are different questions: this one
+    asks whether the cable carries a message and its reply intact, and an address
+    that answers nothing -- which is the ordinary state of a space being explored
+    -- would report a sound path as a broken one and stop the run. A space that
+    does not answer at all is a finding for the stage to make, not a reason to
+    refuse to start it.
     """
     with MidiLink(args.port) as link:
         if show_port:

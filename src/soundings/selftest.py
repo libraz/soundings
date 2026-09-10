@@ -55,6 +55,7 @@ def midi_selftest(
     probe_size: int = 16,
     repeats: int = 100,
     device_id: int = roland.DEFAULT_DEVICE_ID,
+    model_id: int = roland.GS_MODEL_ID,
 ) -> Report:
     """Prove the MIDI round trip before believing anything it returns."""
     report = Report()
@@ -68,7 +69,7 @@ def midi_selftest(
     if not identity:
         return report
 
-    request = roland.rq1(probe_address, probe_size, device_id=device_id)
+    request = roland.rq1(probe_address, probe_size, device_id=device_id, model_id=model_id)
     reference = roland.parse_dt1(link.exchange(request, timeout=1.0))
     report.add(
         "probe address readable",

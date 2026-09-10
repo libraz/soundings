@@ -22,15 +22,29 @@ def register(sub) -> None:
     p = sub.add_parser("selftest", help="prove the measurement path before trusting it")
     p.add_argument("--repeats", type=int, default=100)
     p.add_argument("--ticks", type=int, default=10)
+    p.add_argument(
+        "--probe",
+        default=None,
+        help="an address that answers, read repeatedly to prove the round trip. Needed with "
+        "--model-id, since the default belongs to the GS space and would answer nothing in "
+        "another one -- which would report a healthy path as a broken one",
+    )
+    p.add_argument(
+        "--probe-size",
+        type=options.number,
+        default=None,
+        help="bytes to ask the probe address for. Long enough that a truncated reply is "
+        "visible; an address that answers only one byte proves the path over one byte",
+    )
     options.add_audio(p)
     p.add_argument("--no-audio", action="store_true", help="MIDI checks only")
-    p.set_defaults(func=cmd_selftest)
+    p.set_defaults(func=cmd_selftest, takes_model_id=True)
 
     p = sub.add_parser("read", help="read one address with RQ1")
     p.add_argument("address", help="three hex bytes, e.g. '40 01 30'")
     p.add_argument("size", type=options.number, nargs="?", default=1)
     p.add_argument("--timeout", type=float, default=1.0)
-    p.set_defaults(func=cmd_read)
+    p.set_defaults(func=cmd_read, takes_model_id=True)
 
     sub.add_parser("identity", help="send an Identity Request").set_defaults(func=cmd_identity)
 
@@ -55,7 +69,18 @@ def cmd_selftest(args: argparse.Namespace) -> int:
         print(f"MIDI in : {link.ports.input_name}")
         print(f"MIDI out: {link.ports.output_name}")
         print("\nMIDI round trip")
-        report = midi_selftest(link, repeats=args.repeats, device_id=args.device_id)
+        probe = {}
+        if args.probe:
+            probe["probe_address"] = args.probe
+        if args.probe_size is not None:
+            probe["probe_size"] = args.probe_size
+        report = midi_selftest(
+            link,
+            repeats=args.repeats,
+            device_id=args.device_id,
+            model_id=args.model_id,
+            **probe,
+        )
         print(report)
         ok = ok and report.passed
 
@@ -71,14 +96,20 @@ def cmd_selftest(args: argparse.Namespace) -> int:
 
 def cmd_read(args: argparse.Namespace) -> int:
     with MidiLink(args.port) as link:
-        request = roland.rq1(args.address, args.size, device_id=args.device_id)
+        request = roland.rq1(
+            args.address, args.size, device_id=args.device_id, model_id=args.model_id
+        )
         reply = roland.parse_dt1(link.exchange(request, timeout=args.timeout))
         if reply is None:
             print(f"{args.address}  size={args.size}  -> no reply")
             return 1
         data = " ".join(f"{b:02X}" for b in reply.data)
         flag = "" if reply.checksum_ok else "  [CHECKSUM MISMATCH]"
-        print(f"{args.address}  requested {args.size}, returned {reply.size}: {data}{flag}")
+        # The model id is printed rather than checked. This is the command an
+        # operator reaches for to find out which spaces a unit answers in, and
+        # refusing a reply from another one would hide the answer.
+        space = "" if reply.model_id == args.model_id else f"  [model {reply.model_id:02X}]"
+        print(f"{args.address}  requested {args.size}, returned {reply.size}: {data}{flag}{space}")
     return 0
 
 

@@ -60,17 +60,43 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="soundings", description=__doc__)
     parser.add_argument("--port", help="substring of the MIDI port name")
     parser.add_argument("--device-id", type=lambda s: int(s, 0), default=roland.DEFAULT_DEVICE_ID)
+    parser.add_argument(
+        "--model-id",
+        type=lambda s: int(s, 0),
+        default=roland.GS_MODEL_ID,
+        help="the Roland model ID to address, which with the device ID decides what three "
+        "address bytes name. A unit answering under more than one opens a separate space in "
+        "each. Only the stages that need nothing of a family accept a value other than GS",
+    )
     # Every command drives the unit unless it says otherwise, which is the safe
     # way round: a command added without a thought about this waits its turn
     # rather than joining a run already in progress. The modules that read what
     # an earlier run left behind clear the flag on their own parsers, so asking a
     # saved block's records a question does not queue behind the sweep capturing
     # the next one.
-    parser.set_defaults(needs_unit=True)
+    #
+    # `takes_model_id` is the same way round and for the same reason. A stage
+    # whose messages, addresses or catalogue are GS's own produces nothing
+    # meaningful under another model id -- a GS Reset is a write to one address
+    # in one space, and elsewhere it is a write to whatever those bytes happen to
+    # mean there. The stages that need only RQ1 and DT1 say so on their own
+    # parsers, so a command added without a thought about it refuses rather than
+    # sends, and its record cannot claim a space it did not ask in.
+    parser.set_defaults(needs_unit=True, takes_model_id=False)
     sub = parser.add_subparsers(dest="command", required=True)
     for module in COMMANDS:
         module.register(sub)
     return parser
+
+
+NOT_ADDRESSED_BY_MODEL_ID = (
+    "{stage} cannot be aimed at model id {model:02X}. What it sends is either GS's own -- a "
+    "message, a fixed address or a catalogue that means nothing in another family's space, "
+    "where those bytes name whatever they happen to name there -- or it carries no model id at "
+    "all. Either way the run would ask in one space and record another. The stages that need "
+    "only RQ1 and DT1 take --model-id; this one would need the other family defined first, and "
+    "nothing here holds a definition of one."
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -80,6 +106,9 @@ def main(argv: list[str] | None = None) -> int:
     # takes or a published document never opens a port, and stamping the option's
     # default on its record would say a device answered when none was asked.
     asks_the_unit = getattr(args, "needs_unit", True)
+    if args.model_id != roland.GS_MODEL_ID and not getattr(args, "takes_model_id", False):
+        print(NOT_ADDRESSED_BY_MODEL_ID.format(stage=args.command, model=args.model_id))
+        return 1
     # Declared once, here, because this is the only place that knows both what
     # was asked for and what it was asked of. Every record written by the run
     # takes its identity from it without its writer being told to.
@@ -88,6 +117,7 @@ def main(argv: list[str] | None = None) -> int:
             stage=args.command,
             argv=list(argv if argv is not None else sys.argv[1:]),
             midi_device_id=f"{args.device_id:02X}" if asks_the_unit else None,
+            midi_model_id=f"{args.model_id:02X}" if asks_the_unit else None,
         )
     )
     try:

@@ -104,6 +104,7 @@ class Stream:
 @dataclass
 class SweepResult:
     device_id: int
+    model_id: int
     timing: Timing
     probes_sent: int = 0
     lagged: int = 0
@@ -129,6 +130,7 @@ class SweepResult:
     def to_json(self) -> dict:
         return {
             "device_id": f"{self.device_id:02X}",
+            "model_id": f"{self.model_id:02X}",
             "complete": self.complete,
             "aborted": self.aborted or None,
             "trustworthy": self.complete and self.lagged == 0,
@@ -232,6 +234,7 @@ def calibrate(
     *,
     addresses: list[tuple[int, int, int]],
     device_id: int = roland.DEFAULT_DEVICE_ID,
+    model_id: int = roland.GS_MODEL_ID,
     sizes: tuple[int, ...] = (1, 16, 64),
     repeats: int = 6,
     require_length: int = 0,
@@ -268,7 +271,7 @@ def calibrate(
             for _ in range(repeats):
                 link.drain()
                 started = time.monotonic()
-                link.send(roland.rq1(address, size, device_id=device_id))
+                link.send(roland.rq1(address, size, device_id=device_id, model_id=model_id))
                 reply = roland.parse_dt1(link.receive(timeout=probe_timeout))
                 if reply is None:
                     link.drain()
@@ -320,12 +323,14 @@ class Sweeper:
         *,
         timing: Timing,
         device_id: int = roland.DEFAULT_DEVICE_ID,
+        model_id: int = roland.GS_MODEL_ID,
         canary: tuple[int, int, int] = (0x40, 0x01, 0x30),
         canary_every: int = 64,
         ceiling: int = 64,
     ):
         self.link = link
         self.device_id = device_id
+        self.model_id = model_id
         self.timing = timing
         self.canary = canary
         self.canary_every = canary_every
@@ -396,7 +401,7 @@ class Sweeper:
         """
         for attempt in (0, 1):
             self.probes += 1
-            request = roland.rq1(address, size, device_id=self.device_id)
+            request = roland.rq1(address, size, device_id=self.device_id, model_id=self.model_id)
             raw = self.link.exchange(request, timeout=self.timing.timeout(size))
             broken = roland.malformation(raw)
             if broken is None:
@@ -413,11 +418,16 @@ class Sweeper:
         reply = roland.parse_dt1(raw)
         if reply is None:
             return Probe.MISS, None
-        if reply.address == address and reply.size <= size:
+        # The model id is part of what makes the address this address. A reply
+        # carrying the same three bytes under another one answers a different
+        # question, and counted as a hit it would put a region on the map of a
+        # space that was never asked.
+        mine = reply.address == address and reply.model_id == self.model_id
+        if mine and reply.size <= size:
             return Probe.HIT, reply
 
         addr = f"{address[0]:02X} {address[1]:02X} {address[2]:02X}"
-        stale = reply.address == address
+        stale = mine
         if stale:
             # The reply's own length says which request outran its deadline, and
             # that is the only thing that says which deadline was wrong.
@@ -446,7 +456,7 @@ class Sweeper:
         aborted on its very first probe because a malformed frame parsed to None
         and None was read as nothing.
         """
-        request = roland.rq1(self.canary, 1, device_id=self.device_id)
+        request = roland.rq1(self.canary, 1, device_id=self.device_id, model_id=self.model_id)
         for _ in range(3):
             self.drain_to_quiet(settle=0.5)
             self.probes += 1
@@ -538,6 +548,7 @@ class Sweeper:
                 self.link,
                 addresses=chosen,
                 device_id=self.device_id,
+                model_id=self.model_id,
                 sizes=(1, self.ceiling // 4, self.ceiling),
                 require_length=self.ceiling,
                 probe_timeout=0.5,
@@ -571,7 +582,7 @@ class Sweeper:
         are what makes a deadline for that measurable rather than extrapolated.
         """
         started = time.monotonic()
-        result = SweepResult(device_id=self.device_id, timing=self.timing)
+        result = SweepResult(device_id=self.device_id, model_id=self.model_id, timing=self.timing)
         try:
             self.check_alive()
             # Every probe is tried rather than stopping at the first hit per top

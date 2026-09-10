@@ -90,7 +90,7 @@ def register(sub) -> None:
     )
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_write_probe)
+    p.set_defaults(func=cmd_write_probe, takes_model_id=True)
 
     p = sub.add_parser(
         "window-probe",
@@ -121,7 +121,7 @@ def register(sub) -> None:
     )
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_window_probe)
+    p.set_defaults(func=cmd_window_probe, takes_model_id=True)
 
     p = sub.add_parser(
         "hold-probe",
@@ -150,7 +150,7 @@ def register(sub) -> None:
     )
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_hold_probe)
+    p.set_defaults(func=cmd_hold_probe, takes_model_id=True)
 
 
 def _probe_regions(args: argparse.Namespace) -> list[tuple[tuple[int, ...], int]]:
@@ -220,7 +220,7 @@ def cmd_verify_saved_probe(args: argparse.Namespace) -> int:
         return differ, silent
 
     with verified_link(args, refusing="reading back", show_port=True) as link:
-        writer = Writer(link, device_id=args.device_id, settle=args.settle)
+        writer = Writer(link, device_id=args.device_id, model_id=args.model_id, settle=args.settle)
         differ, unanswered = ask(writer, was)
         # Asked again at the end rather than on the spot: a failure here comes in
         # unbroken runs, so an immediate retry asks inside the same stall.
@@ -305,7 +305,7 @@ def cmd_write_probe(args: argparse.Namespace) -> int:
         show_port=True,
         announce="Verifying the path before writing (a write is never acknowledged)",
     ) as link:
-        writer = Writer(link, device_id=args.device_id, settle=args.settle)
+        writer = Writer(link, device_id=args.device_id, model_id=args.model_id, settle=args.settle)
         if args.prepare and not prepare_state(
             link, args.prepare, device_id=args.device_id, settle=args.settle
         ):
@@ -367,7 +367,7 @@ def cmd_window_probe(args: argparse.Namespace) -> int:
         show_port=True,
         announce="Verifying the path before writing (a write is never acknowledged)",
     ) as link:
-        prober = Prober(link, device_id=args.device_id, settle=args.settle)
+        prober = Prober(link, device_id=args.device_id, model_id=args.model_id, settle=args.settle)
         result = prober.run(stores, candidates, progress=lambda m: print(f"  {m}"))
 
     print()
@@ -390,7 +390,7 @@ def cmd_hold_probe(args: argparse.Namespace) -> int:
         show_port=True,
         announce="Verifying the path before writing (a write is never acknowledged)",
     ) as link:
-        prober = Prober(link, device_id=args.device_id, settle=args.settle)
+        prober = Prober(link, device_id=args.device_id, model_id=args.model_id, settle=args.settle)
         for start, length in regions:
             done.append(hold_probe(prober, start, length, progress=lambda m: print(f"  {m}")))
 

@@ -39,6 +39,19 @@
       "metavar": null,
       "choices": null,
       "class": "_StoreAction"
+    },
+    {
+      "option_strings": [
+        "--model-id"
+      ],
+      "dest": "model_id",
+      "nargs": null,
+      "default": "66",
+      "required": false,
+      "help": "the Roland model ID to address, which with the device ID decides what three address bytes name. A unit answering under more than one opens a separate space in each. Only the stages that need nothing of a family accept a value other than GS",
+      "metavar": null,
+      "choices": null,
+      "class": "_StoreAction"
     }
   ],
   "order": [
@@ -81,6 +94,7 @@
     "devices": {
       "help": "list MIDI and audio devices",
       "handler": "cmd_devices",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -101,6 +115,7 @@
     "selftest": {
       "help": "prove the measurement path before trusting it",
       "handler": "cmd_selftest",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -144,6 +159,32 @@
         },
         {
           "option_strings": [
+            "--probe"
+          ],
+          "dest": "probe",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "an address that answers, read repeatedly to prove the round trip. Needed with --model-id, since the default belongs to the GS space and would answer nothing in another one -- which would report a healthy path as a broken one",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--probe-size"
+          ],
+          "dest": "probe_size",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "bytes to ask the probe address for. Long enough that a truncated reply is visible; an address that answers only one byte proves the path over one byte",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
             "--audio"
           ],
           "dest": "audio",
@@ -173,6 +214,7 @@
     "read": {
       "help": "read one address with RQ1",
       "handler": "cmd_read",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -228,6 +270,7 @@
     "identity": {
       "help": "send an Identity Request",
       "handler": "cmd_identity",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -248,6 +291,7 @@
     "sweep": {
       "help": "map the address space by asking the machine",
       "handler": "cmd_sweep",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -385,6 +429,7 @@
     "boundary": {
       "help": "ask whether each mapped region ends where the map says it ends, by reading past it one byte at a time",
       "handler": "cmd_boundary",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -507,6 +552,7 @@
     "offsets": {
       "help": "find which addresses in a block answer a single-byte read, which neither a map bounded by block reads nor a read forward from a region's end shows",
       "handler": "cmd_offsets",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -616,6 +662,7 @@
     "watch-set": {
       "help": "assemble the addresses a stage should watch, out of what this unit has answered, since the sweep alone bounds which blocks exist and not which addresses do",
       "handler": "cmd_watch_set",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -686,6 +733,7 @@
     "write-probe": {
       "help": "find what an address accepts by writing to it and reading it back",
       "handler": "cmd_write_probe",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -834,6 +882,7 @@
     "window-probe": {
       "help": "tell an address that holds a value from one that shows another address's, which writing to it and reading it back cannot",
       "handler": "cmd_window_probe",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -917,6 +966,7 @@
     "hold-probe": {
       "help": "find whether neighbouring addresses hold their own values, by giving them different ones before reading any of them back",
       "handler": "cmd_hold_probe",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -1013,6 +1063,7 @@
     "power-on": {
       "help": "capture the state the unit powers up in, which is available only until something writes to it",
       "handler": "cmd_power_on",
+      "takes_model_id": true,
       "options": [
         {
           "option_strings": [
@@ -1098,6 +1149,7 @@
     "reset-probe": {
       "help": "find what each reset restores, by breaking the state first",
       "handler": "cmd_reset_probe",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1290,6 +1342,7 @@
     "tone-map": {
       "help": "find which tones exist, by asking for each and seeing whether it was taken",
       "handler": "cmd_tone_map",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1414,6 +1467,7 @@
     "efx-map": {
       "help": "find which insertion effects exist, by asking for each type and reading it back with the settings it loads",
       "handler": "cmd_efx_map",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1473,6 +1527,7 @@
     "alias-scan": {
       "help": "find where a message is stored, by diffing the address space around it",
       "handler": "cmd_alias_scan",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1658,6 +1713,7 @@
     "port-send": {
       "help": "send into a MIDI input that answers nothing, leaving the result in the unit",
       "handler": "cmd_port_send",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1730,6 +1786,7 @@
     "port-read": {
       "help": "find what a port-send left in the unit, read through the input that answers",
       "handler": "cmd_port_read",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -1841,6 +1898,7 @@
     "repeat": {
       "help": "find whether two takes of the same note can be compared, which every difference measurement rests on",
       "handler": "cmd_repeat",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2134,6 +2192,7 @@
     "contrast": {
       "help": "find whether changing one parameter changes the sound, measured against how well the unit repeats itself",
       "handler": "cmd_contrast",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2388,6 +2447,7 @@
     "transfer": {
       "help": "play a swept sine into the machine's analogue input and measure what the path did to it, distortion separated from response",
       "handler": "cmd_transfer",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2629,6 +2689,7 @@
     "motion": {
       "help": "say what an effect does over time -- its modulation rate, depth and shape -- from a dry and a wet take, with no machine attached",
       "handler": "cmd_motion",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2736,6 +2797,7 @@
     "decay": {
       "help": "say how long an effect's tail takes to die in each octave band, from a dry and a wet take, with no machine attached",
       "handler": "cmd_decay",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2833,6 +2895,7 @@
     "verdict": {
       "help": "ask an audible verdict of takes recorded in an earlier session, with no machine attached",
       "handler": "cmd_verdict",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2916,6 +2979,7 @@
     "balance": {
       "help": "say what a parameter did to the level difference between the two channels, which a comparison made in one of them cannot see",
       "handler": "cmd_balance",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -2973,6 +3037,7 @@
     "vibrato": {
       "help": "say whether a take's pitch was modulated, and at what rate and depth, which no comparison of two takes can measure",
       "handler": "cmd_vibrato",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3056,6 +3121,7 @@
     "plan": {
       "help": "say what pair of values each address in a block should be asked at, from what the write probe measured it to accept",
       "handler": "cmd_plan",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3111,6 +3177,7 @@
     "block": {
       "help": "read a directory of per-address contrast records into one verdict per address, counted against the plan the block was asked from",
       "handler": "cmd_block",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3218,6 +3285,7 @@
     "efx-params": {
       "help": "read a directory of per-address records into one verdict per parameter of one insertion effect type, with no machine attached",
       "handler": "cmd_efx_params",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3340,6 +3408,7 @@
     "efx-motion": {
       "help": "sort a unit's insertion effects into the ones that move and the ones that stand still, from saved takes, with no machine attached",
       "handler": "cmd_efx_motion",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3475,6 +3544,7 @@
     "efx-sort": {
       "help": "sort a unit's insertion effects into the ones that move and the ones that stand still, from what each did to the unit's own repeatability",
       "handler": "cmd_efx_sort",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3545,6 +3615,7 @@
     "complete": {
       "help": "count a unit's directory against the bar for a finished one, and say what is left, with no machine attached",
       "handler": "cmd_complete",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3589,6 +3660,7 @@
     "index": {
       "help": "list what a unit's directory holds, one entry per record, grouped by the stage that wrote it, with no machine attached",
       "handler": "cmd_index",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [
@@ -3633,6 +3705,7 @@
     "document": {
       "help": "read a published document's tables, so what it states can be held against what a unit was measured to do",
       "handler": "_dispatch",
+      "takes_model_id": false,
       "options": [
         {
           "option_strings": [

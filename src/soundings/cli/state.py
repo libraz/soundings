@@ -48,7 +48,7 @@ def register(sub) -> None:
     )
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_power_on)
+    p.set_defaults(func=cmd_power_on, takes_model_id=True)
 
     p = sub.add_parser(
         "reset-probe",
@@ -131,7 +131,7 @@ def cmd_power_on(args: argparse.Namespace) -> int:
         announce="Reading only. A capture taken after anything writes is not a power-on state",
     ) as link:
         identity = link.exchange(roland.IDENTITY_REQUEST, timeout=1.0)
-        shot = Snapshotter(link, regions, device_id=args.device_id)
+        shot = Snapshotter(link, regions, device_id=args.device_id, model_id=args.model_id)
         first = shot.take()
         print(f"  first read: {len(first)} bytes, {shot.unread} regions unread")
         unread_after_first = shot.unread

@@ -67,7 +67,7 @@ def register(sub) -> None:
         help="restrict the top-byte range; default is the whole space",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_sweep)
+    p.set_defaults(func=cmd_sweep, takes_model_id=True)
 
     p = sub.add_parser(
         "boundary",
@@ -100,7 +100,7 @@ def register(sub) -> None:
     )
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_boundary)
+    p.set_defaults(func=cmd_boundary, takes_model_id=True)
 
     p = sub.add_parser(
         "offsets",
@@ -129,7 +129,7 @@ def register(sub) -> None:
     p.add_argument("--timeout", type=float, default=0.3)
     options.add_verify_reads(p)
     options.add_out(p)
-    p.set_defaults(func=cmd_offsets)
+    p.set_defaults(func=cmd_offsets, takes_model_id=True)
 
     p = sub.add_parser(
         "watch-set",
@@ -170,7 +170,13 @@ def cmd_sweep(args: argparse.Namespace) -> int:
     ) as link:
         canary = tuple(int(b, 16) for b in args.canary.split())
         try:
-            timing = calibrate(link, addresses=[canary], device_id=args.device_id, sizes=args.sizes)
+            timing = calibrate(
+                link,
+                addresses=[canary],
+                device_id=args.device_id,
+                model_id=args.model_id,
+                sizes=args.sizes,
+            )
         except MidiCalibrationError as exc:
             print(f"\nCannot calibrate a deadline: {exc}")
             return 1
@@ -183,6 +189,7 @@ def cmd_sweep(args: argparse.Namespace) -> int:
             link,
             timing=timing,
             device_id=args.device_id,
+            model_id=args.model_id,
             canary=canary,
             ceiling=args.ceiling,
         )
@@ -202,9 +209,16 @@ def _single_byte_reader(link, args):
 
     def answers(address: str) -> list[int] | None:
         reply = roland.parse_dt1(
-            link.exchange(roland.rq1(address, 1, device_id=args.device_id), timeout=args.timeout)
+            link.exchange(
+                roland.rq1(address, 1, device_id=args.device_id, model_id=args.model_id),
+                timeout=args.timeout,
+            )
         )
-        if reply is None or list(reply.address) != roland.address_bytes(address):
+        if (
+            reply is None
+            or list(reply.address) != roland.address_bytes(address)
+            or reply.model_id != args.model_id
+        ):
             # A reply for another address is not an answer to this read. The
             # sweeps all check it; a read that did not once came back holding a
             # neighbour's byte.

@@ -29,6 +29,38 @@ unit is safe to probe. Two constraints hold for every stage:
   reads as a space of absent addresses, so a probe that treats silence as
   absence finishes successfully having measured nothing.
 
+### Which space the run is addressed to
+
+Three address bytes name nothing on their own. What they name is decided by the
+model ID they are sent under, and **a unit may answer under more than one**: one
+in this archive has a display block reachable only outside the space the rest of
+it lives in. Each model ID is a separate address space, and the same three bytes
+in two of them are two different parameters.
+
+```sh
+rye run soundings --model-id 0x45 read "10 00 00"
+```
+
+Before the subcommand, like `--port` and `--device-id`, because it says what the
+run is addressed to rather than what one stage does. It defaults to GS.
+
+**Only the stages that need nothing of a family accept another value** --
+`sweep`, `boundary`, `offsets`, `power-on`, `write-probe`, `window-probe`,
+`hold-probe`, and the two commands that just look. Everything else refuses it
+and says so, because what it sends is one family's own: a reset message, a fixed
+effect address, a bank-and-program convention. Sent into another space those
+write to whatever those bytes happen to mean there, and the run would read the
+answer back as a measurement.
+
+Every record carries the model ID it asked under, beside the device ID. A record
+written before the field existed does not, which is not an unknown: nothing here
+could send any model ID but GS until the flag existed.
+
+The path is proved in the space the probe address is known to answer in, not in
+the one being explored. A space that answers nothing is a finding for the stage
+to report, not a reason for its self-test to refuse to start it -- so `selftest`
+takes `--probe` for proving a second space deliberately.
+
 ## Stages
 
 ### 1. Identity

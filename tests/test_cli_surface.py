@@ -61,6 +61,13 @@ def surface() -> dict:
             name: {
                 "help": next(c.help for c in sub._choices_actions if c.dest == name),
                 "handler": sub.choices[name]._defaults["func"].__name__,
+                # Recorded here because it is not a flag and would otherwise
+                # change invisibly. Which stages accept a model id other than GS
+                # is the list of stages that need nothing of a family, and a
+                # stage joining it is the claim that its messages and addresses
+                # are not one family's own -- one line of review, not a default
+                # that moves in silence.
+                "takes_model_id": sub.choices[name]._defaults.get("takes_model_id", False),
                 "options": _actions(sub.choices[name]),
             }
             for name in sub.choices

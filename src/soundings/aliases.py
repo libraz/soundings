@@ -198,11 +198,13 @@ class Snapshotter:
         regions: list[tuple[Address, int]],
         *,
         device_id: int = roland.DEFAULT_DEVICE_ID,
+        model_id: int = roland.GS_MODEL_ID,
         timeout: float = 0.4,
     ):
         self.link = link
         self.regions = regions
         self.device_id = device_id
+        self.model_id = model_id
         self.timeout = timeout
         self.reads = 0
         self.unread = 0
@@ -239,14 +241,14 @@ class Snapshotter:
         out: dict[Address, int] = {}
         for start, length in self.regions:
             self.reads += 1
-            request = roland.rq1(start, length, device_id=self.device_id)
+            request = roland.rq1(start, length, device_id=self.device_id, model_id=self.model_id)
             raw = self.link.exchange(request, timeout=self.timeout)
             if roland.malformation(raw) is not None:
                 while self.link.receive(timeout=0.3):
                     pass
                 raw = self.link.exchange(request, timeout=self.timeout)
             reply = roland.parse_dt1(raw)
-            if reply is None or reply.address != start:
+            if reply is None or reply.address != start or reply.model_id != self.model_id:
                 self.unread += 1
                 continue
             if len(reply.data) != length:
