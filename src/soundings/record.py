@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 """The envelope's own version, which is not the archive's and not a unit's.
 
 It moves when the envelope gains or loses a field, so a reader can say which
@@ -72,6 +72,14 @@ class Invocation:
     stage: str
     argv: list[str] = field(default_factory=list)
     midi_device_id: str | None = None
+    midi_model_id: str | None = None
+    """Which model id's address space the run asked in.
+
+    Recorded beside the device id because it is the other half of what makes
+    three address bytes mean something: one machine answers under more than one,
+    and the same address in each names a different thing. A record that leaves it
+    out cannot be read at all once a unit is known to have two.
+    """
     started: float = field(default_factory=time.monotonic)
     """When the run began, so a record can say how long it took to produce.
 
@@ -162,6 +170,7 @@ def unrecorded(
     stage: str | None,
     first_published: str,
     midi_device_id: str | None = None,
+    midi_model_id: str | None = None,
 ) -> dict:
     """The envelope of a record whose run did not record one.
 
@@ -182,6 +191,7 @@ def unrecorded(
         "invocation": None,
         MEASURED_AT: None,
         "midi_device_id": midi_device_id,
+        "midi_model_id": midi_model_id,
         "not_recorded": {
             "fields": absent,
             "why": NOT_RECORDED if stage else KEPT_BY_HAND,
@@ -211,6 +221,7 @@ def envelope(payload: dict, *, out_path: str | Path) -> dict:
         # how far it had got, which is what a reader of a stopped record wants.
         ELAPSED: round(time.monotonic() - invocation.started, 1) if invocation else None,
         "midi_device_id": invocation.midi_device_id if invocation else None,
+        "midi_model_id": invocation.midi_model_id if invocation else None,
     }
     return {"record": stamp, **payload}
 

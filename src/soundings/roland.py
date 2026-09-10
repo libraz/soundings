@@ -3,6 +3,14 @@
 The address and size are three seven-bit bytes each, and the checksum covers
 both plus the data. Nothing here knows what any address means -- that is the
 measurement's job, not the transport's.
+
+**The model id is part of the address and not a property of the unit.** One
+machine answers under more than one of them, each opening a separate space in
+which the same three bytes mean something else, so a run has to say which one it
+addressed and a record has to carry it. Defaulting it here and leaving it
+unsayable would put every measurement in one space without recording the choice,
+and a later reader could not tell a space that answered nothing from one that was
+never asked.
 """
 
 from __future__ import annotations
@@ -68,6 +76,14 @@ class Dt1Reply:
     address: tuple[int, int, int]
     data: list[int]
     checksum_ok: bool
+    model_id: int
+    """Which model id the reply came under, reported rather than checked here.
+
+    Whether it is the one that was asked for is the caller's question: a reader
+    aimed at one space wants a reply from another refused, while a run
+    establishing which spaces a unit answers in wants to see it. Parsing it away
+    would leave the second unable to ask.
+    """
 
     @property
     def size(self) -> int:
@@ -123,6 +139,7 @@ def parse_dt1(raw: list[int]) -> Dt1Reply | None:
         address=(body[0], body[1], body[2]),
         data=body[3:],
         checksum_ok=raw[-2] == checksum(body),
+        model_id=raw[3],
     )
 
 

@@ -73,6 +73,14 @@
           "pattern": "^[0-9A-F]{2}$",
           "description": "The Roland device ID the run addressed. Held here rather than in the payload, where it was spelled device_id and collided with meta.json's device_id object."
         },
+        "midi_model_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9A-F]{2}$",
+          "description": "The Roland model ID the run addressed, which with the device ID is what makes three address bytes name something. A unit answering under more than one opens a separate space in each, and the same address in two of them is two different parameters. Null where the run addressed no unit at all. Absent where the run predates the field, which is not an unknown: nothing in the harness could send any model ID but 42 until it existed, so a record without this key asked in the GS space."
+        },
         "not_recorded": {
           "type": "object",
           "required": [
