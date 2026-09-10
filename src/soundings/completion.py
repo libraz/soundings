@@ -677,20 +677,50 @@ def effect_response(unit: Path) -> Stage:
     slots = {len(e.get("parameters", [])) for e in efx.get("effects", [])}
     parameters = sum(len(e.get("parameters", [])) for e in efx.get("effects", []))
     screened = _parameters_screened(unit)
+    refused = _parameters_refused(unit)
     if screened >= parameters:
         return Stage(
             "effect response",
             MET,
             f"the route is established and all {parameters} effect parameters carry a verdict",
         )
+    # A slot whose run refused to answer is not a slot waiting to be asked, and
+    # putting the two in one figure is what the refusal was written down to stop.
+    # It still keeps the stage from being met: something the archive cannot say
+    # is not the same as something it has said.
+    also = f", and {refused} of them were asked and refused" if refused else ""
     return Stage(
         "effect response",
         UNMET,
         f"the route is established. {efx.get('accepted')} effect types carry "
         f"{sorted(slots)} parameter slots each, so {parameters} parameters need an "
-        f"audible verdict and {screened} have one",
-        {"effect parameters to screen": parameters - screened},
+        f"audible verdict and {screened} have one{also}",
+        {
+            k: v
+            for k, v in (
+                ("effect parameters to screen", parameters - screened - refused),
+                ("effect parameters refused, which asking again the same way will not fill", refused),
+            )
+            if v
+        },
     )
+
+
+def _parameters_refused(unit: Path) -> int:
+    """How many effect parameter slots were asked and would not be answered.
+
+    Counted from the same records as the screened ones and kept apart from them.
+    A refused slot and an unasked slot look identical in a total, and only one of
+    them is work a later run can do.
+    """
+    seen = set()
+    for path in _records(unit, "efx-params"):
+        found = _load(unit, f"efx-params/{path.name}") or {}
+        kind = str(found.get("type"))
+        for row in (found.get("coverage") or {}).get("refused") or []:
+            if isinstance(row, dict):
+                seen.add((kind, str(row.get("parameter"))))
+    return len(seen)
 
 
 def _parameters_screened(unit: Path) -> int:

@@ -246,6 +246,52 @@ def test_a_parameter_carrying_its_own_verdict_is_counted(tmp_path) -> None:
     assert stage.verdict == completion.MET
 
 
+def test_a_slot_asked_and_refused_is_not_counted_as_one_still_to_screen(tmp_path) -> None:
+    """The two look identical in a total, and only one of them is work.
+
+    A refused slot answers the same way however often it is asked again, so
+    counting it among the parameters left to screen puts it in a queue nobody
+    can empty.
+    """
+    _write(tmp_path, "efx-map/types.json", {"accepted": 1, "effects": [{"parameters": [0, 0, 0]}]})
+    _write(tmp_path, "transfer/analogue-input.json", {"answer": "no"})
+    _write(
+        tmp_path,
+        "efx-params/00-00.json",
+        {
+            "type": "00 00",
+            "parameters": [{"type": "00 00", "parameter": 0, "audible": True}],
+            "coverage": {
+                "slots": 3,
+                "answered": 1,
+                "never_asked": ["40 03 05"],
+                "refused": [{"parameter": 1, "address": "40 03 04", "why": "the lead-in"}],
+            },
+        },
+    )
+    stage = completion.effect_response(tmp_path)
+    assert stage.verdict == completion.UNMET
+    assert stage.remaining == {
+        "effect parameters to screen": 1,
+        "effect parameters refused, which asking again the same way will not fill": 1,
+    }
+    assert "asked and refused" in stage.evidence
+
+
+def test_a_unit_with_nothing_refused_is_not_told_about_refusals(tmp_path) -> None:
+    """A figure explaining a thing that did not happen is one a reader must rule out."""
+    _write(tmp_path, "efx-map/types.json", {"accepted": 1, "effects": [{"parameters": [0, 0]}]})
+    _write(tmp_path, "transfer/analogue-input.json", {"answer": "no"})
+    _write(
+        tmp_path,
+        "efx-params/00-00.json",
+        {"type": "00 00", "parameters": [{"type": "00 00", "parameter": 0, "audible": True}]},
+    )
+    stage = completion.effect_response(tmp_path)
+    assert stage.remaining == {"effect parameters to screen": 1}
+    assert "refused" not in stage.evidence
+
+
 def test_the_route_has_to_be_established_before_the_stage_can_be_short_of_it(
     tmp_path,
 ) -> None:

@@ -212,3 +212,53 @@ def test_a_run_that_did_not_ask_resets_between_no_settings():
     from soundings.cli import sound
 
     assert sound.settings_reset_before((1, 0), False) == []
+
+
+def test_a_run_that_will_not_answer_writes_down_that_it_asked(tmp_path) -> None:
+    """A refusal with no file reads as a run that never happened.
+
+    A stage that folds these together counts an address with no record as one
+    nobody asked, which puts a question that cannot be answered this way in the
+    same list as one still owed a measurement.
+    """
+    import argparse
+    import json
+
+    from soundings.cli import sound
+
+    out = tmp_path / "refused.json"
+    args = argparse.Namespace(
+        device_id=0x10, cc=None, address="40 03 05", values=(127, 0), channel=1, out=str(out)
+    )
+    assert sound._refused(
+        args,
+        str(out),
+        at="struck_kit",
+        why=sound.LEAD_IN_NOT_QUIET,
+        measured={"asked_for_dbfs": -60, "loudest_lead_in_dbfs": -52.8},
+    ) == 1
+
+    found = json.loads(out.read_text())
+    assert found["address"] == "40 03 05"
+    assert found["values"] == [127, 0]
+    assert found["refused"]["at"] == "struck_kit"
+    assert found["refused"]["measured"]["loudest_lead_in_dbfs"] == -52.8
+    assert found["why_a_refusal_is_recorded"] == sound.WHY_REFUSAL_RECORDED
+    # No verdict of any kind: what was refused was the takes.
+    assert "audible" not in found and "verdicts" not in found and "by_stimulus" not in found
+
+
+def test_a_quiet_lead_in_is_not_reported_as_a_loud_one() -> None:
+    """The check returns the figure it refused on, and None when it refuses nothing.
+
+    Read as a boolean the old way round, a quiet run would refuse every time.
+    """
+    import numpy as np
+
+    from soundings.cli import sound
+
+    rate = 48000
+    quiet = np.concatenate([np.zeros(rate // 2), np.ones(rate // 2) * 0.5])
+    loud = np.ones(rate) * 0.5
+    assert sound._lead_in_ok([[quiet]], rate, 0.4, -60.0) is None
+    assert sound._lead_in_ok([[loud]], rate, 0.4, -60.0) is not None

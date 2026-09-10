@@ -97,6 +97,16 @@ WHY_NEVER_ASKED = (
     "complete answer."
 )
 
+#: Why a slot whose run refused to answer is counted apart from one nobody asked.
+WHY_REFUSED = (
+    "A parameter slot whose comparison ran, would not answer, and said which of its own "
+    "conditions the takes failed. It is kept apart from the slots with no record at all "
+    "because only one of the two is work outstanding: asking this one again the same way "
+    "gets the same refusal, and reading it as unasked would put it in a queue it can never "
+    "leave. It carries no verdict either way -- what was refused was the takes, and nothing "
+    "here says whether the parameter does anything."
+)
+
 #: Why the slots are taken from the caller in order rather than from the directory.
 WHY_SLOTS_IN_ORDER = (
     "Which slot each address is was given to the fold in order, not inferred from the records "
@@ -280,6 +290,7 @@ def read_directory(
     ordered = list(slots) if slots else sorted(found)
     rows = []
     missing = []
+    refused = []
     for slot, address in enumerate(ordered):
         if address not in found:
             missing.append(address)
@@ -288,6 +299,12 @@ def read_directory(
         if address in supersede:
             withdrawn = {"values": record["values"], "why": WHY_SILENT_PAIR}
             record = json.loads(Path(supersede[address]).read_text())
+        # A refused run holds no takes to read a verdict out of, so it cannot
+        # become a row. It is not missing either, and the difference is the
+        # whole point of it having been written down.
+        if record.get("refused"):
+            refused.append({"parameter": slot, "address": address, **record["refused"]})
+            continue
         rows.append(row(type_id, slot, defaults[slot], record, withdrawn))
     coverage = None
     if slots:
@@ -295,6 +312,8 @@ def read_directory(
             "slots": len(ordered),
             "answered": len(rows),
             "never_asked": missing,
+            "refused": refused,
+            **({"why_refused": WHY_REFUSED} if refused else {}),
             # A record under the directory that no slot claims. It is not folded
             # in, because a slot number is what pairs a parameter with its
             # default and this address has none -- but dropping it unnamed is how

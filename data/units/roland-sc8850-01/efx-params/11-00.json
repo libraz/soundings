@@ -40,7 +40,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-params/11-00.json"
     ],
-    "measured_at": "2026-09-10T03:36:26+00:00",
+    "measured_at": "2026-09-10T05:10:50+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null
   },
@@ -78,9 +78,25 @@
   "coverage": {
     "slots": 20,
     "answered": 19,
-    "never_asked": [
-      "40 03 09"
+    "never_asked": [],
+    "refused": [
+      {
+        "parameter": 6,
+        "address": "40 03 09",
+        "at": "struck_kit",
+        "why": "Something was sounding before the note: the tail of the take before it, or another process driving the same unit. The noise floor sets the yardstick every number here is judged against, so nothing measured from these takes would mean anything.",
+        "measured": {
+          "asked_for_dbfs": -60.0,
+          "loudest_lead_in_dbfs": -55.6,
+          "note_over_the_lead_in_db": [
+            58.0,
+            5.0
+          ],
+          "channel": 3
+        }
+      }
     ],
+    "why_refused": "A parameter slot whose comparison ran, would not answer, and said which of its own conditions the takes failed. It is kept apart from the slots with no record at all because only one of the two is work outstanding: asking this one again the same way gets the same refusal, and reading it as unasked would put it in a queue it can never leave. It carries no verdict either way -- what was refused was the takes, and nothing here says whether the parameter does anything.",
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",

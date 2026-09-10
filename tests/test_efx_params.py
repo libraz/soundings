@@ -141,3 +141,60 @@ def test_the_record_carries_its_control_and_its_limits(tmp_path) -> None:
     assert found["positive_control"]["audible"] is True
     assert found["not_established"]
     assert found["results"]["asked"] == 1
+
+
+def _refusal(address: str, why: str = "the lead-in was not quiet") -> dict:
+    """A contrast record shaped as the comparison writes one when it will not answer."""
+    return {
+        "address": address,
+        "values": [0, 127],
+        "channel": 2,
+        "refused": {
+            "at": "a note",
+            "why": why,
+            "measured": {"asked_for_dbfs": -60, "loudest_lead_in_dbfs": -52.8},
+        },
+    }
+
+
+def test_a_slot_whose_run_refused_is_not_counted_as_one_nobody_asked(tmp_path) -> None:
+    """Only one of the two is work outstanding.
+
+    Asking a refused slot again the same way gets the same refusal, so reading
+    it as unasked puts it in a queue it can never leave.
+    """
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    _write(tmp_path, "b.json", _refusal("40 03 04"))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+    found = efxparams.read_directory(
+        tmp_path, "04 02", [7, 9], control, [], slots=["40 03 03", "40 03 04", "40 03 05"]
+    )
+    coverage = found["coverage"]
+    assert coverage["never_asked"] == ["40 03 05"]
+    assert [r["address"] for r in coverage["refused"]] == ["40 03 04"]
+    assert coverage["refused"][0]["parameter"] == 1
+    assert coverage["refused"][0]["measured"]["loudest_lead_in_dbfs"] == -52.8
+    assert "why_refused" in coverage
+
+
+def test_a_refused_slot_carries_no_verdict_either_way(tmp_path) -> None:
+    """What was refused was the takes. Nothing says the parameter does nothing."""
+    _write(tmp_path, "b.json", _refusal("40 03 04"))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+    found = efxparams.read_directory(
+        tmp_path, "04 02", [7, 9], control, [], slots=["40 03 03", "40 03 04"]
+    )
+    assert found["parameters"] == []
+    assert found["coverage"]["answered"] == 0
+
+
+def test_a_directory_with_nothing_refused_says_so_without_the_note(tmp_path) -> None:
+    """A key explaining a thing that did not happen is a key a reader has to rule out."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+    found = efxparams.read_directory(tmp_path, "04 02", [7], control, [], slots=["40 03 03"])
+    assert found["coverage"]["refused"] == []
+    assert "why_refused" not in found["coverage"]

@@ -73,6 +73,33 @@ WHY_AS_HELD = (
     "refused, since there the two sets of takes are takes of the same setting."
 )
 
+WHY_REFUSAL_RECORDED = (
+    "This run asked and refused to answer. It is written down because the alternative reads as "
+    "a run that never happened: a stage that folds these together counts an address with no "
+    "file as one nobody asked, and a parameter that cannot be asked this way would sit in the "
+    "same list as one still owed a measurement. They are not the same thing, and only one of "
+    "them is work outstanding. Nothing here is a verdict about the address -- what was refused "
+    "was the takes, and the reason names which of the run's own conditions they failed."
+)
+
+LEAD_IN_NOT_QUIET = (
+    "Something was sounding before the note: the tail of the take before it, or another process "
+    "driving the same unit. The noise floor sets the yardstick every number here is judged "
+    "against, so nothing measured from these takes would mean anything."
+)
+
+NOTE_NEVER_ROSE = (
+    "The note never rose far enough above the silence before it at either setting, so these "
+    "takes hold no sound from the unit. Either the wrong input was named, or nothing arrived on "
+    "the one that was."
+)
+
+LOSSY_CAPTURE = (
+    "The audio interface returned less of the take than was asked for. A comparison of two "
+    "settings rests on the takes being the same length of the same sound, so a take that is "
+    "short is not a quieter answer to the question -- it is no answer to it."
+)
+
 
 def register(sub) -> None:
     p = sub.add_parser(
@@ -217,20 +244,45 @@ def _store(where: str | None):
     return Store.open(where)
 
 
-def _lead_in_ok(groups, rate: float, before: float, limit: float) -> bool:
-    """Refuse a run whose lead-in was not silent, naming why it matters."""
+def _lead_in_ok(groups, rate: float, before: float, limit: float) -> float | None:
+    """The lead-in that was too loud, or None where every take was quiet enough.
+
+    The figure rather than a flag, because a refusal is written down and a
+    refusal without the number it turned on cannot be checked or compared with
+    the next one.
+    """
     from .. import stability
 
     worst = stability.loudest_lead_in([t for g in groups for t in g], rate, before=before)
     if worst <= limit:
-        return True
+        return None
     print(
         f"\nThe loudest lead-in sits at {worst:.1f} dBFS, against {limit:.0f} dBFS asked for. "
-        "Something was sounding before the note: the tail of the take before it, or another "
-        "process driving the same unit. The noise floor sets the yardstick every number here "
-        "is judged against, so nothing measured from these takes would mean anything."
+        + LEAD_IN_NOT_QUIET
     )
-    return False
+    return worst
+
+
+def _refused(args, out_path, *, at: str, why: str, measured: dict) -> int:
+    """Write down that the run asked and would not answer, and say what it measured.
+
+    Returns the failing status the caller was going to return anyway, so that a
+    driver reading exit codes sees no change and a reader of the archive sees
+    the difference between a question refused and a question never put.
+    """
+    report.write_json(
+        out_path,
+        {
+            "device_id": f"{args.device_id:02X}",
+            "controller": args.cc,
+            "address": None if args.cc is not None else args.address,
+            "values": list(args.values),
+            "channel": args.channel,
+            "refused": {"at": at, "why": why, "measured": measured},
+            "why_a_refusal_is_recorded": WHY_REFUSAL_RECORDED,
+        },
+    )
+    return 1
 
 
 def _part_offset(args: argparse.Namespace, channel: int) -> int | None:
@@ -487,7 +539,17 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                         time.sleep(perform.REST_S)
                     if not recording.healthy:
                         print(f"    lossy capture: {recording.health_report()}")
-                        return 1
+                        return _refused(
+                            args,
+                            args.out,
+                            at=stim.name,
+                            why=LOSSY_CAPTURE,
+                            measured={
+                                "setting": value,
+                                "take": index,
+                                "capture": recording.health_report(),
+                            },
+                        )
                     takes.append(recording)
                     if store is not None:
                         store.keep(recording, stimulus=stim.name, setting=str(value), take=index)
@@ -510,14 +572,32 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             shown = ", ".join(f"{v} at {r:.1f} dB" for v, r in zip(args.values, rises, strict=True))
             print(f"    channel {index}: note over the lead-in, {shown}")
             if not max(rises) > args.min_rise:
-                print(
-                    f"\n    The note never rose {args.min_rise} dB above the silence before "
-                    "it at either setting, so these takes hold no sound from the unit. Name "
-                    "the right input with --audio."
+                print(f"\n    {NOTE_NEVER_ROSE} Name the right input with --audio.")
+                return _refused(
+                    args,
+                    args.out,
+                    at=stim.name,
+                    why=NOTE_NEVER_ROSE,
+                    measured={
+                        "asked_for_db": args.min_rise,
+                        "note_over_the_lead_in_db": [round(r, 1) for r in rises],
+                        "channel": index,
+                    },
                 )
-                return 1
-            if not _lead_in_ok(groups, rate, before, args.max_lead_in):
-                return 1
+            loud = _lead_in_ok(groups, rate, before, args.max_lead_in)
+            if loud is not None:
+                return _refused(
+                    args,
+                    args.out,
+                    at=stim.name,
+                    why=LEAD_IN_NOT_QUIET,
+                    measured={
+                        "asked_for_dbfs": args.max_lead_in,
+                        "loudest_lead_in_dbfs": round(loud, 1),
+                        "note_over_the_lead_in_db": [round(r, 1) for r in rises],
+                        "channel": index,
+                    },
+                )
 
             verdict = audible.judge(
                 groups[0],
@@ -656,7 +736,7 @@ def cmd_repeat(args: argparse.Namespace) -> int:
                 "reading anything into a residual."
             )
             return 1
-        if not _lead_in_ok([signals], rate, args.lead * 0.8, args.max_lead_in):
+        if _lead_in_ok([signals], rate, args.lead * 0.8, args.max_lead_in) is not None:
             return 1
         comparisons = [
             stability.compare(signals[0], s, rate, silence_before=args.lead * 0.8)
