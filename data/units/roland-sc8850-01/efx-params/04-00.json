@@ -40,7 +40,8 @@
       "--out",
       "data/units/roland-sc8850-01/efx-params/04-00.json"
     ],
-    "measured_at": "2026-09-08T21:30:34+00:00",
+    "measured_at": "2026-09-10T03:34:03+00:00",
+    "elapsed_s": 0.0,
     "midi_device_id": null
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
@@ -71,15 +72,13 @@
   "results": {
     "no yardstick under the note asked, so not asked": 13,
     "audible": 5,
-    "started something that does not repeat": 1,
-    "asked": 19
+    "started something that does not repeat": 2,
+    "asked": 20
   },
   "coverage": {
     "slots": 20,
-    "answered": 19,
-    "never_asked": [
-      "40 03 12"
-    ],
+    "answered": 20,
+    "never_asked": [],
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
@@ -459,6 +458,31 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "why": "Takes of one setting already differed by most of the signal, so no change could have cleared the bar and none did. The comparison refused a verdict rather than returning a null, and this carries that refusal: the address is unasked, not inaudible. It is what a free-running modulator does to every parameter of a type asked at the values it powers up holding, and it is answered by asking again with the modulator parked."
+    },
+    {
+      "type": "04 00",
+      "parameter": 15,
+      "address": "40 03 12",
+      "default": 40,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "started something that does not repeat",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -44.15,
+        -1.33
+      ],
+      "same_setting_residual_db": -1.32,
+      "across_setting_residual_db": -3.01,
+      "across_setting_level_db": 5.652,
+      "noise_floor_db": -58.0,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "why": "The change does not clear this address's own repeatability, so nothing here is a difference between the settings. What separates them is that one setting repeats and the other does not. A free-running modulator makes the difference method blind, and the asymmetry is what is left to read."
     },
     {
       "type": "04 00",

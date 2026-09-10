@@ -40,8 +40,9 @@
       "--out",
       "data/units/roland-sc8850-01/efx-params/01-01.json"
     ],
-    "measured_at": "2026-09-08T01:50:09+00:00",
-    "midi_device_id": "10"
+    "measured_at": "2026-09-10T03:02:04+00:00",
+    "elapsed_s": 0.0,
+    "midi_device_id": null
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
   "type": "01 01",
@@ -69,17 +70,14 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "audible": 9,
-    "not audible under the note asked": 9,
-    "asked": 18
+    "audible": 10,
+    "not audible under the note asked": 10,
+    "asked": 20
   },
   "coverage": {
     "slots": 20,
-    "answered": 18,
-    "never_asked": [
-      "40 03 09",
-      "40 03 0E"
-    ],
+    "answered": 20,
+    "never_asked": [],
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
@@ -231,6 +229,30 @@
     },
     {
       "type": "01 01",
+      "parameter": 6,
+      "address": "40 03 09",
+      "default": 60,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -38.28,
+        -47.74
+      ],
+      "same_setting_residual_db": -36.93,
+      "across_setting_residual_db": -0.94,
+      "across_setting_level_db": 20.037,
+      "noise_floor_db": -43.29,
+      "changed_the_shape": true,
+      "changed_the_level": true
+    },
+    {
+      "type": "01 01",
       "parameter": 7,
       "address": "40 03 0A",
       "default": 59,
@@ -322,6 +344,30 @@
       "across_setting_residual_db": -39.65,
       "across_setting_level_db": -0.01,
       "noise_floor_db": -46.33,
+      "changed_the_shape": false,
+      "changed_the_level": false
+    },
+    {
+      "type": "01 01",
+      "parameter": 11,
+      "address": "40 03 0E",
+      "default": 0,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -41.55,
+        -47.47
+      ],
+      "same_setting_residual_db": -39.69,
+      "across_setting_residual_db": -39.36,
+      "across_setting_level_db": 0.015,
+      "noise_floor_db": -46.36,
       "changed_the_shape": false,
       "changed_the_level": false
     },
