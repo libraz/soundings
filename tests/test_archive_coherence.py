@@ -130,8 +130,37 @@ def _sent(data: dict) -> set[str] | None:
     return None
 
 
+def _watched(data: dict) -> set[str] | None:
+    """The addresses a scan watched, or None where it recorded only how many.
+
+    A count was enough while every scan walked one map, and it stopped being
+    enough the moment there were three: the widest count belongs to the map that
+    asked two third bytes under each block, which misses thousands of addresses a
+    later map holds, and the map built from single-address answers misses the
+    ones that come back only inside a longer read. More regions is not more
+    space, so containment has to be read from the addresses or not claimed.
+    """
+    listed = data.get("regions_watched_are")
+    if not isinstance(listed, list):
+        return None
+    out = set()
+    for region in listed:
+        start = [int(b, 16) for b in region["address"].split()]
+        for step in range(region["size"]):
+            out.add("{:02X} {:02X} {:02X}".format(*start[:2], start[2] + step))
+    return out
+
+
 def _pairs() -> list[tuple[str, str]]:
-    """Every narrower/wider pair of scans of one kind on one channel."""
+    """Every narrower/wider pair of scans of one kind on one channel.
+
+    Wider means it watched everything the other did and more, which is the only
+    reading under which a lost address is about the runs rather than the unit.
+    Where either record states only a count, the pair is left out: two scans of
+    one kind whose watched space nobody can compare have nothing to say about
+    each other, and pairing them by size would report the archive's own gap in
+    what it recorded as the unit disagreeing with itself.
+    """
     by_question: dict[tuple[str, object], list[tuple[str, dict]]] = {}
     for name, data in _alias_records():
         by_question.setdefault((_kind(data), data.get("channel")), []).append((name, data))
@@ -139,7 +168,10 @@ def _pairs() -> list[tuple[str, str]]:
     for scans in by_question.values():
         for narrow_name, narrow in scans:
             for wide_name, wide in scans:
-                if wide["regions_watched"] > narrow["regions_watched"]:
+                narrow_space, wide_space = _watched(narrow), _watched(wide)
+                if narrow_space is None or wide_space is None:
+                    continue
+                if wide_space > narrow_space:
                     pairs.append((narrow_name, wide_name))
     return pairs
 

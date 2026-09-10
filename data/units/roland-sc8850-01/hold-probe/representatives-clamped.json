@@ -1,0 +1,60 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "hold-probe",
+    "invocation": [
+      "hold-probe",
+      "40 10 50:1",
+      "40 1F 50:1",
+      "--out",
+      "data/units/roland-sc8850-01/hold-probe/representatives-clamped.json"
+    ],
+    "measured_at": "2026-09-09T16:39:45+00:00",
+    "elapsed_s": 0.5,
+    "midi_device_id": "10"
+  },
+  "device_id": "10",
+  "method": "Neighbouring addresses are given different values before any of them is read, and then the whole run is read back. This is what a probe that writes to one address and reads it straight back cannot do: on a window the write points it and the read follows, so the address answers with what it was just given and looks like a store. Written apart from read, a window can only show the value it was given last, and a run of them all answers the same.",
+  "caveat": "Two addresses that answer differently are not one address. That is all this shows. It does not say either of them holds what its own address is supposed to, nor that anything here is used for anything. Neighbours that answer the same are not shown to be one address either: an address bounded to a single value answers with it whichever extreme it was given, so it cannot be told from its neighbour by this and is reported as indistinguishable rather than as shared.",
+  "does_not_see_a_mirrored_block": "This does not find a block that mirrors another block. A window that redirects a block while keeping the offset reaches a different cell for each address within it, so its neighbours really are distinct and every region of one passes here as holding independently. What this finds is the other shape: a run of addresses backed by one cell. The two questions are separate and neither answer covers the other; window-probe is what asks the first.",
+  "verdicts": {
+    "only one address here would answer, so there was nothing to compare it with": 2
+  },
+  "regions": [
+    {
+      "start": "40 10 50",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 0,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": false,
+      "skipped": [],
+      "given": {
+        "40 10 50": "00"
+      },
+      "read_back": {
+        "40 10 50": "20"
+      }
+    },
+    {
+      "start": "40 1F 50",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 0,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": false,
+      "skipped": [],
+      "given": {
+        "40 1F 50": "00"
+      },
+      "read_back": {
+        "40 1F 50": "20"
+      }
+    }
+  ]
+}

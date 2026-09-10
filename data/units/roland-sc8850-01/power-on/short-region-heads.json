@@ -1,0 +1,38 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "power-on",
+    "invocation": [
+      "power-on",
+      "--map",
+      ".cache/alias-map/power-on-pairs.json",
+      "--unit-id",
+      "roland-sc8850-01",
+      "--captured",
+      "immediately after a power cycle, with only reads sent since",
+      "--out",
+      "data/units/roland-sc8850-01/power-on/short-region-heads.json"
+    ],
+    "measured_at": "2026-09-10T02:40:05+00:00",
+    "elapsed_s": 1.4,
+    "midi_device_id": "10"
+  },
+  "unit_id": "roland-sc8850-01",
+  "captured": "immediately after a power cycle, with only reads sent since",
+  "captured_is_asserted_not_measured": "That the unit had just been powered on is asserted by whoever ran this, not shown by the run. Nothing here can tell a unit fresh from the mains switch from one an earlier run wrote to, because both answer a read the same way. What the run can say is that it wrote nothing itself.",
+  "identity_reply": "F0 7E 10 06 02 41 42 00 00 06 00 00 00 00 F7",
+  "note": "Read twice over. Nothing that writes was sent -- an Identity Request and RQ1 reads only -- so this is the state the unit powers up in rather than the state a run left behind. Addresses where the two reads disagreed are listed rather than resolved.",
+  "why_read_twice": "A byte read once has nothing to check it against. This is the baseline every reset is measured against, so a byte recorded here wrongly is credited to, or withheld from, every reset afterwards -- and the capture cannot be taken again without another power cycle. Reading the whole space a second time separates what the unit holds from what one read got wrong, at the cost of doubling a run that is only reads.",
+  "regions_read": 4,
+  "regions_unread": 0,
+  "regions_answered_short": [],
+  "read_disagreed_at": [],
+  "read_only_once": [],
+  "values": {
+    "40 03 00": "00",
+    "40 03 01": "00",
+    "50 03 00": "00",
+    "50 03 01": "00"
+  }
+}

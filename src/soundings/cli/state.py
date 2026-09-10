@@ -146,8 +146,13 @@ def cmd_power_on(args: argparse.Namespace) -> int:
         captured=args.captured,
         regions_read=shot.reads,
         regions_unread=shot.unread,
+        # Deduplicated: the map is read twice, so a region answered short is
+        # answered short twice, and a list saying so twice reads as two regions.
+        answered_short=sorted(set(shot.short)),
     )
     print()
+    if record["regions_answered_short"]:
+        print(f"  {len(record['regions_answered_short'])} regions answered short and were refused")
     print(f"  {len(record['values'])} bytes both reads agreed on")
     print(f"  {len(record['read_disagreed_at'])} disagreed and were left out")
     print(f"  {len(record['read_only_once'])} were answered by one read only")

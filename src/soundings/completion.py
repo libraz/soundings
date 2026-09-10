@@ -30,7 +30,14 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from dataclasses import dataclass, field
+from itertools import product
 from pathlib import Path
+
+#: Where what somebody else wrote down is held, beside `data/` and never inside
+#: it. A row there is evidence that a page said so, which is a different kind of
+#: claim from a measurement, and the directories are kept apart so that reading
+#: one against the other stays a comparison rather than a merge.
+DOCUMENTS = "documents"
 
 MET = "met"
 UNMET = "not met"
@@ -124,23 +131,73 @@ def address_map(unit: Path) -> Stage:
     )
 
 
+def _answering(unit: Path) -> set[str]:
+    """Every address an offsets record recorded an answer at.
+
+    What a power-on capture has to cover, and the only list of it the archive
+    holds: the address map bounds which blocks exist rather than which addresses
+    do, so a capture counted against the map is counted against the narrower
+    question the map asked.
+    """
+    out: set[str] = set()
+    for path in _records(unit, "offsets"):
+        found = _load(unit, f"offsets/{path.name}") or {}
+        for block in found.get("blocks", []):
+            out |= set(block.get("answered") or {})
+    return out
+
+
 def power_on(unit: Path) -> Stage:
-    """A capture with nothing left unread, since an unread region has no baseline."""
-    found = _load(unit, f"power-on/{WHOLE_MAP}")
-    if found is None:
-        return _missing("power-on state", f"power-on/{WHOLE_MAP}")
-    unread = found.get("regions_unread")
-    if unread:
+    """A baseline for every address that answers, since it is the one reading that
+    cannot be taken afterwards.
+
+    Counted over addresses rather than over regions, and over every capture in
+    the directory rather than one named file. Both because the bar was passing
+    while it was neither.
+
+    A region can be read and still come back short: one asked for thirty-two
+    bytes and was answered with thirty, and the two addresses it left out answer
+    when they are asked on their own. The capture then reports no region unread,
+    which is true, while two of its addresses have no value -- so a count of
+    regions cannot state what a later stage may read against, and a hole that
+    only shows up address by address passes as a full capture.
+
+    The union across captures is the right reading of the directory: a capture
+    made over a wider map does not unmake the earlier one, and an address has a
+    power-on value if any capture holds it. What it does not carry is agreement
+    between them, which is a question about the unit rather than about coverage
+    and belongs to whoever reads the two records.
+    """
+    captures = [_load(unit, f"power-on/{path.name}") or {} for path in _records(unit, "power-on")]
+    if not captures:
+        return _missing("power-on state", "power-on/")
+    held: set[str] = set()
+    unread = 0
+    for capture in captures:
+        held |= set(capture.get("values") or {})
+        unread += capture.get("regions_unread") or 0
+    answering = _answering(unit)
+    without = answering - held
+    if not answering:
+        return Stage(
+            "power-on state",
+            UNDECIDED,
+            f"{len(held)} addresses hold a power-on value, and no offsets record says which "
+            "addresses answer, so there is nothing to hold the capture against",
+        )
+    if without:
         return Stage(
             "power-on state",
             UNMET,
-            f"{unread} regions were not read, so they have no power-on value to differ from",
-            {"regions unread": unread},
+            f"{len(without)} of the {len(answering)} addresses that answer a read hold no "
+            "power-on value, and a power-on value cannot be taken later",
+            {"addresses answering with no power-on value": len(without)},
         )
     return Stage(
         "power-on state",
         MET,
-        f"{found.get('regions_read')} regions read, none left unread",
+        f"{len(held)} addresses hold a power-on value, covering all {len(answering)} that "
+        f"answer a read, over {len(captures)} captures with {unread} regions unread",
     )
 
 
@@ -162,12 +219,47 @@ def _shapes(unit: Path) -> dict[tuple, list[str]] | None:
     found = _load(unit, f"offsets/{WHOLE_MAP}")
     if found is None:
         return None
+    # Only a block asked at every offset carries a shape. A later run asks a few
+    # named offsets of a block the first one skipped, and the set that answered
+    # there is an answer to a narrower question: read as a shape it would be a
+    # small one, no other block would match it, and every stage folding over
+    # shapes would be handed a representative it had never been asked to cover.
+    whole = _asked(unit)
     grouped: dict[tuple, list[str]] = defaultdict(list)
     for block in found.get("blocks", []):
+        base = " ".join(block["address"].split()[:2])
+        if len(whole.get(base, ())) < BLOCK:
+            continue
         answering = tuple(sorted(a.split()[-1] for a in block.get("answered", {})))
         if answering:
             grouped[answering].append(block["address"])
     return dict(grouped)
+
+
+#: How many offsets a block holds. Seven bits, so 00 to 7F.
+BLOCK = 128
+
+
+def _asked(unit: Path) -> dict[str, set[int]]:
+    """The offsets each block was put the question at, over every offsets record.
+
+    A stage files more than one record. The first sweeps what the map held, and a
+    later one asks the offsets a document names in blocks the first left alone --
+    reading only the whole-map record reports those as never asked, which is the
+    same defect, in the same directory, as the map that asked two third bytes
+    under each block and was read as though it had asked all of them.
+
+    A record names the range it asked by its first address and a count, not by a
+    block and a count: `40 40 20` for three is offsets 20 to 22, not 00 to 02.
+    """
+    out: dict[str, set[int]] = defaultdict(set)
+    for path in _records(unit, "offsets"):
+        found = _load(unit, f"offsets/{path.name}") or {}
+        for block in found.get("blocks", []):
+            spelled = block["address"].split()
+            start = int(spelled[2], 16)
+            out[" ".join(spelled[:2])] |= set(range(start, start + block.get("offsets_asked", 0)))
+    return dict(out)
 
 
 def _representatives(shapes: dict[tuple, list[str]]) -> dict[str, tuple]:
@@ -224,6 +316,189 @@ def offsets_and_shapes(unit: Path) -> Stage:
     )
 
 
+_HEX = "0123456789ABCDEF"
+
+
+def _covers(template: str, address: str) -> bool:
+    """Whether one printed address covers a concrete one.
+
+    A table writes a family of addresses as one row, putting a letter where the
+    part, bank or program number goes: `40 1x 0A` is one statement about every
+    part rather than sixteen statements. A letter matches any digit and a digit
+    matches only itself, in any of the six places -- the low byte carries them
+    too, and a reader that only expanded the middle one undercounted what the
+    document names by a factor of five.
+    """
+    printed = template.rstrip("#")
+    if len(printed) != len(address):
+        return False
+    for want, got in zip(printed, address, strict=True):
+        if want == " ":
+            if got != " ":
+                return False
+        elif want in _HEX:
+            if got != want:
+                return False
+        elif got not in _HEX:
+            return False
+    return True
+
+
+def _named_by_documents(unit: Path, meta: dict) -> dict[str, set[int]] | None:
+    """The offsets each block's document rows name, or None if no document is held.
+
+    A unit's record names the documents describing its model, and this walks up
+    for the `documents/` tree beside `data/`. Which document belongs to a unit is
+    read from the unit rather than guessed from its model name, because a
+    document describes a model and this archive measures one unit of it.
+
+    Templates are expanded here and nowhere else. What is stored stays as
+    printed, so that the archive keeps holding one row where the document made
+    one statement; expansion is a question asked of that row, not a rewriting of
+    it.
+    """
+    named = [str(d) for d in meta.get("documents", [])]
+    if not named:
+        return None
+    root = next((p for p in unit.parents if (p / DOCUMENTS).is_dir()), None)
+    if root is None:
+        return None
+    templates: set[str] = set()
+    for document in named:
+        rows = _load(root / DOCUMENTS / document, "address-map.json") or {}
+        templates |= {r["address"] for r in rows.get("rows", []) if r.get("address")}
+    if not templates:
+        return None
+
+    out: dict[str, set[int]] = defaultdict(set)
+    for template in templates:
+        printed = template.rstrip("#")
+        places = [i for i, c in enumerate(printed) if c != " " and c not in _HEX]
+        for combination in product(_HEX, repeat=len(places)):
+            spelled = list(printed)
+            for place, digit in zip(places, combination, strict=True):
+                spelled[place] = digit
+            address = "".join(spelled)
+            # An address byte carries seven bits, so the top one is never set and
+            # a letter standing for a digit cannot make it so. Expanding over all
+            # sixteen values of both places spells 80 to FF as well, which are not
+            # addresses the unit has: counting them doubles every block the letter
+            # reaches and reports the half that cannot exist as never asked.
+            if any(int(byte, 16) > 0x7F for byte in address.split()):
+                continue
+            out[address[:5]].add(int(address[6:8], 16))
+    return dict(out)
+
+
+def documented_addresses(unit: Path) -> Stage:
+    """Every address a published document gives a function to has been asked.
+
+    This is the bar that closes a unit, and the only one whose yardstick is not
+    the archive's own. The others are met against a map this repository produced,
+    so a hole in that map is a hole in what they can notice -- the write probe
+    reported every region of the map covered while three thousand six hundred and
+    fifty addresses that answer a read sat outside it. A document was written
+    before any of this and cannot be bent by it.
+
+    Counted over one block per shape, like the stages around it. A row naming
+    `40 1x 0A` names sixteen parts, and asking sixteen parts asks the same thing
+    sixteen times; a bar that grew with the number of parts would say a unit was
+    further from finished the more repetition its address space had.
+
+    A block the document names and no shape holds is counted apart rather than
+    folded away. It is the case that matters most: nothing was measured there, so
+    there is no shape it could belong to, and folding by what has been measured
+    would make exactly the unmeasured blocks invisible.
+
+    Asked, not answered. A documented address that stays silent is an answer --
+    the document says the model has something there and this unit did not give it
+    back, which is a finding rather than a shortfall. What is outstanding is an
+    address nobody put the question to.
+    """
+    name = "documented addresses"
+    meta = _load(unit, "meta.json") or {}
+    wanted = _named_by_documents(unit, meta)
+    if wanted is None:
+        return Stage(
+            name,
+            UNDECIDED,
+            "this unit's record names no document held under documents/, so there is "
+            "nothing outside the archive to count it against",
+        )
+    if _load(unit, f"offsets/{WHOLE_MAP}") is None:
+        return _missing(name, f"offsets/{WHOLE_MAP}")
+    asked = _asked(unit)
+    mapped = _load(unit, f"sweep/{WHOLE_MAP}")
+    exists = {" ".join(r["address"].split()[:2]) for r in (mapped or {}).get("regions", [])}
+    shapes = _shapes(unit) or {}
+    representing = {
+        block: sorted(blocks)[0].rsplit(" ", 1)[0]
+        for blocks in shapes.values()
+        for block in [b.rsplit(" ", 1)[0] for b in blocks]
+    }
+
+    short: dict[str, int] = defaultdict(int)
+    unasked: set[str] = set()
+    for block, offsets in wanted.items():
+        if exists and block not in exists:
+            continue
+        # The block itself first, then the block standing for its shape. A run
+        # that named these offsets asked them here, and there is nothing to fold
+        # when the question was put to this very block; folding is what saves the
+        # other fifteen parts from being asked the same thing again.
+        reached = asked.get(block, set()) | asked.get(representing.get(block, ""), set())
+        missing = len(set(offsets) - reached)
+        if not reached:
+            unasked.add(block)
+        elif missing:
+            short[representing.get(block, block)] += missing
+
+    if unasked or short:
+        return Stage(
+            name,
+            UNMET,
+            f"{len(wanted)} blocks carry a documented address; "
+            f"{len(unasked)} of them were never asked at all",
+            {
+                "blocks the documents name that were never asked": sorted(unasked),
+                "documented offsets not asked, by representative": dict(short),
+            },
+        )
+    return Stage(
+        name,
+        MET,
+        f"every offset named by a document was asked, over {len(wanted)} blocks folded "
+        f"into {len(shapes)} shapes",
+    )
+
+
+def _addresses_in(region: dict) -> set[str]:
+    """The addresses a region says the stage reached, however that stage spells them.
+
+    Two stages walk the same map and neither writes the same region. The write
+    probe lists a `bytes` entry per address with what it did there; the hold
+    probe writes a whole region at once and keeps `given` and `read_back` as
+    address-to-value maps, because what it measures is whether neighbours can be
+    told apart, which is a property of the region rather than of one byte.
+
+    Reading only one of those spellings does not fail. It reports the other
+    stage as having covered nothing, which reads as a stage nobody ran -- and
+    that was the state of `independent storage` while a hundred and seven of its
+    addresses were genuinely unasked and seven hundred were not. A count that is
+    wrong in the same direction as the truth is the hardest kind to notice.
+
+    An address the run was told to leave alone counts as reached. It was decided
+    rather than overlooked -- `NEVER_WRITE` is the standing example -- and a bar
+    that counted it as outstanding could never be met by any amount of measuring.
+    """
+    found = {byte["address"] for byte in region.get("bytes", [])}
+    for key in ("given", "read_back"):
+        held = region.get(key)
+        if isinstance(held, dict):
+            found |= set(held)
+    return found | {skipped.split(" (")[0] for skipped in region.get("skipped", [])}
+
+
 def _covers_the_shapes(unit: Path, stage: str, name: str) -> Stage:
     """A whole-space stage is complete when it covered one block of every shape.
 
@@ -255,10 +530,7 @@ def _covers_the_shapes(unit: Path, stage: str, name: str) -> Stage:
         )
     reached: set[str] = set()
     for region in found.get("regions", []):
-        for byte in region.get("bytes", []):
-            reached.add(byte["address"])
-        for skipped in region.get("skipped", []):
-            reached.add(skipped.split(" (")[0])
+        reached |= _addresses_in(region)
     want = _representatives(shapes)
     short = {
         block: sum(1 for off in offsets if f"{block} {off}" not in reached)
@@ -477,6 +749,10 @@ def survey(unit: Path) -> dict:
         _by_reading("audible differences", unit, "contrast", "block", "efx-params"),
         whole_blocks(unit),
         effect_response(unit),
+        # Last, because it is the one line of the bar whose yardstick came from
+        # outside this repository, and a reader comparing the two wants the
+        # archive's account of itself in front of them when they reach it.
+        documented_addresses(unit),
     ]
     stages = [
         Stage(s.name, EXCLUDED, str(excluded[s.name])) if s.name in excluded else s for s in stages

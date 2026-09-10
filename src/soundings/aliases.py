@@ -206,6 +206,7 @@ class Snapshotter:
         self.timeout = timeout
         self.reads = 0
         self.unread = 0
+        self.short: list[tuple[Address, int, int]] = []
 
     def take(self) -> dict[Address, int]:
         """Read every region and flatten it to one byte per address.
@@ -213,6 +214,27 @@ class Snapshotter:
         A region that fails to read is left out rather than recorded as zeros: an
         absent byte cannot differ from itself, which keeps a failed read from
         appearing as a change on the next comparison.
+
+        **A reply shorter than the request is left out for a different reason.**
+        The reply carries the address it starts at and not the address of each
+        byte, so laying it down means counting up from that start -- and if the
+        unit did not send a byte for every address asked, every byte after the
+        one it skipped lands on the address below its own. That is worse than a
+        region nobody read: a missing byte is visibly missing, while a byte on
+        the wrong address is a value a later stage will compare, difference and
+        publish.
+
+        It happens, and it is the unit rather than the path: one block answered
+        a thirty-two byte request with thirty bytes and a checksum that verified,
+        reproducibly, and the two it left out are not the two that go silent when
+        the same block is asked an offset at a time. So a short reply cannot be
+        repaired by knowing which addresses answer -- the two questions get
+        different answers -- and the only honest reading is that this region was
+        not read. Which regions those were is kept, since a stage's negatives are
+        bounded by what it managed to read.
+
+        The values are still reachable: a map that asks those addresses one at a
+        time gets them, and which granularity to ask at is the map's to say.
         """
         out: dict[Address, int] = {}
         for start, length in self.regions:
@@ -226,6 +248,10 @@ class Snapshotter:
             reply = roland.parse_dt1(raw)
             if reply is None or reply.address != start:
                 self.unread += 1
+                continue
+            if len(reply.data) != length:
+                self.unread += 1
+                self.short.append((start, length, len(reply.data)))
                 continue
             for i, value in enumerate(reply.data):
                 out[(start[0], start[1], start[2] + i)] = value

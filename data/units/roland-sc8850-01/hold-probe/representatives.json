@@ -1,0 +1,476 @@
+{
+  "record": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "stage": "hold-probe",
+    "invocation": [
+      "hold-probe",
+      "20 00 70:16",
+      "40 00 04:3",
+      "40 01 50:11",
+      "40 03 1E:2",
+      "40 10 2A:1",
+      "40 10 2C:1",
+      "40 10 40:12",
+      "40 10 60:1",
+      "40 1F 2A:1",
+      "40 1F 2C:1",
+      "40 1F 40:12",
+      "40 20 10:11",
+      "40 20 20:11",
+      "40 20 40:11",
+      "40 20 50:11",
+      "--out",
+      "data/units/roland-sc8850-01/hold-probe/representatives.json"
+    ],
+    "measured_at": "2026-09-09T07:36:13+00:00",
+    "elapsed_s": 9.5,
+    "midi_device_id": "10"
+  },
+  "device_id": "10",
+  "method": "Neighbouring addresses are given different values before any of them is read, and then the whole run is read back. This is what a probe that writes to one address and reads it straight back cannot do: on a window the write points it and the read follows, so the address answers with what it was just given and looks like a store. Written apart from read, a window can only show the value it was given last, and a run of them all answers the same.",
+  "caveat": "Two addresses that answer differently are not one address. That is all this shows. It does not say either of them holds what its own address is supposed to, nor that anything here is used for anything. Neighbours that answer the same are not shown to be one address either: an address bounded to a single value answers with it whichever extreme it was given, so it cannot be told from its neighbour by this and is reported as indistinguishable rather than as shared.",
+  "does_not_see_a_mirrored_block": "This does not find a block that mirrors another block. A window that redirects a block while keeping the offset reaches a different cell for each address within it, so its neighbours really are distinct and every region of one passes here as holding independently. What this finds is the other shape: a run of addresses backed by one cell. The two questions are separate and neither answer covers the other; window-probe is what asks the first.",
+  "verdicts": {
+    "every address answered differently from its neighbours": 9,
+    "some neighbouring addresses could not be told apart": 1,
+    "only one address here would answer, so there was nothing to compare it with": 5
+  },
+  "regions": [
+    {
+      "start": "20 00 70",
+      "length": 16,
+      "addresses_asked": 16,
+      "distinct_values_read_back": 2,
+      "kept_exactly_what_they_were_given": 0,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "20 00 70": "00",
+        "20 00 71": "7F",
+        "20 00 72": "00",
+        "20 00 73": "7F",
+        "20 00 74": "00",
+        "20 00 75": "7F",
+        "20 00 76": "00",
+        "20 00 77": "7F",
+        "20 00 78": "00",
+        "20 00 79": "7F",
+        "20 00 7A": "00",
+        "20 00 7B": "7F",
+        "20 00 7C": "00",
+        "20 00 7D": "7F",
+        "20 00 7E": "00",
+        "20 00 7F": "7F"
+      },
+      "read_back": {
+        "20 00 70": "01",
+        "20 00 71": "04",
+        "20 00 72": "01",
+        "20 00 73": "04",
+        "20 00 74": "01",
+        "20 00 75": "04",
+        "20 00 76": "01",
+        "20 00 77": "04",
+        "20 00 78": "01",
+        "20 00 79": "04",
+        "20 00 7A": "01",
+        "20 00 7B": "04",
+        "20 00 7C": "01",
+        "20 00 7D": "04",
+        "20 00 7E": "01",
+        "20 00 7F": "04"
+      }
+    },
+    {
+      "start": "40 00 04",
+      "length": 3,
+      "addresses_asked": 3,
+      "distinct_values_read_back": 3,
+      "kept_exactly_what_they_were_given": 1,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 00 04": "00",
+        "40 00 05": "7F",
+        "40 00 06": "00"
+      },
+      "read_back": {
+        "40 00 04": "00",
+        "40 00 05": "58",
+        "40 00 06": "01"
+      }
+    },
+    {
+      "start": "40 01 50",
+      "length": 11,
+      "addresses_asked": 11,
+      "distinct_values_read_back": 5,
+      "kept_exactly_what_they_were_given": 7,
+      "neighbouring_pairs_that_answered_alike": 1,
+      "verdict": "some neighbouring addresses could not be told apart",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 01 50": "00",
+        "40 01 51": "7F",
+        "40 01 52": "00",
+        "40 01 53": "7F",
+        "40 01 54": "00",
+        "40 01 55": "7F",
+        "40 01 56": "00",
+        "40 01 57": "7F",
+        "40 01 58": "00",
+        "40 01 59": "7F",
+        "40 01 5A": "00"
+      },
+      "read_back": {
+        "40 01 50": "00",
+        "40 01 51": "07",
+        "40 01 52": "61",
+        "40 01 53": "01",
+        "40 01 54": "01",
+        "40 01 55": "7F",
+        "40 01 56": "00",
+        "40 01 57": "7F",
+        "40 01 58": "00",
+        "40 01 59": "7F",
+        "40 01 5A": "00"
+      }
+    },
+    {
+      "start": "40 03 1E",
+      "length": 2,
+      "addresses_asked": 2,
+      "distinct_values_read_back": 2,
+      "kept_exactly_what_they_were_given": 2,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 03 1E": "00",
+        "40 03 1F": "7F"
+      },
+      "read_back": {
+        "40 03 1E": "00",
+        "40 03 1F": "7F"
+      }
+    },
+    {
+      "start": "40 10 2A",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 0,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 10 2A": "00"
+      },
+      "read_back": {
+        "40 10 2A": "40"
+      }
+    },
+    {
+      "start": "40 10 2C",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 1,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 10 2C": "00"
+      },
+      "read_back": {
+        "40 10 2C": "00"
+      }
+    },
+    {
+      "start": "40 10 40",
+      "length": 12,
+      "addresses_asked": 12,
+      "distinct_values_read_back": 2,
+      "kept_exactly_what_they_were_given": 12,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 10 40": "00",
+        "40 10 41": "7F",
+        "40 10 42": "00",
+        "40 10 43": "7F",
+        "40 10 44": "00",
+        "40 10 45": "7F",
+        "40 10 46": "00",
+        "40 10 47": "7F",
+        "40 10 48": "00",
+        "40 10 49": "7F",
+        "40 10 4A": "00",
+        "40 10 4B": "7F"
+      },
+      "read_back": {
+        "40 10 40": "00",
+        "40 10 41": "7F",
+        "40 10 42": "00",
+        "40 10 43": "7F",
+        "40 10 44": "00",
+        "40 10 45": "7F",
+        "40 10 46": "00",
+        "40 10 47": "7F",
+        "40 10 48": "00",
+        "40 10 49": "7F",
+        "40 10 4A": "00",
+        "40 10 4B": "7F"
+      }
+    },
+    {
+      "start": "40 10 60",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 1,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 10 60": "00"
+      },
+      "read_back": {
+        "40 10 60": "00"
+      }
+    },
+    {
+      "start": "40 1F 2A",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 0,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 1F 2A": "00"
+      },
+      "read_back": {
+        "40 1F 2A": "40"
+      }
+    },
+    {
+      "start": "40 1F 2C",
+      "length": 1,
+      "addresses_asked": 1,
+      "distinct_values_read_back": 1,
+      "kept_exactly_what_they_were_given": 1,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "only one address here would answer, so there was nothing to compare it with",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 1F 2C": "00"
+      },
+      "read_back": {
+        "40 1F 2C": "00"
+      }
+    },
+    {
+      "start": "40 1F 40",
+      "length": 12,
+      "addresses_asked": 12,
+      "distinct_values_read_back": 2,
+      "kept_exactly_what_they_were_given": 12,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 1F 40": "00",
+        "40 1F 41": "7F",
+        "40 1F 42": "00",
+        "40 1F 43": "7F",
+        "40 1F 44": "00",
+        "40 1F 45": "7F",
+        "40 1F 46": "00",
+        "40 1F 47": "7F",
+        "40 1F 48": "00",
+        "40 1F 49": "7F",
+        "40 1F 4A": "00",
+        "40 1F 4B": "7F"
+      },
+      "read_back": {
+        "40 1F 40": "00",
+        "40 1F 41": "7F",
+        "40 1F 42": "00",
+        "40 1F 43": "7F",
+        "40 1F 44": "00",
+        "40 1F 45": "7F",
+        "40 1F 46": "00",
+        "40 1F 47": "7F",
+        "40 1F 48": "00",
+        "40 1F 49": "7F",
+        "40 1F 4A": "00",
+        "40 1F 4B": "7F"
+      }
+    },
+    {
+      "start": "40 20 10",
+      "length": 11,
+      "addresses_asked": 11,
+      "distinct_values_read_back": 3,
+      "kept_exactly_what_they_were_given": 10,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 20 10": "00",
+        "40 20 11": "7F",
+        "40 20 12": "00",
+        "40 20 13": "7F",
+        "40 20 14": "00",
+        "40 20 15": "7F",
+        "40 20 16": "00",
+        "40 20 17": "7F",
+        "40 20 18": "00",
+        "40 20 19": "7F",
+        "40 20 1A": "00"
+      },
+      "read_back": {
+        "40 20 10": "40",
+        "40 20 11": "7F",
+        "40 20 12": "00",
+        "40 20 13": "7F",
+        "40 20 14": "00",
+        "40 20 15": "7F",
+        "40 20 16": "00",
+        "40 20 17": "7F",
+        "40 20 18": "00",
+        "40 20 19": "7F",
+        "40 20 1A": "00"
+      }
+    },
+    {
+      "start": "40 20 20",
+      "length": 11,
+      "addresses_asked": 11,
+      "distinct_values_read_back": 3,
+      "kept_exactly_what_they_were_given": 10,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 20 20": "00",
+        "40 20 21": "7F",
+        "40 20 22": "00",
+        "40 20 23": "7F",
+        "40 20 24": "00",
+        "40 20 25": "7F",
+        "40 20 26": "00",
+        "40 20 27": "7F",
+        "40 20 28": "00",
+        "40 20 29": "7F",
+        "40 20 2A": "00"
+      },
+      "read_back": {
+        "40 20 20": "28",
+        "40 20 21": "7F",
+        "40 20 22": "00",
+        "40 20 23": "7F",
+        "40 20 24": "00",
+        "40 20 25": "7F",
+        "40 20 26": "00",
+        "40 20 27": "7F",
+        "40 20 28": "00",
+        "40 20 29": "7F",
+        "40 20 2A": "00"
+      }
+    },
+    {
+      "start": "40 20 40",
+      "length": 11,
+      "addresses_asked": 11,
+      "distinct_values_read_back": 3,
+      "kept_exactly_what_they_were_given": 10,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 20 40": "00",
+        "40 20 41": "7F",
+        "40 20 42": "00",
+        "40 20 43": "7F",
+        "40 20 44": "00",
+        "40 20 45": "7F",
+        "40 20 46": "00",
+        "40 20 47": "7F",
+        "40 20 48": "00",
+        "40 20 49": "7F",
+        "40 20 4A": "00"
+      },
+      "read_back": {
+        "40 20 40": "28",
+        "40 20 41": "7F",
+        "40 20 42": "00",
+        "40 20 43": "7F",
+        "40 20 44": "00",
+        "40 20 45": "7F",
+        "40 20 46": "00",
+        "40 20 47": "7F",
+        "40 20 48": "00",
+        "40 20 49": "7F",
+        "40 20 4A": "00"
+      }
+    },
+    {
+      "start": "40 20 50",
+      "length": 11,
+      "addresses_asked": 11,
+      "distinct_values_read_back": 3,
+      "kept_exactly_what_they_were_given": 10,
+      "neighbouring_pairs_that_answered_alike": 0,
+      "verdict": "every address answered differently from its neighbours",
+      "restored": true,
+      "skipped": [],
+      "given": {
+        "40 20 50": "00",
+        "40 20 51": "7F",
+        "40 20 52": "00",
+        "40 20 53": "7F",
+        "40 20 54": "00",
+        "40 20 55": "7F",
+        "40 20 56": "00",
+        "40 20 57": "7F",
+        "40 20 58": "00",
+        "40 20 59": "7F",
+        "40 20 5A": "00"
+      },
+      "read_back": {
+        "40 20 50": "28",
+        "40 20 51": "7F",
+        "40 20 52": "00",
+        "40 20 53": "7F",
+        "40 20 54": "00",
+        "40 20 55": "7F",
+        "40 20 56": "00",
+        "40 20 57": "7F",
+        "40 20 58": "00",
+        "40 20 59": "7F",
+        "40 20 5A": "00"
+      }
+    }
+  ]
+}

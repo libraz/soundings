@@ -492,3 +492,52 @@ def test_the_state_put_back_afterwards_is_the_low_value_of_every_pair():
 
     normal = [stimulus.build(stimulus.values[0])[0] for stimulus in mode_stimuli(0)]
     assert sorted((m[1], m[2]) for m in normal) == sorted(MODE_NORMAL)
+
+
+class ShortReplyUnit(FakeUnit):
+    """A unit that answers a region read with fewer bytes than it was asked for.
+
+    Measured, not invented: one block answered a thirty-two byte request with
+    thirty bytes and a checksum that verified, reproducibly, and the two it left
+    out were not the two that go silent when the same block is asked an offset
+    at a time.
+    """
+
+    def __init__(self, react, memory=(0, 0, 0, 0), *, drop=1):
+        super().__init__(react, memory)
+        self.drop = drop
+
+    def exchange(self, request: list[int], timeout: float = 0.0) -> list[int]:
+        parsed = _parse_rq1(request)
+        if parsed is None:
+            return []
+        (top, mid, low), size = parsed
+        data = self.memory[low : low + size]
+        return roland.dt1((top, mid, low), data[: len(data) - self.drop])
+
+
+def test_a_reply_shorter_than_the_request_is_not_laid_down_over_the_addresses():
+    """Counting up from the start puts every byte after the gap one address low.
+
+    Worse than a region nobody read: a missing byte is visibly missing, while a
+    byte on the wrong address is a value a later stage compares and publishes.
+    """
+    unit = ShortReplyUnit(lambda u, m: None, memory=(0x11, 0x22, 0x33, 0x44))
+    shot = Snapshotter(unit, [REGION], timeout=0.0)
+    assert shot.take() == {}
+    assert shot.unread == 1
+    assert shot.short == [((0x40, 0x11, 0x00), 4, 3)]
+
+
+def test_a_reply_of_the_length_asked_for_is_still_laid_down():
+    """The refusal is about the length disagreeing, not about region reads."""
+    unit = FakeUnit(lambda u, m: None, memory=(0x11, 0x22, 0x33, 0x44))
+    shot = Snapshotter(unit, [REGION], timeout=0.0)
+    assert shot.take() == {
+        (0x40, 0x11, 0x00): 0x11,
+        (0x40, 0x11, 0x01): 0x22,
+        (0x40, 0x11, 0x02): 0x33,
+        (0x40, 0x11, 0x03): 0x44,
+    }
+    assert shot.unread == 0
+    assert shot.short == []

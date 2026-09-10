@@ -39,6 +39,7 @@ to have been stamped.
 SENTENCE_KEYS = frozenset(
     {
         "answered_here_and_declined_there",
+        "captured_is_asserted_not_measured",
         "does_not_see_a_mirrored_block",
         "input_is_asserted_not_measured",
         "landed_outside_its_own_block",
@@ -64,7 +65,7 @@ value, which is the archive's own rule about one unit's findings turned on its
 own records. Three such keys have come out into `findings` entries, whose kind is
 the question and whose fields are this unit's answer to it.
 
-The fourteen left are not that. The test cannot tell them apart, because what it
+The fifteen left are not that. The test cannot tell them apart, because what it
 measures is how many underscores a key has, so it catches verbosity and the
 defect alike. Each of these was read: some are a limitation of the stage rather
 than a finding of it, some are a caveat about how the run was made, and the rest
@@ -72,7 +73,13 @@ name a question whose answer is in the value and whose spelling would not change
 on the next unit. Moving them would put method statements under `findings`, where
 they are not findings, and churn the archive for no reader's benefit.
 
-So a fifteenth entry is a key to go and look at, not a key that is wrong. Read the
+`captured_is_asserted_not_measured` is the pair of `input_is_asserted_not_measured`
+already here: both say that a condition the run was made under was stated by
+whoever ran it and not shown by the run. A power-on capture is only a power-on
+capture if the unit had just been switched on, and nothing in the reading can
+tell that from a unit somebody had already sent to.
+
+So a sixteenth entry is a key to go and look at, not a key that is wrong. Read the
 value, decide which of the two it is, and either migrate it or add it here.
 """
 

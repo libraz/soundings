@@ -365,6 +365,17 @@ def cmd_alias_scan(args: argparse.Namespace) -> int:
             "method": METHOD,
             "region_prefix": args.prefix,
             "regions_watched": len(regions),
+            # Every negative here is bounded by exactly this, and a count cannot
+            # state that bound: three maps of one unit have been watched by these
+            # scans and none of them contains the others, so which run looked
+            # wider is not something a number of regions answers. Without the
+            # addresses themselves, "this message is stored nowhere" cannot be
+            # checked by a reader, and two runs of the same kind cannot be told
+            # apart from two runs of the same question.
+            "regions_watched_are": [
+                {"address": " ".join(f"{b:02X}" for b in start), "size": size}
+                for start, size in regions
+            ],
             "stimuli_sent": [s.label for s in stimuli],
             "restless_addresses": sorted(restless),
             "region_reads_failed": shot.unread,

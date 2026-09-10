@@ -23,6 +23,72 @@ NOT_THIS_SHAPE = (
 )
 
 
+ANSWERED_SHORT = (
+    "This region was asked for more bytes than the unit sent back, and the reply carries the "
+    "address it starts at rather than the address of each byte. Counting up from that start "
+    "puts every byte after the one the unit skipped on the address below its own, so the "
+    "bytes are held here in the order they arrived instead of being placed. Measured rather "
+    "than supposed: the same request was answered the same short way every time, with a "
+    "checksum that verified, and the addresses the reply leaves out are not the ones that go "
+    "silent when the block is asked an offset at a time -- so knowing which addresses answer "
+    "does not say which bytes these are. A shorter read of the same block is answered in "
+    "full, and that is where the values for its first addresses came from."
+)
+"""Why a region's bytes are kept as a list rather than against addresses.
+
+The reading that produced them happened and is worth keeping; what cannot be
+kept is the claim that byte *n* belongs to the *n*th address asked for. A value
+on the wrong address is worse than a missing one, because a missing byte is
+visibly missing and a misplaced one is compared, differenced and published.
+"""
+
+MAP_ASSUMED = (
+    "This record predates the envelope, so nothing in it names the map its run was given, "
+    "and which regions came back short cannot be worked out without one. The map named here "
+    "was supplied by hand and is an assumption, not something the record states. What makes "
+    "it a usable one is that it fits: nearly every region in it holds exactly as many values "
+    "as it asked for, which a map belonging to another run would not."
+)
+"""Why a repair names a map the record it repaired does not.
+
+Kept apart from the repair itself so that a reader meets the assumption at the
+same time as what rests on it. A wrong map here would not fail -- it would
+report most of the record as short and take back most of its values -- so the
+fit is checked rather than trusted, and said either way.
+"""
+
+SHORT_REPLY_BLOCK = (
+    "The addresses this names in the blocks listed under regions_answered_short came from a "
+    "region read whose reply was shorter than the request. The block is what the reply was "
+    "for and is right; the offset was counted up from the start of the request and is not. "
+    "What the run found still happened -- both snapshots were laid down the same way, so a "
+    "byte that moved did move -- but which address moved is not established here."
+)
+"""Why a finding keeps its verdict and loses its address.
+
+Said on the record that names such an address rather than left to whoever holds
+two records against each other, because the defect is invisible from the finding
+alone: the address is well formed, sits in a block that exists, and answers.
+"""
+
+WATCHED_RECOVERED = (
+    "This run predates the record carrying the addresses it watched, and it states them as "
+    "a count. A count cannot state the bound its negatives rest on: several maps of this "
+    "unit have been watched by these scans and they do not contain one another, so more "
+    "regions is not more space. The list here was recovered from the map the invocation "
+    "names and the prefix the record names, and was written only because the number of "
+    "regions that came back is the number the record already held. It is a recovery of an "
+    "argument the run was given, not a second measurement."
+)
+"""Why a scan says which addresses it watched without the run having said so.
+
+Kept here rather than in whatever recovered it, because a sentence published in
+a record has to be findable from the source: a reader who wants to know how a
+field got its value has the package to look in, and a driver that is not part of
+the distribution is not somewhere they can look.
+"""
+
+
 def stores_reached(paths: list[str | Path]) -> list[str]:
     """Every address these alias scans attributed a message to, verbatim.
 

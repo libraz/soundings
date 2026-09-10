@@ -29,6 +29,7 @@ import time
 from dataclasses import dataclass, field
 
 from . import roland
+from .archive import ANSWERED_SHORT
 from .midi import MidiLink
 
 Address = tuple[int, int, int]
@@ -525,13 +526,20 @@ def power_on_record(
     captured: str,
     regions_read: int,
     regions_unread: int,
+    answered_short: list[tuple[Address, int, int]] = (),
 ) -> dict:
     """The capture a power-on run leaves, with what it rests on stated in it.
 
     Assembled here rather than where the run is driven, so a capture cannot be
-    written without the two things a later reader has no way to recover: that
-    the power cycle is an assertion rather than a measurement, and that a byte
-    the two reads disagreed about was dropped rather than decided.
+    written without the three things a later reader has no way to recover: that
+    the power cycle is an assertion rather than a measurement, that a byte the
+    two reads disagreed about was dropped rather than decided, and which regions
+    were answered with fewer bytes than they asked for.
+
+    That last one is a hole that otherwise hides. A region whose reply is short
+    is counted as read -- it was -- so a count of unread regions says nothing
+    about it, while the addresses the reply did not cover have no baseline and a
+    power-on value is the one reading that cannot be taken afterwards.
     """
     agreed, disagreed, once = agreed_bytes(first, second)
     return {
@@ -543,6 +551,15 @@ def power_on_record(
         "why_read_twice": WHY_READ_TWICE,
         "regions_read": regions_read,
         "regions_unread": regions_unread,
+        "regions_answered_short": [
+            {
+                "address": _address_text(start),
+                "asked": asked,
+                "returned": returned,
+                "why": ANSWERED_SHORT,
+            }
+            for start, asked, returned in answered_short
+        ],
         "read_disagreed_at": [_address_text(a) for a in disagreed],
         "read_only_once": [_address_text(a) for a in once],
         "values": {_address_text(a): f"{v:02X}" for a, v in sorted(agreed.items())},
