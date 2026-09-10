@@ -360,8 +360,8 @@
       "reproduced": true
     },
     {
-      "id": "twelve-controllers-are-stored-in-the-part-block-and-the-rest-are-not-stored-anywhere-readable",
-      "summary": "Twelve control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Eighteen others, including modulation, expression, hold and delay send, change nothing anywhere in the readable address space.",
+      "id": "thirteen-controllers-are-stored-in-the-part-block-and-the-rest-reach-nothing-either-read-finds",
+      "summary": "Thirteen control changes land in part 1's block at 40 11 xx, each keeping the transmitted value unchanged. Sixteen others, including modulation, expression, hold and delay send, change nothing anywhere either kind of read reaches. The thirteenth is CC94: it is kept at 40 11 2C, which the sweep map does not name, so the run that watched only that map recorded it as stored nowhere.",
       "method": "Read a set of regions, send one control change, read them again, and keep the bytes that moved. Each controller is primed at 20, moved to 60 and returned to 20, and a byte is kept only if it moved both times and to a different value each time; a controller that lands nothing is sent again with the two values swapped. CC7 is sent before the first controller and after the last. A control round of four snapshots with nothing sent precedes the scan; across all 854 regions it found no address that moves on its own. RPN and NRPN were parked at 7F 7F first so a data entry controller writes to nothing in particular, and the bank latch is committed back to the tone the part already held at the end.",
       "stored": {
         "CC7": "40 11 19",
@@ -375,9 +375,20 @@
         "CC77": "40 11 31",
         "CC78": "40 11 37",
         "CC91": "40 11 22",
-        "CC93": "40 11 21"
+        "CC93": "40 11 21",
+        "CC94": "40 11 2C"
       },
-      "not_stored_anywhere_in_the_map": [
+      "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
+      "not_established": [
+        "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx. The rhythm part's block has every one of those offsets and each holds its own value, so nothing structural stops the table carrying across -- but only one of the twelve has been read back on a rhythm part: 40 10 21 after a CC93, recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it. The other eleven were never sent to a part other than 1, and this table remains a statement about part 1.",
+        "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
+        "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
+        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
+        "That CC0 and CC32 are stored nowhere. They are stored, but only once a program change commits them, and only if the unit has that bank and program: see bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole. Sent on their own, which is how this scan sends them, they change nothing."
+      ],
+      "reproduced": true,
+      "coverage": "Watched over 551 regions holding 15642 addresses, which is every address either kind of read has reached, less the blocks measured to be a window. The earlier run watched the 854 regions of the sweep map: the sweep asks two third bytes under each block, so 3650 addresses that answer a read lie outside every region it names, and a message landing in one of them was recorded as landing nowhere.",
+      "not_stored_anywhere_either_read_reaches": [
         1,
         5,
         6,
@@ -389,23 +400,13 @@
         66,
         67,
         84,
-        94,
         95,
         98,
         99,
         100,
         101
       ],
-      "positive_control": "CC7 is scanned in every run, including the runs whose result is a list of absences. It was detected in the whole-map run at 40 11 19 while the seventeen others were not, so the absences are about the unit rather than about the scan. Without it a run that finds nothing cannot be told from a run that could not have found anything.",
-      "not_established": [
-        "That a part other than 1 holds these controllers at these offsets. The twelve were measured on part 1's block at 40 11 xx. The rhythm part's block has every one of those offsets and each holds its own value, so nothing structural stops the table carrying across -- but only one of the twelve has been read back on a rhythm part: 40 10 21 after a CC93, recorded under a-rhythm-part-stores-its-chorus-send-and-is-not-heard-through-it. The other eleven were never sent to a part other than 1, and this table remains a statement about part 1.",
-        "That an address holding a controller's value is what makes the controller audible. This is a read back, and nothing here was heard.",
-        "Where the unstored controllers do live. They are not in any region the sweep can read; whether they are held somewhere unaddressable or not held at all is not decided by this.",
-        "Anything about channels other than 1, or about controllers 120 to 127. The mode messages reset the channel state that every later attribution is measured against, so they need a scan of their own.",
-        "That CC0 and CC32 are stored nowhere. They are stored, but only once a program change commits them, and only if the unit has that bank and program: see bank-select-is-a-latch-that-a-program-change-commits-or-discards-whole. Sent on their own, which is how this scan sends them, they change nothing."
-      ],
-      "reproduced": true,
-      "coverage": "The twelve addresses and the absence of the other seventeen were both reproduced over the 85 regions under 40, under the procedure above. The claim that the seventeen are stored nowhere in the whole 854 region map rests on an earlier run that watched all of them but primed only once and did not retry a negative. Re-running the whole map under the current procedure takes about two hours and has not been done."
+      "reissued": "Twelve were published from a scan that watched the sweep map. Re-running the same procedure over both reads found the thirteenth. Nothing the earlier run attributed was lost, and the sixteen absences were reproduced."
     },
     {
       "id": "a-mapped-regions-size-bounds-a-block-read-and-not-the-addresses-that-exist",
@@ -612,7 +613,7 @@
     },
     {
       "id": "rpn-modulation-depth-range-is-stored-scaled-and-clamped-not-verbatim",
-      "summary": "RPN 00 05 is kept at 40 21 04 as floor(sent * 127 / 6), saturating at 127. It is the only one of the four GS RPNs that reaches any readable address, and the only alias so far that is not verbatim.",
+      "summary": "RPN 00 05 is kept at 40 21 04 as floor(sent * 127 / 6), saturating at 127. It is one of two GS RPNs measured to reach a readable address, and the only alias so far that is not verbatim: RPN 00 01, master fine tune, reaches 40 11 2A and is kept verbatim there.",
       "method": "Send the RPN selector and data entry MSB at each value from 0 to 8 and at 12, 24 and 127, reading 40 21 00 to 0A after each.",
       "results": {
         "0": 0,
@@ -631,14 +632,15 @@
       "fit": "floor(v * 127 / 6) reproduces all six unsaturated points exactly, including 3 -> 63 where rounding would give 64.",
       "rpns_that_reached_nothing": [
         "00 00 pitch bend sensitivity",
-        "00 01 master fine tune",
         "00 02 master coarse tune"
       ],
       "not_established": [
         "Where the other three RPNs are kept. They changed no byte of the readable space; whether they are held somewhere unaddressable or not held at all is not decided by this.",
         "What the stored unit means. The divisor of 6 is what the numbers fit, not something the unit reported. A DT1 write to the same byte is kept verbatim, so the conversion is in the RPN receiver and the byte itself is an ordinary 0 to 127 field: see sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly."
       ],
-      "reproduced": true
+      "reproduced": true,
+      "coverage": "Watched over 551 regions holding 15642 addresses, which is every address either kind of read has reached, less the blocks measured to be a window. The earlier run watched the 854 regions of the sweep map: the sweep asks two third bytes under each block, so 3650 addresses that answer a read lie outside every region it names, and a message landing in one of them was recorded as landing nowhere.",
+      "reissued": "Master fine tune was published as reaching nothing. 40 11 2A is outside every region the sweep map names, so the scan that watched that map could not have seen it. What it reaches was found by re-running the same procedure over both reads; the scaling and the clamp were not re-measured and stand as they were."
     },
     {
       "id": "sysex-is-a-third-route-into-the-same-byte-and-writes-the-stored-unit-directly",
@@ -650,6 +652,7 @@
           "40 11 1C",
           "40 11 21",
           "40 11 22",
+          "40 11 2C",
           "40 11 30",
           "40 11 31",
           "40 11 32",
@@ -670,31 +673,33 @@
         "Which other parameters convert on the way in. Only 40 21 04 has been compared across two routes at several values.",
         "That the three routes behave alike in anything but the value stored. Rate of change, resolution and audible result were not compared."
       ],
-      "reproduced": true
+      "reproduced": true,
+      "coverage": "Watched over 551 regions holding 15642 addresses, which is every address either kind of read has reached, less the blocks measured to be a window. The earlier run watched the 854 regions of the sweep map: the sweep asks two third bytes under each block, so 3650 addresses that answer a read lie outside every region it names, and a message landing in one of them was recorded as landing nowhere.",
+      "reissued": "Thirteen bytes were published. The fourteenth is 40 11 2C, the byte CC94 is kept in, which was not among the targets because the scan that chose them had not found it. The mirror search is unchanged and still rests on two of them."
     },
     {
       "id": "gs-reset-reproduces-the-power-on-state-and-the-two-gm-resets-do-not",
-      "summary": "GS Reset returns all 37502 readable bytes to exactly what the unit held after a power cycle. GM1 System On leaves 88 of them elsewhere and GM2 System On leaves 974, and the two GM resets are not nested: they share 32 changes, GM1 makes 56 the other does not, and GM2 makes 942 the other does not. All three restore every marked byte, so the difference is not in what they reset but in what they additionally set.",
-      "method": "A mark is written into all 51 addresses the write probe found take any value, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. The whole 854 region map is read after each, and compared against power-on/whole-map.json.",
+      "summary": "GS Reset returns every one of the 41090 bytes read after it to exactly what the unit held after a power cycle. GM1 System On leaves 96 of them elsewhere and GM2 System On leaves 1090. All three restore every byte that was marked, so the difference is not in what they reset but in what they additionally set.",
+      "method": "A mark is written into each of 8483 addresses, and only bytes read back as holding it are counted, so a byte that was never broken cannot earn the reset any credit. Each reset is preceded by a GS Reset, which this same probe measured as reproducing the power-on capture, so the three start from one state rather than from wherever the previous one left the unit. 851 regions are read after each and compared against power-on/whole-map-reachable.json.",
       "results": {
         "GS Reset": {
           "message": "F0 41 10 42 12 40 00 7F 00 41 F7",
-          "marked_bytes_restored": "50 of 51",
+          "marked_bytes_restored": "8481 of 8483",
           "readable_bytes_differing_from_power_on": 0
         },
         "GM1 System On": {
           "message": "F0 7E 7F 09 01 F7",
-          "marked_bytes_restored": "50 of 51",
-          "readable_bytes_differing_from_power_on": 88,
-          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks (40 10 to 40 1F and 50 10 to 50 1F), and at low bytes 23 and 24 in 28 of them; 40 10, 40 18, 50 10 and 50 18 already held 00 there"
+          "marked_bytes_restored": "8481 of 8483",
+          "readable_bytes_differing_from_power_on": 96
         },
         "GM2 System On": {
           "message": "F0 7E 7F 09 03 F7",
-          "marked_bytes_restored": "50 of 51",
-          "readable_bytes_differing_from_power_on": 974,
-          "what_changed": "01 -> 00 at low byte 0A in all 32 part blocks, as GM1 also does; 00 -> 7A at low byte 00 in all 32 blocks of the 40 4x and 50 4x family, which is the byte CC32 writes into; and 65 bytes in each of the fourteen drum setup families 41 to 47, 4A to 4F and 51",
-          "does_not_change": "low bytes 23 and 24, which GM1 System On does"
-        }
+          "marked_bytes_restored": "8379 of 8483",
+          "readable_bytes_moved_elsewhere_by_it": 102,
+          "readable_bytes_differing_from_power_on": 1090,
+          "caveat": "30 of the 851 region reads after this reset failed, so its figure is over a space 30 regions short of the other two."
+        },
+        "the two the run could not read back": "40 03 1E and 40 03 1F, under every subject. They are marked and not read afterwards, so they are named rather than counted as restored or as kept."
       },
       "reproduced": "three runs, the last two from a common starting state, all giving 88 and 974 exactly",
       "not_established": [
@@ -702,7 +707,9 @@
         "Whether the changes are audible. This is a read back and nothing was heard.",
         "What System Mode Set does. It reinitialises rather than resetting parameters and was not sent.",
         "That GS Reset reproduces power-on for anything unreadable. 37502 bytes of the 42064 the map spans were compared; the rest answer no read."
-      ]
+      ],
+      "coverage": "8483 addresses marked, out of the 25643 the write probe found take any value. A further 11686 hold two or more values and can be put back, and were outside this run: the probe marked with a fixed value that every address with a range refuses. They are reachable now that the mark is chosen from what each address accepts, and have not been asked.",
+      "reissued": "The published figures -- 51 addresses marked, 37502 bytes read, 88 and 974 differing -- were measured over the sweep map and a first-pass write probe. Neither is retracted: they were true of the space they were taken over, which is narrower than this one by 3650 addresses and by most of the write probe."
     },
     {
       "id": "the-tone-map-is-what-the-unit-accepts-and-it-refuses-most-of-the-space",
