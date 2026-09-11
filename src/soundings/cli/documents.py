@@ -22,11 +22,37 @@ from .. import documents
 TABLES = {
     "address-map": {
         "read": documents.read_address_map,
+        "carry": documents.header_above,
+        "order": lambda row: (row["page"], row.get("address", "")),
+        "line": lambda row: (
+            f"{row.get('address', ''):<12} {row.get('size', ''):<10} "
+            f"{row.get('data', ''):<14} {row.get('parameter', '')}"
+        ),
         "headings": {
             "en": "Parameter Address Map",
             "ja": "パラメーター・アドレス・マップ",
         },
-    }
+    },
+    "effect-list": {
+        "read": documents.read_effect_list,
+        "carry": documents.type_above,
+        "order": lambda row: (
+            row["page"],
+            row["msb"],
+            row["lsb"],
+            int(row.get("parameter_number", -1)),
+        ),
+        "line": lambda row: (
+            f"{row['type']:>3}: {row['effect']:<24} "
+            f"[{row['msb']}H, {row['lsb']}H] "
+            + (
+                f"[{row['parameter_number']:>2}] {row['parameter']:<34} {row['data']}"
+                if "parameter_number" in row
+                else ""
+            )
+        ),
+        "headings": {"en": "Different effect types"},
+    },
 }
 """The tables this can read, by the name the archive files them under.
 
@@ -35,7 +61,8 @@ edition prints over that table, so a citation can name the table a reader is
 meant to find in the words their own copy prints -- picked by the document's
 language rather than fixed here, because one reader serves every edition and a
 heading written into the code is the heading of whichever edition was read
-first.
+first. A language whose copy nobody has held is not guessed at: it is missing
+here, and asking for it says so.
 """
 
 
@@ -182,20 +209,33 @@ def _in_file(meta: dict, printed: int) -> int:
     return inside
 
 
-def _carried(pdf: str, page: int) -> list[str] | None:
-    """The columns of the table still open above this page, if any.
+def _carried(table: str, pdf: str, page: int) -> list[str] | dict | None:
+    """Whatever the table above this page left open on it.
 
-    Costs a read of each page walked back over, and is the difference between
-    reading the rows on a table's later pages and losing them.
+    The columns of a parameter address map, the effect type an effect list is
+    still printing the parameters of: different things, and each is the
+    difference between reading the rows on a table's later pages and losing
+    them. Costs a read of each page walked back over.
     """
-    return documents.header_above(lambda at: documents.page_text(pdf, at), page)
+    return TABLES[table]["carry"](lambda at: documents.page_text(pdf, at), page)
+
+
+def _heading(table: str, language: str) -> str:
+    headings = TABLES[table]["headings"]
+    if language not in headings:
+        raise SystemExit(
+            f"the heading a {language} edition prints over the {table} is not written "
+            "down here. It is what a citation names, so it is read off a copy of that "
+            "edition rather than translated out of another one."
+        )
+    return headings[language]
 
 
 def _read(args, meta: dict) -> documents.Reading:
     pdf = _pdf_for(args, meta)
     inside = _in_file(meta, args.page)
     text = documents.page_text(pdf, inside)
-    return TABLES[args.table]["read"](text, args.page, _carried(pdf, inside))
+    return TABLES[args.table]["read"](text, args.page, _carried(args.table, pdf, inside))
 
 
 def _show(args) -> int:
@@ -206,14 +246,10 @@ def _show(args) -> int:
     text = documents.page_text(pdf, inside)
     print(text)
     print(f"--- {args.table}, printed page {args.page} (file page {inside}) ---")
-    reading = TABLES[args.table]["read"](text, args.page, _carried(pdf, inside))
+    reading = TABLES[args.table]["read"](text, args.page, _carried(args.table, pdf, inside))
     for row in reading.rows:
         marked = " (qualified)" if "needs_review" in row else ""
-        print(
-            f"  {row.get('address', ''):<12} {row.get('size', ''):<10} "
-            f"{row.get('data', ''):<14} {row.get('parameter', '')}"
-            f"{marked}"
-        )
+        print(f"  {TABLES[args.table]['line'](row)}{marked}")
     for missed in reading.not_extracted:
         print(f"  ? {missed}")
     print(f"  {len(reading.rows)} rows, {len(reading.not_extracted)} unread")
@@ -251,7 +287,7 @@ def _add(args) -> int:
     page = str(_in_file(meta, args.page))
 
     if args.no_tables:
-        meta["pages"][page] = documents.NO_TABLES
+        meta["pages"][page][args.table] = documents.NO_TABLES
         documents.save(path, {k: v for k, v in meta.items() if k != "record"})
         dropped = _forget(path, args)
         also = f", {dropped} parser notes dropped" if dropped else ""
@@ -266,7 +302,7 @@ def _add(args) -> int:
             "table this can hold, say so with --no-tables."
         )
 
-    heading = TABLES[args.table]["headings"][meta["language"]]
+    heading = _heading(args.table, meta["language"])
     table_path = path.parent / f"{args.table}.json"
     table = (
         documents.load(table_path)
@@ -280,40 +316,53 @@ def _add(args) -> int:
         }
     )
     table["rows"] = [row for row in table["rows"] if row["page"] != args.page] + reading.rows
-    table["rows"].sort(key=lambda row: (row["page"], row.get("address", "")))
+    table["rows"].sort(key=TABLES[args.table]["order"])
     table["not_extracted"] = [
         missed for missed in table["not_extracted"] if missed["page"] != args.page
     ] + reading.not_extracted
     documents.save(table_path, {k: v for k, v in table.items() if k != "record"})
 
-    meta["pages"][page] = documents.READ if reading.rows else documents.NOTHING_READABLE
+    meta["pages"][page][args.table] = documents.READ if reading.rows else documents.NOTHING_READABLE
     documents.save(path, {k: v for k, v in meta.items() if k != "record"})
     print(f"page {args.page}: {len(reading.rows)} rows, {len(reading.not_extracted)} unread")
     return 0
 
 
 def _status(args) -> int:
+    """How far each table has been read, separately.
+
+    Separately because that is how they are read. One pass over a document takes
+    one kind of table out of it, and a total over both would have the pages of
+    the one that is finished count towards the one nobody has started.
+    """
     meta = documents.load(_record_path(args))
-    counts: dict[str, int] = {}
-    for state in meta["pages"].values():
-        counts[state] = counts.get(state, 0) + 1
     # Reported in printed numbers, which is what everything else here takes and
     # what a reader would go and look at. The ledger is keyed by the file's own
     # pages because every page of the file has one and the front matter has no
     # printed number at all.
     offset = meta["source_file"].get("page_offset", 0)
-    read = sorted(int(p) - offset for p, s in meta["pages"].items() if s == documents.READ)
     print(f"{meta['document_id']}: {meta['source_file']['pages']} pages")
-    for state in (
-        documents.READ,
-        documents.NOTHING_READABLE,
-        documents.NO_TABLES,
-        documents.UNREAD,
-    ):
-        if counts.get(state):
-            print(f"  {state:<10} {counts[state]}")
-    if read:
-        print(f"  pages read: {_ranges(read)}")
+    for table in documents.TABLES:
+        counts: dict[str, int] = {}
+        for page in meta["pages"]:
+            state = documents.state_of(meta, page, table)
+            counts[state] = counts.get(state, 0) + 1
+        read = sorted(
+            int(page) - offset
+            for page in meta["pages"]
+            if documents.state_of(meta, page, table) == documents.READ
+        )
+        print(f"  {table}")
+        for state in (
+            documents.READ,
+            documents.NOTHING_READABLE,
+            documents.NO_TABLES,
+            documents.UNREAD,
+        ):
+            if counts.get(state):
+                print(f"    {state:<18} {counts[state]}")
+        if read:
+            print(f"    pages read: {_ranges(read)}")
     return 0
 
 

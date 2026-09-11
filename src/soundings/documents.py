@@ -662,15 +662,345 @@ def _carry(row: dict, grid: Grid, line: str) -> None:
         row[name] = f"{row[name]} {value}" if name in row else value
 
 
-def ledger(pages: int) -> dict[str, str]:
-    """Every page of the document, all of them unread.
+#: A cell carrying the two bytes the effect list prints at the end of a type's
+#: line. The type's number and name sit in the cell to its left when the printing
+#: leaves a gap, and inside this one when it leaves a single space.
+_EFFECT_TYPE = re.compile(r"^(?:(.*?)\s+)?\[([0-9A-F]{2})H,\s*([0-9A-F]{2})H\]$")
+
+#: How the list numbers and names a type: `8: Auto Wah`, with whatever the
+#: printing expands the name to in brackets after it kept as part of the name.
+_NUMBERED = re.compile(r"^(\d+):\s*(.+)$")
+
+#: A cell ending in the parameter number the list prints in brackets. What
+#: precedes it is that parameter's printed range.
+_PARAMETER = re.compile(r"^(.*?)\s*\[(\d+)\]$")
+
+#: A parameter's name and its range in one cell, which is how the page comes out
+#: when a long name leaves a single space before a right-aligned range. Cut at
+#: the close of the parenthetical the name expands to, because that is the only
+#: boundary in the cell that the printing marks. A cell with no parenthetical, or
+#: one whose range carries brackets of its own, is not cut at all.
+_NAME_AND_RANGE = re.compile(r"^([+#]?[^()]*\([^()]*\))\s+([^()]+)$")
+
+#: How many cells may cross a candidate gutter before a page is read as one
+#: column. A page set in two has a gutter nothing crosses but its running
+#: footer; a page of prose has no column that can be drawn without cutting
+#: lines in half, and the count says which kind of page this is.
+ONE_COLUMN = 3
+
+#: How many lines each side of a candidate gutter has to carry text on before the
+#: page is read as being set in two columns. A gap down the middle of two lines is
+#: the space between a parameter's name and its right-aligned range; a gap down
+#: forty is a gutter. Without this, the widest gap on a page holding one line is a
+#: gutter, and the name and range on it are read as two columns' worth of
+#: unrelated text.
+BOTH_COLUMNS = 4
+
+NAMES_NO_TYPE = (
+    "this line states an effect type's two bytes, and no number and name for it were "
+    "printed beside or above them -- so which type the bytes select is not settled by "
+    "where they sit."
+)
+
+NAME_AND_RANGE_JOINED = (
+    "the printing left a single space between this parameter's name and its range, so the "
+    "two came out as one cell, and nothing in the cell marks where the name ends. Cut by "
+    "hand rather than at a guess, which would file half a name as a range."
+)
+
+PARAMETER_HAS_NO_NAME = (
+    "this cell holds a parameter's range and number, and the line above it in the same "
+    "column holds no name for it -- so which parameter the range belongs to is not settled "
+    "by where it sits."
+)
+
+PARAMETER_UNDER_NO_TYPE = (
+    "this parameter is printed under no effect type: none was open above it on this page, "
+    "and none was left open by the pages before it. A parameter number means nothing "
+    "without the type it numbers a parameter of."
+)
+
+
+@dataclass
+class Column:
+    """One column of a page, as the cells of each of its lines.
+
+    The effect list is set in two columns and `pdftotext -layout` prints both
+    halves of a line as one line, so a type's name and an unrelated parameter's
+    range arrive side by side. Read as lines that would put the second under the
+    first. Split into columns first, they are two streams that each read in
+    order.
+    """
+
+    lines: list[list[tuple[int, str]]]
+    flush: int
+    """The column the labels begin at. A description is printed indented from it,
+    and a right-aligned range begins well to the right of it, so a cell sitting at
+    it is a label and a cell sitting right of it is a value."""
+
+
+def gutter(text: str) -> int | None:
+    """The column a two-column page divides at, or None if it is set in one.
+
+    Chosen as the column fewest printed cells cross, which is a fact about the
+    page rather than a guess about where a gutter usually is: the columns are set
+    to different widths on different pages of this document, and the block
+    diagrams inside them reach different distances across.
+
+    A page of prose has no such column -- every candidate cuts lines in half --
+    and `ONE_COLUMN` is where that stops being a gutter and starts being a
+    reading imposed on the page. Neither is a gap that only a line or two reach
+    across, per `BOTH_COLUMNS`.
+    """
+    lines = [cells_in(line) for line in text.splitlines()]
+    spans = [(start, start + _width(value)) for cells in lines for start, value in cells]
+    if not spans:
+        return None
+    width = max(end for _, end in spans)
+    best, crossed = None, None
+    for candidate in range(width // 3, width * 2 // 3):
+        count = sum(1 for start, end in spans if start < candidate < end)
+        if crossed is None or count < crossed:
+            best, crossed = candidate, count
+    if best is None or crossed > ONE_COLUMN:
+        return None
+    for side in (
+        [cells for cells in lines if any(start < best for start, _ in cells)],
+        [cells for cells in lines if any(start >= best for start, _ in cells)],
+    ):
+        if len(side) < BOTH_COLUMNS:
+            return None
+    return best
+
+
+def in_columns(text: str) -> list[Column]:
+    """The page as one or two streams of cells, in the order they are read in.
+
+    The left column entire, then the right, which is how the page is read and so
+    the order a type heading reaches the parameters printed under it.
+    """
+    lines = [cells_in(line) for line in text.splitlines()]
+    divide = gutter(text)
+    if divide is None:
+        sides = [lines]
+    else:
+        sides = [
+            [[cell for cell in cells if cell[0] < divide] for cells in lines],
+            [[cell for cell in cells if cell[0] >= divide] for cells in lines],
+        ]
+    return [Column(lines=side, flush=_flush(side)) for side in sides]
+
+
+def cells_in(line: str) -> list[tuple[int, str]]:
+    """Each of a line's cells with the printed column it begins at."""
+    return [
+        (_column_of(line, found.start()), found.group().strip()) for found in _CELL.finditer(line)
+    ]
+
+
+def _flush(lines: list[list[tuple[int, str]]]) -> int:
+    """The column this one's labels begin at, as the commonest line beginning.
+
+    The commonest rather than the leftmost. A single stray cell -- a figure's
+    caption, a footer -- reaching a character or two further left would move the
+    edge with it, and then every parameter name sitting at the true edge would
+    read as a value right of it and be looked for on the line above.
+    """
+    starts = [cells[0][0] for cells in lines if cells]
+    return max(set(starts), key=starts.count) if starts else 0
+
+
+def last_type(text: str) -> dict | None:
+    """The last effect type this page opens, for the page after it.
+
+    A type's parameters run past the foot of the page it is named on, and on the
+    next page they are printed under nothing. Read on its own that page gives
+    twenty parameter numbers belonging to no type, which is not a weaker reading
+    of them -- a parameter number means nothing without its type.
+
+    Read by the pass that reads the page's rows rather than by a scan of its own.
+    A second scan has to find a heading the same way the first one does, and the
+    one written here did not: a name printed on the line above its two bytes was
+    a heading to the reader and nothing at all to this, so five pages carried the
+    type from the page before them and filed forty parameters under an effect
+    that had ended two pages earlier. Nothing failed, and both readings were of
+    rows that are really printed.
+    """
+    opened = [row for row in read_effect_list(text, 0).rows if "parameter_number" not in row]
+    if not opened:
+        return None
+    return {key: opened[-1][key] for key in ("type", "effect", "msb", "lsb")}
+
+
+def holds_parameters(text: str) -> bool:
+    """Whether any cell on this page ends in a parameter number.
+
+    Asked of the pages between a type's heading and the page being read, to tell
+    a page still under that type from one that ended it.
+    """
+    return any(
+        (found := _PARAMETER.match(value)) and found.group(1)
+        for column in in_columns(text)
+        for cells in column.lines
+        for _, value in cells
+    )
+
+
+def type_above(page_text_of: Callable[[int], str], page: int) -> dict | None:
+    """The effect type still open above this page, if any.
+
+    The same walk `header_above` makes over the address map, and for the same
+    reason: a type's parameters can fill the page after the one that names it,
+    and looking only at the page before finds the type for the second page of a
+    long one and nothing for the third.
+
+    @param page_text_of the document's pages, by the file's own numbering
+    @param page the page being read, which is not itself looked at
+    """
+    while page > 1:
+        page -= 1
+        text = page_text_of(page)
+        found = last_type(text)
+        if found:
+            return found
+        if not holds_parameters(text):
+            return None
+    return None
+
+
+def read_effect_list(text: str, page: int, carried: dict | None = None) -> Reading:
+    """Every effect type and effect parameter the list prints on one page.
+
+    Two kinds of row, and the second is meaningless without the first. A type row
+    says the list numbers and names a type and which two bytes select it; a
+    parameter row says that type's parameter number `n` is printed with a name
+    and a range. So a parameter is only ever read under the type still open above
+    it, and one printed under none is refused rather than filed under whichever
+    type happens to be nearest.
+
+    The list is not laid out as a table and the parser does not treat it as one.
+    There is no grid to learn: a name is at the left of its column and its range
+    is right-aligned in the same column, and the two are one row because they are
+    on one line. Where the printing has put them on two lines, or run them
+    together into one cell, position is what says so -- a range alone begins
+    right of the column's edge, a name and range together begin at it.
+
+    The prose printed under each parameter is not read. It describes what the
+    parameter does, which is the publisher's writing rather than a table's
+    content, and it is indented from the column's edge, which is what keeps it
+    out of here.
+
+    `carried` is the type the previous page left open, from `type_above`.
+    """
+    out = Reading()
+    kind = carried
+    for column in in_columns(text):
+        for position, cells in enumerate(column.lines):
+            for index, (at, value) in enumerate(cells):
+                named = _EFFECT_TYPE.match(value)
+                if named:
+                    beside = cells[index - 1][1] if index else _label_above(column, position)
+                    numbered = _NUMBERED.match(named.group(1) or beside or "")
+                    if not numbered:
+                        out.not_extracted.append(
+                            {"page": page, "line": value, "why": NAMES_NO_TYPE}
+                        )
+                        continue
+                    kind = {
+                        "type": numbered.group(1),
+                        "effect": numbered.group(2).strip(),
+                        "msb": named.group(2),
+                        "lsb": named.group(3),
+                    }
+                    out.rows.append({**kind, "page": page, "read_by": "parser"})
+                    continue
+
+                found = _PARAMETER.match(value)
+                if not found or not found.group(1):
+                    continue
+                if index:
+                    name, printed = cells[index - 1][1], found.group(1)
+                elif at <= column.flush + NEARBY:
+                    together = _NAME_AND_RANGE.match(found.group(1))
+                    if not together:
+                        out.not_extracted.append(
+                            {"page": page, "line": value, "why": NAME_AND_RANGE_JOINED}
+                        )
+                        continue
+                    name, printed = together.group(1), together.group(2)
+                else:
+                    name, printed = _label_above(column, position), found.group(1)
+                    if name is None:
+                        out.not_extracted.append(
+                            {"page": page, "line": value, "why": PARAMETER_HAS_NO_NAME}
+                        )
+                        continue
+                if kind is None:
+                    out.not_extracted.append(
+                        {"page": page, "line": value, "why": PARAMETER_UNDER_NO_TYPE}
+                    )
+                    continue
+                out.rows.append(
+                    {
+                        **kind,
+                        "parameter_number": found.group(2),
+                        "parameter": name,
+                        "data": printed,
+                        "page": page,
+                        "read_by": "parser",
+                    }
+                )
+    return out
+
+
+def _label_above(column: Column, position: int) -> str | None:
+    """The name on the line above this one, where the printing put it there.
+
+    A name too long to leave room for its range is printed on its own line with
+    the range right-aligned under it. Taken only when the line above holds one
+    cell, at the column's edge, and that cell is not itself a value -- a line
+    holding two cells is two columns' worth of something else, and a line of
+    prose ends in a full stop.
+    """
+    for earlier in range(position - 1, -1, -1):
+        cells = column.lines[earlier]
+        if not cells:
+            continue
+        if len(cells) != 1 or cells[0][0] > column.flush + NEARBY:
+            return None
+        return None if cells[0][1].endswith(".") else cells[0][1]
+    return None
+
+
+TABLES = ("address-map", "effect-list")
+"""The tables the archive files a document's rows under, by directory name.
+
+Named here rather than only where they are read because the ledger is kept per
+table: a page read for one of them is not a page read for the other, and a record
+that could not say so would have one table's reading stand for the other's.
+"""
+
+
+def ledger(pages: int) -> dict[str, dict[str, str]]:
+    """Every page of the document, unread for every table.
 
     Written out in full rather than left to be inferred from which pages have
     rows. A reader asking whether page 200 holds anything gets an answer either
     way, and the answer to "nobody has looked" is not the answer to "there is
     nothing there".
+
+    Per table, because one document carries more than one kind of table and they
+    are read in different passes. A page of the effect list holds no parameter
+    address map, and a ledger with one entry per page would have the pass that
+    read the list say so about the map as well -- which is a claim nobody made,
+    on the one point this directory exists to keep straight.
     """
-    return {str(page): UNREAD for page in range(1, pages + 1)}
+    return {str(page): dict.fromkeys(TABLES, UNREAD) for page in range(1, pages + 1)}
+
+
+def state_of(meta: dict, page: int | str, table: str) -> str:
+    """What the ledger says about one page under one table."""
+    return (meta["pages"].get(str(page)) or {}).get(table, UNREAD)
 
 
 def load(path: str | Path) -> dict:

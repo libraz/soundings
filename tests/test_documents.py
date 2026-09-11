@@ -9,6 +9,7 @@ business publishing.
 from __future__ import annotations
 
 from soundings import documents
+from soundings.cli import documents as reading
 
 HEADER = (
     "   Address(H)          Size(H)        Data(H)        Parameter        "
@@ -282,6 +283,150 @@ def test_the_walk_back_for_a_header_stops_where_the_table_did() -> None:
     assert documents.header_above(pages.get, 3) is None
 
 
-def test_every_page_of_a_document_starts_unread() -> None:
+def test_every_table_the_ledger_keeps_a_state_for_has_something_that_reads_it() -> None:
+    """The ledger is written per table and the readers are registered separately.
+
+    A table in one list and not the other is either a column of the ledger
+    nothing will ever write, or a pass whose pages are recorded nowhere.
+    """
+    assert sorted(reading.TABLES) == sorted(documents.TABLES)
+
+
+def test_every_page_of_a_document_starts_unread_for_every_table() -> None:
     ledger = documents.ledger(4)
-    assert ledger == dict.fromkeys(("1", "2", "3", "4"), documents.UNREAD)
+    assert sorted(ledger) == ["1", "2", "3", "4"]
+    assert all(
+        page == dict.fromkeys(documents.TABLES, documents.UNREAD) for page in ledger.values()
+    )
+    assert documents.state_of({"pages": ledger}, 3, "effect-list") == documents.UNREAD
+
+
+#: The effect list as the page actually sets it: two columns, each opening with a
+#: type's number and name and the two bytes that select it, and the parameters
+#: under it with their ranges right-aligned in the same column. The long line is
+#: what the columns are found by -- it is the widest thing in the left column, so
+#: nothing to the left of where it ends can be a gutter.
+WAH = [
+    "8: Auto Wah                          [01H, 21H]"
+    "          9: Rotary                           [01H, 22H]",
+    "The Auto Wah cyclically controls a filter to make a b"
+    "        A Rotary effect simulates a rotary speaker.",
+    "Fil Type (Filter Type)                  LPF/BPF [1]      Low Slow (Low frequency slow rate)",
+    "  Select the filter type.                                                    0.05 - 10.0 [1]",
+    "#Rate                               0.05 - 10.0 [5]"
+    "        Hi Fast (High frequency fast rate) 0.05 - 10.0 [6]",
+    "  Adjust the rate of modulation."
+    "                                    Adjust the speed of the high-range rotor.",
+]
+
+
+def test_an_effect_types_parameters_are_read_under_the_type_they_are_printed_under() -> None:
+    """A parameter number means nothing without the type it numbers a parameter of."""
+    out = documents.read_effect_list("\n".join(WAH), 59)
+    wah = [row for row in out.rows if row["lsb"] == "21"]
+    assert wah[0] == {
+        "type": "8",
+        "effect": "Auto Wah",
+        "msb": "01",
+        "lsb": "21",
+        "page": 59,
+        "read_by": "parser",
+    }
+    assert [(row["parameter_number"], row["parameter"], row["data"]) for row in wah[1:]] == [
+        ("1", "Fil Type (Filter Type)", "LPF/BPF"),
+        ("5", "#Rate", "0.05 - 10.0"),
+    ]
+    assert not out.not_extracted
+
+
+def test_a_second_column_is_read_as_a_second_column() -> None:
+    """`pdftotext -layout` prints both halves of a line as one line.
+
+    Read a line at a time, the right column's parameters fall under the left
+    column's type -- silently, and with a name and a range that are both right.
+    """
+    out = documents.read_effect_list("\n".join(WAH), 59)
+    rotary = [row for row in out.rows if row["lsb"] == "22"]
+    assert rotary[0]["effect"] == "Rotary"
+    assert [(row["parameter_number"], row["parameter"], row["data"]) for row in rotary[1:]] == [
+        ("1", "Low Slow (Low frequency slow rate)", "0.05 - 10.0"),
+        ("6", "Hi Fast (High frequency fast rate)", "0.05 - 10.0"),
+    ]
+
+
+def test_a_name_too_long_for_its_line_is_read_off_the_line_above_its_range() -> None:
+    """Printed on two lines, and the range alone begins right of the column's edge."""
+    out = documents.read_effect_list("\n".join(WAH), 59)
+    wrapped = next(row for row in out.rows if row.get("parameter", "").startswith("Low Slow"))
+    assert wrapped["data"] == "0.05 - 10.0"
+
+
+def test_a_name_run_together_with_its_range_is_cut_at_the_parenthetical() -> None:
+    """One space between them makes them one cell, and the parenthetical is the only
+    boundary the printing marks in it."""
+    out = documents.read_effect_list("\n".join(WAH), 59)
+    joined = next(row for row in out.rows if row.get("parameter", "").startswith("Hi Fast"))
+    assert joined["parameter"] == "Hi Fast (High frequency fast rate)"
+    assert joined["data"] == "0.05 - 10.0"
+
+
+def test_a_name_run_together_with_its_range_and_no_parenthetical_is_refused() -> None:
+    """Nothing in the cell says where the name ends, and half a name filed as a
+    range reads exactly like a range."""
+    out = documents.read_effect_list("\n".join([WAH[0], "Mod Wave Tri/Sqr/Sin/Saw1/Saw2 [1]"]), 59)
+    assert [row for row in out.rows if "parameter_number" in row] == []
+    assert out.not_extracted[0]["why"] == documents.NAME_AND_RANGE_JOINED
+
+
+def test_a_parameter_printed_under_no_type_is_refused() -> None:
+    out = documents.read_effect_list("Fil Type (Filter Type)      LPF/BPF [1]", 59)
+    assert out.rows == []
+    assert out.not_extracted[0]["why"] == documents.PARAMETER_UNDER_NO_TYPE
+
+
+def test_a_type_is_carried_over_the_page_it_runs_past_the_foot_of() -> None:
+    """A long type fills the page after the one that names it, and there its
+    parameters are printed under nothing at all."""
+    pages = {1: "\n".join(WAH), 2: "Depth                                   0 - 127 [6]"}
+    carried = documents.type_above(pages.get, 2)
+    assert carried["effect"] == "Rotary"
+    out = documents.read_effect_list(pages[2], 61, carried)
+    assert out.rows[0]["lsb"] == "22"
+    assert out.rows[0]["parameter_number"] == "6"
+
+
+def test_the_type_carried_forward_is_the_last_one_the_page_actually_opened() -> None:
+    """A heading printed on two lines is a heading, to both readings or neither.
+
+    Found by one of them and not the other, a page that opens a type looks like a
+    page that opens none: the type from the page before is carried over it, and
+    every parameter on the page after is filed under an effect that ended two
+    pages earlier.
+    """
+    wrapped = [
+        "52: GTR Multi 5 (Guitar Multi5)" + " " * 34 + "Level (Output level)      0 - 127 [20]",
+        " " * 20 + "[04H, 04H]" + " " * 25 + "  Adjust the output level.",
+        "This effect connects four effects in series to make"
+        "    OD Sel (OD Select)          Odrv/Dist [1]",
+        "  the sound of a guitar amplifier."
+        "                    Select either Overdrive or Distortion.",
+        "OD Sw (Overdrive Switch)                 Off/On [2]"
+        "    +OD Drive (OD Drive)          0 - 127 [3]",
+        "  Turn the overdrive on and off.                      Adjust the degree of distortion.",
+    ]
+    out = documents.read_effect_list("\n".join(wrapped), 81)
+    assert [row["effect"] for row in out.rows if "parameter_number" not in row] == [
+        "GTR Multi 5 (Guitar Multi5)"
+    ]
+    assert documents.last_type("\n".join(wrapped))["lsb"] == "04"
+
+
+def test_the_walk_back_for_a_type_stops_where_the_list_did() -> None:
+    """A page holding no parameter ends the list, and no page after it is inside one."""
+    pages = {
+        1: "\n".join(WAH),
+        2: "Chapter 5. Performing\nThe SC-88Pro can play sixteen Parts at once.",
+        3: "Depth                                   0 - 127 [6]",
+    }
+    assert documents.holds_parameters(pages[2]) is False
+    assert documents.type_above(pages.get, 3) is None

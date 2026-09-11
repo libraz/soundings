@@ -11,6 +11,7 @@ of any document states.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,10 @@ def rows_of(document_id: str) -> list[dict]:
     return [*parsed["rows"], *hand["rows"]]
 
 
+def effects_of(document_id: str) -> list[dict]:
+    return (load(document_id, "effect-list.json") or {"rows": []})["rows"]
+
+
 @pytest.mark.parametrize("document_id", IDS)
 def test_a_document_says_which_file_it_was_read_from(document_id: str) -> None:
     """The file is not committed, so the record has to be enough to find it."""
@@ -47,12 +52,22 @@ def test_a_document_says_which_file_it_was_read_from(document_id: str) -> None:
 
 
 @pytest.mark.parametrize("document_id", IDS)
-def test_every_page_of_the_document_is_in_the_ledger(document_id: str) -> None:
-    """An unread page is not an empty one, so every page has to be in there."""
+def test_every_page_of_the_document_is_in_the_ledger_for_every_table(document_id: str) -> None:
+    """An unread page is not an empty one, so every page has to be in there.
+
+    Per table, because a page read for one table is not a page read for the
+    other: the effect list and the parameter address map are different passes
+    over the same document, and a page the first one finished says nothing about
+    what the second would find on it.
+    """
     meta = load(document_id, "document.json")
     assert sorted(int(page) for page in meta["pages"]) == list(
         range(1, meta["source_file"]["pages"] + 1)
     )
+    for page, states in meta["pages"].items():
+        assert sorted(states) == sorted(documents.TABLES), (
+            f"{document_id}: page {page} does not say where every table stands"
+        )
 
 
 @pytest.mark.parametrize("document_id", IDS)
@@ -61,10 +76,14 @@ def test_every_row_cites_a_page_somebody_read(document_id: str) -> None:
     meta = load(document_id, "document.json")
     offset = meta["source_file"].get("page_offset", 0)
     unread = []
-    for row in rows_of(document_id):
-        state = meta["pages"].get(str(row["page"] + offset))
-        if state not in {"read", "nothing readable"}:
-            unread.append((row["address"], row["page"], state))
+    for table, rows, named in (
+        ("address-map", rows_of(document_id), lambda row: row["address"]),
+        ("effect-list", effects_of(document_id), lambda row: f"{row['msb']} {row['lsb']}"),
+    ):
+        for row in rows:
+            state = documents.state_of(meta, row["page"] + offset, table)
+            if state not in {documents.READ, documents.NOTHING_READABLE}:
+                unread.append((table, named(row), row["page"], state))
     assert not unread, (
         f"{document_id}: rows cite pages the ledger does not have as read: {unread[:5]}"
     )
@@ -127,8 +146,10 @@ def test_the_figure_of_where_the_blocks_begin_cites_a_page_somebody_looked_at(
         pytest.skip(f"{document_id} has no block map")
     meta = load(document_id, "document.json")
     offset = meta["source_file"].get("page_offset", 0)
-    state = meta["pages"].get(str(figure["page"] + offset))
-    assert state != documents.UNREAD, (
+    states = {
+        documents.state_of(meta, figure["page"] + offset, table) for table in documents.TABLES
+    }
+    assert states != {documents.UNREAD}, (
         f"{document_id}: the block map was read off page {figure['page']}, which the ledger "
         "has as a page nobody has looked at"
     )
@@ -158,8 +179,8 @@ def test_every_address_a_read_page_prints_is_held_somewhere(document_id: str) ->
 
     offset = meta["source_file"].get("page_offset", 0)
     missing: list[tuple[int, str]] = []
-    for page, state in meta["pages"].items():
-        if state != documents.READ:
+    for page in meta["pages"]:
+        if documents.state_of(meta, page, "address-map") != documents.READ:
             continue
         printed = int(page) - offset
         for line in documents.page_text(pdf, int(page)).splitlines():
@@ -170,6 +191,76 @@ def test_every_address_a_read_page_prints_is_held_somewhere(document_id: str) ->
                     continue
                 if (printed, value) not in held:
                     missing.append((printed, value))
+    assert not missing, f"{document_id}: printed and held nowhere: {sorted(set(missing))[:8]}"
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_every_effect_parameter_is_held_under_an_effect_type(document_id: str) -> None:
+    """A parameter number means nothing without the type it numbers a parameter of.
+
+    The list prints the type once and its parameters under it, so a parameter row
+    carries a type the reading put it under. If the list holds no row naming that
+    type, the reading carried one over a page break it should have stopped at.
+    """
+    rows = effects_of(document_id)
+    if not rows:
+        pytest.skip(f"{document_id} has no effect list")
+    named = {(row["msb"], row["lsb"]) for row in rows if "parameter_number" not in row}
+    orphan = sorted(
+        {
+            (row["msb"], row["lsb"], row["page"])
+            for row in rows
+            if "parameter_number" in row and (row["msb"], row["lsb"]) not in named
+        }
+    )
+    assert not orphan, f"{document_id}: parameters under a type the list never names: {orphan[:5]}"
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_an_effect_parameter_stated_twice_is_stated_the_same_way(document_id: str) -> None:
+    """One page states a type's parameter twice, to explain the notation.
+
+    Two rows for one parameter are two printings of one statement, which is what
+    the page holds and so what the record holds. What they may not do is
+    disagree: a range read two ways is a cut that went wrong in one of them.
+    """
+    ranges: dict[tuple[str, str, str], set[str]] = {}
+    for row in effects_of(document_id):
+        if "parameter_number" in row:
+            key = (row["msb"], row["lsb"], row["parameter_number"])
+            ranges.setdefault(key, set()).add(row["data"])
+    disagree = {key: sorted(seen) for key, seen in ranges.items() if len(seen) > 1}
+    assert not disagree, f"{document_id}: one parameter, two ranges: {disagree}"
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_every_effect_type_a_read_page_prints_is_held(document_id: str) -> None:
+    """A page counted as read has to have given up every type it names.
+
+    The two bytes are the key of the whole list -- they are what a unit is
+    actually told, and what every measured effect is held against. A type the
+    page prints and the record does not hold is not refused, it is absent, and
+    the site shows an absence as a thing no document states.
+
+    Skipped where the document is not on this machine: it is not committed.
+    """
+    meta = load(document_id, "document.json")
+    pdf = Path(meta["source_file"]["path_when_read"]).expanduser()
+    if not pdf.is_file() or documents.sha256(pdf) != meta["source_file"]["sha256"]:
+        pytest.skip(f"{document_id} is not on this machine")
+
+    held = {(row["page"], row["msb"], row["lsb"]) for row in effects_of(document_id)}
+    offset = meta["source_file"].get("page_offset", 0)
+    missing: list[tuple[int, str, str]] = []
+    for page in meta["pages"]:
+        if documents.state_of(meta, page, "effect-list") != documents.READ:
+            continue
+        printed = int(page) - offset
+        for msb, lsb in re.findall(
+            r"\[([0-9A-F]{2})H,\s*([0-9A-F]{2})H\]", documents.page_text(pdf, int(page))
+        ):
+            if (printed, msb, lsb) not in held:
+                missing.append((printed, msb, lsb))
     assert not missing, f"{document_id}: printed and held nowhere: {sorted(set(missing))[:8]}"
 
 
