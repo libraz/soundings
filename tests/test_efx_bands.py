@@ -76,6 +76,15 @@ def directory(tmp_path):
             setting=f"04-{value:03d}",
             take=0,
         )
+    # The same chain with nothing played, forty decibels down. A setting that
+    # turns the output off lands here, and its bands are this shape.
+    for index in range(2):
+        store.keep(
+            FakeRecording(noise(200 + index) * 0.01),
+            stimulus="held",
+            setting=f"silence-{index:02d}",
+            take=0,
+        )
     store.close(question="a synthetic run")
     return tmp_path / "run"
 
@@ -88,6 +97,7 @@ def read(where, **extra):
         setting=r"held-04-(?P<value>\d+)-00",
         reference=r"held-flat-\d+-00",
         control=r"held-bypassed-\d+-00",
+        silence=r"held-silence-\d+-00",
         bands_hz=BANDS,
         hold_s=SECONDS - 1.2,
         **extra,
@@ -133,6 +143,53 @@ def test_the_control_is_read_against_the_same_reference(directory) -> None:
     found = read(directory)
     assert len(found["control"]["readings"]) == 1
     assert found["control"]["readings"][0]["outside_the_floor_hz"] == []
+
+
+def test_a_setting_that_turned_the_output_off_says_how_far_above_silence_it_was(
+    directory,
+) -> None:
+    """The trap this control exists for.
+
+    A level slot at its bottom byte records the room rather than the effect, and
+    read as a deviation from the flat setting that is a large, ragged, frequency
+    dependent profile -- which looks exactly like a reading. The number that tells
+    the two apart is how far the take was above a take with nothing played.
+    """
+    store = takes.Store.open(directory)
+    store.keep(
+        FakeRecording(noise(7) * 0.01), stimulus="held", setting="04-999", take=0
+    )
+    found = read(directory)
+    off = next(r for r in found["readings"] if r["value"] == 999)
+    loud = next(r for r in found["readings"] if r["value"] == 127)
+    assert off["above_the_silence_db"] == pytest.approx(0.0, abs=1.0)
+    assert loud["above_the_silence_db"] > 30.0
+    assert found["silence"]["heard_db"] < found["reference"]["heard_db"]
+
+
+def test_the_floors_own_profile_is_published_rather_than_only_its_level(
+    directory,
+) -> None:
+    """So a reading suspected of being the floor can be held against the floor."""
+    found = read(directory)
+    assert len(found["silence"]["takes"]) == 2
+    assert len(found["silence"]["band_db"]) == len(BANDS)
+    assert found["reference"]["above_the_silence_db"] > 30.0
+
+
+def test_without_silence_takes_the_record_says_so_rather_than_guessing(directory) -> None:
+    found = efxbands.read_directory(
+        directory,
+        type_id="01 00",
+        address="40 03 04",
+        setting=r"held-04-(?P<value>\d+)-00",
+        reference=r"held-flat-\d+-00",
+        bands_hz=BANDS,
+        hold_s=SECONDS - 1.2,
+    )
+    assert found["silence"]["takes"] == []
+    assert found["silence"]["band_db"] is None
+    assert all(r["above_the_silence_db"] is None for r in found["readings"])
 
 
 def test_a_take_no_pattern_named_is_counted_rather_than_dropped(directory) -> None:

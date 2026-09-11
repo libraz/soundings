@@ -79,6 +79,21 @@ class Store:
     def open(cls, root: str | Path) -> Store:
         return cls(root=Path(root), entries=[])
 
+    @classmethod
+    def reopen(cls, root: str | Path) -> Store:
+        """A store that will write its manifest back with what is already in it.
+
+        `close` replaces the manifest, so a second run that adds a few takes to a
+        finished directory leaves a manifest naming those alone. The readers here
+        survive that -- the files are the subject and what the manifest forgot is
+        reported -- but what it forgets is every earlier take's sample rate,
+        channel count and overflow count, and that is not recoverable from a name.
+        A run that means to append says so, and keeps them.
+        """
+        manifest = Path(root) / "takes-manifest.json"
+        kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
+        return cls(root=Path(root), entries=list(kept.get("takes", ())))
+
     def keep(self, recording, *, stimulus: str, setting: str, take: int, **extra) -> Path:
         name = f"{_safe(stimulus)}-{_safe(setting)}-{take:02d}"
         path = write(self.root / name, recording.samples, recording.sample_rate)

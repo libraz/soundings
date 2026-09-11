@@ -183,6 +183,13 @@ def register(sub) -> None:
         "nothing, and every deviation below would imply a unity it never measured",
     )
     p.add_argument(
+        "--silence",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the same chain and nothing played. "
+        "A setting that turns the output down far enough returns the room and the "
+        "converter, and without this the floor's own shape is published as a profile",
+    )
+    p.add_argument(
         "--stimulus",
         help="what was sounded through the effect. A band a stimulus does not reach "
         "cannot report what the effect did there, so which stimulus carried the take "
@@ -470,6 +477,7 @@ def cmd_efx_bands(args) -> int:
         setting=args.setting,
         reference=args.reference,
         control=args.control,
+        silence=args.silence,
         stimulus=args.stimulus,
         held=[
             {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
@@ -487,6 +495,8 @@ def cmd_efx_bands(args) -> int:
         return 1
     if not found["control"]["takes"]:
         print("  (no --control: the record cannot say whether the flat setting was unity)")
+    if not found["silence"]["takes"]:
+        print("  (no --silence: a setting that turns the output off reads as a profile)")
     if (missed := found["takes_not_matching"]["count"]):
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)

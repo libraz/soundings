@@ -82,9 +82,12 @@ LIMITS = (
     "closely has a small floor because it was sampled a few times, so a deviation just "
     "outside the floor is not thereby a reading either, and how many takes drew it is "
     "in `reference`. `heard_db` is the loudest "
-    "channel's level over the body of the take: a profile measured from a take near "
-    "the noise floor is a profile of the floor, and it is smooth, which is what makes "
-    "it dangerous. Band energy is measured over the held part of the take only, so a "
+    "channel's level over the body of the take, and `above_the_silence_db` is how far "
+    "that is above what the same chain recorded with nothing played: a setting that "
+    "turns the output down far enough returns the room and the converter, and the "
+    "bands of that are the floor's own shape rather than anything the byte did. The "
+    "floor's profile is in `silence` so the comparison can be made rather than taken "
+    "on trust. Band energy is measured over the held part of the take only, so a "
     "setting whose effect is in the attack or the release is not in these figures at "
     "all. A band the stimulus does not reach cannot report what the effect did there, "
     "which is a limit of the stimulus and not a bound on the unit."
@@ -112,6 +115,16 @@ WHY_CONTROL = (
     "assumption. Where this differs from the reference, the readings below are still "
     "what the byte did -- measured against a stage that was doing something, which is "
     "stated here rather than implied away."
+)
+
+WHY_SILENCE = (
+    "The same chain with nothing played, as a level and as a profile. A setting that "
+    "turns the output off does not stop the take being recorded, so what comes back is "
+    "the room, the converter and whatever the machine puts out idle -- and read as a "
+    "deviation from the flat setting that is a large, ragged, frequency-dependent "
+    "figure, which is what a reading of the floor looks like and is not what a reader "
+    "would guess it was. Published as a profile rather than as a single number so that "
+    "a reading suspected of being the floor can be held against the floor's own shape."
 )
 
 WHY_HELD = (
@@ -211,6 +224,7 @@ def read_directory(
     setting: str,
     reference: str,
     control: str | None = None,
+    silence: str | None = None,
     stimulus: str | None = None,
     held: list[dict] | None = None,
     bands_hz=THIRD_OCTAVES,
@@ -221,13 +235,13 @@ def read_directory(
 ) -> dict:
     """Every take under `where` whose setting matches, read into one record.
 
-    Three patterns rather than one: the sweep, the repeats of the flat setting
-    every profile is reported against, and the takes made with the effect bypassed.
-    All three live in the same directory because they are the same session, and a
-    reference fetched from another directory would be a reference from another
-    evening.
+    Four patterns rather than one: the sweep, the repeats of the flat setting every
+    profile is reported against, the takes made with the effect bypassed, and the
+    takes made with nothing played at all. All four live in the same directory
+    because they are the same session, and a reference fetched from another
+    directory would be a reference from another evening.
 
-    A take none of the three patterns names is counted rather than dropped: a
+    A take none of the four patterns names is counted rather than dropped: a
     pattern that matches nothing and a directory that holds nothing produce the
     same empty record otherwise, and they are different mistakes.
     """
@@ -241,12 +255,36 @@ def read_directory(
     # that holds the flat setting or none of the effect at all.
     flat = re.compile(reference)
     bypassed = re.compile(control) if control else None
+    quiet = re.compile(silence) if silence else None
 
     def profile(name: str, entry: dict):
         return _profile(
             where, name, entry,
             lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, centres=centres,
         )
+
+    # The floor first, because the reference itself is a take and a reader has to
+    # be able to see how far above the floor even that was.
+    quiets: list[str] = []
+    floor_bands: list[float] | None = None
+    floor_heard: float | None = None
+    if quiet is not None:
+        heard = []
+        found = []
+        for name, entry, _ in _matched(quiet, listed, files):
+            quiets.append(name)
+            bands, loud, _hold = profile(name, entry)
+            found.append(bands)
+            heard.append(loud)
+        if found:
+            floor_bands = [
+                round(float(np.mean([row[i] for row in found])), 3)
+                for i in range(len(centres))
+            ]
+            floor_heard = round(float(np.mean(heard)), 1)
+
+    def above(heard: float) -> float | None:
+        return None if floor_heard is None else round(heard - floor_heard, 1)
 
     flats = _matched(flat, listed, files)
     if not flats:
@@ -258,14 +296,23 @@ def read_directory(
     ]
     middle = [round(float(np.mean([row[i] for row in rows])), 3) for i in range(len(centres))]
 
-    claimed = {name for name, _, _ in flats}
+    flat_heard = round(
+        float(np.mean([profile(name, entry)[1] for name, entry, _ in flats])), 1
+    )
+
+    claimed = {name for name, _, _ in flats} | set(quiets)
     controls = []
     if bypassed is not None:
         for name, entry, _ in _matched(bypassed, listed, files):
             claimed.add(name)
             found, heard, _hold = profile(name, entry)
             controls.append(
-                {**_against(found, middle, floor, centres), "heard_db": heard, "take": name}
+                {
+                    **_against(found, middle, floor, centres),
+                    "heard_db": heard,
+                    "above_the_silence_db": above(heard),
+                    "take": name,
+                }
             )
 
     readings: list[dict] = []
@@ -278,6 +325,7 @@ def read_directory(
             VALUE: int(found.group(VALUE)),
             **_against(measured, middle, floor, centres),
             "heard_db": heard,
+            "above_the_silence_db": above(heard),
             "hold_s": hold,
             "take": name,
             "named_by": source,
@@ -295,10 +343,18 @@ def read_directory(
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
         "bands_hz": centres,
+        "silence": {
+            "takes": sorted(quiets),
+            "band_db": floor_bands,
+            "heard_db": floor_heard,
+            "why": WHY_SILENCE,
+        },
         "reference": {
             "takes": sorted(name for name, _, _ in flats),
             "band_db": middle,
             "floor_db": floor,
+            "heard_db": flat_heard,
+            "above_the_silence_db": above(flat_heard),
             "why": WHY_REFERENCE,
         },
         "control": {
