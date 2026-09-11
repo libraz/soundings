@@ -31,8 +31,6 @@ unit, and is not joined to this.
 
 from __future__ import annotations
 
-import json
-import re
 from pathlib import Path
 
 import numpy as np
@@ -108,41 +106,6 @@ def _loudness_db(samples) -> float:
     return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-9)))
 
 
-def _listing(where: Path) -> tuple[dict, list[str]]:
-    """The files under `where`, and the manifest beside them as a lookup.
-
-    **The files are the subject.** A store rewrites its manifest when it closes,
-    so a run repeated for one setting leaves a manifest naming that setting alone
-    while every earlier take is still on disk. Read from the manifest, such a
-    directory reports one reading and looks complete; read from the files, it
-    reports all of them and says how many the manifest had forgotten.
-    """
-    manifest = where / "takes-manifest.json"
-    kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
-    listed = {entry["file"]: entry for entry in kept.get("takes", ())}
-    files = sorted(path.name for path in where.glob("*.wav"))
-    if not files:
-        raise FileNotFoundError(f"no takes under {where}")
-    return listed, files
-
-
-def _named_by(pattern, entry: dict, name: str):
-    """Which of the two names a take has the pattern answered to, and the match.
-
-    The setting the manifest recorded, and the file's own name, which is what the
-    store wrote that setting into. Both are offered and which one answered is
-    reported per take: a manifest is rewritten when its store closes, so the name
-    is sometimes the only copy, and a pattern written against one should not
-    silently find nothing under the other.
-    """
-    for source, against in (("manifest", entry.get("setting")), ("file name", name)):
-        if not against:
-            continue
-        if (found := pattern.search(str(against))) is not None:
-            return source, found
-    return None, None
-
-
 def _read_take(
     where: Path,
     name: str,
@@ -180,39 +143,6 @@ def _read_take(
     return reading
 
 
-def _manifest_note(listed: dict, files: list[str]) -> dict:
-    return {
-        "lists": len(listed),
-        "files_present": len(files),
-        "not_listed": sorted(set(files) - set(listed)),
-        "why": "A take store rewrites its manifest when it closes, so a run repeated "
-        "for one setting leaves a manifest naming that setting alone. The takes are "
-        "still on disk and are read here; which of them the manifest had forgotten is "
-        "named, because a record silently built from a shortened manifest reads exactly "
-        "like a complete one.",
-    }
-
-
-def _not_matching(skipped: list[str]) -> dict:
-    return {
-        "count": len(skipped),
-        "settings": sorted(set(skipped))[:40],
-        "why": "Takes under the same directory whose setting the pattern did not name. "
-        "Counted rather than dropped: a pattern that matches nothing and a directory "
-        "that holds nothing leave the same empty record otherwise.",
-    }
-
-
-def _capturing(setting: str, group: str) -> re.Pattern:
-    pattern = re.compile(setting)
-    if group not in (pattern.groupindex or {}):
-        raise ValueError(
-            f"the --setting pattern must capture a group named {group!r}; "
-            f"{setting!r} captures {sorted(pattern.groupindex)}"
-        )
-    return pattern
-
-
 def read_directory(
     where: str | Path,
     *,
@@ -235,14 +165,14 @@ def read_directory(
     different mistakes.
     """
     where = Path(where)
-    listed, files = _listing(where)
-    pattern = _capturing(setting, VALUE)
+    listed, files = takes.listing(where)
+    pattern = takes.capturing(setting, VALUE)
 
     readings: list[dict] = []
     skipped: list[str] = []
     for name in files:
         entry = listed.get(name, {})
-        named_by, found = _named_by(pattern, entry, name)
+        named_by, found = takes.named_by(pattern, entry, name)
         if not found:
             skipped.append(str(entry.get("setting") or name))
             continue
@@ -279,10 +209,10 @@ def read_directory(
         "different readings of different things, and nothing in the numbers says "
         "which is which.",
         "takes_from": str(where),
-        "manifest": _manifest_note(listed, files),
+        "manifest": takes.manifest_note(listed, files),
         "settings_asked": sorted({r[VALUE] for r in readings}),
         "readings": readings,
-        "takes_not_matching": _not_matching(skipped),
+        "takes_not_matching": takes.not_matching(skipped),
     }
 
 
@@ -318,14 +248,14 @@ def read_untouched(
     a column of settings with a word in it is worse than a second shape.
     """
     where = Path(where)
-    listed, files = _listing(where)
-    pattern = _capturing(setting, TYPE)
+    listed, files = takes.listing(where)
+    pattern = takes.capturing(setting, TYPE)
 
     readings: list[dict] = []
     skipped: list[str] = []
     for name in files:
         entry = listed.get(name, {})
-        named_by, found = _named_by(pattern, entry, name)
+        named_by, found = takes.named_by(pattern, entry, name)
         if not found:
             skipped.append(str(entry.get("setting") or name))
             continue
@@ -356,8 +286,8 @@ def read_untouched(
         "not_in_this_record": NOT_HERE,
         "why_untouched": UNTOUCHED_WHY,
         "takes_from": str(where),
-        "manifest": _manifest_note(listed, files),
+        "manifest": takes.manifest_note(listed, files),
         "types_asked": sorted({r[TYPE] for r in readings}),
         "readings": readings,
-        "takes_not_matching": _not_matching(skipped),
+        "takes_not_matching": takes.not_matching(skipped),
     }

@@ -84,6 +84,7 @@
     "plan",
     "block",
     "efx-rate",
+    "efx-bands",
     "efx-params",
     "efx-motion",
     "efx-sort",
@@ -3429,6 +3430,181 @@
           "metavar": null,
           "choices": null,
           "class": "_StoreTrueAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-bands": {
+      "help": "read what one insertion effect's parameter did to the level of each third octave, setting by setting, from takes already saved, with no machine attached",
+      "handler": "cmd_efx_bands",
+      "takes_model_id": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the type the takes were made under",
+          "metavar": "MSB LSB",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the address that was swept",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--setting"
+          ],
+          "dest": "setting",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at. A run names its takes however its own question needed, so how the setting is read back out belongs in the invocation -- where it lands in the record, and a reader can check it rather than trust it",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--reference"
+          ],
+          "dest": "reference",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern naming the repeats of the setting the run held flat. Every profile is reported against their mean and has to clear their spread, and they come from this directory because what a stimulus fails to repeat belongs to the session it was recorded in",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--control"
+          ],
+          "dest": "control",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a pattern naming the takes made with the part routed past the effect. Without it the record cannot say whether the flat setting was the effect doing nothing, and every deviation below would imply a unity it never measured",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--stimulus"
+          ],
+          "dest": "stimulus",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "what was sounded through the effect. A band a stimulus does not reach cannot report what the effect did there, so which stimulus carried the take bounds the record rather than decorating it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held"
+          ],
+          "dest": "held",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address the run had written while it read, and what it held. A band profile is the whole chain's, so a parameter read with another of the type's stages moved is a reading of something else and nothing in the numbers says so",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--band"
+          ],
+          "dest": "band",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a band centre to measure, repeatable. Defaults to third octaves from 100 to 12500, because an octave band cannot separate two corners printed one octave apart",
+          "metavar": "HZ",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--hold"
+          ],
+          "dest": "hold",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "seconds the stimulus was held, where the manifest's own take length is not one second longer than it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
         },
         {
           "option_strings": [

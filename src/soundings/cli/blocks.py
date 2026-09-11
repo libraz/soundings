@@ -145,6 +145,81 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_rate)
 
     p = sub.add_parser(
+        "efx-bands",
+        help="read what one insertion effect's parameter did to the level of each third "
+        "octave, setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    p.add_argument(
+        "--type", required=True, metavar="MSB LSB", help="the type the takes were made under"
+    )
+    p.add_argument("--slot", required=True, metavar="ADDR", help="the address that was swept")
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. A run names its takes however its own question "
+        "needed, so how the setting is read back out belongs in the invocation -- where "
+        "it lands in the record, and a reader can check it rather than trust it",
+    )
+    p.add_argument(
+        "--reference",
+        required=True,
+        metavar="REGEX",
+        help="a pattern naming the repeats of the setting the run held flat. Every "
+        "profile is reported against their mean and has to clear their spread, and they "
+        "come from this directory because what a stimulus fails to repeat belongs to the "
+        "session it was recorded in",
+    )
+    p.add_argument(
+        "--control",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the part routed past the effect. "
+        "Without it the record cannot say whether the flat setting was the effect doing "
+        "nothing, and every deviation below would imply a unity it never measured",
+    )
+    p.add_argument(
+        "--stimulus",
+        help="what was sounded through the effect. A band a stimulus does not reach "
+        "cannot report what the effect did there, so which stimulus carried the take "
+        "bounds the record rather than decorating it",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. A band "
+        "profile is the whole chain's, so a parameter read with another of the type's "
+        "stages moved is a reading of something else and nothing in the numbers says so",
+    )
+    p.add_argument(
+        "--band",
+        type=float,
+        action="append",
+        metavar="HZ",
+        help="a band centre to measure, repeatable. Defaults to third octaves from 100 "
+        "to 12500, because an octave band cannot separate two corners printed one octave "
+        "apart",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        help="seconds the stimulus was held, where the manifest's own take length is not "
+        "one second longer than it",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_bands)
+
+    p = sub.add_parser(
         "efx-params",
         help="read a directory of per-address records into one verdict per parameter of "
         "one insertion effect type, with no machine attached",
@@ -365,6 +440,53 @@ def cmd_efx_rate(args) -> int:
             f"{found['takes_not_matching']['count']} were looked at"
         )
         return 1
+    if (missed := found["takes_not_matching"]["count"]):
+        print(f"  ({missed} takes under the same directory did not match the pattern)")
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_bands(args) -> int:
+    """What one parameter did to each band, read from takes already saved."""
+    from .. import efxbands
+
+    def said(reading) -> None:
+        largest = reading["largest_db"]
+        moved = len(reading["outside_the_floor_hz"])
+        print(
+            f"  {reading['value']:5d} -> "
+            + (
+                f"{largest:+7.2f} dB at {reading['largest_at_hz']:>6.0f} Hz"
+                if largest is not None
+                else f"{'inside the floor':>25s}"
+            )
+            + f"  {moved:2d} bands  {reading['heard_db']:.0f} dBFS"
+        )
+
+    found = efxbands.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        reference=args.reference,
+        control=args.control,
+        stimulus=args.stimulus,
+        held=[
+            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
+        ],
+        bands_hz=args.band or efxbands.THIRD_OCTAVES,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        progress=said,
+    )
+    if not found["readings"]:
+        print(
+            f"no take under {args.takes} has a setting matching {args.setting!r}; "
+            f"{found['takes_not_matching']['count']} were looked at"
+        )
+        return 1
+    if not found["control"]["takes"]:
+        print("  (no --control: the record cannot say whether the flat setting was unity)")
     if (missed := found["takes_not_matching"]["count"]):
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)
