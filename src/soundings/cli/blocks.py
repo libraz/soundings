@@ -88,18 +88,25 @@ def register(sub) -> None:
         "takes",
         help="a directory of takes with the takes-manifest.json a --save run wrote",
     )
-    p.add_argument(
-        "--type", required=True, metavar="MSB LSB", help="the type the takes were made under"
-    )
-    p.add_argument("--slot", required=True, metavar="ADDR", help="the address that was swept")
+    p.add_argument("--type", metavar="MSB LSB", help="the type the takes were made under")
+    p.add_argument("--slot", metavar="ADDR", help="the address that was swept")
     p.add_argument(
         "--setting",
         required=True,
         metavar="REGEX",
         help="a pattern over each take's setting with a group named `value`, which is "
-        "the byte it was taken at. A run names its takes however its own question "
-        "needed, so how the byte is read back out belongs in the invocation -- where it "
-        "lands in the record, and a reader can check it rather than trust it",
+        "the byte it was taken at, or named `type` under --untouched. A run names its "
+        "takes however its own question needed, so how the setting is read back out "
+        "belongs in the invocation -- where it lands in the record, and a reader can "
+        "check it rather than trust it",
+    )
+    p.add_argument(
+        "--untouched",
+        action="store_true",
+        help="the takes were made with a type loaded and no parameter written, so there "
+        "is no byte and the pattern names the type instead. This is the baseline a "
+        "sweep of the same type is read against: a sweep says what changed with the "
+        "byte and cannot say what was already there",
     )
     p.add_argument(
         "--held",
@@ -312,26 +319,46 @@ def cmd_efx_rate(args) -> int:
     from .. import efxrate
 
     def said(reading) -> None:
+        at = reading.get("value")
+        head = f"{at:5d}" if at is not None else f"{reading['type']:>5s}"
         found = reading["rate_hz"]
         print(
-            f"  {reading['value']:3d} -> "
+            f"  {head} -> "
             + (f"{found:8.4f} Hz" if found is not None else f"{'--':>11s}")
             + f"  {reading['agreeing']}/{reading['of']} partials"
             f"  floor {reading['slowest_measurable_hz']}  {reading['heard_db']:.0f} dBFS"
         )
 
-    found = efxrate.read_directory(
-        args.takes,
-        type_id=args.type,
-        address=args.slot,
-        setting=args.setting,
-        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
-        settled_s=args.settled,
-        lead_s=args.lead,
-        hold_s=args.hold,
-        shared_lines=args.lines,
-        progress=said,
-    )
+    if args.untouched:
+        if args.type or args.slot:
+            print("--untouched takes no --type or --slot: nothing was written, and the")
+            print("pattern names the type because that is what separates the takes")
+            return 2
+        found = efxrate.read_untouched(
+            args.takes,
+            setting=args.setting,
+            settled_s=args.settled,
+            lead_s=args.lead,
+            hold_s=args.hold,
+            shared_lines=args.lines,
+            progress=said,
+        )
+    else:
+        if not args.type or not args.slot:
+            print("--type and --slot are required unless --untouched")
+            return 2
+        found = efxrate.read_directory(
+            args.takes,
+            type_id=args.type,
+            address=args.slot,
+            setting=args.setting,
+            held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+            settled_s=args.settled,
+            lead_s=args.lead,
+            hold_s=args.hold,
+            shared_lines=args.lines,
+            progress=said,
+        )
     if not found["readings"]:
         print(
             f"no take under {args.takes} has a setting matching {args.setting!r}; "

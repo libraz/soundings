@@ -76,6 +76,26 @@ because it is in the invocation it is in the record, where a reader can see how
 the settings were read rather than trusting that they were.
 """
 
+TYPE = "type"
+"""The named group an `--untouched` pattern captures instead of `value`.
+
+Nothing was written, so there is no byte to name; what separates one take from
+the next is which type was loaded.
+"""
+
+UNTOUCHED_QUESTION = (
+    "What a take carried when one insertion effect type was loaded and no parameter "
+    "of it was written."
+)
+
+UNTOUCHED_WHY = (
+    "The baseline a swept reading of the same type is read against. A sweep says what "
+    "changed with the byte and cannot say what was there before it, so a line already "
+    "present with nothing written is not attributable to the slot -- and whether it "
+    "belongs to the type's own defaults, to the note that carried it, or to the "
+    "reading is not decided here."
+)
+
 
 def _body(samples, rate: int, *, lead_s: float, hold_s: float, trim_s: float):
     first = int((lead_s + trim_s) * rate)
@@ -86,6 +106,111 @@ def _body(samples, rate: int, *, lead_s: float, hold_s: float, trim_s: float):
 def _loudness_db(samples) -> float:
     body = np.asarray(takes.loudest(samples), dtype=np.float64)
     return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-9)))
+
+
+def _listing(where: Path) -> tuple[dict, list[str]]:
+    """The files under `where`, and the manifest beside them as a lookup.
+
+    **The files are the subject.** A store rewrites its manifest when it closes,
+    so a run repeated for one setting leaves a manifest naming that setting alone
+    while every earlier take is still on disk. Read from the manifest, such a
+    directory reports one reading and looks complete; read from the files, it
+    reports all of them and says how many the manifest had forgotten.
+    """
+    manifest = where / "takes-manifest.json"
+    kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
+    listed = {entry["file"]: entry for entry in kept.get("takes", ())}
+    files = sorted(path.name for path in where.glob("*.wav"))
+    if not files:
+        raise FileNotFoundError(f"no takes under {where}")
+    return listed, files
+
+
+def _named_by(pattern, entry: dict, name: str):
+    """Which of the two names a take has the pattern answered to, and the match.
+
+    The setting the manifest recorded, and the file's own name, which is what the
+    store wrote that setting into. Both are offered and which one answered is
+    reported per take: a manifest is rewritten when its store closes, so the name
+    is sometimes the only copy, and a pattern written against one should not
+    silently find nothing under the other.
+    """
+    for source, against in (("manifest", entry.get("setting")), ("file name", name)):
+        if not against:
+            continue
+        if (found := pattern.search(str(against))) is not None:
+            return source, found
+    return None, None
+
+
+def _read_take(
+    where: Path,
+    name: str,
+    entry: dict,
+    *,
+    lead_s: float,
+    trim_s: float,
+    hold_s: float | None,
+    shared_lines: bool,
+) -> dict:
+    """One take read into the fields every reading here carries."""
+    samples, rate = takes.read(where / name)
+    seconds = float(entry.get("seconds") or samples.shape[0] / rate)
+    hold = hold_s if hold_s is not None else seconds - 1.0
+    body = _body(samples, rate, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+    per_partial = rates.read_partials(body, rate)
+    agreed = rates.agreed_rate(per_partial)
+    swings = [r["level_swing"] for r in per_partial if r["level_swing"]]
+    reading = {
+        "rate_hz": agreed["rate_hz"],
+        "agreeing": agreed["agreeing"],
+        "of": agreed["of"],
+        "rates": agreed["rates"],
+        "heard_db": round(_loudness_db(samples), 1),
+        "slowest_measurable_hz": swings[0].get("slowest_measurable_hz") if swings else None,
+        "hold_s": round(hold, 3),
+        "take": name,
+    }
+    if shared_lines:
+        # What the partials' level spectra have in common, for the takes that may
+        # hold more than one modulation. A vote returns one answer and can land
+        # between two lines; this returns both, so a type with a modulator per
+        # stage is readable without silencing either.
+        reading["lines"] = rates.common(body, rate)
+    return reading
+
+
+def _manifest_note(listed: dict, files: list[str]) -> dict:
+    return {
+        "lists": len(listed),
+        "files_present": len(files),
+        "not_listed": sorted(set(files) - set(listed)),
+        "why": "A take store rewrites its manifest when it closes, so a run repeated "
+        "for one setting leaves a manifest naming that setting alone. The takes are "
+        "still on disk and are read here; which of them the manifest had forgotten is "
+        "named, because a record silently built from a shortened manifest reads exactly "
+        "like a complete one.",
+    }
+
+
+def _not_matching(skipped: list[str]) -> dict:
+    return {
+        "count": len(skipped),
+        "settings": sorted(set(skipped))[:40],
+        "why": "Takes under the same directory whose setting the pattern did not name. "
+        "Counted rather than dropped: a pattern that matches nothing and a directory "
+        "that holds nothing leave the same empty record otherwise.",
+    }
+
+
+def _capturing(setting: str, group: str) -> re.Pattern:
+    pattern = re.compile(setting)
+    if group not in (pattern.groupindex or {}):
+        raise ValueError(
+            f"the --setting pattern must capture a group named {group!r}; "
+            f"{setting!r} captures {sorted(pattern.groupindex)}"
+        )
+    return pattern
 
 
 def read_directory(
@@ -110,73 +235,31 @@ def read_directory(
     different mistakes.
     """
     where = Path(where)
-    manifest = where / "takes-manifest.json"
-    # **The files are the subject, and the manifest is a lookup beside them.** A
-    # store rewrites its manifest when it closes, so a run repeated for one
-    # setting leaves a manifest naming that setting alone while every earlier
-    # take is still on disk. Read from the manifest, such a directory reports one
-    # reading and looks complete; read from the files, it reports all of them and
-    # says how many the manifest had forgotten.
-    kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
-    listed = {entry["file"]: entry for entry in kept.get("takes", ())}
-    files = sorted(path.name for path in where.glob("*.wav"))
-    if not files:
-        raise FileNotFoundError(f"no takes under {where}")
-    pattern = re.compile(setting)
-    if VALUE not in (pattern.groupindex or {}):
-        raise ValueError(
-            f"the --setting pattern must capture a group named {VALUE!r}; "
-            f"{setting!r} captures {sorted(pattern.groupindex)}"
-        )
+    listed, files = _listing(where)
+    pattern = _capturing(setting, VALUE)
 
     readings: list[dict] = []
     skipped: list[str] = []
     for name in files:
         entry = listed.get(name, {})
-        # The setting the manifest recorded, and the file's own name, which is
-        # what the store wrote that setting into. Both are offered to the pattern
-        # and which one answered is reported per take: a manifest is rewritten
-        # when its store closes, so the name is sometimes the only copy, and a
-        # pattern written against one should not silently find nothing under the
-        # other.
-        named_by, found = None, None
-        for source, against in (("manifest", entry.get("setting")), ("file name", name)):
-            if not against:
-                continue
-            if (found := pattern.search(str(against))) is not None:
-                named_by = source
-                break
+        named_by, found = _named_by(pattern, entry, name)
         if not found:
             skipped.append(str(entry.get("setting") or name))
             continue
-        samples, rate = takes.read(where / name)
-        seconds = float(entry.get("seconds") or samples.shape[0] / rate)
-        hold = hold_s if hold_s is not None else seconds - 1.0
-        body = _body(samples, rate, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
-        per_partial = rates.read_partials(body, rate)
-        agreed = rates.agreed_rate(per_partial)
-        swings = [r["level_swing"] for r in per_partial if r["level_swing"]]
         reading = {
             VALUE: int(found.group(VALUE)),
-            "rate_hz": agreed["rate_hz"],
-            "agreeing": agreed["agreeing"],
-            "of": agreed["of"],
-            "rates": agreed["rates"],
-            "heard_db": round(_loudness_db(samples), 1),
-            "slowest_measurable_hz": swings[0].get("slowest_measurable_hz")
-            if swings
-            else None,
+            **_read_take(
+                where,
+                name,
+                entry,
+                lead_s=lead_s,
+                trim_s=trim_s,
+                hold_s=hold_s,
+                shared_lines=shared_lines,
+            ),
             "settled_s": settled_s,
-            "hold_s": round(hold, 3),
-            "take": name,
             "named_by": named_by,
         }
-        if shared_lines:
-            # What the partials' level spectra have in common, for the takes that
-            # may hold more than one modulation. A vote returns one answer and
-            # can land between two lines; this returns both, so a type with a
-            # modulator per stage is readable without silencing either.
-            reading["lines"] = rates.common(body, rate)
         readings.append(reading)
         if progress:
             progress(reading)
@@ -196,23 +279,85 @@ def read_directory(
         "different readings of different things, and nothing in the numbers says "
         "which is which.",
         "takes_from": str(where),
-        "manifest": {
-            "lists": len(listed),
-            "files_present": len(files),
-            "not_listed": sorted(set(files) - set(listed)),
-            "why": "A take store rewrites its manifest when it closes, so a run "
-            "repeated for one setting leaves a manifest naming that setting alone. The "
-            "takes are still on disk and are read here; which of them the manifest had "
-            "forgotten is named, because a record silently built from a shortened "
-            "manifest reads exactly like a complete one.",
-        },
+        "manifest": _manifest_note(listed, files),
         "settings_asked": sorted({r[VALUE] for r in readings}),
         "readings": readings,
-        "takes_not_matching": {
-            "count": len(skipped),
-            "settings": sorted(set(skipped))[:40],
-            "why": "Takes under the same directory whose setting the pattern did not "
-            "name. Counted rather than dropped: a pattern that matches nothing and a "
-            "directory that holds nothing leave the same empty record otherwise.",
-        },
+        "takes_not_matching": _not_matching(skipped),
+    }
+
+
+def _type_read(text: str) -> str:
+    """A captured type as the two bytes a record spells it with, where it can be.
+
+    A run names its takes with the bytes run together; where they are not four hex
+    digits the capture is carried through as it was written rather than reshaped
+    into something that looks like an address.
+    """
+    bare = text.replace(" ", "").replace("-", "").upper()
+    if len(bare) == 4 and all(c in "0123456789ABCDEF" for c in bare):
+        return f"{bare[:2]} {bare[2:]}"
+    return text
+
+
+def read_untouched(
+    where: str | Path,
+    *,
+    setting: str,
+    settled_s: float | None = None,
+    lead_s: float = 0.6,
+    trim_s: float = 0.5,
+    hold_s: float | None = None,
+    shared_lines: bool = False,
+    progress=None,
+) -> dict:
+    """Takes made with a type loaded and no parameter written, read into one record.
+
+    The same takes, the same reading, and a different question: there is no byte,
+    so what separates one take from the next is the type. Kept here rather than
+    forced into a sweep, because a reading with nothing written has no setting and
+    a column of settings with a word in it is worse than a second shape.
+    """
+    where = Path(where)
+    listed, files = _listing(where)
+    pattern = _capturing(setting, TYPE)
+
+    readings: list[dict] = []
+    skipped: list[str] = []
+    for name in files:
+        entry = listed.get(name, {})
+        named_by, found = _named_by(pattern, entry, name)
+        if not found:
+            skipped.append(str(entry.get("setting") or name))
+            continue
+        reading = {
+            TYPE: _type_read(found.group(TYPE)),
+            **_read_take(
+                where,
+                name,
+                entry,
+                lead_s=lead_s,
+                trim_s=trim_s,
+                hold_s=hold_s,
+                shared_lines=shared_lines,
+            ),
+            "settled_s": settled_s,
+            "named_by": named_by,
+        }
+        readings.append(reading)
+        if progress:
+            progress(reading)
+
+    readings.sort(key=lambda r: r[TYPE])
+    return {
+        "question": UNTOUCHED_QUESTION,
+        "wrote": None,
+        "method": METHOD,
+        "limits": LIMITS,
+        "not_in_this_record": NOT_HERE,
+        "why_untouched": UNTOUCHED_WHY,
+        "takes_from": str(where),
+        "manifest": _manifest_note(listed, files),
+        "types_asked": sorted({r[TYPE] for r in readings}),
+        "readings": readings,
+        "takes_not_matching": _not_matching(skipped),
     }

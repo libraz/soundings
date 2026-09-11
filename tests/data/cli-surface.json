@@ -3320,7 +3320,7 @@
           "dest": "type",
           "nargs": null,
           "default": "None",
-          "required": true,
+          "required": false,
           "help": "the type the takes were made under",
           "metavar": "MSB LSB",
           "choices": null,
@@ -3333,7 +3333,7 @@
           "dest": "slot",
           "nargs": null,
           "default": "None",
-          "required": true,
+          "required": false,
           "help": "the address that was swept",
           "metavar": "ADDR",
           "choices": null,
@@ -3347,10 +3347,23 @@
           "nargs": null,
           "default": "None",
           "required": true,
-          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at. A run names its takes however its own question needed, so how the byte is read back out belongs in the invocation -- where it lands in the record, and a reader can check it rather than trust it",
+          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at, or named `type` under --untouched. A run names its takes however its own question needed, so how the setting is read back out belongs in the invocation -- where it lands in the record, and a reader can check it rather than trust it",
           "metavar": "REGEX",
           "choices": null,
           "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--untouched"
+          ],
+          "dest": "untouched",
+          "nargs": 0,
+          "default": "False",
+          "required": false,
+          "help": "the takes were made with a type loaded and no parameter written, so there is no byte and the pattern names the type instead. This is the baseline a sweep of the same type is read against: a sweep says what changed with the byte and cannot say what was already there",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreTrueAction"
         },
         {
           "option_strings": [
