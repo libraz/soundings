@@ -17,10 +17,12 @@
       "--control",
       "held-126-bypassed-\\d+-00",
       "--stimulus",
-      "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0"
+      "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0",
+      "--silence",
+      "held-126-silence-\\d+-00"
     ],
-    "measured_at": "2026-09-11T21:39:40+00:00",
-    "elapsed_s": 0.1,
+    "measured_at": "2026-09-11T22:03:30+00:00",
+    "elapsed_s": 0.2,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -28,7 +30,7 @@
   "type": "01 00",
   "address": "40 03 0C",
   "method": "A stimulus was held through the effect at one setting of one byte and the energy of each third octave band of the take was measured. The figure reported per band is that energy against the same band of a setting the run held flat, and the spread of several takes of that flat setting is the floor each of them has to clear.",
-  "limits": "`floor_db` is the observed spread across the run's own repeats of one setting, band by band, and a deviation inside it is not a reading. It is a range over a handful of takes and not a bound: a band where those takes happened to agree closely has a small floor because it was sampled a few times, so a deviation just outside the floor is not thereby a reading either, and how many takes drew it is in `reference`. `heard_db` is the loudest channel's level over the body of the take: a profile measured from a take near the noise floor is a profile of the floor, and it is smooth, which is what makes it dangerous. Band energy is measured over the held part of the take only, so a setting whose effect is in the attack or the release is not in these figures at all. A band the stimulus does not reach cannot report what the effect did there, which is a limit of the stimulus and not a bound on the unit.",
+  "limits": "`floor_db` is the observed spread across the run's own repeats of one setting, band by band, and a deviation inside it is not a reading. It is a range over a handful of takes and not a bound: a band where those takes happened to agree closely has a small floor because it was sampled a few times, so a deviation just outside the floor is not thereby a reading either, and how many takes drew it is in `reference`. `heard_db` is the loudest channel's level over the body of the take, and `above_the_silence_db` is how far that is above what the same chain recorded with nothing played: a setting that turns the output down far enough returns the room and the converter, and the bands of that are the floor's own shape rather than anything the byte did. The floor's profile is in `silence` so the comparison can be made rather than taken on trust. Band energy is measured over the held part of the take only, so a setting whose effect is in the attack or the release is not in these figures at all. A band the stimulus does not reach cannot report what the effect did there, which is a limit of the stimulus and not a bound on the unit.",
   "not_in_this_record": "No filter, no corner and no order: which curve these bands lie on and where a shelf hinges is a fit across settings and types, and the fit is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
   "bands_hz": [
     100,
@@ -54,6 +56,38 @@
     10000,
     12500
   ],
+  "silence": {
+    "takes": [
+      "held-126-silence-00-00.wav",
+      "held-126-silence-01-00.wav"
+    ],
+    "band_db": [
+      12.953,
+      8.607,
+      12.241,
+      13.094,
+      14.266,
+      11.431,
+      10.337,
+      11.62,
+      13.771,
+      15.968,
+      24.858,
+      16.041,
+      16.415,
+      21.697,
+      16.876,
+      18.979,
+      18.187,
+      22.708,
+      21.495,
+      21.236,
+      23.799,
+      22.697
+    ],
+    "heard_db": -71.7,
+    "why": "The same chain with nothing played, as a level and as a profile. A setting that turns the output off does not stop the take being recorded, so what comes back is the room, the converter and whatever the machine puts out idle -- and read as a deviation from the flat setting that is a large, ragged, frequency-dependent figure, which is what a reading of the floor looks like and is not what a reader would guess it was. Published as a profile rather than as a single number so that a reading suspected of being the floor can be held against the floor's own shape."
+  },
   "reference": {
     "takes": [
       "held-126-flat-00-00.wav",
@@ -109,6 +143,8 @@
       0.03,
       0.02
     ],
+    "heard_db": -53.3,
+    "above_the_silence_db": 18.4,
     "why": "The setting every profile below is reported against, and the repeats that give it its floor. Taken in the same session rather than carried from an earlier run: what a noise stimulus fails to repeat belongs to the evening it was recorded in, and a deviation read against another run's floor is read against a reference that was never in the room."
   },
   "control": {
@@ -168,6 +204,7 @@
         "largest_db": 0.38,
         "largest_at_hz": 400,
         "heard_db": -53.0,
+        "above_the_silence_db": 18.7,
         "take": "held-126-bypassed-00-00.wav"
       },
       {
@@ -221,6 +258,7 @@
         "largest_db": 0.35,
         "largest_at_hz": 400,
         "heard_db": -53.0,
+        "above_the_silence_db": 18.7,
         "take": "held-126-bypassed-01-00.wav"
       }
     ],
@@ -267,8 +305,8 @@
   "why_held": "What else the run had written when it took these readings. A band profile is the whole chain's, so a parameter read with another of the type's stages moved and one read with it at its centre are readings of different things, and nothing in the numbers says which is which.",
   "takes_from": ".cache/takes/how-much-is-twelve-db-fine",
   "manifest": {
-    "lists": 48,
-    "files_present": 48,
+    "lists": 50,
+    "files_present": 50,
     "not_listed": [],
     "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
   },
@@ -331,6 +369,7 @@
       "largest_db": -12.13,
       "largest_at_hz": 1000,
       "heard_db": -59.7,
+      "above_the_silence_db": 12.0,
       "hold_s": 8.045,
       "take": "held-126-0C-052-00.wav",
       "named_by": "file name"
@@ -365,6 +404,7 @@
       "largest_db": null,
       "largest_at_hz": null,
       "heard_db": -53.3,
+      "above_the_silence_db": 18.4,
       "hold_s": 8.045,
       "take": "held-126-0C-064-00.wav",
       "named_by": "file name"
@@ -422,6 +462,7 @@
       "largest_db": 11.95,
       "largest_at_hz": 1000,
       "heard_db": -44.2,
+      "above_the_silence_db": 27.5,
       "hold_s": 8.045,
       "take": "held-126-0C-076-00.wav",
       "named_by": "file name"
