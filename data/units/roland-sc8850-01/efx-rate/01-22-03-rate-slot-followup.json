@@ -1,0 +1,130 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/rate-slot-followup",
+      "--type",
+      "01 22",
+      "--slot",
+      "40 03 03",
+      "--setting",
+      "held-16-0122-40-03-03-(?P<value>\\d+)-00",
+      "--settled",
+      "None"
+    ],
+    "measured_at": "2026-09-11T20:55:46+00:00",
+    "elapsed_s": 0.5,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "01 22",
+  "address": "40 03 03",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `heard_db` is the loudest channel's level over the body of the take: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "held": [],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/rate-slot-followup",
+  "manifest": {
+    "lists": 28,
+    "files_present": 28,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    16,
+    64,
+    127
+  ],
+  "readings": [
+    {
+      "value": 16,
+      "rate_hz": 0.771,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        0.7848,
+        0.7714,
+        0.7706,
+        0.7696
+      ],
+      "heard_db": -50.5,
+      "slowest_measurable_hz": 0.301,
+      "settled_s": null,
+      "hold_s": 8.045,
+      "take": "held-16-0122-40-03-03-016-00.wav",
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "rate_hz": 2.9406,
+      "agreeing": 3,
+      "of": 4,
+      "rates": [
+        2.9532,
+        2.9174,
+        2.9406,
+        0.8413
+      ],
+      "heard_db": -50.2,
+      "slowest_measurable_hz": 0.301,
+      "settled_s": null,
+      "hold_s": 8.045,
+      "take": "held-16-0122-40-03-03-064-00.wav",
+      "named_by": "file name"
+    },
+    {
+      "value": 127,
+      "rate_hz": 9.2833,
+      "agreeing": 3,
+      "of": 4,
+      "rates": [
+        9.2833,
+        9.0292,
+        9.3599,
+        0.8369
+      ],
+      "heard_db": -50.4,
+      "slowest_measurable_hz": 0.301,
+      "settled_s": null,
+      "hold_s": 8.045,
+      "take": "held-16-0122-40-03-03-127-00.wav",
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 25,
+    "settings": [
+      "0122-40-03-07-016",
+      "0122-40-03-07-064",
+      "0122-40-03-07-127",
+      "0122-default-long",
+      "0153-default-long",
+      "0300-40-03-0A-016",
+      "0300-40-03-0A-064",
+      "0300-40-03-0A-127",
+      "0300-40-03-0E-016",
+      "0300-40-03-0E-064",
+      "0300-40-03-0E-127",
+      "0300-default-long",
+      "0500-40-03-0F-000",
+      "0500-40-03-0F-016",
+      "0500-40-03-0F-032",
+      "0500-40-03-0F-064",
+      "0500-40-03-0F-099",
+      "0500-40-03-0F-100",
+      "0500-40-03-0F-110",
+      "0500-40-03-0F-119",
+      "0500-40-03-0F-120",
+      "0500-40-03-0F-125",
+      "0500-40-03-0F-127",
+      "0500-default-long",
+      "1101-default-long"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}
