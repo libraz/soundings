@@ -1,0 +1,218 @@
+"""What frequency one insertion effect's rate slot modulates at, setting by setting.
+
+Read from saved takes, with no machine attached. A run holds a note through the
+effect at one setting of one byte, saves the take, writes the next setting, and
+repeats; this reads what came back. Keeping the reading out of the run is what
+lets a reading be improved without the unit sounding again -- twice already a
+figure changed because the reader changed, and both times the takes were still
+there to be asked.
+
+**A reading is reported with what bounds it, or it is not reported.** Each of the
+take's partials is followed separately and each returns its own period; the figure
+here is what they agreed on, and how many of them agreed, out of how many, is
+beside it -- with every partial's own figure, so that one which found half or
+twice the rate is visible rather than averaged in. Beside those: how loud the take
+was, because a reading taken from a take at the noise floor is a reading of the
+floor and is otherwise indistinguishable from a good one; and the slowest rate
+that take length could have carried, because a figure near that is a floor rather
+than a rate.
+
+**What the run had set while it read.** A type with two modulators returns
+whichever dominates, so a sweep of one of them has to turn the other down or hold
+it still, and the two kinds of reading are not comparable afterwards. The settings
+the run applied are carried into the record with every reading they covered.
+
+**No law, no table, no verdict.** Whether a slot's readings follow one curve or
+another is a fit across several types, and the fit is not made here -- see the
+archive's own note on what this repository does not derive. The printed range for
+the address lives in `documents/`, is evidence about a page rather than about a
+unit, and is not joined to this.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+
+import numpy as np
+
+from . import rates, takes
+
+QUESTION = (
+    "What frequency one insertion effect type's rate slot modulates at, at each "
+    "setting of the byte."
+)
+
+METHOD = (
+    "A note was held through the effect and the level and frequency of each of the "
+    "take's strongest partials were followed and searched for a period. The figure "
+    "reported is the one the partials agreed on, and each partial's own is beside it."
+)
+
+LIMITS = (
+    "`slowest_measurable_hz` is the slowest rate this take was long enough to carry "
+    "two cycles of, and a reading within a few per cent of it is a floor rather than "
+    "a rate. `heard_db` is the loudest channel's level over the body of the take: a "
+    "reading taken from a take near the noise floor is a reading of the floor, and it "
+    "is stable, which is what makes it dangerous. `settled_s` is how long the run "
+    "waited after writing the setting, which matters for any type that accelerates -- "
+    "a take begun before it settles returns the ramp's average."
+)
+
+NOT_HERE = (
+    "No law, no table and no verdict: which curve these readings follow is a fit "
+    "across types and is not made here. The printed range for this address is in "
+    "documents/, under the same address, and is evidence about a page rather than "
+    "about this unit; the two are not joined."
+)
+
+VALUE = "value"
+"""The named group a `--setting` pattern has to capture.
+
+A run names its takes however its own question needed, so the pattern that pulls
+the byte back out belongs to the invocation rather than to this module -- and
+because it is in the invocation it is in the record, where a reader can see how
+the settings were read rather than trusting that they were.
+"""
+
+
+def _body(samples, rate: int, *, lead_s: float, hold_s: float, trim_s: float):
+    first = int((lead_s + trim_s) * rate)
+    last = int((lead_s + hold_s - trim_s) * rate)
+    return np.asarray(takes.loudest(samples)[first:last], dtype=np.float64)
+
+
+def _loudness_db(samples) -> float:
+    body = np.asarray(takes.loudest(samples), dtype=np.float64)
+    return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-9)))
+
+
+def read_directory(
+    where: str | Path,
+    *,
+    type_id: str,
+    address: str,
+    setting: str,
+    held: list[dict] | None = None,
+    settled_s: float | None = None,
+    lead_s: float = 0.6,
+    trim_s: float = 0.5,
+    hold_s: float | None = None,
+    shared_lines: bool = False,
+    progress=None,
+) -> dict:
+    """Every take under `where` whose setting matches, read into one record.
+
+    A take the pattern does not match is skipped and counted. The count is
+    reported rather than dropped: a pattern that matches nothing and a directory
+    that holds nothing produce the same empty record otherwise, and they are
+    different mistakes.
+    """
+    where = Path(where)
+    manifest = where / "takes-manifest.json"
+    # **The files are the subject, and the manifest is a lookup beside them.** A
+    # store rewrites its manifest when it closes, so a run repeated for one
+    # setting leaves a manifest naming that setting alone while every earlier
+    # take is still on disk. Read from the manifest, such a directory reports one
+    # reading and looks complete; read from the files, it reports all of them and
+    # says how many the manifest had forgotten.
+    kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
+    listed = {entry["file"]: entry for entry in kept.get("takes", ())}
+    files = sorted(path.name for path in where.glob("*.wav"))
+    if not files:
+        raise FileNotFoundError(f"no takes under {where}")
+    pattern = re.compile(setting)
+    if VALUE not in (pattern.groupindex or {}):
+        raise ValueError(
+            f"the --setting pattern must capture a group named {VALUE!r}; "
+            f"{setting!r} captures {sorted(pattern.groupindex)}"
+        )
+
+    readings: list[dict] = []
+    skipped: list[str] = []
+    for name in files:
+        entry = listed.get(name, {})
+        # The setting the manifest recorded, and the file's own name, which is
+        # what the store wrote that setting into. Both are offered to the pattern
+        # and which one answered is reported per take: a manifest is rewritten
+        # when its store closes, so the name is sometimes the only copy, and a
+        # pattern written against one should not silently find nothing under the
+        # other.
+        named_by, found = None, None
+        for source, against in (("manifest", entry.get("setting")), ("file name", name)):
+            if not against:
+                continue
+            if (found := pattern.search(str(against))) is not None:
+                named_by = source
+                break
+        if not found:
+            skipped.append(str(entry.get("setting") or name))
+            continue
+        samples, rate = takes.read(where / name)
+        seconds = float(entry.get("seconds") or samples.shape[0] / rate)
+        hold = hold_s if hold_s is not None else seconds - 1.0
+        body = _body(samples, rate, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+        per_partial = rates.read_partials(body, rate)
+        agreed = rates.agreed_rate(per_partial)
+        swings = [r["level_swing"] for r in per_partial if r["level_swing"]]
+        reading = {
+            VALUE: int(found.group(VALUE)),
+            "rate_hz": agreed["rate_hz"],
+            "agreeing": agreed["agreeing"],
+            "of": agreed["of"],
+            "rates": agreed["rates"],
+            "heard_db": round(_loudness_db(samples), 1),
+            "slowest_measurable_hz": swings[0].get("slowest_measurable_hz")
+            if swings
+            else None,
+            "settled_s": settled_s,
+            "hold_s": round(hold, 3),
+            "take": name,
+            "named_by": named_by,
+        }
+        if shared_lines:
+            # What the partials' level spectra have in common, for the takes that
+            # may hold more than one modulation. A vote returns one answer and
+            # can land between two lines; this returns both, so a type with a
+            # modulator per stage is readable without silencing either.
+            reading["lines"] = rates.common(body, rate)
+        readings.append(reading)
+        if progress:
+            progress(reading)
+
+    readings.sort(key=lambda r: r[VALUE])
+    return {
+        "question": QUESTION,
+        "type": type_id,
+        "address": address,
+        "method": METHOD,
+        "limits": LIMITS,
+        "not_in_this_record": NOT_HERE,
+        "held": held or [],
+        "why_held": "What else the run had written when it took these readings. A "
+        "type with more than one modulator returns whichever dominates, so a reading "
+        "taken with the other stage turned down and one taken with it running are "
+        "different readings of different things, and nothing in the numbers says "
+        "which is which.",
+        "takes_from": str(where),
+        "manifest": {
+            "lists": len(listed),
+            "files_present": len(files),
+            "not_listed": sorted(set(files) - set(listed)),
+            "why": "A take store rewrites its manifest when it closes, so a run "
+            "repeated for one setting leaves a manifest naming that setting alone. The "
+            "takes are still on disk and are read here; which of them the manifest had "
+            "forgotten is named, because a record silently built from a shortened "
+            "manifest reads exactly like a complete one.",
+        },
+        "settings_asked": sorted({r[VALUE] for r in readings}),
+        "readings": readings,
+        "takes_not_matching": {
+            "count": len(skipped),
+            "settings": sorted(set(skipped))[:40],
+            "why": "Takes under the same directory whose setting the pattern did not "
+            "name. Counted rather than dropped: a pattern that matches nothing and a "
+            "directory that holds nothing leave the same empty record otherwise.",
+        },
+    }
