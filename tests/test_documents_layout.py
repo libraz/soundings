@@ -217,6 +217,32 @@ def test_every_effect_parameter_is_held_under_an_effect_type(document_id: str) -
 
 
 @pytest.mark.parametrize("document_id", IDS)
+def test_every_effect_type_is_held_down_to_the_parameter_its_list_ends_at(document_id: str) -> None:
+    """A type whose tail is missing looks exactly like a type that has no tail.
+
+    The list ends every type with its output level, and reaching that number is
+    what says the type's parameters were all read. Without it, stopping at the
+    page the last type's *name* is printed on stops one page short of where its
+    parameters end, and the rows lost are simply not there -- no refusal, no
+    gap that reads as one, and a slot the archive has already measured turns up
+    as a slot no document names.
+    """
+    rows = effects_of(document_id)
+    if not rows:
+        pytest.skip(f"{document_id} has no effect list")
+    held: dict[tuple[str, str], set[int]] = {}
+    for row in rows:
+        if "parameter_number" in row:
+            held.setdefault((row["msb"], row["lsb"]), set()).add(int(row["parameter_number"]))
+    last = max(number for numbers in held.values() for number in numbers)
+    cut = sorted(key for key, numbers in held.items() if last not in numbers)
+    assert not cut, (
+        f"{document_id}: these types stop before parameter {last}, which every other type "
+        f"reaches, so their lists were cut off: {cut}"
+    )
+
+
+@pytest.mark.parametrize("document_id", IDS)
 def test_an_effect_parameter_stated_twice_is_stated_the_same_way(document_id: str) -> None:
     """One page states a type's parameter twice, to explain the notation.
 
