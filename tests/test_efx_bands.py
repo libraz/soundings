@@ -235,3 +235,80 @@ def test_the_record_says_where_it_was_read_from_and_what_was_held(directory) -> 
     assert found["held"] == [{"address": "40 03 06", "bytes": "40"}]
     assert str(directory) == found["takes_from"]
     assert found["manifest"]["files_present"] >= 8
+
+
+@pytest.fixture
+def crossed(tmp_path):
+    """A run on an interface whose second input carries something the unit is not.
+
+    Channel 0 is the unit and channel 1 is another input, kept at a steady level
+    the unit passes on its way down. One swept setting turns the unit's own output
+    below it, which is where reading each take's loudest channel stops reading the
+    unit and starts reading the other input.
+    """
+    other = np.random.default_rng(900).standard_normal(int(SECONDS * SR)) * 0.004
+
+    def pair(unit: np.ndarray) -> np.ndarray:
+        return np.stack([unit, other], axis=1)
+
+    store = takes.Store.open(tmp_path / "run")
+    for index in range(4):
+        store.keep(FakeRecording(pair(noise(index)[:, 0])), stimulus="held",
+                   setting=f"flat-{index:02d}", take=0)
+    for value, scale in ((0, 0.0005), (64, 1.0), (127, 1.0)):
+        store.keep(FakeRecording(pair(noise(0)[:, 0] * scale)), stimulus="held",
+                   setting=f"16-{value:03d}", take=0)
+    store.close(question="a synthetic run on a crowded interface")
+    return tmp_path / "run"
+
+
+def crossed_read(where, **extra):
+    return efxbands.read_directory(
+        where,
+        type_id="01 00",
+        address="40 03 16",
+        setting=r"held-16-(?P<value>\d+)-00",
+        reference=r"held-flat-\d+-00",
+        bands_hz=BANDS,
+        hold_s=SECONDS - 1.2,
+        **extra,
+    )
+
+
+def test_the_record_names_the_channel_it_read_and_every_channel_it_saw(directory) -> None:
+    found = read(directory)
+    picked = found["channel"]
+    assert picked["read"] == 0
+    assert picked["chosen_by"] == "loudest in the reference takes"
+    assert len(picked["reference_db"]) == 2
+    # The fixture's second channel is half the first, which is 6 dB down.
+    assert picked["reference_db"][0] - picked["reference_db"][1] == pytest.approx(6.0, abs=0.5)
+
+
+def test_a_take_the_unit_went_quiet_in_is_still_read_from_the_units_channel(
+    crossed,
+) -> None:
+    """The one that reads as a measurement. Reading each take's own loudest channel
+    returns a full profile of the other input, which is not a number the byte
+    produced and not a number anything in the record contradicts."""
+    found = crossed_read(crossed)
+    quiet = next(r for r in found["readings"] if r["value"] == 0)
+    loud = next(r for r in found["readings"] if r["value"] == 127)
+    # Read from the unit, the setting that turned it off is far below the others.
+    assert quiet["heard_db"] < loud["heard_db"] - 40
+    assert found["channel"]["read"] == 0
+
+
+def test_a_take_whose_loudest_channel_is_elsewhere_is_named(crossed) -> None:
+    found = crossed_read(crossed)
+    astray = found["channel"]["loudest_elsewhere"]
+    assert len(astray) == 1
+    assert "16-000" in astray[0]
+
+
+def test_a_channel_given_on_the_command_line_is_used_and_said_to_be(crossed) -> None:
+    found = crossed_read(crossed, channel=1)
+    assert found["channel"]["read"] == 1
+    assert found["channel"]["chosen_by"] == "given"
+    # Every reading is now of the other input, so the byte moves nothing.
+    assert all(r["largest_db"] is None for r in found["readings"])

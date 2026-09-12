@@ -215,6 +215,15 @@ def register(sub) -> None:
         "apart",
     )
     p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever is "
+        "loudest in the reference takes, chosen once for the run: an input the unit is "
+        "not on is not silent, so reading each take's own loudest channel makes a "
+        "setting that turns the output down a full profile of something else",
+    )
+    p.add_argument(
         "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
     )
     p.add_argument(
@@ -483,9 +492,17 @@ def cmd_efx_bands(args) -> int:
             {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
         ],
         bands_hz=args.band or efxbands.THIRD_OCTAVES,
+        channel=args.channel,
         lead_s=args.lead,
         hold_s=args.hold,
         progress=said,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of "
+        f"{len(picked['reference_db'])} ({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reference_db"])
+        + " dBFS"
     )
     if not found["readings"]:
         print(
@@ -499,6 +516,11 @@ def cmd_efx_bands(args) -> int:
         print("  (no --silence: a setting that turns the output off reads as a profile)")
     if (missed := found["takes_not_matching"]["count"]):
         print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if (astray := picked["loudest_elsewhere"]):
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
     report.write_json(args.out, found)
     return 0
 

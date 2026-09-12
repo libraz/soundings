@@ -26,6 +26,14 @@ with the part routed past the effect entirely. If bypass and flat differ, every
 deviation below is still a measurement of the byte -- but of the byte against a
 stage that was doing something, and the record says so instead of implying unity.
 
+**One channel for the whole run, chosen once.** An interface has inputs the unit
+is not plugged into, and they are not silent. Picking the loudest channel of each
+take separately means a setting that turns the output down far enough is read from
+whichever input happened to be noisiest instead -- a complete, plausible, entirely
+wrong profile, with nothing in the figures to say the reading changed channel. The
+channel is chosen from the reference takes, where the unit is certainly sounding,
+and every take that disagrees with that choice is named.
+
 **No filter, no corner, no shape.** Which curve these bands lie on, where a shelf
 hinges, what order it is -- that is a fit, and the fit is not made here. The
 printed range for the address lives in `documents/`, is evidence about a page
@@ -81,8 +89,8 @@ LIMITS = (
     "handful of takes and not a bound: a band where those takes happened to agree "
     "closely has a small floor because it was sampled a few times, so a deviation just "
     "outside the floor is not thereby a reading either, and how many takes drew it is "
-    "in `reference`. `heard_db` is the loudest "
-    "channel's level over the body of the take, and `above_the_silence_db` is how far "
+    "in `reference`. `heard_db` is the level over the whole take of the one channel "
+    "named in `channel`, and `above_the_silence_db` is how far "
     "that is above what the same chain recorded with nothing played: a setting that "
     "turns the output down far enough returns the room and the converter, and the "
     "bands of that are the floor's own shape rather than anything the byte did. The "
@@ -127,6 +135,17 @@ WHY_SILENCE = (
     "a reading suspected of being the floor can be held against the floor's own shape."
 )
 
+WHY_CHANNEL = (
+    "The channel every figure in this record was read from, and what each channel of "
+    "the interface held while the reference takes were sounding. Chosen once for the "
+    "run rather than per take: the interface carries inputs the unit is not on, those "
+    "inputs are not silent, and a take whose output falls below one of them is read "
+    "from that input instead -- which returns a full, ragged, plausible profile of "
+    "something else entirely. `loudest_elsewhere` names every take whose own loudest "
+    "channel is not the one used, because a reading that changed channel is exactly "
+    "what the figures cannot say on their own."
+)
+
 WHY_HELD = (
     "What else the run had written when it took these readings. A band profile is the "
     "whole chain's, so a parameter read with another of the type's stages moved and "
@@ -135,15 +154,32 @@ WHY_HELD = (
 )
 
 
-def _body(samples, rate: int, *, lead_s: float, hold_s: float, trim_s: float):
+def _one(samples, channel: int) -> np.ndarray:
+    """The named channel, whatever shape the take was stored in."""
+    frames = np.asarray(samples, dtype=np.float64)
+    if frames.ndim == 1:
+        return frames
+    return frames[:, min(channel, frames.shape[1] - 1)]
+
+
+def levels_db(samples) -> list[float]:
+    """Every channel's level over the whole take, in dBFS."""
+    frames = np.asarray(samples, dtype=np.float64)
+    if frames.ndim == 1:
+        frames = frames[:, None]
+    rms = np.sqrt(np.mean(np.square(frames), axis=0))
+    return [round(float(20.0 * np.log10(max(float(v), 1e-12))), 1) for v in rms]
+
+
+def _body(samples, rate: int, *, channel: int, lead_s: float, hold_s: float, trim_s: float):
     first = int((lead_s + trim_s) * rate)
     last = int((lead_s + hold_s - trim_s) * rate)
-    return np.asarray(takes.loudest(samples)[first:last], dtype=np.float64)
+    return _one(samples, channel)[first:last]
 
 
-def _loudness_db(samples) -> float:
-    body = np.asarray(takes.loudest(samples), dtype=np.float64)
-    return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-9)))
+def _loudness_db(samples, channel: int) -> float:
+    body = _one(samples, channel)
+    return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-12)))
 
 
 def energies(body: np.ndarray, rate: int, centres=THIRD_OCTAVES) -> list[float]:
@@ -170,16 +206,18 @@ def _profile(
     name: str,
     entry: dict,
     *,
+    channel: int,
     lead_s: float,
     trim_s: float,
     hold_s: float | None,
     centres,
-) -> tuple[list[float], float, float]:
+) -> tuple[list[float], float, float, int]:
     samples, rate = takes.read(where / name)
     seconds = float(entry.get("seconds") or samples.shape[0] / rate)
     hold = hold_s if hold_s is not None else seconds - 1.0
-    body = _body(samples, rate, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
-    return energies(body, rate, centres), round(_loudness_db(samples), 1), round(hold, 3)
+    body = _body(samples, rate, channel=channel, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+    own = int(np.argmax(levels_db(samples)))
+    return energies(body, rate, centres), round(_loudness_db(samples, channel), 1), round(hold, 3), own
 
 
 def _against(profile, reference, floor, centres) -> dict:
@@ -228,6 +266,7 @@ def read_directory(
     stimulus: str | None = None,
     held: list[dict] | None = None,
     bands_hz=THIRD_OCTAVES,
+    channel: int | None = None,
     lead_s: float = 0.6,
     trim_s: float = 0.5,
     hold_s: float | None = None,
@@ -257,13 +296,32 @@ def read_directory(
     bypassed = re.compile(control) if control else None
     quiet = re.compile(silence) if silence else None
 
+    flats = _matched(flat, listed, files)
+    if not flats:
+        raise ValueError(f"no take under {where} matched the reference {reference!r}")
+
+    # The channel before anything else, and from the reference takes, which are the
+    # ones the unit is certainly sounding in. Every other take is then read from the
+    # same input rather than from whichever one was loudest in it.
+    reference_levels = [
+        round(float(np.mean(column)), 1)
+        for column in zip(
+            *(levels_db(takes.read(where / name)[0]) for name, _, _ in flats), strict=True
+        )
+    ]
+    used = int(np.argmax(reference_levels)) if channel is None else int(channel)
+    elsewhere: list[str] = []
+
     def profile(name: str, entry: dict):
-        return _profile(
-            where, name, entry,
+        bands, loud, hold, own = _profile(
+            where, name, entry, channel=used,
             lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, centres=centres,
         )
+        if own != used and name not in elsewhere:
+            elsewhere.append(name)
+        return bands, loud, hold
 
-    # The floor first, because the reference itself is a take and a reader has to
+    # The floor next, because the reference itself is a take and a reader has to
     # be able to see how far above the floor even that was.
     quiets: list[str] = []
     floor_bands: list[float] | None = None
@@ -286,9 +344,6 @@ def read_directory(
     def above(heard: float) -> float | None:
         return None if floor_heard is None else round(heard - floor_heard, 1)
 
-    flats = _matched(flat, listed, files)
-    if not flats:
-        raise ValueError(f"no take under {where} matched the reference {reference!r}")
     rows = [profile(name, entry)[0] for name, entry, _ in flats]
     floor = [
         round(max(row[i] for row in rows) - min(row[i] for row in rows), 2)
@@ -343,6 +398,13 @@ def read_directory(
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
         "bands_hz": centres,
+        "channel": {
+            "read": used,
+            "chosen_by": "given" if channel is not None else "loudest in the reference takes",
+            "reference_db": reference_levels,
+            "loudest_elsewhere": sorted(elsewhere),
+            "why": WHY_CHANNEL,
+        },
         "silence": {
             "takes": sorted(quiets),
             "band_db": floor_bands,
