@@ -51,11 +51,23 @@ METHOD = (
 LIMITS = (
     "`slowest_measurable_hz` is the slowest rate this take was long enough to carry "
     "two cycles of, and a reading within a few per cent of it is a floor rather than "
-    "a rate. `heard_db` is the loudest channel's level over the body of the take: a "
+    "a rate. `heard_db` is the level over the take of the one channel named in "
+    "`channel`: a "
     "reading taken from a take near the noise floor is a reading of the floor, and it "
     "is stable, which is what makes it dangerous. `settled_s` is how long the run "
     "waited after writing the setting, which matters for any type that accelerates -- "
     "a take begun before it settles returns the ramp's average."
+)
+
+WHY_CHANNEL = (
+    "The channel every figure in this record was read from, and the highest each "
+    "channel of the interface reached across the takes this record was built from. "
+    "Chosen once for the run rather than per take: the interface carries inputs the "
+    "unit is not on, those inputs are not silent, and a take whose output falls below "
+    "one of them is read from that input instead -- which returns a level, and a rate, "
+    "belonging to something else. `loudest_elsewhere` names every take whose own "
+    "loudest channel is not the one used, because a reading that changed channel is "
+    "exactly what the figures cannot say on their own."
 )
 
 NOT_HERE = (
@@ -95,15 +107,15 @@ UNTOUCHED_WHY = (
 )
 
 
-def _body(samples, rate: int, *, lead_s: float, hold_s: float, trim_s: float):
+def _body(samples, rate: int, *, index: int, lead_s: float, hold_s: float, trim_s: float):
     first = int((lead_s + trim_s) * rate)
     last = int((lead_s + hold_s - trim_s) * rate)
-    return np.asarray(takes.loudest(samples)[first:last], dtype=np.float64)
+    return takes.channel(samples, index)[first:last]
 
 
-def _loudness_db(samples) -> float:
-    body = np.asarray(takes.loudest(samples), dtype=np.float64)
-    return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-9)))
+def _loudness_db(samples, index: int) -> float:
+    body = takes.channel(samples, index)
+    return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-12)))
 
 
 def _read_take(
@@ -111,6 +123,7 @@ def _read_take(
     name: str,
     entry: dict,
     *,
+    index: int,
     lead_s: float,
     trim_s: float,
     hold_s: float | None,
@@ -120,7 +133,7 @@ def _read_take(
     samples, rate = takes.read(where / name)
     seconds = float(entry.get("seconds") or samples.shape[0] / rate)
     hold = hold_s if hold_s is not None else seconds - 1.0
-    body = _body(samples, rate, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+    body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
     per_partial = rates.read_partials(body, rate)
     agreed = rates.agreed_rate(per_partial)
     swings = [r["level_swing"] for r in per_partial if r["level_swing"]]
@@ -129,7 +142,10 @@ def _read_take(
         "agreeing": agreed["agreeing"],
         "of": agreed["of"],
         "rates": agreed["rates"],
-        "heard_db": round(_loudness_db(samples), 1),
+        "heard_db": round(_loudness_db(samples, index), 1),
+        # Dropped from the reading before it is published and gathered into the
+        # record's own channel block, so both stages say this the same way.
+        "_own": int(np.argmax(takes.channel_levels(samples))),
         "slowest_measurable_hz": swings[0].get("slowest_measurable_hz") if swings else None,
         "hold_s": round(hold, 3),
         "take": name,
@@ -155,6 +171,7 @@ def read_directory(
     trim_s: float = 0.5,
     hold_s: float | None = None,
     shared_lines: bool = False,
+    channel: int | None = None,
     progress=None,
 ) -> dict:
     """Every take under `where` whose setting matches, read into one record.
@@ -163,25 +180,41 @@ def read_directory(
     reported rather than dropped: a pattern that matches nothing and a directory
     that holds nothing produce the same empty record otherwise, and they are
     different mistakes.
+
+    One channel is chosen for the whole run before any of it is read, from the
+    highest each channel reached across the matched takes. There are no reference
+    takes here to choose from -- a sweep of a rate is all there is -- so the
+    channel is the one that ever carried the unit rather than the one that carried
+    it on average, which a setting that silences the output would drag away.
     """
     where = Path(where)
     listed, files = takes.listing(where)
     pattern = takes.capturing(setting, VALUE)
 
+    matched = [
+        (name, listed.get(name, {}), *takes.named_by(pattern, listed.get(name, {}), name))
+        for name in files
+    ]
+    wanted = [(name, entry, by, found) for name, entry, by, found in matched if found]
+    skipped = [
+        str(entry.get("setting") or name) for name, entry, _, found in matched if not found
+    ]
+    if not wanted:
+        reached, levels = 0, []
+    else:
+        reached, levels = takes.channel_reaching(where, [name for name, _, _, _ in wanted])
+    used = reached if channel is None else int(channel)
+
     readings: list[dict] = []
-    skipped: list[str] = []
-    for name in files:
-        entry = listed.get(name, {})
-        named_by, found = takes.named_by(pattern, entry, name)
-        if not found:
-            skipped.append(str(entry.get("setting") or name))
-            continue
+    elsewhere: list[str] = []
+    for name, entry, named_by, found in wanted:
         reading = {
             VALUE: int(found.group(VALUE)),
             **_read_take(
                 where,
                 name,
                 entry,
+                index=used,
                 lead_s=lead_s,
                 trim_s=trim_s,
                 hold_s=hold_s,
@@ -190,6 +223,8 @@ def read_directory(
             "settled_s": settled_s,
             "named_by": named_by,
         }
+        if reading.pop("_own") != used:
+            elsewhere.append(name)
         readings.append(reading)
         if progress:
             progress(reading)
@@ -202,6 +237,13 @@ def read_directory(
         "method": METHOD,
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
+        "channel": {
+            "read": used,
+            "chosen_by": "given" if channel is not None else "highest across the takes read",
+            "reached_db": levels,
+            "loudest_elsewhere": sorted(elsewhere),
+            "why": WHY_CHANNEL,
+        },
         "held": held or [],
         "why_held": "What else the run had written when it took these readings. A "
         "type with more than one modulator returns whichever dominates, so a reading "
@@ -238,6 +280,7 @@ def read_untouched(
     trim_s: float = 0.5,
     hold_s: float | None = None,
     shared_lines: bool = False,
+    channel: int | None = None,
     progress=None,
 ) -> dict:
     """Takes made with a type loaded and no parameter written, read into one record.
@@ -251,20 +294,30 @@ def read_untouched(
     listed, files = takes.listing(where)
     pattern = takes.capturing(setting, TYPE)
 
+    matched = [
+        (name, listed.get(name, {}), *takes.named_by(pattern, listed.get(name, {}), name))
+        for name in files
+    ]
+    wanted = [(name, entry, by, found) for name, entry, by, found in matched if found]
+    skipped = [
+        str(entry.get("setting") or name) for name, entry, _, found in matched if not found
+    ]
+    if not wanted:
+        reached, levels = 0, []
+    else:
+        reached, levels = takes.channel_reaching(where, [name for name, _, _, _ in wanted])
+    used = reached if channel is None else int(channel)
+
     readings: list[dict] = []
-    skipped: list[str] = []
-    for name in files:
-        entry = listed.get(name, {})
-        named_by, found = takes.named_by(pattern, entry, name)
-        if not found:
-            skipped.append(str(entry.get("setting") or name))
-            continue
+    elsewhere: list[str] = []
+    for name, entry, named_by, found in wanted:
         reading = {
             TYPE: _type_read(found.group(TYPE)),
             **_read_take(
                 where,
                 name,
                 entry,
+                index=used,
                 lead_s=lead_s,
                 trim_s=trim_s,
                 hold_s=hold_s,
@@ -273,6 +326,8 @@ def read_untouched(
             "settled_s": settled_s,
             "named_by": named_by,
         }
+        if reading.pop("_own") != used:
+            elsewhere.append(name)
         readings.append(reading)
         if progress:
             progress(reading)
@@ -284,6 +339,13 @@ def read_untouched(
         "method": METHOD,
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
+        "channel": {
+            "read": used,
+            "chosen_by": "given" if channel is not None else "highest across the takes read",
+            "reached_db": levels,
+            "loudest_elsewhere": sorted(elsewhere),
+            "why": WHY_CHANNEL,
+        },
         "why_untouched": UNTOUCHED_WHY,
         "takes_from": str(where),
         "manifest": takes.manifest_note(listed, files),

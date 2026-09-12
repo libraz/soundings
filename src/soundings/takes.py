@@ -62,10 +62,70 @@ def read(path: str | Path) -> tuple[np.ndarray, int]:
 
 
 def loudest(samples: np.ndarray) -> np.ndarray:
-    """The channel carrying the most, which is what a mono measurement uses."""
+    """The channel carrying the most, which is what a mono measurement uses.
+
+    **Per take, which is not what a run wants.** An interface has inputs the unit
+    is not plugged into and they are not silent, so a take whose output falls
+    below one of them is answered from that input instead, with nothing in the
+    figures to say the reading changed channel. A run that sweeps a parameter
+    which can turn the output down picks one channel for all its takes instead --
+    `channel_reaching` is what picks it.
+    """
     if samples.ndim == 1:
         return samples
     return samples[:, int(np.argmax(np.sqrt(np.mean(np.square(samples), axis=0))))]
+
+
+def channel(samples: np.ndarray, index: int) -> np.ndarray:
+    """One named channel, whatever shape the take was stored in."""
+    frames = np.asarray(samples, dtype=np.float64)
+    if frames.ndim == 1:
+        return frames
+    return frames[:, min(index, frames.shape[1] - 1)]
+
+
+def channel_levels(samples: np.ndarray) -> list[float]:
+    """Every channel's level over the take, in dBFS."""
+    frames = np.asarray(samples, dtype=np.float64)
+    if frames.ndim == 1:
+        frames = frames[:, None]
+    rms = np.sqrt(np.mean(np.square(frames), axis=0))
+    return [round(float(20.0 * np.log10(max(float(v), 1e-12))), 1) for v in rms]
+
+
+def channel_reaching(
+    root: str | Path, names, *, seconds: float = 2.0
+) -> tuple[int, list[float]]:
+    """Which channel the unit is on, and the highest each channel reached.
+
+    **The highest a channel ever reached, not its average.** A run sweeps a
+    parameter that can turn the output off, and a channel is not the wrong one
+    for having been quiet in the takes where the effect was doing its job -- an
+    average over the whole sweep is dragged toward the settings that silenced it,
+    which is the direction that loses the unit to an idle input.
+
+    Read from a slice in the middle of each take, with the file memory mapped:
+    the question is which input carried the unit, and that does not need the whole
+    take or the whole directory in memory.
+    """
+    from scipy.io import wavfile
+
+    root = Path(root)
+    highest: list[float] = []
+    for name in names:
+        rate, data = wavfile.read(str(root / name), mmap=True)
+        if data.ndim == 1:
+            data = data[:, None]
+        middle = data.shape[0] // 2
+        half = int(seconds * rate / 2)
+        body = np.asarray(data[max(0, middle - half) : middle + half], dtype=np.float64)
+        if np.issubdtype(data.dtype, np.integer):
+            body = body / float(np.iinfo(data.dtype).max)
+        levels = channel_levels(body)
+        highest = levels if not highest else [max(a, b) for a, b in zip(highest, levels)]
+    if not highest:
+        raise ValueError(f"no take under {root} to choose a channel from")
+    return int(np.argmax(highest)), highest
 
 
 @dataclass
@@ -197,6 +257,9 @@ def capturing(setting: str, group: str) -> re.Pattern:
 __all__ = [
     "Store",
     "capturing",
+    "channel",
+    "channel_levels",
+    "channel_reaching",
     "listing",
     "loudest",
     "manifest_note",

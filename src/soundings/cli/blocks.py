@@ -141,6 +141,15 @@ def register(sub) -> None:
         "one answer and lands between two modulators; this returns both, which is what "
         "a type with a modulator per stage needs",
     )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever "
+        "reached highest across the takes read, chosen once for the run: an input the "
+        "unit is not on is not silent, so reading each take's own loudest channel gives "
+        "a setting that silenced the output a level and a rate belonging to that input",
+    )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_rate)
 
@@ -432,6 +441,7 @@ def cmd_efx_rate(args) -> int:
             lead_s=args.lead,
             hold_s=args.hold,
             shared_lines=args.lines,
+            channel=args.channel,
             progress=said,
         )
     else:
@@ -448,8 +458,16 @@ def cmd_efx_rate(args) -> int:
             lead_s=args.lead,
             hold_s=args.hold,
             shared_lines=args.lines,
+            channel=args.channel,
             progress=said,
         )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of "
+        f"{len(picked['reached_db'])} ({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
     if not found["readings"]:
         print(
             f"no take under {args.takes} has a setting matching {args.setting!r}; "

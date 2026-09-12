@@ -136,9 +136,10 @@ WHY_SILENCE = (
 )
 
 WHY_CHANNEL = (
-    "The channel every figure in this record was read from, and what each channel of "
-    "the interface held while the reference takes were sounding. Chosen once for the "
-    "run rather than per take: the interface carries inputs the unit is not on, those "
+    "The channel every figure in this record was read from, and the highest each "
+    "channel of the interface reached while the reference takes were sounding. Chosen "
+    "once for the run rather than per take: the interface carries inputs the unit is "
+    "not on, those "
     "inputs are not silent, and a take whose output falls below one of them is read "
     "from that input instead -- which returns a full, ragged, plausible profile of "
     "something else entirely. `loudest_elsewhere` names every take whose own loudest "
@@ -154,31 +155,14 @@ WHY_HELD = (
 )
 
 
-def _one(samples, channel: int) -> np.ndarray:
-    """The named channel, whatever shape the take was stored in."""
-    frames = np.asarray(samples, dtype=np.float64)
-    if frames.ndim == 1:
-        return frames
-    return frames[:, min(channel, frames.shape[1] - 1)]
-
-
-def levels_db(samples) -> list[float]:
-    """Every channel's level over the whole take, in dBFS."""
-    frames = np.asarray(samples, dtype=np.float64)
-    if frames.ndim == 1:
-        frames = frames[:, None]
-    rms = np.sqrt(np.mean(np.square(frames), axis=0))
-    return [round(float(20.0 * np.log10(max(float(v), 1e-12))), 1) for v in rms]
-
-
-def _body(samples, rate: int, *, channel: int, lead_s: float, hold_s: float, trim_s: float):
+def _body(samples, rate: int, *, index: int, lead_s: float, hold_s: float, trim_s: float):
     first = int((lead_s + trim_s) * rate)
     last = int((lead_s + hold_s - trim_s) * rate)
-    return _one(samples, channel)[first:last]
+    return takes.channel(samples, index)[first:last]
 
 
-def _loudness_db(samples, channel: int) -> float:
-    body = _one(samples, channel)
+def _loudness_db(samples, index: int) -> float:
+    body = takes.channel(samples, index)
     return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-12)))
 
 
@@ -215,9 +199,14 @@ def _profile(
     samples, rate = takes.read(where / name)
     seconds = float(entry.get("seconds") or samples.shape[0] / rate)
     hold = hold_s if hold_s is not None else seconds - 1.0
-    body = _body(samples, rate, channel=channel, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
-    own = int(np.argmax(levels_db(samples)))
-    return energies(body, rate, centres), round(_loudness_db(samples, channel), 1), round(hold, 3), own
+    body = _body(samples, rate, index=channel, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+    own = int(np.argmax(takes.channel_levels(samples)))
+    return (
+        energies(body, rate, centres),
+        round(_loudness_db(samples, channel), 1),
+        round(hold, 3),
+        own,
+    )
 
 
 def _against(profile, reference, floor, centres) -> dict:
@@ -303,13 +292,10 @@ def read_directory(
     # The channel before anything else, and from the reference takes, which are the
     # ones the unit is certainly sounding in. Every other take is then read from the
     # same input rather than from whichever one was loudest in it.
-    reference_levels = [
-        round(float(np.mean(column)), 1)
-        for column in zip(
-            *(levels_db(takes.read(where / name)[0]) for name, _, _ in flats), strict=True
-        )
-    ]
-    used = int(np.argmax(reference_levels)) if channel is None else int(channel)
+    reached, reference_levels = takes.channel_reaching(
+        where, [name for name, _, _ in flats]
+    )
+    used = reached if channel is None else int(channel)
     elsewhere: list[str] = []
 
     def profile(name: str, entry: dict):
