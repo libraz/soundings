@@ -181,7 +181,11 @@ WHY_REFERENCE = (
     "clears that floor in no band and would publish a control that cannot fire. What "
     "does show it is a run's own null -- the same byte swept with the stage it shapes "
     "turned off -- which is a separate record made from separate takes, and at this "
-    "band set those nulls return a few tenths of a decibel."
+    "band set those nulls return a few tenths of a decibel. "
+    "`heard_floor_db` is the same idea for the level rather than for a band: how far "
+    "apart the repeats' own levels were, which is what a step in a level has to clear "
+    "to be a step. The per-band floor cannot answer that, because a setting that moves "
+    "every band by the same small amount sits inside every band's floor."
 )
 
 WHY_CONTROL = (
@@ -345,7 +349,10 @@ def _profile(
     for index in channels:
         body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
         bands[index] = energies(body, rate, centres, width_octaves)
-        heard[index] = round(_loudness_db(samples, index), 1)
+        # Two places rather than one: a tenth of a decibel cannot report a step
+        # smaller than a tenth, and whether a byte moves the level in steps at all
+        # is a question one of these rows was swept at every value to answer.
+        heard[index] = round(_loudness_db(samples, index), 2)
     own = int(np.argmax(takes.channel_levels(samples)))
     return bands, heard, round(hold, 3), own
 
@@ -606,7 +613,13 @@ def read_directory(
     beside_middle = (
         averaged([bands[beside] for bands, _, _ in flat_read]) if beside is not None else None
     )
-    flat_heard = round(float(np.mean([loud[used] for _, loud, _ in flat_read])), 1)
+    flat_levels = [loud[used] for _, loud, _ in flat_read]
+    flat_heard = round(float(np.mean(flat_levels)), 2)
+    # What the level alone repeats to, which is the floor a step in a level has to
+    # clear. `floor_db` beside it is per band and says nothing about the whole: a
+    # setting that moved every band by the same small amount is inside every band's
+    # floor and outside this one, which is the shape a level control has.
+    heard_floor = round(float(max(flat_levels) - min(flat_levels)), 2)
 
 
     def apart(bands: dict[int, list[float]]) -> dict:
@@ -702,6 +715,7 @@ def read_directory(
             "band_db": middle,
             "floor_db": floor,
             "heard_db": flat_heard,
+            "heard_floor_db": heard_floor,
             "above_the_silence_db": above(flat_heard),
             "why": WHY_REFERENCE,
         },
