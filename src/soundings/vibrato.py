@@ -47,6 +47,15 @@ WHY_CONTROL = (
     "is a fit the tracker was never shown able to make on this material."
 )
 
+WHY_CHANNEL = (
+    "The channel of the interface every take in this run was read from, and the highest each "
+    "channel reached over the run. Chosen once rather than per take: an interface carries inputs "
+    "the unit is not on and they are not silent, so a setting that turns the part down far enough "
+    "is answered from one of them instead -- and a pitch track of an idle input finds no "
+    "modulation, which is exactly what a setting with no vibrato in it also returns. Nothing in "
+    "the rows below would tell the two apart."
+)
+
 WHY_ONE_SETTING_CARRIES_THE_CONTROL = (
     "The control was injected into one setting's take rather than into each, and the setting is "
     "named beside this. It cannot be otherwise: a take that already carries a modulation ends up "
@@ -325,6 +334,7 @@ def record(
     searched_hz: tuple[float, float],
     control: dict | None,
     control_taken_from: str | None,
+    channel: dict | None = None,
 ) -> dict:
     """The record a vibrato run leaves: its rows, and what the control does not reach.
 
@@ -348,6 +358,7 @@ def record(
         "takes": takes,
         "method": METHOD,
         "searched_hz": list(searched_hz),
+        **({"channel": channel} if channel is not None else {}),
         "control": control,
         "control_taken_from": control_taken_from,
         **(

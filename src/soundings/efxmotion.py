@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import motion
-from .takes import loudest, read
+from .takes import channel, channel_across, read
 
 METHOD = (
     "For each insertion effect the unit accepts, the same note was recorded with the part routed "
@@ -62,6 +62,16 @@ WHY_ONE_PAIR = (
     "nothing here that it buys elsewhere, and the control is what stands in for it."
 )
 
+WHY_CHANNEL = (
+    "Which channel of the interface each pair of takes was read from, and the highest each "
+    "channel of that pair reached. One channel for the pair rather than the loudest of each take: "
+    "the measurement subtracts the dry take from the wet one, and an interface carries inputs the "
+    "unit is not on which are not silent, so a take whose output fell below one of them would be "
+    "answered from that input and subtracted from a different one. What came back would be a "
+    "residual of nothing, and the control injected into the same pair is the only thing that "
+    "would have caught it."
+)
+
 WHY_MISSING = (
     "These are types the unit accepts that no pair of takes was found for, so the survey below "
     "says nothing about them at all. They are listed because a survey reports on what it was "
@@ -86,6 +96,10 @@ class TypeMotion:
 
     detectable_ms: list[float] | None = None
     return_level_db: float | None = None
+    channel: int = 0
+    channel_db: list[float] = field(default_factory=list)
+    """Which interface channel both takes were read from, and what each reached."""
+
     track: dict = field(default_factory=dict)
 
     @property
@@ -105,6 +119,7 @@ class TypeMotion:
             "found_in": self.where,
             "control_detectable_ms": self.detectable_ms,
             "return_level_db": self.return_level_db,
+            "channel": {"read": self.channel, "reached_db": self.channel_db},
             "track": self.track,
         }
 
@@ -142,7 +157,11 @@ def measure_type(
     wet, wet_rate = read(wet_path)
     if dry_rate != wet_rate:
         raise ValueError(f"{type_id}: takes at {dry_rate} and {wet_rate} Hz")
-    dry, wet = loudest(dry), loudest(wet)
+    # One channel for the pair, not one for each. The measurement below subtracts
+    # the dry take from the wet one, so two takes read from different inputs
+    # subtract one input from another and leave a residual of nothing.
+    picked, reached = channel_across(dry, wet)
+    dry, wet = channel(dry, picked), channel(wet, picked)
 
     found = motion.measure(
         dry, wet, dry_rate, search_ms=search_ms, rate_range=rate_range, lead_s=lead_s
@@ -192,6 +211,8 @@ def measure_type(
         where=where,
         detectable_ms=vouched["detectable_ms"],
         return_level_db=vouched["return_level_db"],
+        channel=picked,
+        channel_db=reached,
         track=found.track.to_json(),
     )
 

@@ -171,16 +171,24 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
     from pathlib import Path
 
     from .. import vibrato
-    from ..takes import loudest, read
+    from ..takes import channel, channel_reaching, read
 
     root = Path(args.takes)
     manifest = json.loads((root / "takes-manifest.json").read_text())
     search = (args.min_rate, args.max_rate)
 
+    # One channel for the whole run, chosen from the takes that reached highest.
+    # Per take, a setting that turns the part down far enough is answered from an
+    # input the unit is not on -- and a pitch track of an idle preamp finds no
+    # vibrato, which is the same answer as a setting that has none.
+    picked, reached = channel_reaching(root, [e["file"] for e in manifest.get("takes", [])])
+
     by_setting: dict[str, list] = {}
     for entry in manifest.get("takes", []):
         frames, sample_rate = read(root / entry["file"])
-        found = vibrato.measure(loudest(frames), sample_rate, lead_s=args.lead, search_hz=search)
+        found = vibrato.measure(
+            channel(frames, picked), sample_rate, lead_s=args.lead, search_hz=search
+        )
         key = f"{entry['stimulus']} at {entry['setting']}"
         by_setting.setdefault(key, []).append(found)
         print(f"  {key} take {entry['take']}: {found.describe()}")
@@ -196,7 +204,9 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
     if quiet is not None:
         entry = next(e for e in manifest["takes"] if f"{e['stimulus']} at {e['setting']}" == quiet)
         frames, sample_rate = read(root / entry["file"])
-        vouched = vibrato.control(loudest(frames), sample_rate, lead_s=args.lead, search_hz=search)
+        vouched = vibrato.control(
+            channel(frames, picked), sample_rate, lead_s=args.lead, search_hz=search
+        )
         print(
             f"\ncontrol, injected into {quiet}: recovered "
             f"{vouched['depths_recovered_cents'] or 'nothing'} of "
@@ -211,6 +221,7 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
             searched_hz=search,
             control=vouched,
             control_taken_from=quiet,
+            channel={"read": picked, "reached_db": reached, "why": vibrato.WHY_CHANNEL},
         ),
     )
     return 0

@@ -125,6 +125,7 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
             "method": efxmotion.METHOD,
             "one_pair_per_type": efxmotion.WHY_ONE_PAIR,
             "nothing_is_named": efxmotion.NOT_NAMED,
+            "why_channel": efxmotion.WHY_CHANNEL,
             "moving": piles["moving"],
             "static": piles["static"],
             "could_not_say": {

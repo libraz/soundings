@@ -93,6 +93,33 @@ def channel_levels(samples: np.ndarray) -> list[float]:
     return [round(float(20.0 * np.log10(max(float(v), 1e-12))), 1) for v in rms]
 
 
+def channel_across(*samples: np.ndarray) -> tuple[int, list[float]]:
+    """One channel for takes that are going to be compared, and what each reached.
+
+    **Two takes compared must be read from one input.** A measurement that
+    subtracts one take from another, or tracks one against the other, is a
+    measurement of the difference between them -- and an interface carries inputs
+    the unit is not on which are not silent, so a take whose output falls below one
+    of them is answered from that input instead. Each take choosing its own loudest
+    channel then subtracts one input from a different one, and what comes back is
+    not a residual of anything.
+
+    The highest each channel reached across all of them, so a take the effect made
+    quiet does not move the choice: that is the direction that loses the unit to an
+    idle input. `channel_reaching` is the same choice made from files on disk,
+    where the takes are too many to hold at once.
+    """
+    highest: list[float] = []
+    for frames in samples:
+        levels = channel_levels(frames)
+        highest = (
+            levels if not highest else [max(a, b) for a, b in zip(highest, levels, strict=True)]
+        )
+    if not highest:
+        raise ValueError("no take to choose a channel from")
+    return int(np.argmax(highest)), highest
+
+
 def channel_reaching(
     root: str | Path, names, *, seconds: float = 2.0
 ) -> tuple[int, list[float]]:
@@ -258,6 +285,7 @@ __all__ = [
     "Store",
     "capturing",
     "channel",
+    "channel_across",
     "channel_levels",
     "channel_reaching",
     "listing",

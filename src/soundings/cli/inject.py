@@ -178,12 +178,18 @@ def cmd_transfer(args: argparse.Namespace) -> int:
     if args.prepare and not _put_in_state(args):
         return 1
 
-    reference = None
+    reference, reference_channel = None, None
     if args.reference:
         samples, rate = takes.read(args.reference)
         if rate != args.rate:
             raise SystemExit(f"the reference was captured at {rate} Hz, this run at {args.rate}")
-        reference = probe.deconvolve(takes.loudest(samples), sweep)
+        # Named rather than only taken. The sweep below is read from the channels
+        # the invocation gives, so the one channel here that is chosen by loudness
+        # is the only place this run could answer from an input nobody plugged
+        # anything into, and a reference is divided out of every result.
+        picked, reached = takes.channel_across(samples)
+        reference_channel = {"read": picked, "reached_db": reached}
+        reference = probe.deconvolve(takes.channel(samples, picked), sweep)
 
     store = takes.Store.open(args.save) if args.save else None
     captured = []
@@ -241,6 +247,7 @@ def cmd_transfer(args: argparse.Namespace) -> int:
             "in_channels": list(args.in_channels),
             "loopback": args.loopback,
             "reference": args.reference,
+            **({"reference_channel": reference_channel} if reference_channel else {}),
             "prepared": [
                 {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
             ],

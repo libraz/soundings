@@ -18,7 +18,7 @@ import json
 import numpy as np
 
 from soundings import efxmotion, motion
-from soundings.takes import write
+from soundings.takes import channel_levels, read, write
 
 SR = 48000
 
@@ -213,3 +213,64 @@ def test_a_type_missing_one_of_its_two_settings_is_left_out(tmp_path):
     )
 
     assert efxmotion.survey(tmp_path) == []
+
+
+def a_type_on_an_interface(root, name: str, dry: np.ndarray, wet: np.ndarray, *, idle) -> None:
+    """The same pair on an interface whose other input the unit is not plugged into.
+
+    Two channels per take: the unit on one, and an input nobody plugged anything
+    into on the other. The idle input is loud enough to be the louder of the two
+    in the take where the effect turned the unit down, which is the whole trap --
+    it is a different signal, so a residual taken across the two is a residual of
+    nothing.
+    """
+    directory = root / name
+    directory.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(11)
+    for stem, body in (("unpitched-0-00", dry), ("unpitched-1-00", wet)):
+        hiss = rng.standard_normal(body.size) * idle
+        write(directory / stem, np.stack([body, hiss], axis=1), SR)
+    (directory / "takes-manifest.json").write_text(
+        json.dumps(
+            {
+                "takes": [
+                    {"file": "unpitched-0-00.wav", "stimulus": "unpitched", "setting": "0"},
+                    {"file": "unpitched-1-00.wav", "stimulus": "unpitched", "setting": "1"},
+                ]
+            }
+        )
+    )
+
+
+def test_a_pair_is_read_from_one_channel_even_where_one_take_went_quiet(tmp_path):
+    """The defect: each take choosing its own loudest channel.
+
+    The wet take here is the dry one turned right down, which is what a type that
+    attenuates gives. Read per take, the quiet one is answered from the idle input
+    beside it and subtracted from the unit -- and the pair reports on two different
+    signals with nothing in the record to say so.
+    """
+    dry = material()
+    a_type_on_an_interface(tmp_path, "05-00", dry, dry * 0.002, idle=0.02)
+
+    quiet, _ = read(tmp_path / "05-00" / "unpitched-1-00.wav")
+    # The trap is real in this material rather than only described: the take the
+    # effect turned down is louder on the input the unit is not on.
+    assert int(np.argmax(channel_levels(quiet))) == 1
+
+    found = efxmotion.survey(tmp_path)
+
+    assert [f.channel for f in found] == [0]
+    assert len(found[0].channel_db) == 2
+    assert found[0].to_json()["channel"] == {"read": 0, "reached_db": found[0].channel_db}
+
+
+def test_the_channel_is_chosen_from_the_take_that_reached_highest(tmp_path):
+    """Not from an average over the pair, which a quiet take drags off the unit."""
+    dry = material()
+    a_type_on_an_interface(tmp_path, "06-00", dry, dry.copy(), idle=0.0005)
+
+    found = efxmotion.survey(tmp_path)
+
+    assert found[0].channel == 0
+    assert found[0].channel_db[0] > found[0].channel_db[1]

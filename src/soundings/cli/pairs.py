@@ -79,22 +79,40 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_decay)
 
 
-def _pair(dry_path: str, wet_path: str):
-    """Load two takes and hand back the loudest channel of each, plus the rate."""
-    from ..takes import loudest, read
+WHY_CHANNEL = (
+    "Which channel of the interface both takes were read from, and the highest each channel "
+    "reached across the two. One channel for the pair rather than the loudest of each take: this "
+    "measurement subtracts one take from the other, and an interface carries inputs the unit is "
+    "not on which are not silent, so a take whose output fell below one of them would be answered "
+    "from that input and subtracted from a different one -- leaving a residual of nothing that "
+    "reads as an effect doing nothing."
+)
+
+
+def _pair(dry_path: str, wet_path: str, *, on: int | None = None):
+    """Load two takes, read both from one channel, and say which and what each reached.
+
+    `on` names the channel instead of choosing one, which is what a second pair
+    read as a control over the first needs: a floor measured on the other leg of
+    the unit bounds a subtraction that was never made.
+    """
+    from ..takes import channel, channel_across, read
 
     dry, dry_rate = read(dry_path)
     wet, wet_rate = read(wet_path)
     if dry_rate != wet_rate:
         raise SystemExit(f"the two takes were captured at {dry_rate} and {wet_rate} Hz")
-    return loudest(dry), loudest(wet), dry_rate
+    chosen, reached = channel_across(dry, wet)
+    picked = chosen if on is None else on
+    said = {"read": picked, "reached_db": reached, "why": WHY_CHANNEL}
+    return channel(dry, picked), channel(wet, picked), dry_rate, said
 
 
 def cmd_motion(args: argparse.Namespace) -> int:
     """Say what an effect does over time, from a dry and a wet take of the same note."""
     from .. import motion
 
-    dry, wet, rate = _pair(args.dry, args.wet)
+    dry, wet, rate, picked = _pair(args.dry, args.wet)
     span = (0.0, args.max_delay)
     rates = (args.min_rate, args.max_rate)
     found = motion.measure(dry, wet, rate, search_ms=span, rate_range=rates, lead_s=args.lead)
@@ -131,6 +149,7 @@ def cmd_motion(args: argparse.Namespace) -> int:
             "dry": str(args.dry),
             "wet": str(args.wet),
             "sample_rate": rate,
+            "channel": picked,
             "searched_rate_hz": [args.min_rate, args.max_rate],
             "lead_s": args.lead,
             "positive_control": vouched,
@@ -154,11 +173,11 @@ def cmd_decay(args: argparse.Namespace) -> int:
     """Say how long an effect's tail takes to die, per octave band."""
     from .. import decay as dec
 
-    dry, wet, rate = _pair(args.dry, args.wet)
+    dry, wet, rate, picked = _pair(args.dry, args.wet)
     tail, noise = dec.isolate_tail(dry, wet, rate, lead=args.lead)
     floor = None
     if args.floor:
-        first, second, floor_rate = _pair(*args.floor)
+        first, second, floor_rate, _ = _pair(*args.floor, on=picked["read"])
         if floor_rate != rate:
             print(f"the floor pair is {floor_rate} Hz and the dry and wet are {rate} Hz")
             return 1
@@ -175,6 +194,7 @@ def cmd_decay(args: argparse.Namespace) -> int:
             "wet": str(args.wet),
             "floor_from": [str(p) for p in args.floor] if args.floor else None,
             "sample_rate": rate,
+            "channel": picked,
             "lead_s": args.lead,
             **found.to_json(),
         },
