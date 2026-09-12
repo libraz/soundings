@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-12T23:45:17.256495+00:00",
+    "made_at": "2026-09-12T23:51:12.882900+00:00",
     "made_by": "backup/run-freq-reproduce.py, backup/write-freq-inference.py",
     "rounds": 1,
     "about": {
@@ -151,30 +151,30 @@
       "standing": true,
       "equivalent_under_this_test": false,
       "separated_by": {
-        "observable": "Where the entries of a printed range whose ends are not a whole number of third octaves apart fall.",
+        "observable": "Where the entries of a printed range fall whose ends bracket a number of third octaves that is not sixteen.",
         "predicts": {
-          "the named third octaves": "The entries are the same series whatever the ends, so a range of 100 - 8.0k holds twenty of them and cannot be a table of sixteen.",
-          "sixteen at equal ratios": "The entries are recomputed from the ends, so 100 - 8.0k holds sixteen of them at 0.43 octaves apart and none of them is a named third octave."
+          "the named third octaves": "The entries are the series whatever the ends, so 100 - 8.0k holds twenty of them. Twenty entries cannot be reached by a stride of eight, so the stride is six and the last eight settings return the last entry -- which is the shape the rate table already turned out to have.",
+          "sixteen at equal ratios": "The entries are recomputed from the ends, so 100 - 8.0k holds sixteen at 0.42 octaves apart, the stride stays eight, and none of the entries is a named third octave."
         },
-        "divergence": "0.19 octaves at the fourth entry, growing to 0.43 at the eighth",
-        "sensitivity_here": "One twelfth-octave band, 0.083 octaves, which is what the run resolves a peak to",
-        "margin": 2.3,
+        "divergence": "0.21 octaves at setting 72 and 0.27 at setting 96, on top of a stride of six against a stride of eight",
+        "sensitivity_here": "One twelfth-octave band, 0.083 octaves, which is what the run resolves a feature to",
+        "margin": 3.2,
         "run": {
           "stage": "efx-bands",
-          "type": "11 03",
-          "address": "40 03 05",
+          "type": "01 20",
+          "address": "40 03 03",
           "settings": [
             0,
-            8,
+            12,
             24,
-            40,
-            56,
+            48,
             72,
-            88,
-            104,
-            120
+            96,
+            114,
+            120,
+            127
           ],
-          "stimulus": "the same held note the equaliser sweeps used",
+          "stimulus": "A held note, as the equaliser sweeps used. This slot is a phaser's manual frequency and what it moves is a notch rather than a peak, so the run must hold the phaser's rate at its slowest first and the record has to say it did: a notch that is sweeping while the take runs averages to no notch at all.",
           "takes": 13,
           "minutes": 4
         }
@@ -544,8 +544,8 @@
     },
     {
       "what": "The other thirty-four slots the page prints a frequency range against.",
-      "why": "Eight of them are printed 200 - 6.3k like these two and would be the same table if the range is what chooses it. Twenty-six are printed with other ends, and one of those ends -- 100 - 8.0k -- brackets twenty third octaves, which sixteen entries cannot hold. None of them has been measured.",
-      "what_would": "One efx-bands sweep of a slot printed 100 - 8.0k, at nine settings. Either it holds twenty entries at a stride that is not a power of two, or the entries are not the named series, and the two answers are 0.19 octaves apart at the fourth entry against a resolution of 0.083."
+      "why": "Six others are printed 200 - 6.3k, at five other types, and would be this same table if the printed range is what chooses it -- which is the whole of what `chosen_by` in the model asserts and none of it is measured. Twenty-eight are printed with other ends. One of those, 100 - 8.0k, brackets twenty third octaves, which a stride of eight cannot reach; six of the thirty-six slots carry it and every one of them is a phaser's manual frequency. None of the thirty-four has been measured.",
+      "what_would": "One efx-bands sweep of a slot printed 100 - 8.0k at nine settings, which is the first alternative above and is queued. It answers two things at once: whether the entries are the named series, and whether a table that will not divide the byte by a power of two takes a stride of six and leaves the last eight settings on its last entry."
     },
     {
       "what": "Whether the Q byte indexes its printed table the same way.",
