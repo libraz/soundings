@@ -83,6 +83,10 @@ can be identified from rather than a summary of it:
   endpoints
 - the quantisation visible in that curve, since a step is a fact about the
   machine and an interpolation over it is not
+- the angle it turns each band by, where the takes on disk carry one. A band
+  energy and a phase are two different things about one effect, and two shapes
+  that pass the same energy in every band and answer a step differently are one
+  measurement under the first and two under the second
 
 ## What completion does not require
 
