@@ -107,6 +107,15 @@ RUNS = (
             ("40 03 16", r"held-126-level-(?P<value>\d+)-00"),
         ),
     },
+    {
+        # The output level row again, from the run that asked it at every value
+        # and in a different session. The band records of the two runs are two
+        # resolutions of one question; here they are two draws of one answer, and
+        # a row that turns no angle is worth having twice from separate takes.
+        "dir": "where-the-level-steps",
+        "type": "01 00",
+        "rows": (("40 03 16", r"held-126-level-(?P<value>\d+)-00"),),
+    },
 )
 
 

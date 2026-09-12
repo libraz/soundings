@@ -162,6 +162,22 @@ RUNS = (
             {"slot": "40 03 16", "setting": r"held-126-level-(?P<value>\d+)-00"},
         ),
     },
+    {
+        # The same slot as the last entry of the run above, asked at every one of
+        # its values instead of on a ladder. Its own run and its own record: the
+        # two were taken in different sessions, so they carry different floors,
+        # and a ladder folded into a dense sweep would be read as one measurement
+        # whose gaps happened to be narrower in places.
+        "dir": "where-the-level-steps",
+        "type": "01 00",
+        "reference": r"held-126-flat-\d+-00",
+        "control": r"held-126-bypassed-\d+-00",
+        "silence": r"held-126-silence-\d+-00",
+        "held": ROUTED + FLAT_GAINS,
+        "swept": (
+            {"slot": "40 03 16", "setting": r"held-126-level-(?P<value>\d+)-00"},
+        ),
+    },
 )
 
 
