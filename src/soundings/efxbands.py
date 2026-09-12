@@ -34,6 +34,16 @@ wrong profile, with nothing in the figures to say the reading changed channel. T
 channel is chosen from the reference takes, where the unit is certainly sounding,
 and every take that disagrees with that choice is named.
 
+**The band set is a resolution, and the same takes read at two of them are two
+records.** A band wider than the deviation inside it averages that deviation with
+what is beside it and reports it shallower than it was, and a deviation still
+growing where the bands run out is reported as though it had stopped there. Both
+look like ordinary figures. So the width of a band and the ends of the set are
+stated per reading -- how far the profile had levelled off where the set ended,
+and how wide it was around its largest -- rather than left for a reader to infer
+from a centre list, and a set that answers one row's question badly is rerun over
+the same takes instead of being argued with.
+
 **No filter, no corner, no shape.** Which curve these bands lie on, where a shelf
 hinges, what order it is -- that is a fit, and the fit is not made here. The
 printed range for the address lives in `documents/`, is evidence about a page
@@ -70,6 +80,47 @@ for both of this type's shelves -- an octave band centred between them would
 report one number for either.
 """
 
+TWELFTH_OCTAVES = tuple(round(1000.0 * 2 ** (k / 12), 1) for k in range(-64, 49))
+"""Twelfth octaves from about 25 Hz to 16 kHz, for what a third octave averages away.
+
+Four times finer than the set above and reaching two octaves below it, which is
+two different limits of that set rather than one. A deviation that is still
+growing at the lowest band is reported as though it had stopped there, and a
+deviation narrower than a band is reported shallower than it is; a third octave
+does both to this type, and the same takes answer at this resolution with no
+machine attached.
+
+**Where it starts is a measurement, not a preference.** The stimulus is noise and
+its bands are read against the run's own repeats of one setting; those repeats
+agree to within about a tenth of a decibel above 80 Hz, a few tenths down to
+25 Hz, and more than a decibel by 20 Hz, which is where a band stops being able to
+report anything smaller than what it fails to repeat. The stimulus itself is still
+fifteen decibels above the same chain's silence at 20 Hz, so what ends the set
+below is the repeatability and not the reach.
+
+**Where it ends is a default and not a bound.** What a band above 16 kHz can
+report depends on the unit's own output band and on the stimulus, and both are
+measured rather than assumed: on the machine this was written against, the takes
+stand thirty decibels above the same chain's silence at 16 kHz and are level with
+it by 18, so a band above the set would report the converter. A run whose unit
+reaches further is given its own centres.
+
+Anchored on 1000 Hz so that every fourth centre is a third octave of the same
+series and a reader can lay the two records of one sweep against each other.
+"""
+
+BAND_SETS = {
+    "third-octave": (THIRD_OCTAVES, 1 / 3),
+    "twelfth-octave": (TWELFTH_OCTAVES, 1 / 12),
+}
+"""The sets a run can ask for by name, each with the width its centres are read at.
+
+The width belongs to the set rather than being a second choice beside it, because
+the two only mean anything together: twelfth-octave centres read as third-octave
+bands are the coarse measurement sampled four times as densely, which looks like a
+finer reading of a narrow deviation and is not one.
+"""
+
 QUESTION = (
     "What one insertion effect type's parameter does to the level of each third "
     "octave band, at each setting of the byte."
@@ -98,7 +149,15 @@ LIMITS = (
     "on trust. Band energy is measured over the held part of the take only, so a "
     "setting whose effect is in the attack or the release is not in these figures at "
     "all. A band the stimulus does not reach cannot report what the effect did there, "
-    "which is a limit of the stimulus and not a bound on the unit."
+    "which is a limit of the stimulus and not a bound on the unit. "
+    "Every figure is bounded by the width of a band and by where the set ends as well. "
+    "A deviation narrower than one band is averaged with what is beside it and read "
+    "shallower than it is, so where `half_below_hz` and `half_above_hz` are a band or "
+    "two apart the `largest_db` beside them is a lower bound rather than a height; and "
+    "where `settled_below_db` or `settled_above_db` is not near zero the profile was "
+    "still changing when the bands ran out, so the largest figure is where the set "
+    "ended rather than where the effect did. Both are answered by reading the same "
+    "takes again at another resolution, not by reading further into these figures."
 )
 
 NOT_HERE = (
@@ -113,7 +172,14 @@ WHY_REFERENCE = (
     "it its floor. Taken in the same session rather than carried from an earlier run: "
     "what a noise stimulus fails to repeat belongs to the evening it was recorded in, "
     "and a deviation read against another run's floor is read against a reference that "
-    "was never in the room."
+    "was never in the room. "
+    "The takes here cannot be read as a setting to show what the reading returns for "
+    "one that holds nothing: a repeat read against the mean of the others differs from "
+    "it by no more than the spread those same repeats drew the floor from, so it "
+    "clears that floor in no band and would publish a control that cannot fire. What "
+    "does show it is a run's own null -- the same byte swept with the stage it shapes "
+    "turned off -- which is a separate record made from separate takes, and at this "
+    "band set those nulls return a few tenths of a decibel."
 )
 
 WHY_CONTROL = (
@@ -163,6 +229,21 @@ WHY_OTHER = (
     "and `channel.reference_db` is what a reader checks that against."
 )
 
+WHY_SPAN = (
+    "Four figures per reading that say what the band set could and could not see of "
+    "the profile, so that `largest_db` is read as a height where it is one. "
+    "`half_below_hz` and `half_above_hz` are the nearest band on each side of the "
+    "largest where the deviation had fallen to less than half of it, and either is "
+    "null where it had not fallen that far before the bands ran out -- which is what a "
+    "profile that levels off rather than returning looks like, and is not the same as "
+    "a narrow one. `settled_below_db` and `settled_above_db` are how much the "
+    "deviation was still changing over the outermost third octave at each end of the "
+    "set: near zero says the profile had levelled off inside the bands, and anything "
+    "else says the largest figure is where the set ended. None of the four is a "
+    "corner, a width or an order -- a filter would give each of them a name, and "
+    "naming them is the fit this record does not make."
+)
+
 WHY_HELD = (
     "What else the run had written when it took these readings. A band profile is the "
     "whole chain's, so a parameter read with another of the type's stages moved and "
@@ -182,21 +263,34 @@ def _loudness_db(samples, index: int) -> float:
     return float(20.0 * np.log10(max(float(np.sqrt((body**2).mean())), 1e-12)))
 
 
-def energies(body: np.ndarray, rate: int, centres=THIRD_OCTAVES) -> list[float]:
+def energies(
+    body: np.ndarray, rate: int, centres=THIRD_OCTAVES, width_octaves: float = 1 / 3
+) -> list[float]:
     """Energy per band, in dB, summed over the bins the band covers.
 
     Zero padded well past the take's own resolution so that the lowest band still
     has bins in it to sum: at a hundred hertz a third octave is twenty three hertz
     wide, which a transform of the take's own length resolves into a handful.
+
+    **How wide a band is does not follow from where its centre is.** A set of
+    centres a twelfth of an octave apart can be read as bands a twelfth wide, which
+    is a finer measurement, or as third-octave bands sampled four times as densely,
+    which is the same measurement read at more points -- and the two differ most on
+    exactly the narrow deviation the finer set was asked for. So the width is given
+    rather than taken from the spacing, and it is in the record beside the centres.
     """
     win = np.hanning(body.size)
     power = np.abs(np.fft.rfft(body * win, n=1 << 19)) ** 2
     freq = np.fft.rfftfreq(1 << 19, 1.0 / rate)
+    # Sliced rather than masked. The bins are already in order, so a band is a
+    # range of them and not a test over all of them -- which is what lets a set of
+    # a hundred bands cost what a set of twenty does over a directory this size.
+    edge = 2 ** (width_octaves / 2)
     out = []
     for centre in centres:
-        lo, hi = centre / 2 ** (1 / 6), centre * 2 ** (1 / 6)
-        inside = (freq >= lo) & (freq < hi)
-        total = float(power[inside].sum()) if inside.any() else 0.0
+        first = int(np.searchsorted(freq, centre / edge, side="left"))
+        last = int(np.searchsorted(freq, centre * edge, side="left"))
+        total = float(power[first:last].sum())
         out.append(round(10.0 * np.log10(max(total, 1e-30)), 3))
     return out
 
@@ -211,6 +305,7 @@ def _profile(
     trim_s: float,
     hold_s: float | None,
     centres,
+    width_octaves: float,
 ) -> tuple[dict[int, list[float]], dict[int, float], float, int]:
     """Every channel asked for, out of one read of the take.
 
@@ -224,10 +319,56 @@ def _profile(
     bands, heard = {}, {}
     for index in channels:
         body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
-        bands[index] = energies(body, rate, centres)
+        bands[index] = energies(body, rate, centres, width_octaves)
         heard[index] = round(_loudness_db(samples, index), 1)
     own = int(np.argmax(takes.channel_levels(samples)))
     return bands, heard, round(hold, 3), own
+
+
+def _settled(moved: list[float], centres, *, low: bool) -> float | None:
+    """How much the deviation was still changing where the bands ran out.
+
+    Read over the outermost third octave rather than the outermost band, so that
+    the figure means the same thing whatever the set's spacing is and so that one
+    band's own scatter does not decide it. Near zero says the profile had levelled
+    off inside the set; anything else says the largest deviation is where the bands
+    ended, and nothing read at the edge can tell those two apart on its own.
+    """
+    step = 2 ** (1 / 3)
+    if low:
+        end, inner = 0, next(
+            (j for j, c in enumerate(centres) if c >= centres[0] * step), None
+        )
+    else:
+        end, inner = -1, next(
+            (
+                j
+                for j in range(len(centres) - 1, -1, -1)
+                if centres[j] <= centres[-1] / step
+            ),
+            None,
+        )
+    return None if inner is None else round(moved[end] - moved[inner], 2)
+
+
+def _span(moved: list[float], centres, largest_db, largest_at) -> dict:
+    """How wide the deviation was around its largest, and whether it levelled off."""
+    if largest_db is None:
+        return dict.fromkeys(
+            ("half_below_hz", "half_above_hz", "settled_below_db", "settled_above_db")
+        )
+    peak = list(centres).index(largest_at)
+    half = abs(largest_db) / 2.0
+    return {
+        "half_below_hz": next(
+            (centres[j] for j in range(peak, -1, -1) if abs(moved[j]) < half), None
+        ),
+        "half_above_hz": next(
+            (centres[j] for j in range(peak, len(moved)) if abs(moved[j]) < half), None
+        ),
+        "settled_below_db": _settled(moved, centres, low=True),
+        "settled_above_db": _settled(moved, centres, low=False),
+    }
 
 
 def _against(profile, reference, floor, centres) -> dict:
@@ -251,6 +392,7 @@ def _against(profile, reference, floor, centres) -> dict:
         "outside_the_floor_hz": outside,
         "largest_db": largest[0],
         "largest_at_hz": largest[1],
+        **_span(moved, centres, largest[0], largest[1]),
     }
 
 
@@ -276,6 +418,7 @@ def read_directory(
     stimulus: str | None = None,
     held: list[dict] | None = None,
     bands_hz=THIRD_OCTAVES,
+    band_width_octaves: float = 1 / 3,
     channel: int | None = None,
     lead_s: float = 0.6,
     trim_s: float = 0.5,
@@ -330,6 +473,7 @@ def read_directory(
         bands, loud, hold, own = _profile(
             where, name, entry, channels=wanted,
             lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, centres=centres,
+            width_octaves=band_width_octaves,
         )
         if own != used and name not in elsewhere:
             elsewhere.append(name)
@@ -369,6 +513,7 @@ def read_directory(
         averaged([bands[beside] for bands, _, _ in flat_read]) if beside is not None else None
     )
     flat_heard = round(float(np.mean([loud[used] for _, loud, _ in flat_read])), 1)
+
 
     def apart(bands: dict[int, list[float]]) -> dict:
         """How far the second channel's own deviation is from the first channel's.
@@ -437,6 +582,8 @@ def read_directory(
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
         "bands_hz": centres,
+        "band_width_octaves": round(band_width_octaves, 6),
+        "why_span": WHY_SPAN,
         "channel": {
             "read": used,
             "chosen_by": "given" if channel is not None else "loudest in the reference takes",

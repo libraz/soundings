@@ -18,6 +18,11 @@ from pathlib import Path
 
 from . import options, report
 
+BAND_SET_NAMES = ("third-octave", "twelfth-octave")
+"""The band sets `efx-bands` offers by name, spelled here so the parser can be
+built without loading the reader. `efxbands.BAND_SETS` is what they resolve to,
+and a test holds the two lists against each other rather than a reader doing it."""
+
 
 def register(sub) -> None:
     p = sub.add_parser(
@@ -222,6 +227,16 @@ def register(sub) -> None:
         help="a band centre to measure, repeatable. Defaults to third octaves from 100 "
         "to 12500, because an octave band cannot separate two corners printed one octave "
         "apart",
+    )
+    p.add_argument(
+        "--band-set",
+        choices=BAND_SET_NAMES,
+        default="third-octave",
+        help="how fine to read, where --band is not given. A band wider than the "
+        "deviation in it reports that deviation shallower than it was, and a deviation "
+        "still growing where the set ends is reported as though it had stopped there; "
+        "twelfth-octave is four times finer and reaches two octaves lower, over the "
+        "same takes",
     )
     p.add_argument(
         "--channel",
@@ -480,9 +495,36 @@ def cmd_efx_rate(args) -> int:
     return 0
 
 
+def _span_said(reading) -> str:
+    """Where the deviation had halved, and whether it levelled off before the end.
+
+    An open end is printed as such rather than left blank: a profile that never
+    comes back down inside the set and one that comes back down at the last band
+    are different answers, and a blank reads as the second.
+    """
+    below, above = reading["half_below_hz"], reading["half_above_hz"]
+    if below is None and above is None:
+        return ""
+    ends = [
+        reading["settled_below_db"] if below is None else None,
+        reading["settled_above_db"] if above is None else None,
+    ]
+    still = max((abs(v) for v in ends if v is not None), default=None)
+    return (
+        f"  half {'<' if below is None else f'{below:.0f}'}"
+        f"-{'>' if above is None else f'{above:.0f}'} Hz"
+        + ("" if still is None else f" ({still:.2f} dB left at the end)")
+    )
+
+
 def cmd_efx_bands(args) -> int:
     """What one parameter did to each band, read from takes already saved."""
     from .. import efxbands
+
+    # Centres given one at a time are read a third of an octave wide, because a
+    # list of centres does not say how far each reaches and nothing else in the
+    # invocation would say it either.
+    named = efxbands.BAND_SETS[args.band_set]
 
     def said(reading) -> None:
         largest = reading["largest_db"]
@@ -495,6 +537,7 @@ def cmd_efx_bands(args) -> int:
                 else f"{'inside the floor':>25s}"
             )
             + f"  {moved:2d} bands  {reading['heard_db']:.0f} dBFS"
+            + _span_said(reading)
         )
 
     found = efxbands.read_directory(
@@ -509,7 +552,8 @@ def cmd_efx_bands(args) -> int:
         held=[
             {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
         ],
-        bands_hz=args.band or efxbands.THIRD_OCTAVES,
+        bands_hz=args.band or named[0],
+        band_width_octaves=1 / 3 if args.band else named[1],
         channel=args.channel,
         lead_s=args.lead,
         hold_s=args.hold,

@@ -57,6 +57,179 @@ def noise(seed: int, *, cut_at: float | None = None, by_db: float = 0.0) -> np.n
     return np.stack([body, body * 0.5], axis=1)
 
 
+LONG = 12.0
+"""How long a take the shapes below are put into.
+
+Longer than the takes above because these are read a twelfth of an octave at a
+time, and how well a noise stimulus repeats itself in a band is how many bins the
+band holds. Over a take the length of the others, the lowest of the set below
+holds about ninety of them and fails to repeat by half a decibel, which is the
+size of the differences these tests are about.
+"""
+
+
+def shaped(seed: int, gain_db, seconds: float = LONG) -> np.ndarray:
+    """Noise with a known gain applied at every frequency.
+
+    The profile is put in exactly, so what the reading returns can be held against
+    the shape rather than against another reading of it: a band set that averages
+    a deviation away returns a figure, and only a known input says it is the wrong
+    one.
+    """
+    rng = np.random.default_rng(seed)
+    body = rng.standard_normal(int(seconds * SR)) * 0.1
+    spectrum = np.fft.rfft(body)
+    freq = np.maximum(np.fft.rfftfreq(body.size, 1.0 / SR), 1.0)
+    spectrum *= 10.0 ** (np.asarray(gain_db(freq), dtype=float) / 20.0)
+    body = np.fft.irfft(spectrum, n=body.size)
+    return np.stack([body, body * 0.5], axis=1)
+
+
+def between(low: float, high: float, by_db: float):
+    """A gain of `by_db` from `low` to `high` and nothing outside it."""
+    return lambda freq: np.where((freq >= low) & (freq < high), by_db, 0.0)
+
+
+FINE = tuple(c for c in efxbands.TWELFTH_OCTAVES if 2000.0 <= c <= 16000.0)
+SHAPED_AT = 8000.0
+"""A twelfth-octave set around the band the shapes below are put in.
+
+High in the set rather than low, because a band a twelfth of an octave wide holds
+as many bins as its centre is high: what these tests are about is a difference of
+a decibel between two bands, and at the bottom of the set a noise stimulus fails
+to repeat itself by more than that.
+"""
+
+
+@pytest.fixture
+def profiles(tmp_path):
+    """A run whose sweep is four known shapes rather than one band.
+
+    Every take carries the reference takes' own noise, so the difference between a
+    take and the reference is the shape and nothing else.
+    """
+    store = takes.Store.open(tmp_path / "shapes")
+    for index in range(4):
+        store.keep(
+            FakeRecording(shaped(index, lambda freq: np.zeros_like(freq))),
+            stimulus="held",
+            setting=f"flat-{index:02d}",
+            take=0,
+        )
+    narrow = 2 ** (1 / 24)
+    wide = 2 ** 0.5
+    for value, gain in (
+        # Nothing done to it, and a draw of its own rather than one of the repeats
+        # above: a repeat read against the mean of the others differs from it by no
+        # more than the spread the floor came from, so it could never clear that
+        # floor and would say the reading was cleaner than it is.
+        (0, lambda freq: np.zeros_like(freq)),
+        # Narrower than a third octave and wider than a twelfth: one set can see
+        # how deep it is and the other cannot.
+        (1, between(SHAPED_AT / narrow, SHAPED_AT * narrow, -12.0)),
+        # An octave wide, so the deviation comes back on both sides inside the set.
+        (2, between(SHAPED_AT / wide, SHAPED_AT * wide, -12.0)),
+        # Down to the bottom of the set and level there, which is what a profile
+        # that never comes back looks like, and is not a narrow one.
+        (3, lambda freq: np.where(freq < SHAPED_AT, -12.0, 0.0)),
+        # Still deepening where the set ends, which is the other way the largest
+        # figure can be the band set's rather than the effect's. Twelve decibels
+        # to the octave, so a third of one is four.
+        (4, lambda freq: np.clip(12.0 * np.log2(freq / FINE[-1]), -48.0, 0.0)),
+    ):
+        store.keep(
+            FakeRecording(shaped(9 if value == 0 else 0, gain)),
+            stimulus="held",
+            setting=f"04-{value:03d}",
+            take=0,
+        )
+    store.close(question="a run of known shapes")
+    return tmp_path / "shapes"
+
+
+def profile(where, value: int, **extra):
+    found = efxbands.read_directory(
+        where,
+        type_id="01 00",
+        address="40 03 04",
+        setting=r"held-04-(?P<value>\d+)-00",
+        reference=r"held-flat-\d+-00",
+        **{"bands_hz": FINE, "band_width_octaves": 1 / 12, "hold_s": LONG - 1.2, **extra},
+    )
+    return next(r for r in found["readings"] if r["value"] == value)
+
+
+def test_a_deviation_narrower_than_a_band_is_read_shallower_than_it_is(profiles) -> None:
+    """The whole reason the same takes are read at a second resolution.
+
+    Twelve decibels taken out of a twelfth of an octave is twelve decibels. Read
+    through a band four times wider it is averaged with the untouched bins beside
+    it and comes back as about one, which is an ordinary looking figure with
+    nothing about it to say the band was the wrong size.
+    """
+    fine = profile(profiles, 1)
+    coarse = profile(
+        profiles, 1, bands_hz=(2000, 4000, 8000, 16000), band_width_octaves=1 / 3
+    )
+    assert fine["largest_db"] == pytest.approx(-12.0, abs=1.0)
+    assert coarse["largest_db"] == pytest.approx(-1.2, abs=0.5)
+
+
+def test_the_half_points_bracket_the_part_that_was_shaped(profiles) -> None:
+    found = profile(profiles, 2)
+    assert found["half_below_hz"] == pytest.approx(SHAPED_AT / 2**0.5, rel=0.06)
+    assert found["half_above_hz"] == pytest.approx(SHAPED_AT * 2**0.5, rel=0.06)
+
+
+def test_a_profile_that_never_comes_back_says_so_rather_than_naming_a_band(
+    profiles,
+) -> None:
+    """A null half point and a settled end are one answer, not a missing one."""
+    found = profile(profiles, 3)
+    assert found["half_below_hz"] is None
+    assert found["half_above_hz"] == pytest.approx(SHAPED_AT, rel=0.06)
+    assert found["settled_below_db"] == pytest.approx(0.0, abs=0.5)
+
+
+def test_a_profile_still_deepening_where_the_bands_end_says_how_much(profiles) -> None:
+    """Otherwise the largest figure reads as the effect's own and is the set's edge."""
+    found = profile(profiles, 4)
+    assert found["half_below_hz"] is None
+    # A third of an octave of a slope running twelve decibels to the octave.
+    assert found["settled_below_db"] == pytest.approx(-4.0, abs=0.7)
+
+
+def test_a_reading_inside_the_floor_has_no_span_to_report(directory) -> None:
+    found = read(directory)
+    flat = next(r for r in found["readings"] if r["value"] == 64)
+    assert flat["half_below_hz"] is None
+    assert flat["settled_below_db"] is None
+
+
+def test_a_setting_with_nothing_done_to_it_reads_far_below_one_with_a_shape(
+    profiles,
+) -> None:
+    """What the floor does not bound, at the resolution that needs it bounded.
+
+    `floor_db` is the spread of a handful of repeats, band by band, so a band where
+    those repeats happened to agree has a small floor and a deviation just outside
+    it is not thereby a reading. A take that holds nothing and was not one of the
+    repeats is the figure that says how much the finer set returns anyway.
+    """
+    nothing = profile(profiles, 0)
+    shape = profile(profiles, 2)
+    assert abs(nothing["largest_db"] or 0.0) < 0.25 * abs(shape["largest_db"])
+
+
+def test_every_band_set_the_command_line_offers_is_one_the_reader_has() -> None:
+    """Spelled in two files so the parser need not load the reader, held together here."""
+    from soundings.cli import blocks
+
+    assert set(blocks.BAND_SET_NAMES) == set(efxbands.BAND_SETS)
+    for centres, width in efxbands.BAND_SETS.values():
+        assert width > 0 and len(centres) == len(set(centres))
+
+
 @pytest.fixture
 def directory(tmp_path):
     """A run's worth of takes: four repeats of flat, a control, and a sweep."""
