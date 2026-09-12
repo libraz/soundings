@@ -1,0 +1,2213 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-12T23:14:09.444378+00:00",
+    "made_by": "backup/run-rate-reproduce.py, backup/write-rate-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 20",
+        "01 21",
+        "01 23",
+        "01 25",
+        "01 26",
+        "01 42",
+        "01 43",
+        "01 44",
+        "01 51",
+        "01 70",
+        "02 00",
+        "02 01",
+        "02 03",
+        "02 04",
+        "02 06",
+        "02 07",
+        "02 0A",
+        "04 00",
+        "04 03",
+        "05 00",
+        "11 05"
+      ],
+      "addresses": [
+        "40 03 04",
+        "40 03 06",
+        "40 03 07",
+        "40 03 09",
+        "40 03 0D",
+        "40 03 0F"
+      ]
+    }
+  },
+  "claim": "A rate byte does not drive a formula. It indexes a printed table of whole steps of a twentieth of a hertz, and there are two such tables, told apart by the range the page prints against the address. The narrow one is 128 entries of 0.05 Hz, from 0.05 to 6.40. The wide one shares those entries as far as 5.00 Hz at setting 99, then steps by 0.10 to 7.00 at 119 and by 0.50 to 10.00 at 125 -- 126 entries, so the last two settings of the byte have no entry of their own and return the last one. One table serves every type: the same twenty-one slots across nineteen effect types answer to it with no per-type constant anywhere.",
+  "named": null,
+  "why_not_named": "The tables are the claim and they are written out. A name for them would be a name for two lists of numbers, and it would suggest the lists came from somewhere this run has seen.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-slow.json",
+        "keys": [
+          "readings[value=0].rate_hz",
+          "readings[value=4].rate_hz"
+        ],
+        "values": [
+          0.05,
+          0.25
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-low.json",
+        "keys": [
+          "readings[value=8].rate_hz",
+          "readings[value=32].rate_hz",
+          "readings[value=64].rate_hz",
+          "readings[value=95].rate_hz"
+        ],
+        "values": [
+          0.4485,
+          1.6505,
+          3.2493,
+          4.7998
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-every.json",
+        "keys": [
+          "readings[value=99].rate_hz",
+          "readings[value=100].rate_hz",
+          "readings[value=119].rate_hz",
+          "readings[value=120].rate_hz",
+          "readings[value=125].rate_hz",
+          "readings[value=126].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          4.9994,
+          5.0989,
+          7.0009,
+          7.5008,
+          9.999,
+          9.999,
+          9.9993
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/04-00-0F-which-rate-table-005to640.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.65,
+          5.5497,
+          6.3994
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/04-03-0D-which-rate-table-005to640.json",
+        "keys": [
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          5.5494,
+          6.399
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-20-04-which-rate-table-005to100.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.6526,
+          6.101,
+          9.9985
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/02-01-09-rate-curve-0201.json",
+        "keys": [
+          "readings[value=99].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          4.9992,
+          9.9992
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/05-00-0F-which-rate-table-005to640.json",
+        "keys": [
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          5.5434,
+          6.3953
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "the 50 parameter rows whose data column reads 0.05 - 10.0",
+          "the 11 parameter rows whose data column reads 0.05 - 6.40"
+        ],
+        "read_as": "The printed pair is taken to name which of two tables an address uses, and nothing else -- not the spacing, not the number of entries, not whether the top is reached. Those come from the readings. Sixty-one addresses across thirty-eight types carry one of the two strings and no rate row carries a third."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A rate byte indexes a table the designer laid out, not a curve a routine computes.",
+        "why": "A hundred and twenty-eight entries of two bytes cost a quarter of a kilobyte of ROM; an exponential per parameter change costs a routine the control processor of that period would rather not carry.",
+        "would_be_wrong_if": "The 128 settings gave 128 distinct values on a smooth curve with no repeats and no change of spacing. Every setting of one slot was read: the spacing changes twice and the last two settings repeat the entry before them."
+      },
+      {
+        "claim": "Where a range is wider than the step can reach, the step coarsens near the top rather than the grid being made finer throughout.",
+        "why": "Resolution is spent where a player is listening. Below five hertz a twentieth is a musical distinction; above seven it is not, and the part has no floating point to spend on either.",
+        "would_be_wrong_if": "The wide range had turned out to be evenly divided, which is what the straight-line candidate says, or geometric. Both are in the catalogue and both lean."
+      }
+    ],
+    "community": []
+  },
+  "adds": "Each record says what one slot's byte did at the settings it was asked at, and each says in as many words that no law, no table and no verdict is in it and that the printed range beside it is evidence about a page rather than about the unit. This file is where the two are joined: that the readings of twenty-one slots are one table read through nineteen effects, that the printed pair picks which of two, and that the entries are what they are. None of that is in any record, and no rerun of a stage would produce it.",
+  "alternatives": [
+    {
+      "reading": "The wide table has 128 entries after all, the last three of which are all 10.00 Hz, rather than 126 entries with the last two settings clamped to the end of the list.",
+      "candidate": "stepped-table-per-printed-range",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": "The rate at settings 125, 126 and 127.",
+        "predicts": {
+          "126 entries with a clamp": "10.00 at all three.",
+          "128 entries ending flat": "10.00 at all three."
+        },
+        "sensitivity_here": "The run read all three and got 9.999, 9.999 and 9.9993, within the run's own repeatability of each other.",
+        "margin": 0,
+        "why_not_separable": "The two say the same thing at every setting the byte has. Nothing outside the part can tell a list that ran out from a list that ends flat, and no measurement of this unit will: the difference is in ROM, not in the air. Recording it as equivalent is the answer rather than a deferral.",
+        "run": null
+      }
+    },
+    {
+      "reading": "The wide table's second and third steps begin somewhere other than settings 100 and 120 -- the bend is real everywhere, but its position is only measured at one slot.",
+      "candidate": "stepped-table-per-printed-range",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "separated_by": {
+        "observable": "The rate at settings 116 through 124 at any wide-range slot other than 01 21 / 40 03 07.",
+        "predicts": {
+          "the bend at 119, as measured at 01 21": "7.00 at 119, 7.50 at 120.",
+          "the bend one entry earlier": "7.50 at 119, 8.00 at 120."
+        },
+        "sensitivity_here": "Half a hertz at seven is 0.10 octaves. The run resolves a rate to about 0.0001 octaves take to take, and one entry of the table there is 0.021 octaves, which is the coarser floor and the one that applies.",
+        "margin": 4,
+        "run": {
+          "stage": "efx-rate",
+          "type": "02 01",
+          "address": "40 03 09",
+          "settings": [
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124
+          ],
+          "minutes": 3,
+          "why_this_slot": "It already has a fifteen-point curve of its own, so the new settings join a sweep whose lower half is measured rather than standing alone, and its type prints one rate."
+        }
+      }
+    },
+    {
+      "reading": "The step is a twentieth of a hertz everywhere, and the wider printed range is what the page says rather than what the part does.",
+      "candidate": "stepped-table-one-step-throughout",
+      "standing": false,
+      "ruled_out_by": "It leans on seventeen of the twenty-one slots. It is right on every slot the page prints 0.05 - 6.40 for and wrong above setting 99 on every slot the page prints 0.05 - 10.0 for, which is where the two tables part -- so what it establishes is that the printed range is doing work, not that it is decoration."
+    },
+    {
+      "reading": "The printed pair are the ends of an evenly divided line in hertz.",
+      "candidate": "straight-line-between-the-printed-ends",
+      "standing": false,
+      "ruled_out_by": "It leans on seventeen of the twenty-one slots, and its median residual is a thousand times the winner's. It agrees with the winner exactly on the narrow range, because 128 steps of 0.05 reach 6.40 and an even division of 0.05 - 6.40 is the same numbers; the two are separated only by the wide range, and that is where it fails."
+    },
+    {
+      "reading": "The printed pair are the ends of a ratio scale, as an LFO usually is.",
+      "candidate": "geometric-between-the-printed-ends",
+      "standing": false,
+      "ruled_out_by": "It leans on every one of the twenty-one slots. It is the most plausible candidate on how a rate is heard and the worst on what the unit does, which is worth stating: nothing about this table was chosen for the ear."
+    }
+  ],
+  "refuted_by": "A reading at any setting of any admissible slot that is not the entry these tables give, by more than one entry. Or a wide-range slot whose bend sits somewhere other than settings 100 and 120. Or a rate row on the page carrying a printed range that is neither of the two, which would mean there is a third table this claim does not know about.",
+  "reproduces": {
+    "model": "inferences/models/rate-stepped-table-per-printed-range.json",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-rate/01-20-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-one-value-long-0121-400307.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-every.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-low.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-slow.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-slow2.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve-top.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-rate-curve.json",
+        "data/units/roland-sc8850-01/efx-rate/01-21-07-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-23-06-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-25-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-26-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-42-06-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-43-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-44-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-51-07-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/01-70-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-00-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-01-09-rate-curve-0201.json",
+        "data/units/roland-sc8850-01/efx-rate/02-01-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-03-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-04-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-06-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-07-09-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/02-0A-04-which-rate-table-005to100.json",
+        "data/units/roland-sc8850-01/efx-rate/04-00-0F-which-rate-table-005to640.json",
+        "data/units/roland-sc8850-01/efx-rate/04-03-0D-which-rate-table-005to640.json",
+        "data/units/roland-sc8850-01/efx-rate/05-00-0F-rate-slot-followup.json",
+        "data/units/roland-sc8850-01/efx-rate/05-00-0F-which-rate-table-005to640.json",
+        "data/units/roland-sc8850-01/efx-rate/11-05-09-which-rate-table-005to100.json"
+      ],
+      "generated_from": "Every efx-rate record whose type and address the page prints a rate for, merged per slot: a slot asked by a four-point check, a curve and a follow-up is one slot read three times, and where two files read the same setting both readings are kept so that a disagreement between takes shows up as a residual rather than being resolved by whichever file was read last.",
+      "excluded": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/*.json at 40 slots",
+          "why": "Not evidence about a rate table, and each says which of two reasons. Thirty-six sit on a type the page prints more than one rate for, and a take returns whichever modulator dominates it -- the archive's own note says nothing in the numbers says which. Four have readings that fall as the byte rises, or that the record's own controls stand behind fewer than two of. Every one of the forty is a run away from being evidence, and the run is the same one: silence the other stage."
+        }
+      ]
+    },
+    "domain": {
+      "settings": {
+        "01 21 40 03 07": "all 128",
+        "the other 20 slots": "between 2 and 16 settings each, 249 readings in all"
+      },
+      "stimulus": [
+        "A note held through the effect; the level and frequency of each of the take's strongest partials followed and searched for a period."
+      ],
+      "outside": "What the modulator's waveform is, how deep it goes and what it modulates. Whether the frequency the analysis found is the modulator's own or a multiple of it -- a triangle sweep passes each point twice per cycle, and this claim would read the same either way, so it is a claim about the table the byte indexes and not about what the LFO does with the entry. Any slot on a type with more than one modulator. Any type outside this unit."
+    },
+    "residual": {
+      "median": 0.00145,
+      "worst": 0.01013,
+      "unit": "share of the span the byte commands in that slot; the worst is in octaves",
+      "worst_at": {
+        "value": 3,
+        "hz": 0.1986
+      },
+      "structured": false,
+      "why": "None of the twenty-one slots has a residual that leans. The floor a lean is judged against here is the coarser of what the run resolved -- a few parts in a hundred thousand, take to take -- and what one entry of the table is worth, which is about two hundredths of an octave. Against the first alone every candidate leans, including the one whose entries the readings land on, because the instrument is three orders finer than the thing being identified. That is only safe because the step is measured: one slot was read at all 128 settings, so there is no room between them for entries a coarser sweep would have missed."
+    },
+    "gates": {
+      "measured_in": "octaves",
+      "gross": {
+        "passed": true,
+        "residual_over_span": 0.001,
+        "span": 7.644,
+        "ceiling": 0.2,
+        "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+      },
+      "qualitative": {
+        "passed": true,
+        "checked": [
+          {
+            "record": "01 20 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 20 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 20 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 1,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 2,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 3,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 4,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 5,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 6,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 7,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 8,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 8,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 9,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 10,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 11,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 12,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 13,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 14,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 15,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 16,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 16,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 17,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 18,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 19,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 20,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 21,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 22,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 23,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 24,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 24,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 25,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 26,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 27,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 28,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 29,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 30,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 31,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 33,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 34,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 35,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 36,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 37,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 38,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 39,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 40,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 41,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 42,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 43,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 44,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 45,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 46,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 47,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 48,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 48,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 49,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 50,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 51,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 52,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 53,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 54,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 55,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 56,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 57,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 58,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 59,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 60,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 61,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 62,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 63,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 64,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 64,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 65,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 66,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 67,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 68,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 69,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 70,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 71,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 72,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 73,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 74,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 75,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 76,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 77,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 78,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 79,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 80,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 80,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 81,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 82,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 83,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 84,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 85,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 86,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 87,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 88,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 89,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 90,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 91,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 92,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 93,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 94,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 94,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 95,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 95,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 96,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 96,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 96,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 96,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 97,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 98,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 100,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 100,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 101,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 102,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 103,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 104,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 104,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 105,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 106,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 107,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 108,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 108,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 109,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 111,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 112,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 112,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 112,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 113,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 114,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 115,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 116,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 116,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 117,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 118,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 119,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 120,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 120,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 121,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 122,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 123,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 124,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 124,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 125,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 126,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 21 40 03 07",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 23 40 03 06",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 23 40 03 06",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 23 40 03 06",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 25 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 25 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 25 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 26 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 26 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 26 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 42 40 03 06",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 42 40 03 06",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 43 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 43 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 43 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 44 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 44 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 51 40 03 07",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 70 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 70 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "01 70 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 00 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 00 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 16,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 48,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 64,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 80,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 96,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 100,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 119,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 01 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 03 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 03 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 04 40 03 09",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 04 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 04 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 06 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 07 40 03 09",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 07 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 07 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 0A 40 03 04",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 0A 40 03 04",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "02 0A 40 03 04",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 00 40 03 0F",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 00 40 03 0F",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 00 40 03 0F",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 03 40 03 0D",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 03 40 03 0D",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "04 03 40 03 0D",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 32,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 64,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 99,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 100,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 119,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 120,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 125,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "05 00 40 03 0F",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "11 05 40 03 09",
+            "value": 110,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          },
+          {
+            "record": "11 05 40 03 09",
+            "value": 127,
+            "property": "faster or slower than the slowest setting of the byte",
+            "unit": "faster",
+            "model": "faster",
+            "same": true
+          }
+        ],
+        "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
+      },
+      "power": {
+        "passed": true,
+        "ranking": [
+          {
+            "candidate": "stepped-table-per-printed-range",
+            "leaning_records": 0,
+            "worst_share_of_span": 0.00145
+          },
+          {
+            "candidate": "stepped-table-one-step-throughout",
+            "leaning_records": 17,
+            "worst_share_of_span": 0.23745
+          },
+          {
+            "candidate": "straight-line-between-the-printed-ends",
+            "leaning_records": 17,
+            "worst_share_of_span": 2.00523
+          },
+          {
+            "candidate": "geometric-between-the-printed-ends",
+            "leaning_records": 21,
+            "worst_share_of_span": 1.73424
+          }
+        ],
+        "decoy": "stepped-table-one-step-throughout",
+        "separation": 0.236,
+        "why": "The runner-up in the catalogue, scored on the same records, and whether it fails the gross gate the winner passed. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
+      },
+      "breakdown": {
+        "passed": true,
+        "breaks_down_at": null,
+        "leaning_records": null,
+        "records_the_run_did_not_reach": null,
+        "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
+      }
+    },
+    "verdict": "reproduces",
+    "ranking": [
+      {
+        "candidate": "stepped-table-per-printed-range",
+        "leaning_records": 0,
+        "worst_share_of_span": 0.00145
+      },
+      {
+        "candidate": "stepped-table-one-step-throughout",
+        "leaning_records": 17,
+        "worst_share_of_span": 0.23745
+      },
+      {
+        "candidate": "straight-line-between-the-printed-ends",
+        "leaning_records": 17,
+        "worst_share_of_span": 2.00523
+      },
+      {
+        "candidate": "geometric-between-the-printed-ends",
+        "leaning_records": 21,
+        "worst_share_of_span": 1.73424
+      }
+    ],
+    "decoy": "stepped-table-one-step-throughout"
+  },
+  "what_this_does_not_close": [
+    {
+      "what": "The forty slots that are not evidence here.",
+      "why": "Thirty-six of them sit on a type with more than one modulator, and the take hears whichever dominates. Four returned readings that fall as the byte rises, or that the record's controls stand behind fewer than two of.",
+      "what_would_close_it": "The efx-rate stage run again with the type's other modulating stages turned down, which the archive already does for some slots under the name `silence-the-other-stage`. Nothing new has to be built."
+    },
+    {
+      "what": "Whether the rotary types' rate slots use this table. Their readings move with the byte and sit a little below it, and the difference is not a constant ratio.",
+      "why": "A rotary has two rotors and accelerates, and the record's own limits say a take begun before it settles returns the ramp's average. Reading its shortfall as a different table would be reading the ramp as a parameter.",
+      "what_would_close_it": "The same slots with the other rotor silenced and a settle wait recorded, which one record already does. That is a rotary question, not a rate-table one, and it belongs to whichever claim takes on that class."
+    }
+  ],
+  "a_note_on_what_was_left_out": "Twenty-eight readings of the twenty-one admissible slots were left out by the records' own controls: a figure fewer than half the take's partials found, or a figure at or under the slowest rate the take was long enough to carry. Both exclusions are stated per reading in the run and neither looks at any model. The second is the one that matters: a take too short returns its analysis floor at every setting, which is stable, and stable is what makes it look like a byte that does nothing."
+}

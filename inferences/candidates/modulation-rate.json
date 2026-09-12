@@ -1,0 +1,62 @@
+{
+  "class": "modulation-rate",
+  "what_the_class_is": "Not an effect but one parameter of many of them: the byte that sets how fast a modulator runs. Sixty-one addresses across thirty-eight types take one, and the question is the same at every one of them -- what quantity does the byte stand for. The type the byte sits in does not enter: what is being identified is the map, not the chorus.",
+
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "The byte indexes a table. A hundred and twenty-eight entries of two bytes cost a quarter of a kilobyte, and computing an exponential per parameter change costs a routine the control processor would rather not have.",
+      "The table is printed. A manual states the range as a pair of decimals rather than as a curve because the entries were laid out by hand, in whole steps a person can read.",
+      "A range that its step cannot reach gets a coarser step near the top rather than a finer grid throughout. Uniform resolution over a wide range is what a floating-point part does.",
+      "The table is as long as the parameter needs and not as long as the byte. Where it ends short, the settings past the end return its last entry, because a bounds check that clamps is cheaper than one that wraps and safer than one that is missing."
+    ],
+    "would_be_wrong_if": "The readings turned out to lie on a smooth curve with a different value at every one of the 128 settings and no repeated entries anywhere, or the step between neighbouring settings turned out not to be a round fraction of a hertz."
+  },
+
+  "candidates": [
+    {
+      "id": "stepped-table-per-printed-range",
+      "what": "One table per printed range, in whole steps of a twentieth of a hertz, coarsening where a twentieth cannot reach the printed top. For 0.05 - 6.40 that is a hundred and twenty-eight entries at 0.05. For 0.05 - 10.0 it is 0.05 to 5.00, then 0.10 to 7.00, then 0.50 to 10.00, which is a hundred and twenty-six entries with two settings left over.",
+      "predicts": {
+        "neighbouring_settings": "Differ by exactly 0.05, 0.10 or 0.50 Hz and by nothing else.",
+        "top_of_the_range": "Reached before the byte runs out on the wider range, so the last settings repeat one figure.",
+        "the_two_printed_ranges": "Share their first hundred entries exactly, because both start from the same step."
+      }
+    },
+    {
+      "id": "stepped-table-one-step-throughout",
+      "what": "The same twentieth-of-a-hertz step, run out over all 128 settings whatever the printed range says. Reaches 6.40 and no further.",
+      "predicts": {
+        "neighbouring_settings": "Differ by exactly 0.05 Hz everywhere.",
+        "top_of_the_range": "6.40 Hz, whatever the page prints.",
+        "the_two_printed_ranges": "Are the same table, and the wider printed range is a misprint."
+      }
+    },
+    {
+      "id": "straight-line-between-the-printed-ends",
+      "what": "The printed pair read as the ends of an evenly divided line: the first setting is the printed bottom, the last is the printed top, and the 126 between them are spaced equally in hertz.",
+      "predicts": {
+        "neighbouring_settings": "Differ by one hundred and twenty-seventh of the printed span, which is 0.05 Hz on the narrow range and 0.0783 Hz on the wide one.",
+        "top_of_the_range": "Reached exactly at the last setting, with no repeated entries.",
+        "the_two_printed_ranges": "Diverge from the first setting onwards."
+      }
+    },
+    {
+      "id": "geometric-between-the-printed-ends",
+      "what": "The printed pair read as the ends of a ratio scale, which is how a modulation rate is heard and how a synthesiser's own LFO is usually laid out. Equal ratios per setting rather than equal differences.",
+      "predicts": {
+        "neighbouring_settings": "Differ by a constant factor -- 1.0425 on the wide range -- so the step in hertz grows across the sweep.",
+        "top_of_the_range": "Reached exactly at the last setting.",
+        "the_two_printed_ranges": "Both start at 0.05 and separate immediately."
+      }
+    }
+  ],
+
+  "what_no_candidate_here_predicts": [
+    "Which of a type's modulators a take heard. That is a property of the recording and of the type's structure, not of the table, and it is what decides whether a slot is evidence here at all.",
+    "Whether the rate the analysis found is the modulator's own frequency or a multiple of it. A triangle sweep passes each point twice per cycle, and nothing in this class says which of the two a partial-tracking reader will lock to.",
+    "What the modulator's waveform is, how deep it goes, or what it modulates."
+  ],
+
+  "note": "A class with fewer than two candidates cannot be tested: the strongest competitor is the decoy, and with one candidate there is none. Adding a candidate here is how a type that came back `candidates_too_few` gets asked again."
+}

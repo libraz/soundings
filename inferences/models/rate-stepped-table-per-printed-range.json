@@ -1,0 +1,46 @@
+{
+  "model": {
+    "schema_version": 1,
+    "kind": "table",
+    "class": "modulation-rate",
+    "name": "stepped-table-per-printed-range",
+    "candidate": "stepped-table-per-printed-range",
+    "of": "the byte at a rate address, and the frequency the modulator runs at",
+    "chosen_by": "the range the page prints against that address"
+  },
+  "what": "One printed table per printed range, walked in whole steps and holding its last entry where the table is shorter than the byte.",
+  "note": "Generated from the candidate this file names, and read only by src/soundings/reproduce.py. It states what the candidate predicts at every setting of the byte, so that a reading can disagree with it. Nothing here is a measurement.",
+  "tables": {
+    "0.05 - 10.0": {
+      "kind": "steps",
+      "first_hz": 0.05,
+      "runs": [
+        {
+          "through": 99,
+          "step_hz": 0.05
+        },
+        {
+          "through": 119,
+          "step_hz": 0.1
+        },
+        {
+          "through": 125,
+          "step_hz": 0.5
+        }
+      ],
+      "entries": 126,
+      "why_it_ends_early": "Three runs of 100, 20 and 6 come to 126 entries, so settings 126 and 127 have no entry of their own and return the last one."
+    },
+    "0.05 - 6.40": {
+      "kind": "steps",
+      "first_hz": 0.05,
+      "runs": [
+        {
+          "through": 127,
+          "step_hz": 0.05
+        }
+      ],
+      "entries": 128
+    }
+  }
+}
