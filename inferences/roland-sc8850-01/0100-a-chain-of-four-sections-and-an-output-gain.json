@@ -1,0 +1,2303 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-12T22:23:08.319811+00:00",
+    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py",
+    "rounds": 2,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 00"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 04",
+        "40 03 05",
+        "40 03 06",
+        "40 03 07",
+        "40 03 08",
+        "40 03 09",
+        "40 03 0A",
+        "40 03 0B",
+        "40 03 0C",
+        "40 03 16"
+      ]
+    }
+  },
+  "claim": "This type is a chain of four fixed filter sections and an output gain: a low shelf, two peaking sections that share one law, a high shelf. The low shelf is one pole and one zero. Each parameter byte selects from a short table rather than driving a formula -- a gain answers over twenty-five values and sticks at both ends, a corner has two states, a width has five entries and returns the first for anything past them, a centre moves in equal steps of log frequency for every eighth value of its byte.",
+  "named": null,
+  "why_not_named": "Naming it would add nothing the claim does not already say and would carry a topology this run did not test. The high shelf's order is open, and a name would close it by implication.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+        "keys": [
+          "readings[value=52].largest_db",
+          "readings[value=76].largest_db",
+          "readings[value=48].largest_db",
+          "readings[value=80].largest_db"
+        ],
+        "values": [
+          -13.72,
+          11.98,
+          -12.44,
+          12.02
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].half_above_hz",
+          "readings[value=1].half_above_hz",
+          "readings[value=127].half_above_hz"
+        ],
+        "values": [
+          118.0,
+          222.7,
+          210.2
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].half_below_hz",
+          "readings[value=1].half_below_hz",
+          "readings[value=0].settled_above_db"
+        ],
+        "values": [
+          6727.2,
+          11313.7,
+          1.29
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_at_hz",
+          "readings[value=64].largest_at_hz",
+          "readings[value=127].largest_at_hz"
+        ],
+        "values": [
+          176.8,
+          1259.9,
+          6349.6
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].half_below_hz",
+          "readings[value=0].half_above_hz",
+          "readings[value=4].half_below_hz",
+          "readings[value=4].half_above_hz",
+          "readings[value=5].half_below_hz",
+          "readings[value=64].half_below_hz"
+        ],
+        "values": [
+          280.6,
+          5039.7,
+          1059.5,
+          1414.2,
+          280.6,
+          280.6
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_at_hz",
+          "readings[value=127].largest_at_hz"
+        ],
+        "values": [
+          176.8,
+          6349.6
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+        "keys": [
+          "readings[value=76].steepest_db_per_octave",
+          "readings[value=76].steepest_at_hz",
+          "readings[value=76].steepest_over_octaves"
+        ],
+        "values": [
+          -3.52,
+          236.0,
+          1.0
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "type=1,parameter=2",
+          "type=1,parameter=3",
+          "type=1,parameter=4"
+        ]
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A parameter byte indexes a coefficient table rather than driving a formula.",
+        "why": "Computing a filter coefficient from a byte needs transcendental functions a fixed-point part of that period does not have, and a table of a few tens of entries costs it nothing.",
+        "would_be_wrong_if": "A parameter answered differently at every one of its 128 values with no repeats. Four of this type's eleven bytes repeat: the widths have five entries, the corners two, the centres one per eight values, and the gains one per value over a window of twenty-five."
+      },
+      {
+        "claim": "The chain runs below the converter's rate, so its response ends at that rate's half.",
+        "why": "Effect processing shared a slower clock than the output in this generation of part.",
+        "would_be_wrong_if": "The unit answered above the half rate the model assumes. It does not: the output stands 31.9 dB over silence at 16 kHz, 16.3 at 17 and nothing at 18."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The archive says what each byte did to each band. It does not say that those profiles are the response of a cascade of second-order sections, that the low shelf is one pole rather than two, or that the two mids are one law rather than two that happen to agree at the three settings both were asked at. Each of those is a structure fitted to the readings, and the fit is what this file holds.",
+  "alternatives": [
+    {
+      "reading": "The high shelf is one pole and one zero, as the low one is.",
+      "candidate": "first-order-shelves-peaking-pairs",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": "The high shelf's profile where it levels off.",
+        "predicts": {
+          "first order": "About 3.6 dB per octave through the corner.",
+          "second order": "About 7."
+        },
+        "sensitivity_here": "The slope is published at two resolutions and they agree for the low shelf (3.5 to 3.7) and disagree for the high one (7.1 against 9.8), which is what a profile still climbing at the edge of the set does.",
+        "margin": 1,
+        "why_not_separable": "The high shelf has not levelled off where the unit's own output ends. It is still climbing 4.2 dB per third octave at 16 kHz, and by 18 kHz there is no output to read. Separating the two orders needs the profile past its corner, and this unit cannot be made to put a signal there: the analogue input does not reach the insertion effects, so every excitation is one of its own voices. Nothing about the model decides this and no further reading of these takes will.",
+        "run": null
+      }
+    },
+    {
+      "reading": "The low shelf is a second-order shelving section.",
+      "candidate": "second-order-shelves-peaking-pairs",
+      "standing": false,
+      "ruled_out_by": "Its residual leans across the bands of the low corner's record where the first-order one does not, and the low shelf's profile did settle inside the band set, so the lean is the model's and not the reading's. The two candidates that put a second-order section at the low end are the only two of the five that lean on a record whose profile the bands contained."
+    },
+    {
+      "reading": "The width byte selects the Q values the manual prints against it.",
+      "candidate": "first-order-shelves-peaking-printed-q",
+      "standing": false,
+      "ruled_out_by": "It leans on six of the fourteen records that carry an effect, against none for the measured widths, and its residual is the largest of the five candidates on every record. The printed figures are about twice the measured ones, which is the size of a bandwidth-convention difference, and the unit answers to the measured ones."
+    }
+  ],
+  "reproduces": {
+    "model": "inferences/models/0100-low-first-high-second-order-shelves.json",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-fine-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-how-much-is-twelve-db-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0C-how-much-is-twelve-db-fine-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json"
+      ],
+      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 00 at the twelfth-octave resolution",
+      "excluded": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-bands/*.json (third-octave)",
+          "why": "The same takes read at the coarser set. Scoring both resolutions counts one measurement twice and weights the rows that have two records over the rows that have one."
+        }
+      ]
+    },
+    "domain": {
+      "settings": {
+        "40 03 03": [
+          0,
+          127
+        ],
+        "40 03 04": [
+          0,
+          16,
+          32,
+          48,
+          64,
+          80,
+          96,
+          112,
+          127
+        ],
+        "40 03 05": [
+          0,
+          127
+        ],
+        "40 03 06": [
+          0,
+          16,
+          32,
+          48,
+          64,
+          80,
+          96,
+          112,
+          127
+        ],
+        "40 03 07": [
+          0,
+          127
+        ],
+        "40 03 08": [
+          0,
+          127
+        ],
+        "40 03 09": [
+          52,
+          64,
+          76
+        ],
+        "40 03 0A": [
+          0,
+          127
+        ],
+        "40 03 0B": [
+          0,
+          127
+        ],
+        "40 03 0C": [
+          52,
+          64,
+          76
+        ],
+        "40 03 16": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ]
+      },
+      "stimulus": [
+        "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s"
+      ],
+      "outside": "One byte at a time. No setting where two of the four sections are away from their centre together was asked, so the chain's sections are shown to be right one at a time and not shown to combine. Nothing above 16 kHz, where the unit's output ends. Nothing about phase: the phase records for this type exist and this run did not read them."
+    },
+    "residual": {
+      "median": 0.0107,
+      "worst": 0.0382,
+      "unit": "share of the span the effect commands in that record",
+      "worst_at": null,
+      "structured": false,
+      "why": "Of the fourteen records that carry an effect, none has a residual that leans across its settings or its bands by more than the run's own floor. The one record whose residual does lean is the high corner's, whose profile the band set did not contain -- the record says so itself, and what leans there is the bound the model's corner was transcribed from."
+    },
+    "gates": {
+      "gross": {
+        "passed": true,
+        "residual_over_span": 0.009,
+        "span_db": 28.6,
+        "ceiling": 0.2,
+        "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+      },
+      "qualitative": {
+        "passed": true,
+        "checked": [
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 1,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 3,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 126,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 49,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 50,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 51,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 52,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 53,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 54,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 55,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 56,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 57,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 58,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 59,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 60,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 61,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 62,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 66,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 67,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 68,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 69,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 70,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 71,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 72,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 73,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 74,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 75,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 76,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 77,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 78,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 79,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 16,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 112,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 1,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 3,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 126,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 52,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 76,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 16,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 112,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-06-how-much-is-twelve-db-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 8,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 12,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 16,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 112,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 1,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 3,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 5,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 52,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 76,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+            "value": 127,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0C-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 52,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0C-how-much-is-twelve-db-fine-in-twelfths.json",
+            "value": 76,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 16,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-eq-hinges-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 7,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 8,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 9,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 10,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 11,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 12,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 13,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 14,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 15,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 16,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 17,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 18,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 19,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 20,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 21,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 22,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 23,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 24,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 25,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 26,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 27,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 28,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 29,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 30,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 31,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 32,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 33,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 34,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 35,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 36,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 37,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 38,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 39,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 40,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 41,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 42,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 43,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 44,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 45,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 46,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 47,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 48,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 49,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 50,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 51,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 52,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 53,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 54,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 55,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 56,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 57,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 58,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 59,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 60,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 61,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 62,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 63,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 64,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 65,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 66,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 67,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 68,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 69,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 70,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 71,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 72,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 73,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 74,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 75,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 76,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 77,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 78,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 79,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 80,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 81,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 82,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 83,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 84,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 85,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 86,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 87,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 88,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 89,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 90,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 91,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 92,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 93,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 94,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 95,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 96,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 97,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 98,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 99,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 100,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 101,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 102,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 103,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 104,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 105,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 106,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 107,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 108,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 109,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 110,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 111,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 112,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 113,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 114,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 115,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps-in-twelfths.json",
+            "value": 116,
+            "property": "the sign of the largest deviation",
+            "unit": "cut",
+            "model": "cut",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-how-much-is-twelve-db-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 0.96 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0B-where-the-eq-hinges-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 2.10 dB",
+            "model": "0.00 dB",
+            "same": true
+          }
+        ],
+        "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
+      },
+      "power": {
+        "passed": false,
+        "ranking": [
+          {
+            "candidate": "low-first-high-second-order-shelves",
+            "model": "inferences/models/0100-low-first-high-second-order-shelves.json",
+            "mean_share_of_span": 0.0107,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 21,
+            "leaning_records": 0,
+            "leaning_on": [],
+            "records_the_bands_did_not_contain": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "first-order-shelves-peaking-pairs",
+            "model": "inferences/models/0100-first-order-shelves-peaking-pairs.json",
+            "mean_share_of_span": 0.0112,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 21,
+            "leaning_records": 0,
+            "leaning_on": [],
+            "records_the_bands_did_not_contain": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "second-order-shelves-peaking-pairs",
+            "model": "inferences/models/0100-second-order-shelves-peaking-pairs.json",
+            "mean_share_of_span": 0.0131,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 21,
+            "leaning_records": 1,
+            "leaning_on": [
+              "01-00-03-where-the-eq-hinges-in-twelfths.json"
+            ],
+            "records_the_bands_did_not_contain": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "low-second-high-first-order-shelves",
+            "model": "inferences/models/0100-low-second-high-first-order-shelves.json",
+            "mean_share_of_span": 0.0136,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 21,
+            "leaning_records": 1,
+            "leaning_on": [
+              "01-00-03-where-the-eq-hinges-in-twelfths.json"
+            ],
+            "records_the_bands_did_not_contain": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "first-order-shelves-peaking-printed-q",
+            "model": "inferences/models/0100-first-order-shelves-peaking-printed-q.json",
+            "mean_share_of_span": 0.0193,
+            "worst_share_of_span": 0.0602,
+            "worst_point_share": 0.75,
+            "records_scored": 21,
+            "leaning_records": 6,
+            "leaning_on": [
+              "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-08-where-the-eq-hinges-in-twelfths.json",
+              "01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
+              "01-00-0A-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0B-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0C-how-much-is-twelve-db-fine-in-twelfths.json"
+            ],
+            "records_the_bands_did_not_contain": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json"
+            ]
+          }
+        ],
+        "decoy": "first-order-shelves-peaking-pairs",
+        "separation": 0.029,
+        "why": "The runner-up in the catalogue, scored on the same records, and whether it fails the gross gate the winner passed. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
+      },
+      "breakdown": {
+        "passed": true,
+        "breaks_down_at": null,
+        "leaning_records": null,
+        "records_the_bands_did_not_contain": [
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
+            "still_moving_db": 4.23,
+            "why": "The profile had not levelled off where the band set ended, so the corner the model takes from this record is a lower bound. A residual leaning across the bands is that bound leaning. Answering it needs a stimulus that reaches further, not a different model."
+          }
+        ],
+        "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
+      }
+    },
+    "verdict": "equivalent_under_this_test"
+  },
+  "refuted_by": "A setting of any of the eleven bytes whose band profile the chain cannot produce at all -- a second peak, an asymmetric one, a corner that moves with the gain applied through it. Or a byte turning out to answer at values the tables here say are repeats: the widths at 5 and above, the centres between multiples of eight, the gains outside 52 to 76.",
+  "what_it_would_change": [],
+  "what_this_does_not_settle": [
+    "Which of the two printed labels goes with which state of a corner byte. A label is not measurable.",
+    "The high shelf's order, and with it its asymptotic gain and its corner as a value rather than a bound.",
+    "Whether the sections combine as the chain says. Every reading was taken with one byte away from its centre.",
+    "Phase. The archive holds phase records for this type below 1 kHz and this run compared band energies only.",
+    "Whether the same eleven bytes behave this way on any other unit, or under the MSB 04 composite types that print the same rows."
+  ],
+  "also_confirmed_without_the_fit": "The low shelf's order shows in one published figure, and not only in the residual. The archive reads the profile's steepest run at 3.52 dB per octave in magnitude, and the two band resolutions agree there -- which is what says the figure is the unit's and not the measuring window's. Rendered at the same gain, a one-pole shelf runs at 3.60 and a second-order one at 7.21. The scoring and this arrive at the same order by different routes. The sign is negative because the boost is at the low end and the deviation falls going up through the corner; the candidates differ in the magnitude.",
+  "a_figure_here_was_wrong_once": "The first version of this file cited 3.59 dB per octave at 210.2 Hz, taken from a working note rather than from the record, which holds -3.52 at 236.0. The staleness check caught it before the file was indexed. It is worth saying because that check was written for a record changing under a claim, and the first thing it caught was a claim misquoting a record that had not changed at all."
+}

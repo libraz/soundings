@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/libraz/soundings/inferences/schema/inference.json",
+  "title": "One standing claim about what the measurements mean",
+  "description": "A record under data/ says what a unit answered. A file here says what somebody read out of several of those, and it is a different kind of claim: it can be wrong in ways a measurement cannot, and it is retracted rather than corrected. Everything the envelope demands exists to make a retraction cheap -- what the claim rests on, what it adds beyond that, and what would show it wrong. A claim that cannot say the third is not an inference.",
+  "type": "object",
+  "required": ["inference", "claim", "rests_on", "adds", "alternatives", "refuted_by"],
+  "properties": {
+    "inference": {
+      "type": "object",
+      "required": ["schema_version", "unit_id", "state", "made_at", "made_by", "about"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"type": "integer", "minimum": 1},
+        "unit_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "The individual unit whose records this rests on. A claim scoped wider than one unit says so in `about.scope` and names the units it was checked on; there is no way to check it on a unit nobody measured."
+        },
+        "state": {
+          "enum": ["standing", "standing_untested", "parked", "retracted", "superseded"],
+          "description": "`standing` means a measurement was in a position to disagree and did not. `standing_untested` means the claim rests on the era, on a community reading or on a printed page alone, and no measurement has ever been able to contradict it -- which is a different thing from being unchallenged. `parked` is a claim that took its three rounds and did not close; it stays open and stops consuming them."
+        },
+        "made_at": {"type": "string"},
+        "made_by": {"type": "string", "description": "The script that produced it, or `by hand` where a person read it."},
+        "rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many times a model for this claim has been revised. Three is the ceiling: past it the claim is parked with what is missing, so that one type cannot absorb the project."
+        },
+        "about": {
+          "type": "object",
+          "required": ["types", "addresses"],
+          "properties": {
+            "scope": {"enum": ["unit", "model", "family"], "default": "unit"},
+            "types": {"type": "array", "items": {"type": "string"}},
+            "addresses": {"type": "array", "items": {"type": "string"}},
+            "checked_on_units": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "superseded_by": {"type": ["string", "null"], "description": "The file that replaced this one. Required where the state is superseded, and it must exist."},
+        "retracted_because": {"type": ["string", "null"]}
+      }
+    },
+
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One sentence, in this project's own words. What was read out of the evidence, not what the evidence was."
+    },
+
+    "named": {
+      "type": ["string", "null"],
+      "description": "The name of the algorithm, where one is being asserted. Held apart from `claim` because the name is the first part to be retracted: calling one type a comb cost four readings and a quantity of device time before a printed page said it was a filter. Dropping the name must not drop the structural claim under it."
+    },
+
+    "rests_on": {
+      "type": "object",
+      "required": ["measurements", "document_rows", "era_priors", "community"],
+      "additionalProperties": false,
+      "description": "Four kinds of evidence, never merged. A claim resting on a printed row and one resting on a measurement are not the same claim differently sourced -- they can fail in different ways, and a reader has to be able to see which one is holding the weight.",
+      "properties": {
+        "measurements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "keys", "values"],
+            "properties": {
+              "file": {"type": "string", "description": "Path from the repository root, under data/."},
+              "keys": {"type": "array", "items": {"type": "string"}},
+              "values": {"type": "array", "description": "What those keys held when the claim was made. Kept so that a record re-published with different numbers makes the claim stale rather than leaving it standing on figures nobody checked again. Two of this archive's stages have already been re-published with a reading moved by thirty-nine decibels and another turned into a null."}
+            }
+          }
+        },
+        "document_rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "rows"],
+            "properties": {
+              "file": {"type": "string"},
+              "rows": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "era_priors": {
+          "type": "array",
+          "description": "What was buildable when the unit was built. Reasoning, not evidence about this unit.",
+          "items": {
+            "type": "object",
+            "required": ["claim", "why", "would_be_wrong_if"],
+            "properties": {
+              "claim": {"type": "string"},
+              "why": {"type": "string"},
+              "would_be_wrong_if": {"type": "string", "description": "Required. A prior whose refutation cannot be stated is not a prior, it is a habit of thought."}
+            }
+          }
+        },
+        "community": {
+          "type": "array",
+          "description": "What somebody outside this project reported. Restated in this project's words, never quoted.",
+          "items": {
+            "type": "object",
+            "required": ["claim", "source", "traceable_to", "we_have_not_verified"],
+            "properties": {
+              "claim": {"type": "string"},
+              "source": {"type": "string", "description": "Where it was found, specifically enough to be found again."},
+              "traceable_to": {
+                "enum": ["measurement", "rom", "documentation", "hearsay", "unknown"],
+                "description": "What the reporter's claim itself rested on, as far as it can be told. `hearsay` is a usable value and a missing one is not: a claim whose grounding is unknown is recorded as unknown rather than left to read as better than it is."
+              },
+              "we_have_not_verified": {"const": true}
+            }
+          }
+        }
+      }
+    },
+
+    "adds": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What the claim says that the cited evidence does not. Required and never empty: a claim that adds nothing to the records it cites is a restatement of a measurement, and it belongs in data/ where the measurement is. This field is the whole of what makes a file here an inference."
+    },
+
+    "alternatives": {
+      "type": "array",
+      "description": "Readings that the same evidence leaves standing. A claim with none says so with a reason -- an empty list read as `nobody thought of any` and an empty list read as `the catalogue was run and they all fell` are different states.",
+      "items": {
+        "type": "object",
+        "required": ["reading", "standing"],
+        "properties": {
+          "reading": {"type": "string"},
+          "candidate": {"type": ["string", "null"], "description": "The id in inferences/candidates/ this reading comes from, where it comes from the catalogue."},
+          "standing": {"type": "boolean"},
+          "ruled_out_by": {"type": ["string", "null"]},
+          "equivalent_under_this_test": {
+            "type": "boolean",
+            "default": false,
+            "description": "It reproduces as well as the claim does. Not an open question: the test does not separate them, which is stated so that a reader downstream can pick either and know that is what they are doing."
+          },
+          "separated_by": {"$ref": "#/$defs/separated_by"}
+        }
+      }
+    },
+
+    "reproduces": {"$ref": "#/$defs/reproduces"},
+
+    "refuted_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What would show this claim itself wrong -- not another claim also possible, which is what `alternatives` holds."
+    },
+
+    "could_have_been_refuted_by": {
+      "type": ["string", "null"],
+      "description": "Required where the state is standing_untested. The measurement that would have contradicted this claim, if it had been run. A claim believed on the era or on a forum is worth reading only if it can say what the unit could have said against it."
+    },
+
+    "what_it_would_change": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "The other files here that rest on this one, so that retracting it is a bounded operation rather than a search."
+    }
+  },
+
+  "$defs": {
+    "separated_by": {
+      "type": ["object", "null"],
+      "description": "The measurement that would tell this reading from the claim, computed rather than chosen: an observable where the two predict different things by more than this rig resolves there. Null where no such observable exists, which is a result and is stated in `why_not_separable`.",
+      "required": ["observable", "predicts", "sensitivity_here", "margin"],
+      "properties": {
+        "observable": {"type": "string"},
+        "predicts": {"type": "object", "description": "What each reading says the unit would do, keyed by reading."},
+        "divergence": {"type": "string"},
+        "sensitivity_here": {"type": "string", "description": "What this measurement system resolves in that observable, as a figure this archive has already measured."},
+        "margin": {"type": "number", "minimum": 1, "description": "Divergence over sensitivity. Below one the measurement cannot separate them and must not be queued: a run that could not have answered is the negative this project already refuses to publish."},
+        "why_not_separable": {"type": ["string", "null"]},
+        "run": {
+          "type": "object",
+          "description": "Enough to start it.",
+          "properties": {
+            "stage": {"type": "string"},
+            "type": {"type": "string"},
+            "address": {"type": "string"},
+            "settings": {"type": "array"},
+            "stimulus": {"type": ["string", "null"]},
+            "takes": {"type": "integer"},
+            "minutes": {"type": "number"}
+          }
+        }
+      }
+    },
+
+    "reproduces": {
+      "type": "object",
+      "description": "A model was rendered and read through the same pipeline the unit's takes were read through, and the two readings were compared. Waveforms are not compared and cannot be: two clocks drift by tens of parts per million over a take and the coherence between two recordings of one setting has collapsed by two kilohertz. What is compared is the quantities this archive publishes.",
+      "required": ["model", "compared_against", "domain", "residual", "gates"],
+      "properties": {
+        "model": {"type": "string", "description": "The model file under inferences/models/."},
+        "compared_against": {
+          "type": "object",
+          "required": ["records", "generated_from"],
+          "description": "Every published reading for this type, generated from the archive's own index rather than listed by hand. Choosing the comparison set is the third way a fit passes without being right.",
+          "properties": {
+            "records": {"type": "array", "items": {"type": "string"}},
+            "generated_from": {"type": "string"},
+            "excluded": {"type": "array", "items": {"type": "object", "required": ["file", "why"]}}
+          }
+        },
+        "domain": {
+          "type": "object",
+          "required": ["settings", "stimulus", "outside"],
+          "description": "Where the model was asked, and where it was not. A model tested only in the middle of a byte's range has no claim on its ends, and the ends are where a model breaks.",
+          "properties": {
+            "settings": {"type": "object"},
+            "stimulus": {"type": "array", "items": {"type": "string"}},
+            "outside": {"type": "string"}
+          }
+        },
+        "residual": {
+          "type": "object",
+          "required": ["median", "worst", "unit", "structured", "why"],
+          "properties": {
+            "median": {"type": "number"},
+            "worst": {"type": "number"},
+            "worst_at": {"type": ["object", "null"]},
+            "unit": {"type": "string"},
+            "structured": {"type": "boolean", "description": "Whether the residual leans -- with the setting, with frequency, with anything. A residual that leans is pointing at a structure the model does not have. One that does not is pointing at the room, the converters and the unit's own wobble, and is not made smaller by anything this project can do."},
+            "why": {"type": "string"}
+          }
+        },
+        "gates": {
+          "type": "object",
+          "required": ["gross", "qualitative", "power", "breakdown"],
+          "description": "Four gates and no threshold on the residual itself. Between the gross gate and the noise floor the number is reported and never optimised: driving it down is chasing the analogue, and no candidate lives or dies by it.",
+          "properties": {
+            "gross": {
+              "type": "object",
+              "required": ["passed", "residual_over_span", "ceiling", "why"],
+              "description": "The residual against the span the effect itself commands over the tested domain. Scale-free, so no absolute decibel figure has to be invented, and self-calibrating per type. Failing it fails the model whatever the other gates say.",
+              "properties": {
+                "passed": {"type": "boolean"},
+                "residual_over_span": {"type": "number"},
+                "span_db": {"type": "number"},
+                "ceiling": {"type": "number", "default": 0.2},
+                "why": {"type": "string"}
+              }
+            },
+            "qualitative": {
+              "type": "object",
+              "required": ["passed", "checked", "why"],
+              "description": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that stands still where the unit modulates.",
+              "properties": {
+                "passed": {"type": "boolean"},
+                "checked": {"type": "array", "items": {"type": "object"}},
+                "why": {"type": "string"}
+              }
+            },
+            "power": {
+              "type": "object",
+              "required": ["passed", "ranking", "decoy", "separation", "why"],
+              "description": "The strongest competing candidate in the catalogue, run on the same comparison set, and how far behind it came. The decoy is not chosen: it is whichever candidate scored second. A class with one candidate is a catalogue that is not finished, and that is a finding rather than a pass.",
+              "properties": {
+                "passed": {"type": "boolean"},
+                "ranking": {"type": "array", "items": {"type": "object"}},
+                "decoy": {"type": ["string", "null"]},
+                "separation": {"type": ["number", "null"]},
+                "why": {"type": "string"}
+              }
+            },
+            "breakdown": {
+              "type": "object",
+              "required": ["passed", "breaks_down_at", "why"],
+              "properties": {
+                "passed": {"type": "boolean"},
+                "breaks_down_at": {"type": ["array", "null"], "items": {"type": "object"}},
+                "why": {"type": "string"}
+              }
+            },
+            "listened": {
+              "type": ["object", "null"],
+              "description": "A person compared the two by ear. Recorded as what it is. Used to fail a model and never to pass one: an ear saying `similar` guarantees nothing, and an ear saying `obviously different` is right whatever the figures did.",
+              "properties": {
+                "verdict": {"enum": ["same effect", "recognisably different", "obviously different"]},
+                "by": {"type": "string"},
+                "when": {"type": "string"},
+                "this_is_not_a_measurement": {"type": "string"}
+              }
+            }
+          }
+        },
+        "verdict": {
+          "enum": ["reproduces", "equivalent_under_this_test", "breaks_down", "domain_too_narrow", "candidates_too_few", "rejected"],
+          "description": "What the gates came to. `reproduces` and `equivalent_under_this_test` both close; the rest stay open, and each names the one thing that would move it."
+        }
+      }
+    }
+  }
+}

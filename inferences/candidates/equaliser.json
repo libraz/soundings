@@ -1,0 +1,54 @@
+{
+  "class": "equaliser",
+  "what_the_class_is": "A type whose whole effect is a fixed frequency response: no modulator, no delay line, no level-dependent behaviour. What varies is where the response hinges, how wide its features are and how far up or down they go.",
+
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a rate below the converter's.",
+    "what_that_implies": [
+      "Sections are biquads. A cascade of second-order sections is what the era's assembly and its coefficient tables were written around, and nothing cheaper does a peak with a controllable width.",
+      "A parameter byte indexes a coefficient table rather than driving a formula. Computing a filter coefficient per parameter change costs transcendental functions the part does not have, and a table of a few tens of entries costs nothing.",
+      "The rate the effect runs at is not the rate the converter runs at. A response therefore ends at that rate's Nyquist, and that end is measurable."
+    ],
+    "would_be_wrong_if": "A parameter turned out to answer smoothly at every one of its 128 values with no repeated entries, or a response went on past the half-rate the rest of the type's readings imply."
+  },
+
+  "candidates": [
+    {
+      "id": "first-order-shelves-peaking-pairs",
+      "what": "Two one-pole shelves at the ends and two peaking biquads between them, then an output gain. The shelves are first order, so a full-scale shelf runs at about 3.6 dB per octave through its corner.",
+      "predicts": {
+        "shelf_steepest_db_per_octave": "About 3.6 at full gain: a twelve decibel transition spread over roughly a decade.",
+        "shelf_half_point": "One frequency, the same whichever direction the gain goes.",
+        "peak_shape": "Symmetric in log frequency about its centre.",
+        "response_above_half_the_internal_rate": "None."
+      }
+    },
+    {
+      "id": "second-order-shelves-peaking-pairs",
+      "what": "The same chain with the shelves as second-order shelving sections at unit slope, which is what the audio cookbook's shelf gives and what a part that already has biquads gets for free.",
+      "predicts": {
+        "shelf_steepest_db_per_octave": "About 7 at full gain: twice the first-order figure over the same transition.",
+        "shelf_half_point": "One frequency, as above.",
+        "peak_shape": "Symmetric in log frequency about its centre.",
+        "response_above_half_the_internal_rate": "None."
+      }
+    },
+    {
+      "id": "first-order-shelves-peaking-printed-q",
+      "what": "The first-order chain, with the width byte taken to select the Q values the manual prints against it rather than the ones the measured half-widths give. Kept as a candidate because the printed figures and the measured ones differ by a factor of about two, and which of the two the unit implements is exactly the kind of thing a printed table can be right or wrong about.",
+      "predicts": {
+        "peak_half_width_ratio": "Half the octave width the measured readings show, at every setting of the width byte.",
+        "shelf_steepest_db_per_octave": "As the first-order candidate.",
+        "response_above_half_the_internal_rate": "None."
+      }
+    }
+  ],
+
+  "what_no_candidate_here_predicts": [
+    "Where the shelf half-point sits in hertz. Every candidate takes that from the measurement; none of them derives it, because nothing about the era says which corner a designer picked.",
+    "Which of the printed labels goes with which of the two states a corner byte selects. A label is not a measurable quantity.",
+    "Anything above the unit's own output band, which ends between sixteen and eighteen kilohertz."
+  ],
+
+  "note": "A class with fewer than two candidates cannot be tested: the strongest competitor is the decoy, and with one candidate there is none. Adding a candidate here is how a type that came back `candidates_too_few` gets asked again."
+}

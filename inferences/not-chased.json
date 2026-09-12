@@ -1,0 +1,50 @@
+{
+  "what_this_is": "Everything a model here is not asked to explain, with the measurement that bounded it. Without this list, `the model does not account for that` and `the model is not required to account for that` read the same, and the second gets worked on as though it were the first.",
+
+  "why_it_has_to_be_written_down": "The residual between a model and this unit contains the room, the converters, the unit's analogue output stage, two clocks that drift against each other, and the unit's own take-to-take wobble. None of those is a structure and none of them gets smaller by thinking about it. A project that treats the whole residual as its own is a project chasing the analogue, which has no end.",
+
+  "not_chased": [
+    {
+      "what": "The converters and the cable.",
+      "how_it_was_bounded": "Measured once by loopback, and available to divide out of any other reading.",
+      "measured_in": "data/units/roland-sc8850-01/transfer/analogue-input.json"
+    },
+    {
+      "what": "The room, the unit's idle output and the interface's own noise.",
+      "how_it_was_bounded": "The chain with nothing played reaches -110.6 dBFS on the unit's channel. Every band-profile run since records its own, as a level and as a profile, so a reading suspected of being the floor can be held against the floor's shape.",
+      "measured_in": "data/units/roland-sc8850-01/efx-bands/*.json, the `silence` block"
+    },
+    {
+      "what": "The drift between the unit's clock and the interface's.",
+      "how_it_was_bounded": "Between -57 and +27 parts per million over seven seconds, which is why phase is read below 1 kHz and nowhere else, and why waveforms are never compared.",
+      "measured_in": "data/units/roland-sc8850-01/phase/*.json, the `aligned_by` and `coherence` blocks"
+    },
+    {
+      "what": "The unit's own take-to-take difference.",
+      "how_it_was_bounded": "Two takes of one note subtract to -56.7 dB, at the noise floor of the silence before the note. That is the floor of every comparison here and it is not a target: a model reaching it would be reproducing the unit's noise.",
+      "measured_in": "data/units/roland-sc8850-01/repeat/program-0.json"
+    },
+    {
+      "what": "The unit's own tuning drift.",
+      "how_it_was_bounded": "Under 10 parts per million over twenty seconds.",
+      "measured_in": "data/units/roland-sc8850-01/clock and the repeat records' `master_tune_cents`"
+    },
+    {
+      "what": "Anything above the unit's output band.",
+      "how_it_was_bounded": "31.9 dB over silence at 16 kHz, 16.3 at 17, nothing at 18. A model is not asked what it does there and a reading is not taken there.",
+      "measured_in": "data/units/roland-sc8850-01/efx-bands/*-in-twelfths.json"
+    },
+    {
+      "what": "Which printed label goes with which measured state.",
+      "how_it_was_bounded": "Not a measurable quantity at all. A corner byte with two states has two measured corners; which of them the manual calls 200 and which 400 is a question about a page.",
+      "measured_in": null
+    },
+    {
+      "what": "Whether this individual unit is representative of the model.",
+      "how_it_was_bounded": "Not bounded. One unit is measured and every claim here is scoped to it. A second unit would answer this and there is not one.",
+      "measured_in": null
+    }
+  ],
+
+  "what_would_move_something_off_this_list": "A residual that leans in a way one of these could not produce. The room does not grow with the setting of a byte; the converters do not change shape when a width byte moves. A lean that tracks a parameter is a structure, and structures are chased."
+}

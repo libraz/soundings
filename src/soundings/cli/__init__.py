@@ -16,6 +16,7 @@ from . import (
     inject,
     pairs,
     ports,
+    readings,
     runs,
     scan,
     sound,
@@ -41,6 +42,7 @@ COMMANDS = (
     effects,
     standing,
     documents,
+    readings,
 )
 """The modules that hold the subcommands, in the order --help lists them.
 
