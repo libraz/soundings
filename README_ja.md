@@ -70,14 +70,14 @@ MIDI インターフェースの選択には `--port`、SysEx デバイス ID �
 | `alias-scan` | MIDI メッセージで変化する保存先を特定します。 |
 | `port-send` / `port-read` | 応答を返さない MIDI 入力へ送り、それが機体に残したものを読み出します。 |
 | `repeat` / `contrast` / `verdict` | 繰り返しの安定性と可聴差を測定し、以前に録ったテイクを判定します。 |
-| `transfer` / `motion` / `decay` / `vibrato` | 音声経路、時間変化するエフェクト、エフェクトの減衰、テイクのピッチ変調を解析します。 |
+| `transfer` / `motion` / `decay` / `phase` / `vibrato` | 音声経路、時間変化するエフェクト、エフェクトの減衰、各帯域の位相を回した角度、テイクのピッチ変調を解析します。 |
 | `balance` | パラメータがチャンネル間のレベル差に与えた影響を測定します。 |
 | `plan` / `block` / `efx-params` | ブロックを問う値を決め、保存済みの記録をアドレスごと・エフェクトパラメータごとの判定 1 つに集約します。 |
 | `efx-motion` / `efx-sort` | エフェクトが時間とともに何をするかを追い、静止する型としない型に仕分けます。 |
 | `index` / `complete` | 個体の記録を一覧し、完成の基準に対する到達度を数えます。 |
 | `document` | 公表された文書の表を 1 ページずつ `documents/` に読み込みます — `init`、`show`、`add`、`status`。 |
 
-実機ではなく保存済みの記録や文書を読むコマンド — `watch-set`、`motion`、`decay`、`verdict`、`balance`、`vibrato`、`plan`、`block`、`efx-params`、`efx-motion`、`efx-sort`、`complete`、`index`、`document` — は実機を必要としないので、別の測定が機材を占有している間も実行できます。
+実機ではなく保存済みの記録や文書を読むコマンド — `watch-set`、`motion`、`decay`、`phase`、`verdict`、`balance`、`vibrato`、`plan`、`block`、`efx-params`、`efx-motion`、`efx-sort`、`complete`、`index`、`document` — は実機を必要としないので、別の測定が機材を占有している間も実行できます。
 
 ## データ形式
 
@@ -111,7 +111,8 @@ data/units/<manufacturer>-<model>-<n>/
   efx-params/               インサーションエフェクト 1 型のパラメータ
   balance/                  パラメータがチャンネル間のレベル差に与えた影響
   transfer/                 掃引正弦波に対して経路が行ったこと
-  motion/  decay/  vibrato/ エフェクトの変調、減衰、テイクのピッチ
+  motion/  decay/  phase/   エフェクトの変調、減衰、各帯域の位相を
+  vibrato/                  回した角度、テイクのピッチ
   efx-motion/  efx-sort/    静止するエフェクト型としない型
 ```
 

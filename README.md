@@ -70,14 +70,14 @@ Use `--port` to select the MIDI interface, `--device-id` to select a SysEx devic
 | `alias-scan` | Locate storage affected by MIDI messages. |
 | `port-send` / `port-read` | Send into a MIDI input that answers nothing, and read what it left in the unit. |
 | `repeat` / `contrast` / `verdict` | Establish repeatability, measure audible differences, and judge takes recorded earlier. |
-| `transfer` / `motion` / `decay` / `vibrato` | Analyse an audio path, a time-varying effect, an effect's decay, or a take's pitch modulation. |
+| `transfer` / `motion` / `decay` / `phase` / `vibrato` | Analyse an audio path, a time-varying effect, an effect's decay, the angle it turns each band by, or a take's pitch modulation. |
 | `balance` | Measure what a parameter did to the level difference between the channels. |
 | `plan` / `block` / `efx-params` | Choose the values a block is asked at, then fold saved records into one verdict per address or per effect parameter. |
 | `efx-motion` / `efx-sort` | Track what an effect does over time, and sort the types by whether they stand still. |
 | `index` / `complete` | List a unit's records; count a unit against the bar for a finished one. |
 | `document` | Read a published document's tables into `documents/`, a page at a time — `init`, `show`, `add`, `status`. |
 
-Commands that read saved records or a document rather than the hardware — `watch-set`, `motion`, `decay`, `verdict`, `balance`, `vibrato`, `plan`, `block`, `efx-params`, `efx-motion`, `efx-sort`, `complete`, `index` and `document` — need no unit attached, so they run while another measurement holds the hardware.
+Commands that read saved records or a document rather than the hardware — `watch-set`, `motion`, `decay`, `phase`, `verdict`, `balance`, `vibrato`, `plan`, `block`, `efx-params`, `efx-motion`, `efx-sort`, `complete`, `index` and `document` — need no unit attached, so they run while another measurement holds the hardware.
 
 ## Data format
 
@@ -111,7 +111,8 @@ data/units/<manufacturer>-<model>-<n>/
   efx-params/               one insertion effect type's parameters
   balance/                  what a parameter did to the level between channels
   transfer/                 what the path did to a swept sine
-  motion/  decay/  vibrato/ an effect's modulation, its decay, a take's pitch
+  motion/  decay/  phase/   an effect's modulation, its decay, the angle it
+  vibrato/                  turns each band by, a take's pitch
   efx-motion/  efx-sort/    which effect types stand still, and which do not
 ```
 

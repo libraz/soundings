@@ -323,8 +323,18 @@ separates a parameter the unit stores from one it is heard through. A parameter
 can be stored and not audible; the address-space stages cannot tell those apart
 and this one can.
 
-`transfer`, `motion` and `decay` measure an analogue path, a time-varying effect
-and an effect's tail. `motion` and `decay` read takes and need no unit attached.
+`transfer`, `motion`, `decay` and `phase` measure an analogue path, a time-varying
+effect, an effect's tail and the angle an effect turns each band by. All but
+`transfer` read takes and need no unit attached.
+
+`phase` carries a control the others do not need. It measures between two takes of
+one note, which works only where the two takes are the same waveform, so every
+band is published with the coherence of that band beside it: a phase measured
+where the takes carry different signals is the angle between two unrelated things
+and is as steady and as plausible as a real one. An unknown delay between two
+takes is a straight line in frequency and cannot be separated from a delay the
+effect put there, so the line is removed, what was removed is published in
+samples, and the figure with it still in is published beside the figure without.
 
 ### 14. Whole blocks
 
