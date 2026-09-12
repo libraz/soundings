@@ -1,0 +1,1362 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "phase",
+    "invocation": [
+      "phase",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-00-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-m1freq-000-00.wav",
+      "--control",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-01-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-02-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-03-00.wav"
+    ],
+    "measured_at": "2026-09-12T21:28:40+00:00",
+    "elapsed_s": 0.0,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "type_id": "01 00",
+  "address": "40 03 07",
+  "value": 0,
+  "stimulus": "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0",
+  "takes_from": ".cache/takes/where-the-eq-hinges",
+  "dry": ".cache/takes/where-the-eq-hinges/held-126-flat-00-00.wav",
+  "wet": ".cache/takes/where-the-eq-hinges/held-126-m1freq-000-00.wav",
+  "control_from": [
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-00-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-01-00.wav"
+    ],
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-00-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-02-00.wav"
+    ],
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-00-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-03-00.wav"
+    ],
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-01-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-02-00.wav"
+    ],
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-01-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-03-00.wav"
+    ],
+    [
+      ".cache/takes/where-the-eq-hinges/held-126-flat-02-00.wav",
+      ".cache/takes/where-the-eq-hinges/held-126-flat-03-00.wav"
+    ]
+  ],
+  "sample_rate": 48000,
+  "channel": {
+    "read": 2,
+    "reached_db": [
+      -70.0,
+      -75.2,
+      -52.7,
+      -62.4,
+      -240.0,
+      -240.0
+    ],
+    "why": "Which channel of the interface both takes were read from, and the highest each channel reached across the two. One channel for the pair rather than the loudest of each take: this measurement subtracts one take from the other, and an interface carries inputs the unit is not on which are not silent, so a take whose output fell below one of them would be answered from that input and subtracted from a different one -- leaving a residual of nothing that reads as an effect doing nothing."
+  },
+  "lead_s": 0.6,
+  "limits": "A phase is reported per band and a band is a width: where the phase turns quickly inside one band the figures either side of the turn are averages over a turning quantity and the coherence of that band falls, which is what says so. The measurement is between two takes of one chain, so everything the two takes share -- the converter, the cable, the unit's output stage -- cancels and is not in these figures; what is in them is the difference the swept byte made. Nothing here is a delay, a group delay or an order: those are a fit across bands and the fit is not made in this archive.",
+  "bands_hz": [
+    100,
+    125,
+    160,
+    200,
+    250,
+    315,
+    400,
+    500,
+    630,
+    800,
+    1000,
+    1250,
+    1600,
+    2000,
+    2500,
+    3150,
+    4000,
+    5000,
+    6300,
+    8000,
+    10000,
+    12500
+  ],
+  "band_width_octaves": 0.333333,
+  "block_s": 1.0,
+  "window_samples": 2048,
+  "transforms": 360,
+  "aligned_by": {
+    "lag_samples": [
+      -281.7,
+      -281.392,
+      -250.346,
+      -222.197,
+      -216.666,
+      -203.551,
+      -207.487,
+      -204.082
+    ],
+    "drift_samples": 77.618,
+    "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+  },
+  "less_a_delay_of": {
+    "samples": -231.5413,
+    "fitted_over_bins": 585,
+    "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+  },
+  "readable_above": 0.5,
+  "why_coherence": "How much of the two takes is the same signal, band by band, on a scale where one is the same waveform and zero is two unrelated ones. It is the control on every phase in this record and not a quality note beside them: a phase measured between two takes that do not carry the same signal in a band is the angle between two unrelated things, and it is as steady and as plausible as a real one. Bands below the stated line are published rather than dropped, because which bands a stimulus carries into a measurement is a fact about the stimulus and belongs in the record that the stimulus produced.",
+  "readings": [
+    {
+      "hz": 100,
+      "phase_deg": -4.85,
+      "phase_deg_less_delay": 33.74,
+      "coherence": 0.953,
+      "bins": 1
+    },
+    {
+      "hz": 125,
+      "phase_deg": -13.52,
+      "phase_deg_less_delay": 34.73,
+      "coherence": 0.929,
+      "bins": 1
+    },
+    {
+      "hz": 160,
+      "phase_deg": -46.86,
+      "phase_deg_less_delay": 14.89,
+      "coherence": 0.891,
+      "bins": 1
+    },
+    {
+      "hz": 200,
+      "phase_deg": -88.7,
+      "phase_deg_less_delay": -11.51,
+      "coherence": 0.876,
+      "bins": 2
+    },
+    {
+      "hz": 250,
+      "phase_deg": -121.69,
+      "phase_deg_less_delay": -25.21,
+      "coherence": 0.9,
+      "bins": 2
+    },
+    {
+      "hz": 315,
+      "phase_deg": -146.77,
+      "phase_deg_less_delay": -25.19,
+      "coherence": 0.869,
+      "bins": 4
+    },
+    {
+      "hz": 400,
+      "phase_deg": -172.59,
+      "phase_deg_less_delay": -18.21,
+      "coherence": 0.813,
+      "bins": 4
+    },
+    {
+      "hz": 500,
+      "phase_deg": 155.07,
+      "phase_deg_less_delay": -11.95,
+      "coherence": 0.741,
+      "bins": 4
+    },
+    {
+      "hz": 630,
+      "phase_deg": 112.86,
+      "phase_deg_less_delay": -4.0,
+      "coherence": 0.637,
+      "bins": 7
+    },
+    {
+      "hz": 800,
+      "phase_deg": 57.16,
+      "phase_deg_less_delay": 5.91,
+      "coherence": 0.511,
+      "bins": 8
+    },
+    {
+      "hz": 1000,
+      "phase_deg": -14.34,
+      "phase_deg_less_delay": 11.6,
+      "coherence": 0.344,
+      "bins": 9
+    },
+    {
+      "hz": 1250,
+      "phase_deg": -108.68,
+      "phase_deg_less_delay": 13.75,
+      "coherence": 0.25,
+      "bins": 12
+    },
+    {
+      "hz": 1600,
+      "phase_deg": 117.23,
+      "phase_deg_less_delay": 14.73,
+      "coherence": 0.158,
+      "bins": 16
+    },
+    {
+      "hz": 2000,
+      "phase_deg": -45.0,
+      "phase_deg_less_delay": 6.88,
+      "coherence": 0.106,
+      "bins": 19
+    },
+    {
+      "hz": 2500,
+      "phase_deg": 141.24,
+      "phase_deg_less_delay": 26.09,
+      "coherence": 0.029,
+      "bins": 24
+    },
+    {
+      "hz": 3150,
+      "phase_deg": -147.63,
+      "phase_deg_less_delay": -11.92,
+      "coherence": 0.006,
+      "bins": 31
+    },
+    {
+      "hz": 4000,
+      "phase_deg": -133.63,
+      "phase_deg_less_delay": -29.87,
+      "coherence": 0.021,
+      "bins": 39
+    },
+    {
+      "hz": 5000,
+      "phase_deg": -100.79,
+      "phase_deg_less_delay": 28.92,
+      "coherence": 0.012,
+      "bins": 49
+    },
+    {
+      "hz": 6300,
+      "phase_deg": 171.78,
+      "phase_deg_less_delay": 83.2,
+      "coherence": 0.013,
+      "bins": 62
+    },
+    {
+      "hz": 8000,
+      "phase_deg": 7.81,
+      "phase_deg_less_delay": -144.66,
+      "coherence": 0.007,
+      "bins": 79
+    },
+    {
+      "hz": 10000,
+      "phase_deg": 15.32,
+      "phase_deg_less_delay": -85.28,
+      "coherence": 0.001,
+      "bins": 98
+    },
+    {
+      "hz": 12500,
+      "phase_deg": -10.57,
+      "phase_deg_less_delay": 133.68,
+      "coherence": 0.004,
+      "bins": 123
+    }
+  ],
+  "control": {
+    "largest_deg": 7.44,
+    "largest_at_hz": 100,
+    "readable_bands": 11,
+    "pairs": [
+      {
+        "largest_deg": 7.44,
+        "largest_at_hz": 100,
+        "readable_bands": 11,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": -48.61,
+            "phase_deg_less_delay": -7.44,
+            "coherence": 0.967,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": -55.92,
+            "phase_deg_less_delay": -4.46,
+            "coherence": 0.969,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": -68.24,
+            "phase_deg_less_delay": -2.38,
+            "coherence": 0.961,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": -86.75,
+            "phase_deg_less_delay": -4.41,
+            "coherence": 0.95,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": -106.58,
+            "phase_deg_less_delay": -3.66,
+            "coherence": 0.935,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": -131.84,
+            "phase_deg_less_delay": -2.16,
+            "coherence": 0.908,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": -166.81,
+            "phase_deg_less_delay": -2.14,
+            "coherence": 0.872,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": 150.83,
+            "phase_deg_less_delay": -3.34,
+            "coherence": 0.809,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": 96.23,
+            "phase_deg_less_delay": -4.42,
+            "coherence": 0.751,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": 26.02,
+            "phase_deg_less_delay": -4.64,
+            "coherence": 0.648,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": -54.5,
+            "phase_deg_less_delay": -2.83,
+            "coherence": 0.509,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": -159.99,
+            "phase_deg_less_delay": -5.41,
+            "coherence": 0.403,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": 57.44,
+            "phase_deg_less_delay": -3.88,
+            "coherence": 0.299,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": -112.25,
+            "phase_deg_less_delay": -8.91,
+            "coherence": 0.186,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": 38.71,
+            "phase_deg_less_delay": -12.12,
+            "coherence": 0.156,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": 116.08,
+            "phase_deg_less_delay": -27.15,
+            "coherence": 0.105,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": 127.75,
+            "phase_deg_less_delay": -25.57,
+            "coherence": 0.052,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": 84.52,
+            "phase_deg_less_delay": -17.12,
+            "coherence": 0.037,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": -132.26,
+            "phase_deg_less_delay": -58.73,
+            "coherence": 0.012,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": -145.17,
+            "phase_deg_less_delay": -91.8,
+            "coherence": 0.005,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": 169.41,
+            "phase_deg_less_delay": -33.88,
+            "coherence": 0.004,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": -151.44,
+            "phase_deg_less_delay": -45.55,
+            "coherence": 0.009,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            -83.157,
+            -86.601,
+            -70.633,
+            -46.873,
+            -18.219,
+            10.301,
+            20.86,
+            28.099
+          ],
+          "drift_samples": 111.256,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": -31.1105,
+          "fitted_over_bins": 1029,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      },
+      {
+        "largest_deg": 4.22,
+        "largest_at_hz": 630,
+        "readable_bands": 10,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": -20.64,
+            "phase_deg_less_delay": -3.86,
+            "coherence": 0.974,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": -24.13,
+            "phase_deg_less_delay": -3.16,
+            "coherence": 0.978,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": -28.94,
+            "phase_deg_less_delay": -2.1,
+            "coherence": 0.967,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": -36.12,
+            "phase_deg_less_delay": -2.57,
+            "coherence": 0.956,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": -43.57,
+            "phase_deg_less_delay": -1.64,
+            "coherence": 0.939,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": -54.79,
+            "phase_deg_less_delay": -1.95,
+            "coherence": 0.892,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": -68.17,
+            "phase_deg_less_delay": -1.07,
+            "coherence": 0.84,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": -87.27,
+            "phase_deg_less_delay": -3.41,
+            "coherence": 0.762,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": -109.89,
+            "phase_deg_less_delay": -4.22,
+            "coherence": 0.684,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": -135.36,
+            "phase_deg_less_delay": -1.18,
+            "coherence": 0.564,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": -167.55,
+            "phase_deg_less_delay": 0.18,
+            "coherence": 0.401,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": 149.0,
+            "phase_deg_less_delay": -1.34,
+            "coherence": 0.297,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": 91.21,
+            "phase_deg_less_delay": -0.42,
+            "coherence": 0.169,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": 23.04,
+            "phase_deg_less_delay": -1.5,
+            "coherence": 0.085,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": -55.38,
+            "phase_deg_less_delay": 3.95,
+            "coherence": 0.038,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": -111.11,
+            "phase_deg_less_delay": 57.25,
+            "coherence": 0.005,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": 169.13,
+            "phase_deg_less_delay": 120.05,
+            "coherence": 0.007,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": -18.2,
+            "phase_deg_less_delay": 100.46,
+            "coherence": 0.011,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": 90.74,
+            "phase_deg_less_delay": 67.44,
+            "coherence": 0.005,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": 76.36,
+            "phase_deg_less_delay": -21.79,
+            "coherence": 0.0,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": 1.59,
+            "phase_deg_less_delay": -121.09,
+            "coherence": 0.008,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": -84.3,
+            "phase_deg_less_delay": -147.65,
+            "coherence": 0.001,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            93.715,
+            77.164,
+            76.487,
+            78.965,
+            106.912,
+            124.895,
+            139.212,
+            168.095
+          ],
+          "drift_samples": 74.38,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": 108.3642,
+          "fitted_over_bins": 697,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      },
+      {
+        "largest_deg": 3.37,
+        "largest_at_hz": 250,
+        "readable_bands": 9,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": -24.23,
+            "phase_deg_less_delay": -3.25,
+            "coherence": 0.974,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": -28.47,
+            "phase_deg_less_delay": -2.24,
+            "coherence": 0.968,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": -35.86,
+            "phase_deg_less_delay": -2.3,
+            "coherence": 0.955,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": -44.77,
+            "phase_deg_less_delay": -2.81,
+            "coherence": 0.94,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": -55.82,
+            "phase_deg_less_delay": -3.37,
+            "coherence": 0.92,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": -68.91,
+            "phase_deg_less_delay": -2.82,
+            "coherence": 0.867,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": -86.56,
+            "phase_deg_less_delay": -2.63,
+            "coherence": 0.798,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": -107.63,
+            "phase_deg_less_delay": -2.73,
+            "coherence": 0.701,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": -134.17,
+            "phase_deg_less_delay": -2.0,
+            "coherence": 0.58,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": -172.39,
+            "phase_deg_less_delay": -4.55,
+            "coherence": 0.458,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": 146.97,
+            "phase_deg_less_delay": -3.22,
+            "coherence": 0.301,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": 98.34,
+            "phase_deg_less_delay": 0.59,
+            "coherence": 0.176,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": 30.13,
+            "phase_deg_less_delay": 5.81,
+            "coherence": 0.072,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": -44.78,
+            "phase_deg_less_delay": 14.83,
+            "coherence": 0.005,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": 105.21,
+            "phase_deg_less_delay": -90.28,
+            "coherence": 0.004,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": -69.49,
+            "phase_deg_less_delay": -128.61,
+            "coherence": 0.014,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": 77.58,
+            "phase_deg_less_delay": -163.2,
+            "coherence": 0.009,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": -167.47,
+            "phase_deg_less_delay": 161.56,
+            "coherence": 0.04,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": -99.53,
+            "phase_deg_less_delay": 142.24,
+            "coherence": 0.049,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": -103.14,
+            "phase_deg_less_delay": 135.3,
+            "coherence": 0.006,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": -45.55,
+            "phase_deg_less_delay": -107.5,
+            "coherence": 0.001,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": 82.61,
+            "phase_deg_less_delay": -174.83,
+            "coherence": 0.001,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            12.593,
+            8.002,
+            13.891,
+            45.753,
+            66.237,
+            56.412,
+            41.888,
+            46.589
+          ],
+          "drift_samples": 33.996,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": 35.974,
+          "fitted_over_bins": 522,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      },
+      {
+        "largest_deg": 4.34,
+        "largest_at_hz": 800,
+        "readable_bands": 10,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": 28.86,
+            "phase_deg_less_delay": 3.79,
+            "coherence": 0.986,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": 32.9,
+            "phase_deg_less_delay": 1.56,
+            "coherence": 0.984,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": 40.65,
+            "phase_deg_less_delay": 0.54,
+            "coherence": 0.974,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": 52.35,
+            "phase_deg_less_delay": 2.21,
+            "coherence": 0.965,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": 65.14,
+            "phase_deg_less_delay": 2.47,
+            "coherence": 0.945,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": 79.69,
+            "phase_deg_less_delay": 0.72,
+            "coherence": 0.909,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": 101.97,
+            "phase_deg_less_delay": 1.69,
+            "coherence": 0.856,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": 125.96,
+            "phase_deg_less_delay": 0.61,
+            "coherence": 0.805,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": 159.13,
+            "phase_deg_less_delay": 1.19,
+            "coherence": 0.731,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": -155.11,
+            "phase_deg_less_delay": 4.34,
+            "coherence": 0.609,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": -106.78,
+            "phase_deg_less_delay": 2.53,
+            "coherence": 0.461,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": -40.64,
+            "phase_deg_less_delay": 5.99,
+            "coherence": 0.324,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": 50.03,
+            "phase_deg_less_delay": 8.92,
+            "coherence": 0.203,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": 159.68,
+            "phase_deg_less_delay": 18.28,
+            "coherence": 0.107,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": -64.1,
+            "phase_deg_less_delay": 29.16,
+            "coherence": 0.068,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": 127.55,
+            "phase_deg_less_delay": 57.85,
+            "coherence": 0.016,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": 48.9,
+            "phase_deg_less_delay": 126.12,
+            "coherence": 0.003,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": -67.43,
+            "phase_deg_less_delay": 119.09,
+            "coherence": 0.004,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": 67.07,
+            "phase_deg_less_delay": -72.32,
+            "coherence": 0.001,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": 151.44,
+            "phase_deg_less_delay": -54.13,
+            "coherence": 0.007,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": -18.72,
+            "phase_deg_less_delay": -5.68,
+            "coherence": 0.003,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": -68.38,
+            "phase_deg_less_delay": 37.93,
+            "coherence": 0.015,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            172.785,
+            162.644,
+            145.328,
+            121.313,
+            123.079,
+            112.338,
+            115.795,
+            138.514
+          ],
+          "drift_samples": -34.271,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": 137.5739,
+          "fitted_over_bins": 855,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      },
+      {
+        "largest_deg": 4.42,
+        "largest_at_hz": 100,
+        "readable_bands": 9,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": 24.95,
+            "phase_deg_less_delay": 4.42,
+            "coherence": 0.974,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": 28.31,
+            "phase_deg_less_delay": 2.65,
+            "coherence": 0.975,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": 33.6,
+            "phase_deg_less_delay": 0.75,
+            "coherence": 0.961,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": 43.44,
+            "phase_deg_less_delay": 2.38,
+            "coherence": 0.947,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": 52.7,
+            "phase_deg_less_delay": 1.38,
+            "coherence": 0.925,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": 65.15,
+            "phase_deg_less_delay": 0.48,
+            "coherence": 0.871,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": 82.74,
+            "phase_deg_less_delay": 0.62,
+            "coherence": 0.807,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": 104.49,
+            "phase_deg_less_delay": 1.83,
+            "coherence": 0.716,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": 132.15,
+            "phase_deg_less_delay": 2.8,
+            "coherence": 0.609,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": 164.79,
+            "phase_deg_less_delay": 0.55,
+            "coherence": 0.494,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": -155.66,
+            "phase_deg_less_delay": -0.97,
+            "coherence": 0.312,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": -101.84,
+            "phase_deg_less_delay": 1.53,
+            "coherence": 0.217,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": -34.11,
+            "phase_deg_less_delay": -2.6,
+            "coherence": 0.103,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": 52.5,
+            "phase_deg_less_delay": 1.89,
+            "coherence": 0.038,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": 146.17,
+            "phase_deg_less_delay": -7.1,
+            "coherence": 0.013,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": 66.18,
+            "phase_deg_less_delay": 139.46,
+            "coherence": 0.002,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": -120.3,
+            "phase_deg_less_delay": 138.47,
+            "coherence": 0.007,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": -147.59,
+            "phase_deg_less_delay": -94.13,
+            "coherence": 0.0,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": 178.61,
+            "phase_deg_less_delay": -34.83,
+            "coherence": 0.013,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": -161.54,
+            "phase_deg_less_delay": -4.01,
+            "coherence": 0.004,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": 65.04,
+            "phase_deg_less_delay": 171.95,
+            "coherence": 0.001,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": 41.3,
+            "phase_deg_less_delay": -5.05,
+            "coherence": 0.002,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            93.457,
+            92.876,
+            83.989,
+            90.881,
+            80.397,
+            45.368,
+            18.661,
+            17.307
+          ],
+          "drift_samples": -76.15,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": 65.6255,
+          "fitted_over_bins": 555,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      },
+      {
+        "largest_deg": 2.16,
+        "largest_at_hz": 250,
+        "readable_bands": 9,
+        "readings": [
+          {
+            "hz": 100,
+            "phase_deg": -4.59,
+            "phase_deg_less_delay": 0.28,
+            "coherence": 0.976,
+            "bins": 1
+          },
+          {
+            "hz": 125,
+            "phase_deg": -5.24,
+            "phase_deg_less_delay": 0.85,
+            "coherence": 0.975,
+            "bins": 1
+          },
+          {
+            "hz": 160,
+            "phase_deg": -8.01,
+            "phase_deg_less_delay": -0.22,
+            "coherence": 0.958,
+            "bins": 1
+          },
+          {
+            "hz": 200,
+            "phase_deg": -10.11,
+            "phase_deg_less_delay": -0.38,
+            "coherence": 0.946,
+            "bins": 2
+          },
+          {
+            "hz": 250,
+            "phase_deg": -14.33,
+            "phase_deg_less_delay": -2.16,
+            "coherence": 0.918,
+            "bins": 2
+          },
+          {
+            "hz": 315,
+            "phase_deg": -17.0,
+            "phase_deg_less_delay": -1.67,
+            "coherence": 0.856,
+            "bins": 4
+          },
+          {
+            "hz": 400,
+            "phase_deg": -21.36,
+            "phase_deg_less_delay": -1.89,
+            "coherence": 0.779,
+            "bins": 4
+          },
+          {
+            "hz": 500,
+            "phase_deg": -24.73,
+            "phase_deg_less_delay": -0.39,
+            "coherence": 0.684,
+            "bins": 4
+          },
+          {
+            "hz": 630,
+            "phase_deg": -30.59,
+            "phase_deg_less_delay": 0.08,
+            "coherence": 0.57,
+            "bins": 7
+          },
+          {
+            "hz": 800,
+            "phase_deg": -45.76,
+            "phase_deg_less_delay": -6.81,
+            "coherence": 0.419,
+            "bins": 8
+          },
+          {
+            "hz": 1000,
+            "phase_deg": -54.96,
+            "phase_deg_less_delay": -6.27,
+            "coherence": 0.222,
+            "bins": 9
+          },
+          {
+            "hz": 1250,
+            "phase_deg": -67.96,
+            "phase_deg_less_delay": -7.1,
+            "coherence": 0.108,
+            "bins": 12
+          },
+          {
+            "hz": 1600,
+            "phase_deg": -93.77,
+            "phase_deg_less_delay": -15.88,
+            "coherence": 0.024,
+            "bins": 16
+          },
+          {
+            "hz": 2000,
+            "phase_deg": 34.89,
+            "phase_deg_less_delay": 132.25,
+            "coherence": 0.0,
+            "bins": 19
+          },
+          {
+            "hz": 2500,
+            "phase_deg": 125.4,
+            "phase_deg_less_delay": -112.9,
+            "coherence": 0.009,
+            "bins": 24
+          },
+          {
+            "hz": 3150,
+            "phase_deg": 67.44,
+            "phase_deg_less_delay": -139.21,
+            "coherence": 0.016,
+            "bins": 31
+          },
+          {
+            "hz": 4000,
+            "phase_deg": -3.98,
+            "phase_deg_less_delay": -169.25,
+            "coherence": 0.019,
+            "bins": 39
+          },
+          {
+            "hz": 5000,
+            "phase_deg": -147.68,
+            "phase_deg_less_delay": 95.74,
+            "coherence": 0.007,
+            "bins": 49
+          },
+          {
+            "hz": 6300,
+            "phase_deg": -122.17,
+            "phase_deg_less_delay": -175.46,
+            "coherence": 0.004,
+            "bins": 62
+          },
+          {
+            "hz": 8000,
+            "phase_deg": -175.81,
+            "phase_deg_less_delay": -146.35,
+            "coherence": 0.005,
+            "bins": 79
+          },
+          {
+            "hz": 10000,
+            "phase_deg": 64.87,
+            "phase_deg_less_delay": -168.3,
+            "coherence": 0.0,
+            "bins": 98
+          },
+          {
+            "hz": 12500,
+            "phase_deg": 61.52,
+            "phase_deg_less_delay": -49.94,
+            "coherence": 0.002,
+            "bins": 123
+          }
+        ],
+        "aligned_by": {
+          "lag_samples": [
+            -77.686,
+            -69.005,
+            -61.376,
+            -27.071,
+            -39.439,
+            -67.919,
+            -94.743,
+            -119.967
+          ],
+          "drift_samples": -42.281,
+          "why": "Where each block of the take was lined up, in samples, counting from the first sample of the dry take. The take is lined up once by whole samples and each block afterwards by a fraction of one, because the unit's clock and the converter's do not run at the same rate: how far the lag moved from the first block to the last is `drift_samples`, and over a take of a few seconds that is tens of parts per million. Choosing whole samples again per block would be the defect it looks like the cure for -- where the effect has turned the phase near a quarter turn the correlation is nearly as large a sample either side of the truth, so noise chooses between them, neighbouring blocks choose differently, and summing them subtracts half a turn at the top of the range from itself."
+        },
+        "less_a_delay_of": {
+          "samples": -70.5089,
+          "fitted_over_bins": 459,
+          "why": "The delay taken out of every figure beside `phase_deg_less_delay`, in samples, and how many of the transform's bins it was fitted over. An unknown delay between two takes is a straight line through the origin in frequency and so is a delay the effect itself put there: the two cannot be separated by this measurement, and removing the line removes both. What survives it is the part of the phase that is not a delay, which is the part a level and a band energy do not carry either. `phase_deg` beside it is the same figure with the line still in, so a reader who wants it back has it. The fit is made on the transform's own bins rather than on the bands because a lag of a few samples turns the phase through whole turns between one band and the next and through a fraction of one between neighbouring bins, and it is weighted by coherence so that bands the stimulus did not reach do not decide where the line runs."
+        }
+      }
+    ],
+    "why": "Takes of one setting read exactly as the pair above was, every pair of them. What they return is what the method returns for an effect that did nothing, and a figure above the largest of them is a figure and not a reading. Every pair rather than one because one pair is one draw: two repeats that happened to agree draw a bound the run's own noise would cross."
+  },
+  "conclusive": true
+}
