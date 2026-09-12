@@ -78,6 +78,7 @@
     "transfer",
     "motion",
     "decay",
+    "phase",
     "verdict",
     "balance",
     "vibrato",
@@ -2875,6 +2876,120 @@
           "default": "0.5",
           "required": false,
           "help": "seconds of silence at the head of the take; the per-band noise floor is measured in it, and it is what says where a tail stops being a tail",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "phase": {
+      "help": "say what an effect did to the phase of each band, from a dry and a wet take, with no machine attached",
+      "handler": "cmd_phase",
+      "takes_model_id": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "dry",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a take with the effect flat",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "wet",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the same note with the effect doing something",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--control"
+          ],
+          "dest": "control",
+          "nargs": 2,
+          "default": "None",
+          "required": false,
+          "help": "two takes of ONE setting, read exactly as the pair above. A phase between two takes of a note is the alignment's and the stimulus's as well as the effect's, and this is what the method returns when the answer is nothing. Without it the record says what a phase was and not whether it was one",
+          "metavar": [
+            "TAKE",
+            "TAKE"
+          ],
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--band-set"
+          ],
+          "dest": "band_set",
+          "nargs": null,
+          "default": "'third-octave'",
+          "required": false,
+          "help": "which set of bands the phase is reported over",
+          "metavar": null,
+          "choices": [
+            "third-octave",
+            "twelfth-octave"
+          ],
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--block"
+          ],
+          "dest": "block",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "seconds aligned and transformed as one. The unit's clock and the converter's do not run at the same rate, so a block long enough for them to move a sample reports a phase that is turning inside it and a coherence that has collapsed",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of the take, dropped before anything is measured. Every stimulus in the catalogue records 0.6",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

@@ -155,6 +155,37 @@ def channel_reaching(
     return int(np.argmax(highest)), highest
 
 
+WHY_CHANNEL = (
+    "Which channel of the interface both takes were read from, and the highest each channel "
+    "reached across the two. One channel for the pair rather than the loudest of each take: this "
+    "measurement subtracts one take from the other, and an interface carries inputs the unit is "
+    "not on which are not silent, so a take whose output fell below one of them would be answered "
+    "from that input and subtracted from a different one -- leaving a residual of nothing that "
+    "reads as an effect doing nothing."
+)
+
+
+def read_pair(dry_path, wet_path, *, on: int | None = None):
+    """Load two takes, read both from one channel, and say which and what each reached.
+
+    `on` names the channel instead of choosing one, which is what a second pair
+    read as a control over the first needs: a floor measured on the other leg of
+    the unit bounds a comparison that was never made.
+
+    Here rather than beside the commands that read pairs, because a publisher
+    building the same records without the command line has to make the same choice
+    and a second implementation of it is a second thing to get wrong.
+    """
+    dry, dry_rate = read(dry_path)
+    wet, wet_rate = read(wet_path)
+    if dry_rate != wet_rate:
+        raise SystemExit(f"the two takes were captured at {dry_rate} and {wet_rate} Hz")
+    chosen, reached = channel_across(dry, wet)
+    picked = chosen if on is None else on
+    said = {"read": picked, "reached_db": reached, "why": WHY_CHANNEL}
+    return channel(dry, picked), channel(wet, picked), dry_rate, said
+
+
 @dataclass
 class Store:
     """A directory of takes and the manifest that says what they are."""
@@ -283,6 +314,7 @@ def capturing(setting: str, group: str) -> re.Pattern:
 
 __all__ = [
     "Store",
+    "WHY_CHANNEL",
     "capturing",
     "channel",
     "channel_across",
@@ -294,5 +326,6 @@ __all__ = [
     "named_by",
     "not_matching",
     "read",
+    "read_pair",
     "write",
 ]
