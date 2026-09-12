@@ -1,0 +1,72 @@
+{
+  "class": "filter-frequency",
+  "what_the_class_is": "Not an effect but one parameter of many of them: the byte that says where a filter, a peak or a notch sits. Thirty-six addresses across the effect list take one, printed as a pair of frequencies -- 200 - 6.3k, 315 - 8k/Bypass, 100 - 8.0k and three more -- and the question is the same at every one of them. What quantity does the byte stand for, and does it stand for a hundred and twenty-eight of them or for a handful repeated.",
+
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A frequency is a table entry and not a formula. Turning a byte into a filter needs coefficients, not a frequency, and computing them costs a routine with a sine and a tangent in it; a table of coefficients indexed by the byte costs a lookup and the memory of the entries.",
+      "The table is short. What is stored per entry is a set of coefficients rather than one number, so entries are expensive in a way that a rate table's entries are not, and a designer buys as few as the ear needs.",
+      "The entries are the third octaves. It is the series every filter datasheet, graphic equaliser and analyser of the period is laid out in, it is what the page prints its ends in, and it is what a person writing the table by hand would have had in front of them.",
+      "The stride is a power of two. A hundred and twenty-eight settings over a table of sixteen is eight settings each, and dividing by eight is a shift; a table whose length did not divide the byte that way would cost a divide on every parameter change.",
+      "Where the entries run out before the byte does, the settings past the end return the last one. A clamp is cheaper than a wrap and safer than neither."
+    ],
+    "would_be_wrong_if": "Two settings the page's range puts inside one entry turned out to give different frequencies, at a resolution the run can tell apart -- or the frequencies turned out not to be a round series at all."
+  },
+
+  "candidates": [
+    {
+      "id": "third-octave-table-of-sixteen",
+      "what": "The named third octaves from the printed bottom to the printed top, indexed by the byte's top four bits. For 200 - 6.3k that is 200, 250, 315, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k, 6.3k, eight settings each.",
+      "predicts": {
+        "neighbouring_settings": "Eight settings share an entry, so a run asking two settings four apart finds them identical and a run asking two eight apart finds them a third of an octave apart.",
+        "the_step": "A third of an octave everywhere, and the same third octaves whatever the printed ends, windowed by them.",
+        "a_range_of_twenty_entries": "100 - 8.0k holds twenty third octaves and sixteen entries will not hold them, so either that range is a longer table with a different stride or the series is not what fills it. This candidate does not say which, and the run that would is in the queue."
+      }
+    },
+    {
+      "id": "table-of-thirty-two-between-the-printed-ends",
+      "what": "Twice as fine: thirty-two entries at equal ratios between the printed ends, four settings each.",
+      "predicts": {
+        "neighbouring_settings": "Four settings share an entry, so two settings four apart are a sixth of an octave apart and not identical.",
+        "the_step": "A sixth of an octave, which on this range is near enough a half-third that only the repeats separate it from the winner.",
+        "a_range_of_twenty_entries": "Nothing in particular: the entries are computed from the ends, so any printed range fills the same thirty-two slots."
+      }
+    },
+    {
+      "id": "table-of-eight-between-the-printed-ends",
+      "what": "Half as fine: eight entries at equal ratios between the printed ends, sixteen settings each.",
+      "predicts": {
+        "neighbouring_settings": "Sixteen settings share an entry, so settings 0 and 8 are identical where the winner has already moved.",
+        "the_step": "Seven tenths of an octave, which is audible as a step and would be heard as one.",
+        "a_range_of_twenty_entries": "The same eight entries, from different ends."
+      }
+    },
+    {
+      "id": "geometric-between-the-printed-ends",
+      "what": "No table at all: the printed pair as the ends of a ratio scale over all 128 settings. How a frequency control is laid out where a part can afford to compute one.",
+      "predicts": {
+        "neighbouring_settings": "Differ by a constant small factor and never repeat, so no two settings return the same frequency anywhere.",
+        "the_step": "A fortieth of an octave on this range, well under what the run resolves, so the sweep looks continuous.",
+        "a_range_of_twenty_entries": "Nothing changes: the ends are the whole specification."
+      }
+    },
+    {
+      "id": "straight-line-between-the-printed-ends",
+      "what": "The printed pair as the ends of an evenly divided line in hertz.",
+      "predicts": {
+        "neighbouring_settings": "Differ by a hundred and twenty-seventh of the printed span, which is forty-eight hertz on this range -- a quarter of an octave at the bottom and a hundredth at the top.",
+        "the_step": "Constant in hertz, so the middle setting sits at 3250 Hz where every other candidate here puts it near 1100.",
+        "a_range_of_twenty_entries": "Nothing changes."
+      }
+    }
+  ],
+
+  "what_no_candidate_here_predicts": [
+    "Where the shelf corners sit. A shelf is printed as a pair too -- 200/400, 4k/8k -- but the page's figure and a measurement of a shelf are not defined at the same point on it, and the gap between them grows with the gain. That is a definition to be settled before those slots are evidence about anything, not a table to be identified.",
+    "What Bypass is. Fourteen of the printed ranges end in it and no candidate here says which setting selects it or whether it is an entry of the table or a state beside it.",
+    "The width of what sits at the frequency. Q is a separate byte with its own printed table, and a candidate here that got the centre right and the width wrong would look the same in every figure this class scores."
+  ],
+
+  "note": "Read where a feature sits, not how large it is. A residual in decibels is almost blind to a byte that slides a peak sideways: a sixth of an octave costs a decibel or two on the flanks and nothing at the top, so every candidate in this list fits and none leans. The first pass over this class reported four candidates two bands apart as equivalent for exactly that reason."
+}
