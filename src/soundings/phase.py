@@ -107,7 +107,11 @@ LIMITS = (
     "-- the converter, the cable, the unit's output stage -- cancels and is not in "
     "these figures; what is in them is the difference the swept byte made. Nothing "
     "here is a delay, a group delay or an order: those are a fit across bands and the "
-    "fit is not made in this archive."
+    "fit is not made in this archive. "
+    "`bins` is how many of the transform's own bins the band held, and at the bottom of "
+    "a third octave set that is one: the figure there is an average over the take's "
+    "blocks and not over frequency at all, which is not a worse measurement but is a "
+    "different one, and a band of one bin cannot report that the phase turned inside it."
 )
 
 CONTROL_FAILED = (
@@ -178,7 +182,10 @@ def _agreeing(inside, coherent):
         run += 1
         if run > best_run:
             best_at, best_run = at, run
-    return inside[best_at : best_at + best_run] if best_run >= 8 else inside
+    # Nowhere is not everywhere. A run too short to fit a line over is answered
+    # with no line rather than with one fitted to the whole range, which is a line
+    # through a random walk and a delay through nothing.
+    return inside[best_at : best_at + best_run] if best_run >= 8 else inside[:0]
 
 
 def _line(freq, across, coherent, low: float, high: float):
@@ -195,6 +202,8 @@ def _line(freq, across, coherent, low: float, high: float):
     if inside.size < 8:
         return None, 0
     inside = _agreeing(inside, coherent)
+    if inside.size < 8:
+        return None, 0
     spot = freq[inside]
     turned = np.unwrap(np.angle(across[inside]))
     weight = np.clip(coherent[inside], 0.0, 1.0)
