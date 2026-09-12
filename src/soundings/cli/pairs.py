@@ -227,7 +227,8 @@ def cmd_decay(args: argparse.Namespace) -> int:
 
 def cmd_phase(args: argparse.Namespace) -> int:
     """Say what an effect did to the phase of each band, from a dry and a wet take."""
-    from .. import efxbands, phase as ph
+    from .. import efxbands
+    from .. import phase as ph
 
     centres, width = efxbands.BAND_SETS[args.band_set]
     dry, wet, rate, picked = _pair(args.dry, args.wet)
