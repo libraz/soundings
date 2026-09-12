@@ -98,19 +98,39 @@ def test_two_takes_that_share_no_signal_say_so_rather_than_returning_an_angle() 
     assert all(r["phase_deg"] is not None for r in found["readings"])
 
 
-def test_two_takes_of_one_setting_return_no_phase() -> None:
-    """The control. What the method gives back when the answer is known to be nothing."""
+def repeats(*seeds: int) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Every pair of takes of one setting, which is what a bound is drawn from."""
+    from itertools import combinations
+
     source = noise(1)
-    vouched = phase.control(source + noise(21) * 0.02, source + noise(22) * 0.02, RATE)
+    return [
+        (source + noise(a) * 0.02, source + noise(b) * 0.02)
+        for a, b in combinations(seeds, 2)
+    ]
+
+
+def test_takes_of_one_setting_return_no_phase() -> None:
+    """The control. What the method gives back when the answer is known to be nothing."""
+    vouched = phase.control(repeats(21, 22, 23), RATE)
     assert vouched["readable_bands"] > 10
     assert vouched["largest_deg"] < 10.0
+    assert len(vouched["pairs"]) == 3
+
+
+def test_a_bound_is_drawn_from_every_pair_and_not_from_one() -> None:
+    """One pair is one draw, and two repeats that happened to agree draw a low bound."""
+    many = phase.control(repeats(21, 22, 23, 24), RATE)
+    each = [p["largest_deg"] for p in many["pairs"]]
+    assert len(each) == 6
+    assert many["largest_deg"] == max(each)
+    assert min(each) < max(each)
 
 
 def test_a_phase_standing_above_the_control_is_the_one_the_record_calls_conclusive(
     pair,
 ) -> None:
     source = noise(1)
-    vouched = phase.control(source + noise(21) * 0.02, source + noise(22) * 0.02, RATE)
+    vouched = phase.control(repeats(21, 22, 23), RATE)
     assert phase.is_conclusive(phase.measure(*pair, RATE), vouched)
     # And a pair that is the same signal twice is not, measured the same way.
     flat = phase.measure(source + noise(31) * 0.02, source + noise(32) * 0.02, RATE)

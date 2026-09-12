@@ -352,37 +352,62 @@ def measure(
     }
 
 
-def control(first: np.ndarray, second: np.ndarray, rate: int, **how) -> dict:
-    """The same measurement between two takes of ONE setting.
+def _largest(readings) -> tuple[float | None, float | None]:
+    return max(
+        (
+            (abs(r["phase_deg_less_delay"]), r["hz"])
+            for r in readings
+            if r["phase_deg_less_delay"] is not None
+            and (r["coherence"] or 0.0) >= READABLE
+        ),
+        default=(None, None),
+    )
+
+
+def control(pairs, rate: int, **how) -> dict:
+    """The same measurement between takes of ONE setting, over every pair of them.
 
     What the method returns when the answer is known to be nothing. A phase read
     between two repeats of one setting is the alignment's and the stimulus's, so
     the largest figure it returns in a band this record calls readable is the
     bound every figure in the record has to stand above to be the effect's. A
     negative without this is a claim that the method would have noticed.
+
+    **Every pair of the repeats and not one of them.** One pair is one draw, and
+    two repeats that happened to agree draw a bound that half the other pairs of
+    the same setting would cross -- which is a bound that lets the run's own noise
+    through as a reading. The largest of the pairs is what stands here, and each
+    pair's own figure is kept beside it so a bound set by one outlying take can be
+    seen to have been.
     """
-    found = measure(first, second, rate, **how)
-    worst = max(
-        (
-            (abs(r["phase_deg_less_delay"]), r["hz"])
-            for r in found["readings"]
-            if r["phase_deg_less_delay"] is not None
-            and (r["coherence"] or 0.0) >= READABLE
-        ),
-        default=(None, None),
-    )
+    each = []
+    for first, second in pairs:
+        found = measure(first, second, rate, **how)
+        worst = _largest(found["readings"])
+        each.append(
+            {
+                "largest_deg": None if worst[0] is None else round(worst[0], 2),
+                "largest_at_hz": worst[1],
+                "readable_bands": sum(
+                    1 for r in found["readings"] if (r["coherence"] or 0.0) >= READABLE
+                ),
+                "readings": found["readings"],
+                "aligned_by": found["aligned_by"],
+                "less_a_delay_of": found["less_a_delay_of"],
+            }
+        )
+    standing = [p for p in each if p["largest_deg"] is not None]
+    worst = max(standing, key=lambda p: p["largest_deg"], default=None)
     return {
-        "largest_deg": None if worst[0] is None else round(worst[0], 2),
-        "largest_at_hz": worst[1],
-        "readable_bands": sum(
-            1 for r in found["readings"] if (r["coherence"] or 0.0) >= READABLE
-        ),
-        "readings": found["readings"],
-        "aligned_by": found["aligned_by"],
-        "less_a_delay_of": found["less_a_delay_of"],
-        "why": "Two takes of one setting, read exactly as the pair above was. What it "
-        "returns is what the method returns for an effect that did nothing, and a "
-        "figure above that is a figure and not a reading.",
+        "largest_deg": None if worst is None else worst["largest_deg"],
+        "largest_at_hz": None if worst is None else worst["largest_at_hz"],
+        "readable_bands": max((p["readable_bands"] for p in each), default=0),
+        "pairs": each,
+        "why": "Takes of one setting read exactly as the pair above was, every pair of "
+        "them. What they return is what the method returns for an effect that did "
+        "nothing, and a figure above the largest of them is a figure and not a reading. "
+        "Every pair rather than one because one pair is one draw: two repeats that "
+        "happened to agree draw a bound the run's own noise would cross.",
     }
 
 

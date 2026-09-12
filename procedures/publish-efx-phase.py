@@ -22,10 +22,21 @@ the null, and it is published as a record rather than kept as a number so that
 what this method returns for a byte that did nothing is in the archive next to
 what it returns for bytes that did.
 
-**Every record carries a control of its own** -- a second pair of flat takes, read
-on the channel the record's own pair was read on. A phase between two takes of one
-note carries the alignment and the stimulus as well as the effect, and without
-that pair the record says what a phase was and not whether it was one.
+**Every record carries a control of its own** -- every pair of the run's flat
+takes, read on the channel the record's own pair was read on. A phase between two
+takes of one note carries the alignment and the stimulus as well as the effect,
+and without those pairs the record says what a phase was and not whether it was
+one. Every pair rather than one because one pair is one draw: measured here, the
+pairs of one run's four repeats disagree with each other by more than some of the
+rows disagree with the flat setting, so a bound taken from whichever pair came
+first would pass the run's own noise as a reading, and three of these records
+lost a verdict when the bound was widened to all of them.
+
+**The null's own pair is left inside its bound rather than taken out of it.**
+Excluding the pair being measured is right for a row and wrong for a null: the
+null IS one of the repeats, so holding it against the largest of the others makes
+the largest of the draws stand above the rest by construction, about one time in
+as many pairs as there are.
 
 No hardware.
 """
@@ -36,6 +47,7 @@ import json
 import re
 import sys
 import time
+from itertools import combinations
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -114,19 +126,25 @@ def ends(where: Path, setting: str) -> list[tuple[int, Path]]:
     return [found[0]] if len(found) == 1 else [found[0], found[-1]]
 
 
-def one(dry: Path, wet: Path, control: tuple[Path, Path], *, type_id: str, address: str,
+def one(dry: Path, wet: Path, repeats: list[Path], *, type_id: str, address: str,
         value, where: Path) -> dict:
-    """One pair read, with its control read on the same channel."""
+    """One pair read, with every pair of the run's repeats read on the same channel."""
     dry_frames, wet_frames, rate, picked = takes.read_pair(str(dry), str(wet))
     head = int(LEAD_S * rate)
     how = {"bands": efxbands.THIRD_OCTAVES, "width_octaves": 1 / 3}
     found = phase.measure(dry_frames[head:], wet_frames[head:], rate, **how)
-    first, second, control_rate, _ = takes.read_pair(
-        str(control[0]), str(control[1]), on=picked["read"]
-    )
-    if control_rate != rate:
-        raise SystemExit(f"the control pair is {control_rate} Hz and the pair is {rate} Hz")
-    vouched = phase.control(first[head:], second[head:], rate, **how)
+    # Every pair of the repeats, including the pair being measured where that pair
+    # is itself two repeats. A bound drawn from one pair is one draw; a bound drawn
+    # from every pair BUT the one measured makes the largest of the draws stand
+    # above the rest of them by construction, which is what a null record is.
+    control = list(combinations(repeats, 2))
+    loaded = []
+    for a, b in control:
+        first, second, control_rate, _ = takes.read_pair(str(a), str(b), on=picked["read"])
+        if control_rate != rate:
+            raise SystemExit(f"a control pair is {control_rate} Hz and the pair is {rate} Hz")
+        loaded.append((first[head:], second[head:]))
+    vouched = phase.control(loaded, rate, **how)
     return {
         "type_id": type_id,
         "address": address,
@@ -135,7 +153,7 @@ def one(dry: Path, wet: Path, control: tuple[Path, Path], *, type_id: str, addre
         "takes_from": str(where),
         "dry": str(dry),
         "wet": str(wet),
-        "control_from": [str(control[0]), str(control[1])],
+        "control_from": [[str(a), str(b)] for a, b in control],
         "sample_rate": rate,
         "channel": picked,
         "lead_s": LEAD_S,
@@ -209,26 +227,25 @@ def main(argv: list[str]) -> int:
             print(f"  {run['dir']}: {len(repeats)} flat takes, and a pair and a "
                   "control of its own need four")
             continue
-        control = (repeats[1], repeats[2])
         kind = run["type"].replace(" ", "-")
 
         # The null first, so that what the method returns for a byte that did
         # nothing is read before anything it returns for a byte that did.
-        payload = one(repeats[0], repeats[3], control, type_id=run["type"],
+        payload = one(repeats[0], repeats[-1], repeats, type_id=run["type"],
                       address=None, value=None, where=where)
         path = out / f"{kind}-flat-{run['dir']}.json"
-        write(payload, path, ["phase", str(repeats[0]), str(repeats[3]),
-                              "--control", str(control[0]), str(control[1])])
+        write(payload, path, ["phase", str(repeats[0]), str(repeats[-1]),
+                              "--control", *[str(p) for p in repeats[1:-1]]])
         print(f"  {path.name}  {said(payload)}")
         written += 1
 
         for address, setting in run["rows"]:
             for value, wet in ends(where, setting):
-                payload = one(repeats[0], wet, control, type_id=run["type"],
+                payload = one(repeats[0], wet, repeats, type_id=run["type"],
                               address=address, value=value, where=where)
                 path = out / f"{kind}-{address.split()[-1]}-{value:03d}-{run['dir']}.json"
                 write(payload, path, ["phase", str(repeats[0]), str(wet),
-                                      "--control", str(control[0]), str(control[1])])
+                                      "--control", *[str(p) for p in repeats[1:]]])
                 print(f"  {path.name}  {said(payload)}")
                 written += 1
 

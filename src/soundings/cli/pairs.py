@@ -11,6 +11,7 @@ recorded once and asked questions afterwards.
 from __future__ import annotations
 
 import argparse
+from itertools import combinations
 
 from . import options, report
 from .blocks import BAND_SET_NAMES
@@ -88,12 +89,14 @@ def register(sub) -> None:
     p.add_argument("wet", help="the same note with the effect doing something")
     p.add_argument(
         "--control",
-        nargs=2,
-        metavar=("TAKE", "TAKE"),
-        help="two takes of ONE setting, read exactly as the pair above. A phase "
-        "between two takes of a note is the alignment's and the stimulus's as well as "
-        "the effect's, and this is what the method returns when the answer is nothing. "
-        "Without it the record says what a phase was and not whether it was one",
+        nargs="+",
+        metavar="TAKE",
+        help="two or more takes of ONE setting, read exactly as the pair above, and "
+        "every pair of them measured. A phase between two takes of a note is the "
+        "alignment's and the stimulus's as well as the effect's, and this is what the "
+        "method returns when the answer is nothing. Every pair rather than one because "
+        "one pair is one draw. Without it the record says what a phase was and not "
+        "whether it was one",
     )
     p.add_argument(
         "--band-set",
@@ -236,14 +239,20 @@ def cmd_phase(args: argparse.Namespace) -> int:
 
     vouched = None
     if args.control:
+        if len(args.control) < 2:
+            print("--control needs two or more takes of one setting")
+            return 2
         # The control read on the channel the pair was read on, not on one chosen
         # again: a bound measured on the other leg of the unit bounds a comparison
         # that was never made.
-        first, second, control_rate, _ = _pair(*args.control, on=picked["read"])
-        if control_rate != rate:
-            print(f"the control pair is {control_rate} Hz and the pair is {rate} Hz")
-            return 1
-        vouched = ph.control(first[head:], second[head:], rate, **how)
+        repeats = []
+        for first, second in combinations(args.control, 2):
+            a, b, control_rate, _ = _pair(first, second, on=picked["read"])
+            if control_rate != rate:
+                print(f"a control pair is {control_rate} Hz and the pair is {rate} Hz")
+                return 1
+            repeats.append((a[head:], b[head:]))
+        vouched = ph.control(repeats, rate, **how)
 
     print(f"{args.dry} against {args.wet}, {rate} Hz")
     print(ph.describe(found, vouched))
