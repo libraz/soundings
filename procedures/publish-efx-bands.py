@@ -66,6 +66,25 @@ PINNED_MIDS = [
 after a reset. A gain read through one of them is read through a stated filter
 rather than through whatever the slot happened to hold."""
 
+RESOLUTIONS = (
+    ("third-octave", ""),
+    ("twelfth-octave", "-in-twelfths"),
+)
+"""Both readings of the same takes, published beside each other.
+
+Not one replacing the other. A third octave is wide enough to average a narrow
+deviation away and its lowest band stops two octaves above where this stimulus
+still reaches, so it reports a peak shallower than it is and a profile still
+rising as though it had levelled off. A twelfth of an octave sees both and pays
+for it in repeatability: the same noise stimulus disagrees with itself by
+hundredths in a third-octave band and by tenths in a twelfth-octave one, and at
+the bottom of the set by more than a decibel.
+
+Which of those matters is the row's, not the publisher's. So each slot is read at
+both and the records say which resolution produced them, rather than one being
+chosen here on the row's behalf.
+"""
+
 FULL, CENTRE = "7F", "40"
 """Where a gain is pinned while the corner it shapes is swept, and where it goes
 for the null. A corner with its gain at the centre has nothing to shape, so the
@@ -191,64 +210,82 @@ def main(argv: list[str]) -> int:
             held = [
                 {"address": a, "bytes": b} for a, b in by_address.items() if a != address
             ]
-            argv_of = [
-                "efx-bands", str(where), "--type", run["type"], "--slot", address,
-                "--setting", setting, "--reference", run["reference"],
-                "--control", run["control"], "--stimulus", STIMULUS,
-                *(["--silence", run["silence"]] if run.get("silence") else []),
-            ]
-            record.invoked(
-                record.Invocation(
-                    stage="efx-bands",
-                    argv=argv_of,
-                    started=time.monotonic(),
-                    midi_device_id=None,
+            for set_name, suffix in RESOLUTIONS:
+                centres, width = efxbands.BAND_SETS[set_name]
+                argv_of = [
+                    "efx-bands", str(where), "--type", run["type"], "--slot", address,
+                    "--setting", setting, "--reference", run["reference"],
+                    "--control", run["control"], "--stimulus", STIMULUS,
+                    "--band-set", set_name,
+                    *(["--silence", run["silence"]] if run.get("silence") else []),
+                ]
+                record.invoked(
+                    record.Invocation(
+                        stage="efx-bands",
+                        argv=argv_of,
+                        started=time.monotonic(),
+                        midi_device_id=None,
+                    )
                 )
-            )
-            payload = efxbands.read_directory(
-                where,
-                type_id=run["type"],
-                address=address,
-                setting=setting,
-                reference=run["reference"],
-                control=run["control"],
-                silence=run.get("silence"),
-                stimulus=STIMULUS,
-                held=held,
-            )
-            if not payload["readings"]:
-                print(f"  {run['dir']} {address}: no take matched {setting!r}")
-                continue
-            kind = run["type"].replace(" ", "-")
-            stem = f"{kind}-{address.split()[-1]}-{run['dir']}"
-            if word := entry.get("as"):
-                stem += f"-{word}"
-            path = out / f"{stem}.json"
-            # Two runs can reach the same name, and the second would overwrite the
-            # first without anything failing -- a record lost to a naming collision
-            # looks exactly like a record never made.
-            if path in wrote:
-                print(f"  {path.name}: a second run reached this name")
-                continue
-            path.write_text(
-                json.dumps(record.envelope(payload, out_path=path), indent=2, default=float)
-                + "\n"
-            )
-            wrote.add(path)
-            written += 1
-            # The widest deviation any setting reached, beside the count. A slot
-            # whose whole sweep clears the floor by a tenth of a decibel and one
-            # that swings twelve print the same count, and only one of them is a
-            # curve worth reading.
-            widest = max(
-                (abs(r["largest_db"]) for r in payload["readings"] if r["largest_db"]),
-                default=0.0,
-            )
-            moved = sum(1 for r in payload["readings"] if r["largest_db"] is not None)
-            print(
-                f"  {path.name}  {len(payload['readings'])} settings, "
-                f"{moved} outside the floor, widest {widest:.2f} dB"
-            )
+                payload = efxbands.read_directory(
+                    where,
+                    type_id=run["type"],
+                    address=address,
+                    setting=setting,
+                    reference=run["reference"],
+                    control=run["control"],
+                    silence=run.get("silence"),
+                    stimulus=STIMULUS,
+                    held=held,
+                    bands_hz=centres,
+                    band_width_octaves=width,
+                )
+                if not payload["readings"]:
+                    print(f"  {run['dir']} {address}: no take matched {setting!r}")
+                    continue
+                kind = run["type"].replace(" ", "-")
+                stem = f"{kind}-{address.split()[-1]}-{run['dir']}"
+                if word := entry.get("as"):
+                    stem += f"-{word}"
+                path = out / f"{stem}{suffix}.json"
+                # Two runs can reach the same name, and the second would overwrite
+                # the first without anything failing -- a record lost to a naming
+                # collision looks exactly like a record never made.
+                if path in wrote:
+                    print(f"  {path.name}: a second run reached this name")
+                    continue
+                path.write_text(
+                    json.dumps(record.envelope(payload, out_path=path), indent=2, default=float)
+                    + "\n"
+                )
+                wrote.add(path)
+                written += 1
+                # The widest deviation any setting reached, beside the count. A slot
+                # whose whole sweep clears the floor by a tenth of a decibel and one
+                # that swings twelve print the same count, and only one of them is a
+                # curve worth reading.
+                widest = max(
+                    (abs(r["largest_db"]) for r in payload["readings"] if r["largest_db"]),
+                    default=0.0,
+                )
+                moved = sum(1 for r in payload["readings"] if r["largest_db"] is not None)
+                # How far any reading was from having levelled off where the bands
+                # ran out. A set whose edge cuts a profile still moving reports the
+                # edge, and this is the figure that says which record that is.
+                edge = max(
+                    (
+                        abs(r[key])
+                        for r in payload["readings"]
+                        for key in ("settled_below_db", "settled_above_db")
+                        if r[key] is not None
+                    ),
+                    default=0.0,
+                )
+                print(
+                    f"  {path.name}  {len(payload['readings'])} settings, "
+                    f"{moved} outside the floor, widest {widest:.2f} dB, "
+                    f"{edge:.2f} dB still moving at an end"
+                )
 
     record.invoked(None)
     print(f"\n{written} records -> {out}")
