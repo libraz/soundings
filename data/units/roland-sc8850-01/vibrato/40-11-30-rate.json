@@ -1,19 +1,22 @@
 {
   "record": {
-    "schema_version": 1,
+    "schema_version": 2,
     "unit_id": "roland-sc8850-01",
     "stage": "vibrato",
-    "invocation": null,
-    "measured_at": null,
+    "invocation": [
+      "vibrato",
+      ".cache/takes/part-gesture/40-11-30",
+      "--min-rate",
+      "0.5",
+      "--max-rate",
+      "15.0",
+      "--out",
+      "data/units/roland-sc8850-01/vibrato/40-11-30-rate.json"
+    ],
+    "measured_at": "2026-09-12T04:54:06+00:00",
+    "elapsed_s": 3.2,
     "midi_device_id": null,
-    "not_recorded": {
-      "fields": [
-        "invocation",
-        "measured_at"
-      ],
-      "why": "This run predates the record envelope. Neither the arguments it was given nor the moment it was taken is held anywhere in what it wrote, so neither can be recovered without inventing it. Everything here that is not null was recovered from the record and the directory it sits in. The date below is the day the record first entered the repository, which bounds the measurement from above and is not when it was taken.",
-      "first_published": "2026-09-05"
-    }
+    "midi_model_id": null
   },
   "takes": ".cache/takes/part-gesture/40-11-30",
   "method": "The note's own frequency was tracked through a single take and the track was searched for a periodic component. A vibrato cannot be measured by comparing two takes at all: a free-running modulator is at a different phase every time the note is struck, so the two disagree about nearly everything and the yardstick swallows any change. Its rate and depth are the same on every take even though its phase is not, so both are read inside one.",
@@ -21,6 +24,18 @@
     0.5,
     15.0
   ],
+  "channel": {
+    "read": 3,
+    "reached_db": [
+      -94.2,
+      -102.2,
+      -52.1,
+      -49.0,
+      -240.0,
+      -240.0
+    ],
+    "why": "The channel of the interface every take in this run was read from, and the highest each channel reached over the run. Chosen once rather than per take: an interface carries inputs the unit is not on and they are not silent, so a setting that turns the part down far enough is answered from one of them instead -- and a pitch track of an idle input finds no modulation, which is exactly what a setting with no vibrato in it also returns. Nothing in the rows below would tell the two apart."
+  },
   "control": {
     "injected_rate_hz": 5.3,
     "depths_tried_cents": [
@@ -34,10 +49,9 @@
     "depths_recovered_cents": [
       100.0,
       50.0,
-      25.0,
-      12.0
+      25.0
     ],
-    "shallowest_recovered_cents": 12.0,
+    "shallowest_recovered_cents": 25.0,
     "why": "A modulation the tracker cannot recover from a take it was put into by hand is not evidence that the unit applied none, and nothing in the output separates the two. So every run puts a known modulation into one of its own takes and reports which depths came back. It bounds the run in both directions and neither alone: a null is worth reading only over the depths the control recovered, and a rate found at a depth shallower than the shallowest of those is a fit the tracker was never shown able to make on this material."
   },
   "control_taken_from": "struck_moved at 127",
@@ -57,15 +71,15 @@
       {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 262.606,
+        "f0_hz": 262.503,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 475,
-        "frames_below_floor": 12,
-        "frames_without_pitch": 0,
-        "noise_floor_db": -109.63,
+        "tracked_frames": 405,
+        "frames_below_floor": 81,
+        "frames_without_pitch": 1,
+        "noise_floor_db": -108.32,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]
@@ -73,15 +87,15 @@
       {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 262.598,
+        "f0_hz": 262.474,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 267,
-        "frames_below_floor": 220,
-        "frames_without_pitch": 0,
-        "noise_floor_db": -99.23,
+        "tracked_frames": 289,
+        "frames_below_floor": 197,
+        "frames_without_pitch": 1,
+        "noise_floor_db": -104.38,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]
@@ -89,15 +103,15 @@
       {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 262.627,
+        "f0_hz": 262.453,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 341,
-        "frames_below_floor": 146,
-        "frames_without_pitch": 0,
-        "noise_floor_db": -98.91,
+        "tracked_frames": 299,
+        "frames_below_floor": 187,
+        "frames_without_pitch": 1,
+        "noise_floor_db": -104.1,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]
@@ -105,15 +119,15 @@
       {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 263.531,
+        "f0_hz": 262.488,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 226,
-        "frames_below_floor": 261,
+        "tracked_frames": 284,
+        "frames_below_floor": 203,
         "frames_without_pitch": 0,
-        "noise_floor_db": -98.43,
+        "noise_floor_db": -103.85,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]
@@ -121,47 +135,17 @@
     ],
     "struck_moved at 0": [
       {
-        "rate_hz": 1.643,
-        "depth_cents": 75.18,
-        "f0_hz": 262.603,
-        "searched_hz": [
-          0.5,
-          15.0
-        ],
-        "tracked_frames": 405,
-        "frames_below_floor": 82,
-        "frames_without_pitch": 0,
-        "noise_floor_db": -100.57,
-        "notes": []
-      },
-      {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 262.586,
+        "f0_hz": 262.486,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 271,
-        "frames_below_floor": 216,
-        "frames_without_pitch": 0,
-        "noise_floor_db": -98.85,
-        "notes": [
-          "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
-        ]
-      },
-      {
-        "rate_hz": null,
-        "depth_cents": null,
-        "f0_hz": 262.61,
-        "searched_hz": [
-          0.5,
-          15.0
-        ],
-        "tracked_frames": 326,
-        "frames_below_floor": 160,
+        "tracked_frames": 308,
+        "frames_below_floor": 178,
         "frames_without_pitch": 1,
-        "noise_floor_db": -98.83,
+        "noise_floor_db": -104.71,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]
@@ -169,15 +153,47 @@
       {
         "rate_hz": null,
         "depth_cents": null,
-        "f0_hz": 262.597,
+        "f0_hz": 262.475,
         "searched_hz": [
           0.5,
           15.0
         ],
-        "tracked_frames": 297,
-        "frames_below_floor": 190,
+        "tracked_frames": 286,
+        "frames_below_floor": 201,
         "frames_without_pitch": 0,
-        "noise_floor_db": -98.49,
+        "noise_floor_db": -103.93,
+        "notes": [
+          "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
+        ]
+      },
+      {
+        "rate_hz": null,
+        "depth_cents": null,
+        "f0_hz": 262.455,
+        "searched_hz": [
+          0.5,
+          15.0
+        ],
+        "tracked_frames": 290,
+        "frames_below_floor": 196,
+        "frames_without_pitch": 1,
+        "noise_floor_db": -103.9,
+        "notes": [
+          "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
+        ]
+      },
+      {
+        "rate_hz": null,
+        "depth_cents": null,
+        "f0_hz": 262.431,
+        "searched_hz": [
+          0.5,
+          15.0
+        ],
+        "tracked_frames": 291,
+        "frames_below_floor": 195,
+        "frames_without_pitch": 1,
+        "noise_floor_db": -103.68,
         "notes": [
           "Frames were dropped for holding no signal as well as for finding no pitch. A frequency estimated from silence is the noise's own strongest period reported as a note, and a struck note spends most of a take decaying towards it."
         ]

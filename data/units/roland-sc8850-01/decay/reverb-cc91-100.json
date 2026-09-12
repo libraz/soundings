@@ -1,23 +1,39 @@
 {
   "record": {
-    "schema_version": 1,
+    "schema_version": 2,
     "unit_id": "roland-sc8850-01",
     "stage": "decay",
-    "invocation": null,
-    "measured_at": null,
+    "invocation": [
+      "decay",
+      ".cache/takes/cc91-effect/unpitched-0-00.wav",
+      ".cache/takes/cc91-effect/unpitched-100-00.wav",
+      "--lead",
+      "0.6",
+      "--out",
+      "data/units/roland-sc8850-01/decay/reverb-cc91-100.json"
+    ],
+    "measured_at": "2026-09-12T04:55:29+00:00",
+    "elapsed_s": 0.4,
     "midi_device_id": null,
-    "not_recorded": {
-      "fields": [
-        "invocation",
-        "measured_at"
-      ],
-      "why": "This run predates the record envelope. Neither the arguments it was given nor the moment it was taken is held anywhere in what it wrote, so neither can be recovered without inventing it. Everything here that is not null was recovered from the record and the directory it sits in. The date below is the day the record first entered the repository, which bounds the measurement from above and is not when it was taken.",
-      "first_published": "2026-09-03"
-    }
+    "midi_model_id": null
   },
+  "type_id": null,
   "dry": ".cache/takes/cc91-effect/unpitched-0-00.wav",
   "wet": ".cache/takes/cc91-effect/unpitched-100-00.wav",
+  "floor_from": null,
   "sample_rate": 48000,
+  "channel": {
+    "read": 2,
+    "reached_db": [
+      -114.3,
+      -114.8,
+      -57.8,
+      -57.9,
+      -240.0,
+      -240.0
+    ],
+    "why": "Which channel of the interface both takes were read from, and the highest each channel reached across the two. One channel for the pair rather than the loudest of each take: this measurement subtracts one take from the other, and an interface carries inputs the unit is not on which are not silent, so a take whose output fell below one of them would be answered from that input and subtracted from a different one -- leaving a residual of nothing that reads as an effect doing nothing."
+  },
   "lead_s": 0.6,
   "bands": [
     {
@@ -28,7 +44,12 @@
         -25.0
       ],
       "curvature_db": 0.886,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 2.9596,
+        "over_minus_15_to_minus_25_db": 1.8655
+      },
       "snr_db": 44.6,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.179,
       "measured": true,
       "reason": ""
@@ -41,7 +62,12 @@
         -25.0
       ],
       "curvature_db": 0.432,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 2.4952,
+        "over_minus_15_to_minus_25_db": 2.3377
+      },
       "snr_db": 58.2,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.124,
       "measured": true,
       "reason": ""
@@ -54,7 +80,12 @@
         -25.0
       ],
       "curvature_db": 0.635,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 1.8693,
+        "over_minus_15_to_minus_25_db": 2.4553
+      },
       "snr_db": 73.7,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.091,
       "measured": true,
       "reason": ""
@@ -67,7 +98,12 @@
         -25.0
       ],
       "curvature_db": 0.421,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 2.1531,
+        "over_minus_15_to_minus_25_db": 2.1004
+      },
       "snr_db": 74.1,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.064,
       "measured": true,
       "reason": ""
@@ -80,7 +116,12 @@
         -25.0
       ],
       "curvature_db": 0.27,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 1.8434,
+        "over_minus_15_to_minus_25_db": 2.0126
+      },
       "snr_db": 61.0,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.048,
       "measured": true,
       "reason": ""
@@ -93,7 +134,12 @@
         -25.0
       ],
       "curvature_db": 0.166,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 1.6463,
+        "over_minus_15_to_minus_25_db": 1.7852
+      },
       "snr_db": 55.8,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.035,
       "measured": true,
       "reason": ""
@@ -106,7 +152,12 @@
         -25.0
       ],
       "curvature_db": 0.182,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 1.3083,
+        "over_minus_15_to_minus_25_db": 1.2958
+      },
       "snr_db": 56.9,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.028,
       "measured": true,
       "reason": ""
@@ -119,12 +170,19 @@
         -25.0
       ],
       "curvature_db": 0.452,
+      "halves_s": {
+        "over_minus_5_to_minus_15_db": 0.8491,
+        "over_minus_15_to_minus_25_db": 1.1424
+      },
       "snr_db": 56.9,
+      "over_the_subtraction_floor_db": null,
       "scatter_bound": 0.023,
       "measured": true,
       "reason": ""
     }
   ],
   "damping_low_over_high": 2.042,
+  "subtraction_floor_measured": false,
+  "why_no_subtraction_floor": "No pair of takes of one setting was given, so the subtraction floor was not measured and no band could be judged against it. The lead-in silence bounds the interface noise only; the error the subtraction itself leaves lives under the note, is the larger of the two, and is what a type that did nothing at all produces a full set of decay times out of.",
   "method": "Each octave band's energy is integrated from the end of the usable tail backwards, after the noise floor's own contribution has been taken out and the tail truncated where it reaches that floor. A straight line is fitted to the integrated curve and extrapolated to 60 dB. The RMS departure from that line is reported with it, because a tail that is two decays in sequence, or one that ran into the noise, yields a slope as readily as a real decay does."
 }
