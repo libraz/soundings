@@ -31,15 +31,16 @@ def scored(
     return {
         "record": record,
         "address": "40 03 04",
-        "span_db": span,
-        "floor_db": floor,
+        "measured_in": "dB",
+        "span": span,
+        "floor": floor,
         "is_null_record": null,
-        "settled_by_db": 0.0 if settled else 5.0,
-        "profile_settled_inside_the_bands": settled,
-        "model_largest_db": model_largest,
+        "settled_by": 0.0 if settled else 5.0,
+        "reading_is_a_value_not_a_bound": settled,
+        "model_largest": model_largest,
         "model_stays_inside_the_floor": model_largest <= floor,
-        "median_abs_db": median,
-        "worst_abs_db": worst,
+        "median_abs": median,
+        "worst_abs": worst,
         "worst_at": {"value": 0, "hz": 100.0},
         "structured": leans,
         "why_structured": "",
@@ -48,11 +49,11 @@ def scored(
         "rows": [
             {
                 "value": 0,
-                "model_band_db": [model_largest],
-                "unit_band_db": [unit_largest],
-                "residual_db": [median],
-                "largest_db": model_largest,
-                "unit_largest_db": unit_largest,
+                "model_reading": [model_largest],
+                "unit_reading": [unit_largest],
+                "residual": [median],
+                "model_largest": model_largest,
+                "unit_largest": unit_largest,
             }
         ],
     }
@@ -118,7 +119,7 @@ def test_a_lean_on_a_profile_the_bands_did_not_contain_is_not_a_breakdown():
     """
     gates = reproduce.gates([scored(leans=True, settled=False)], ranking=ranking(0, 3))
     assert gates["breakdown"]["passed"]
-    assert gates["breakdown"]["records_the_bands_did_not_contain"]
+    assert gates["breakdown"]["records_the_run_did_not_reach"]
 
 
 def test_a_single_point_past_half_the_span_is_a_breakdown():
@@ -158,19 +159,19 @@ def test_the_lean_is_measured_against_the_floor_and_not_the_residual():
     systematic tenth, so every good model fails. That is what the first pass did.
     """
     rows = [
-        {"residual_db": [0.10, 0.10, 0.10]},
-        {"residual_db": [0.12, 0.12, 0.12]},
+        {"residual": [0.10, 0.10, 0.10]},
+        {"residual": [0.12, 0.12, 0.12]},
     ]
-    leans, why = reproduce._structured(rows, floor_db=1.0)
+    leans, why = reproduce._structured(rows, 1.0)
     assert not leans and "floor" in why
 
 
 def test_a_real_lean_is_still_caught():
     rows = [
-        {"residual_db": [-2.0, -2.0, -2.0]},
-        {"residual_db": [2.0, 2.0, 2.0]},
+        {"residual": [-2.0, -2.0, -2.0]},
+        {"residual": [2.0, 2.0, 2.0]},
     ]
-    leans, _ = reproduce._structured(rows, floor_db=1.0)
+    leans, _ = reproduce._structured(rows, 1.0)
     assert leans
 
 
@@ -238,3 +239,218 @@ def test_a_model_that_is_not_time_invariant_is_refused_rather_than_approximated(
     path.write_text(json.dumps({"model": {"kind": "modulated"}, "chain": []}))
     with pytest.raises(ValueError, match="time-invariant"):
         reproduce.load(path)
+
+
+# ---------------------------------------------------------------- a byte as a table
+
+TEN = {
+    "tables": {
+        "0.05 - 10.0": {
+            "kind": "steps",
+            "first_hz": 0.05,
+            "runs": [
+                {"through": 99, "step_hz": 0.05},
+                {"through": 119, "step_hz": 0.10},
+                {"through": 125, "step_hz": 0.50},
+            ],
+        }
+    }
+}
+
+
+def rate_record(pairs, *, agreeing=4, of=4, slowest=0.301, spread=0.004):
+    return {
+        "address": "40 03 04",
+        "readings": [
+            {
+                "value": v,
+                "rate_hz": hz,
+                "rates": [hz * (1 - spread), hz * (1 + spread)],
+                "agreeing": agreeing,
+                "of": of,
+                "slowest_measurable_hz": slowest,
+            }
+            for v, hz in pairs
+        ],
+    }
+
+
+def test_a_table_holds_its_last_entry_past_the_end_of_its_runs():
+    """One hundred and twenty-six entries, and two byte values with nowhere to go.
+
+    A formula would have run to a hundred and twenty-eight. That the last two
+    settings return what the last entry returns is the shape of a list, and it is
+    the reason the winning candidate is described as a table at all.
+    """
+    assert reproduce.rate_of(TEN, "0.05 - 10.0", 99) == pytest.approx(5.00)
+    assert reproduce.rate_of(TEN, "0.05 - 10.0", 119) == pytest.approx(7.00)
+    assert reproduce.rate_of(TEN, "0.05 - 10.0", 125) == pytest.approx(10.00)
+    assert reproduce.rate_of(TEN, "0.05 - 10.0", 127) == pytest.approx(10.00)
+
+
+def test_a_rate_is_compared_in_octaves_and_not_in_hertz():
+    """The half of the range a comparison in hertz would throw away.
+
+    A table right at ten hertz and a tenth of a hertz wrong at the bottom is
+    wrong by two octaves there and by nothing a reader would notice at the top.
+    In hertz its worst error is a tenth against a span of ten and it passes
+    everything.
+    """
+    record = rate_record([(0, 0.05), (99, 5.0), (127, 10.0)], slowest=0.01)
+    good = reproduce.score_against_rates(TEN, record, printed_range="0.05 - 10.0")
+    bent = {
+        "tables": {
+            "0.05 - 10.0": dict(TEN["tables"]["0.05 - 10.0"], first_hz=0.15)
+        }
+    }
+    bad = reproduce.score_against_rates(bent, record, printed_range="0.05 - 10.0")
+    assert good["measured_in"] == "octaves"
+    assert good["worst_abs"] < 0.01
+    assert bad["worst_abs"] > 1.0
+    assert reproduce.gates([bad], ranking=ranking(0, 0))["breakdown"]["passed"] is False
+
+
+def test_a_table_with_the_wrong_breakpoint_leans_and_is_caught():
+    """The one thing only a sweep of the bend can settle.
+
+    Four settings can say a table bends; they cannot say where. A candidate that
+    bends one entry early agrees everywhere except across the bend, which is
+    exactly a residual that leans.
+    """
+    unit = [(v, reproduce.rate_of(TEN, "0.05 - 10.0", v)) for v in range(96, 128)]
+    early = {
+        "tables": {
+            "0.05 - 10.0": {
+                "kind": "steps",
+                "first_hz": 0.05,
+                "runs": [
+                    {"through": 99, "step_hz": 0.05},
+                    {"through": 117, "step_hz": 0.10},
+                    {"through": 123, "step_hz": 0.50},
+                ],
+            }
+        }
+    }
+    scored_here = reproduce.score_against_rates(
+        early, rate_record(unit), printed_range="0.05 - 10.0"
+    )
+    assert scored_here["structured"]
+    assert not reproduce.gates([scored_here], ranking=ranking(3, 0))["breakdown"]["passed"]
+
+
+def test_the_same_readings_do_not_separate_two_candidates_that_agree_on_them():
+    """Where the printed range is 6.40, stepping and a straight line are one law.
+
+    A hundred and twenty-eight steps of five hundredths reach six point four
+    exactly, so the table and the line through the printed ends are the same
+    numbers. Recording that as an equivalence is the answer; picking one would be
+    inventing a distinction the readings do not carry.
+    """
+    stepped = {
+        "tables": {
+            "0.05 - 6.40": {
+                "kind": "steps",
+                "first_hz": 0.05,
+                "runs": [{"through": 127, "step_hz": 0.05}],
+            }
+        }
+    }
+    straight = {
+        "tables": {"0.05 - 6.40": {"kind": "linear", "first_hz": 0.05, "top_hz": 6.40}}
+    }
+    for v in (0, 1, 32, 99, 127):
+        assert reproduce.rate_of(stepped, "0.05 - 6.40", v) == pytest.approx(
+            reproduce.rate_of(straight, "0.05 - 6.40", v)
+        )
+
+
+def test_a_reading_the_partials_did_not_agree_on_is_left_out_with_the_reason():
+    record = rate_record([(0, 0.05), (32, 1.65)])
+    record["readings"][0]["agreeing"] = 1
+    kept, left_out = reproduce.admitted_rates(record)
+    assert [r["value"] for r in kept] == [32]
+    assert "1 of 4 partials" in left_out[0]["why"]
+
+
+def test_a_reading_at_the_takes_own_limit_is_the_limit_and_not_a_rate():
+    """The stable number that is dangerous because it is stable.
+
+    A take too short to carry two cycles returns its own analysis floor at every
+    setting. Read as a rate it says the byte does nothing, which is a claim about
+    the unit made out of a property of the recording.
+    """
+    record = rate_record([(0, 0.30), (32, 1.65)], slowest=0.301)
+    kept, left_out = reproduce.admitted_rates(record)
+    assert [r["value"] for r in kept] == [32]
+    assert "0.301 Hz" in left_out[0]["why"]
+
+
+def test_a_type_the_page_prints_two_rates_for_is_not_evidence_about_either():
+    record = rate_record([(0, 0.05), (127, 10.0)], slowest=0.01)
+    ok, why = reproduce.heard_one_modulator(record, rate_slots_printed_for_this_type=4)
+    assert not ok and "whichever modulator dominates" in why
+
+
+def test_a_slot_whose_reading_falls_as_the_byte_rises_is_not_evidence():
+    """Not a wrong table -- a take that changed what it was listening to.
+
+    Every candidate in the catalogue agrees that a rate rises with its byte, so
+    this test cannot favour one of them. What it separates is a reading of the
+    swept modulator from a reading of whatever else the effect was doing.
+    """
+    record = rate_record([(32, 16.5), (99, 4.9), (127, 4.9)], slowest=0.301)
+    ok, why = reproduce.heard_one_modulator(record, rate_slots_printed_for_this_type=1)
+    assert not ok and "stopped following one thing" in why
+
+
+def test_a_sweep_that_only_rises_is_evidence_even_where_it_pauses():
+    """Repeated entries at the top are the table, not a take losing the thread."""
+    unit = [(v, reproduce.rate_of(TEN, "0.05 - 10.0", v)) for v in range(0, 128)]
+    ok, _ = reproduce.heard_one_modulator(
+        rate_record(unit, slowest=0.01), rate_slots_printed_for_this_type=1
+    )
+    assert ok
+
+
+def _bent(k: float, lo: int = 20, hi: int = 60):
+    """The model's own rates, pulled off by `k` entries across the sweep."""
+    pairs = []
+    for v in range(lo, hi + 1):
+        hz = reproduce.rate_of(TEN, "0.05 - 10.0", v)
+        entry = np.log2((hz + 0.05) / hz)
+        share = (v - lo) / (hi - lo) - 0.5
+        pairs.append((v, float(hz / 2 ** (k * entry * share))))
+    return pairs
+
+
+def test_a_lean_smaller_than_one_entry_of_the_table_is_not_a_breakdown():
+    """What the floor of one entry is for.
+
+    The run resolves a rate to a few parts in a hundred thousand, which is three
+    orders finer than the table's own step. Against that floor every table leans,
+    including the one whose entries the readings land on -- so the yardstick has
+    to be the coarser of what the run resolved and what a candidate could differ
+    by. Below one entry there is no model to write.
+    """
+    scored_here = reproduce.score_against_rates(
+        TEN, rate_record(_bent(0.3), slowest=0.01), printed_range="0.05 - 10.0"
+    )
+    assert scored_here["floor_of_one_entry"] > scored_here["floor_the_run_resolved"]
+    assert not scored_here["structured"]
+
+
+def test_a_lean_of_several_entries_is_still_caught():
+    """And what it is not for. The floor is one entry, not a licence."""
+    scored_here = reproduce.score_against_rates(
+        TEN, rate_record(_bent(3.0), slowest=0.01), printed_range="0.05 - 10.0"
+    )
+    assert scored_here["structured"]
+    assert not reproduce.gates([scored_here], ranking=ranking(3, 0))["breakdown"]["passed"]
+
+
+def test_two_units_of_measure_cannot_be_gated_together():
+    """A share of a span means nothing across decibels and octaves."""
+    band = scored()
+    rate = dict(scored(), measured_in="octaves")
+    with pytest.raises(ValueError, match="one gate cannot span them"):
+        reproduce.gates([band, rate], ranking=ranking(0, 3))

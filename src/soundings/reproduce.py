@@ -20,12 +20,20 @@ whether the residual leans -- a residual that grows with the setting is pointing
 at a structure the model does not have, and one that does not is pointing at the
 analogue. Both are reported; only the first reopens anything.
 
-**What this renderer cannot do yet.** It renders time-invariant, linear models:
-a chain of shelves, peaking sections and gains, evaluated as a frequency
-response. That covers the equaliser class and nothing else. A modulated or
-saturating type needs a time-domain renderer, and the honest state of that is
-that it is not written. A model whose `kind` is not `lti` is refused rather than
-approximated.
+**Two kinds of model, and one set of gates over both.** An `lti` model is a chain
+of shelves, peaking sections and gains evaluated as a frequency response, held
+against a band profile in decibels. A `table` model is a byte turned into a
+quantity, held against what the unit was measured to do at that byte -- for a
+rate, in octaves, because a tenth of a hertz is a different error at ten hertz
+than at a tenth of one. The gates do not know which they are looking at: every
+one of them is a residual against the span the effect commands, and the unit that
+span is measured in travels with the record.
+
+**What this renderer cannot do yet.** A modulated or saturating type whose
+*waveform* has to be produced needs a time-domain renderer, and the honest state
+of that is that it is not written. That is why a rate is identified from the
+frequency the archive published rather than from a rendered chorus. A model whose
+`kind` is neither `lti` nor `table` is refused rather than approximated.
 """
 
 from __future__ import annotations
@@ -301,11 +309,11 @@ def model_reading(
 # ---------------------------------------------------------------- scoring
 
 
-def _structured(rows: list[dict], floor_db: float) -> tuple[bool, str]:
+def _structured(rows: list[dict], floor: float, unit: str = "dB") -> tuple[bool, str]:
     """Whether the residual leans, which is the only thing about it that decides.
 
     Two axes and one rule for both: the residual is structured when the signed
-    mean over one axis moves across that axis by more than the run's own floor.
+    median over one axis moves across that axis by more than the run's own floor.
     A model that is half a decibel out everywhere is not leaning; a model that is
     half a decibel out at one end of a byte and half the other way at the other
     end is, and the two have the same median.
@@ -316,6 +324,12 @@ def _structured(rows: list[dict], floor_db: float) -> tuple[bool, str]:
     because a good model's residual is small enough that any systematic tenth of
     a decibel exceeds it. The floor is what the same run measured between repeats
     of one setting, so a lean under it is a lean this measurement cannot see.
+
+    Nothing here is about decibels. `unit` names what the residual was measured
+    in so the sentence returned says it; a rate is compared in octaves, because a
+    tenth of a hertz at ten hertz and at a tenth of a hertz are not the same
+    error and a table right at the top of its range and wrong at the bottom would
+    otherwise pass.
     """
     if not rows:
         return False, "no readings to say"
@@ -324,16 +338,20 @@ def _structured(rows: list[dict], floor_db: float) -> tuple[bool, str]:
     # exactly where the readings are noisiest. Taking the mean reported a lean of
     # one and a half decibels on the level row whose own map had been transcribed
     # from that record: an artefact of the statistic, not of the model.
-    per_setting = [float(np.median(row["residual_db"])) for row in rows]
+    per_setting = [float(np.median(row["residual"])) for row in rows]
     setting_swing = float(max(per_setting) - min(per_setting))
-    stacked = np.array([row["residual_db"] for row in rows], dtype=float)
-    per_band = np.median(stacked, axis=0)
-    band_swing = float(np.nanmax(per_band) - np.nanmin(per_band))
-    leans = setting_swing > floor_db or band_swing > floor_db
+    widths = {len(row["residual"]) for row in rows}
+    if len(widths) == 1:
+        stacked = np.array([row["residual"] for row in rows], dtype=float)
+        per_band = np.median(stacked, axis=0)
+        band_swing = float(np.nanmax(per_band) - np.nanmin(per_band))
+    else:
+        band_swing = 0.0
+    leans = setting_swing > floor or band_swing > floor
     return leans, (
-        f"the signed mean swings {setting_swing:.2f} dB across the settings and "
-        f"{band_swing:.2f} dB across the bands, against the run's own floor of "
-        f"{floor_db:.2f} dB"
+        f"the signed median swings {setting_swing:.4g} {unit} across the settings and "
+        f"{band_swing:.4g} {unit} across the readings within one, against the run's own "
+        f"floor of {floor:.4g} {unit}"
     )
 
 
@@ -361,8 +379,8 @@ def score_against_bands(
     usable = [i for i, c in enumerate(centres) if c < nyquist]
     dropped = [c for c in centres if c >= nyquist]
 
-    floor = record.get("reference", {}).get("floor_db") or [0.0]
-    floor_db = float(max(floor))
+    floors = record.get("reference", {}).get("floor_db") or [0.0]
+    floor = float(max(floors))
 
     rows, left_out = [], []
     for reading in record["readings"]:
@@ -397,34 +415,34 @@ def score_against_bands(
             hold_s=reading.get("hold_s"),
         )
         said = [round(wet[i] - dry[i], 2) for i in range(len(centres))]
-        unit = reading["band_db"]
-        residual = [round(said[i] - unit[i], 2) for i in usable]
+        answered = reading["band_db"]
+        residual = [round(said[i] - answered[i], 2) for i in usable]
         rows.append(
             {
                 "value": value,
-                "model_band_db": [said[i] for i in usable],
-                "unit_band_db": [unit[i] for i in usable],
-                "residual_db": residual,
-                "largest_db": max((said[i] for i in usable), key=abs, default=None),
-                "unit_largest_db": reading.get("largest_db"),
+                "model_reading": [said[i] for i in usable],
+                "unit_reading": [answered[i] for i in usable],
+                "residual": residual,
+                "model_largest": max((said[i] for i in usable), key=abs, default=None),
+                "unit_largest": reading.get("largest_db"),
             }
         )
 
-    flat = np.array([abs(v) for row in rows for v in row["residual_db"]], dtype=float)
-    every = [v for row in rows for v in row["unit_band_db"]]
+    flat = np.array([abs(v) for row in rows for v in row["residual"]], dtype=float)
+    every = [v for row in rows for v in row["unit_reading"]]
     span = float(max(every) - min(every)) if every else 0.0
     median_abs = float(np.median(flat)) if flat.size else 0.0
     worst = float(flat.max()) if flat.size else 0.0
     worst_where = None
     if flat.size:
         for row in rows:
-            for j, v in enumerate(row["residual_db"]):
+            for j, v in enumerate(row["residual"]):
                 if abs(v) == worst:
                     worst_where = {"value": row["value"], "hz": [centres[i] for i in usable][j]}
                     break
             if worst_where:
                 break
-    leans, why_leans = _structured(rows, floor_db)
+    leans, why_leans = _structured(rows, floor)
     # A record whose span does not clear the run's own floor by a doubling is one
     # where the byte was swept with the stage it shapes turned off: the archive's
     # null controls, and the rows a run swept through a gain left at its centre,
@@ -437,7 +455,7 @@ def score_against_bands(
     # The doubling is not a delicate line. Across this type's twenty-one records
     # the ratio is either below 1.6 or above 6, so anything between those two
     # separates them and the figure chosen does not decide any verdict.
-    is_null = span <= 2.0 * floor_db
+    is_null = span <= 2.0 * floor
     # Whether the record's own profile finished inside the band set. Where it did
     # not, the corner the model takes from it is a bound and not a value, so a
     # residual that leans across the bands is the bound leaning, not the model.
@@ -454,20 +472,21 @@ def score_against_bands(
         default=0.0,
     )
     model_largest = max(
-        (abs(v) for row in rows for v in row["model_band_db"]), default=0.0
+        (abs(v) for row in rows for v in row["model_reading"]), default=0.0
     )
     return {
         "record": None,
         "address": record.get("address"),
-        "span_db": round(span, 2),
-        "floor_db": round(floor_db, 2),
+        "measured_in": "dB",
+        "span": round(span, 2),
+        "floor": round(floor, 2),
         "is_null_record": is_null,
-        "settled_by_db": round(unsettled, 2),
-        "profile_settled_inside_the_bands": bool(unsettled <= floor_db),
-        "model_largest_db": round(model_largest, 2),
-        "model_stays_inside_the_floor": bool(model_largest <= floor_db),
-        "median_abs_db": round(median_abs, 3),
-        "worst_abs_db": round(worst, 3),
+        "settled_by": round(unsettled, 2),
+        "reading_is_a_value_not_a_bound": bool(unsettled <= floor),
+        "model_largest": round(model_largest, 2),
+        "model_stays_inside_the_floor": bool(model_largest <= floor),
+        "median_abs": round(median_abs, 3),
+        "worst_abs": round(worst, 3),
         "worst_at": worst_where,
         "structured": leans,
         "why_structured": why_leans,
@@ -475,6 +494,250 @@ def score_against_bands(
         "readings_left_out": left_out,
         "rows": rows,
     }
+
+
+# ---------------------------------------------------------------- a byte as a table
+
+
+def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
+    """What one candidate says the modulator runs at, at one setting of the byte.
+
+    The printed range picks the table because that is the only thing outside the
+    unit that distinguishes one rate slot from another, and it is what a part
+    built in this era would have been given: two tables in ROM and a pointer per
+    effect. It is also read off a page rather than fitted, so every candidate gets
+    it and none is helped by it.
+    """
+    table = model["tables"][printed_range]
+    kind = table["kind"]
+    first, top = float(table["first_hz"]), float(table.get("top_hz", 0.0))
+    if kind == "steps":
+        # Walked rather than solved, because the claim is that these are entries
+        # and not a formula: a run that ends and hands over to the next is what a
+        # printed list of steps looks like from the inside.
+        here = first
+        for v in range(1, byte_value + 1):
+            step = next(
+                (run["step_hz"] for run in table["runs"] if v <= run["through"]),
+                None,
+            )
+            if step is None:
+                return here  # past the last entry, and the table holds its last
+            here += step
+        return here
+    if kind == "linear":
+        return first + (top - first) * byte_value / 127.0
+    if kind == "geometric":
+        return first * (top / first) ** (byte_value / 127.0)
+    raise ValueError(f"{kind!r} is not a table this renderer knows")
+
+
+def _rate_floor(readings: list[dict]) -> float:
+    """What the run itself resolved a rate to, in octaves.
+
+    Each reading carries the figure every partial of the take found. Their spread
+    is the run's own disagreement with itself at one setting, which is the only
+    floor available here and the one the lean has to clear. The median of those
+    spreads and not the largest: one take that lost a partial would otherwise set
+    the floor for the whole sweep and hide a real lean behind it.
+    """
+    spreads = []
+    for reading in readings:
+        rates = [r for r in (reading.get("rates") or []) if r and r > 0]
+        if len(rates) < 2:
+            continue
+        spreads.append(np.log2(max(rates) / min(rates)))
+    return float(np.median(spreads)) if spreads else 0.0
+
+
+def admitted_rates(record: dict) -> tuple[list[dict], list[dict]]:
+    """The readings of a rate record that the record's own controls stand behind.
+
+    Two exclusions and the record states both of them itself. A figure fewer than
+    half the partials found is not "the one the partials agreed on", which is what
+    the method says it reports. A figure at or under the take's own slowest
+    measurable rate is the floor of the analysis and not a rate, which is what the
+    limits say -- and it is stable, which is what makes it dangerous.
+
+    Neither looks at any model. Both are named per reading so a reader can see how
+    much of a sweep was dropped and why.
+    """
+    kept, left_out = [], []
+    for reading in record["readings"]:
+        hz = reading.get("rate_hz")
+        if hz is None or hz <= 0:
+            continue
+        agreeing, of = reading.get("agreeing", 0), reading.get("of", 1)
+        slowest = reading.get("slowest_measurable_hz")
+        if agreeing * 2 <= of:
+            left_out.append(
+                {
+                    "value": reading["value"],
+                    "why": (
+                        f"{agreeing} of {of} partials found it, so it is not what "
+                        "they agreed on"
+                    ),
+                }
+            )
+            continue
+        if slowest is not None and hz <= slowest:
+            left_out.append(
+                {
+                    "value": reading["value"],
+                    "why": (
+                        f"the take was long enough for {slowest:g} Hz and the reading is "
+                        f"{hz:g} Hz, so what it reports is that limit"
+                    ),
+                }
+            )
+            continue
+        kept.append(reading)
+    return kept, left_out
+
+
+def heard_one_modulator(
+    record: dict, *, rate_slots_printed_for_this_type: int
+) -> tuple[bool, str]:
+    """Whether a rate record is evidence about the byte it swept.
+
+    A take is one recording of everything the effect is doing. The archive's own
+    note says a type with more than one modulator returns whichever dominates and
+    that nothing in the numbers says which is which, so a slot on such a type is
+    not evidence about its own byte until the other stage is silenced -- and the
+    remedy is a run, which is what makes this a queue entry rather than a verdict.
+
+    The second test is that the readings rise with the byte. They need not match
+    anything; they need only move the way any rate table moves, which every
+    candidate in the catalogue agrees on. A slot whose readings fall somewhere is
+    a take that changed what it was listening to part way through the sweep.
+
+    Both tests are blind to the model, and neither can be satisfied by a fit.
+    """
+    if rate_slots_printed_for_this_type != 1:
+        return False, (
+            f"the page prints {rate_slots_printed_for_this_type} rates for this type, and a take "
+            "returns whichever modulator dominates it; which one these readings are of is not in "
+            "the numbers"
+        )
+    kept, left_out = admitted_rates(record)
+    order = sorted({(int(r["value"]), float(r["rate_hz"])) for r in kept})
+    if len({v for v, _ in order}) < 2:
+        # One reading cannot show a step, and none cannot show anything. Counting
+        # such a slot as evidence would put a number in the tally that no gate can
+        # act on, which reads as corroboration and is an absence.
+        return False, (
+            f"the record's own controls stand behind {len(order)} of its "
+            f"{len(order) + len(left_out)} readings, and a step needs two settings"
+        )
+    floor = _rate_floor(kept)
+    for (v1, hz1), (v2, hz2) in zip(order, order[1:], strict=False):
+        if np.log2(hz1 / hz2) > floor:
+            return False, (
+                f"the reading falls from {hz1:g} Hz at {v1} to {hz2:g} Hz at {v2}, past the run's "
+                f"own floor of {floor:.4g} octaves, so the take stopped following one thing"
+            )
+    return True, "one printed rate, and the readings rise with the byte"
+
+
+def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dict:
+    """One published rate curve, answered by a table.
+
+    In octaves throughout. A tenth of a hertz is most of the effect at the bottom
+    of this range and nothing at the top, so a comparison in hertz would pass a
+    table that is right where the numbers are large and wrong where they are
+    small -- which is the half a player hears as the slow setting.
+    """
+    kept, left_out = admitted_rates(record)
+    run_floor = _rate_floor(kept)
+    # What one entry of this table is worth, at the settings this slot was read
+    # at. The lean is judged against the coarser of the two floors, because a
+    # residual smaller than one entry is a residual no candidate in this class can
+    # differ over: entries are what they are all made of, and moving one by less
+    # than a step is not a model anybody could write.
+    #
+    # This is only safe because the step is measured rather than assumed. Every
+    # one of the 128 settings was read at one slot, so there is no room between
+    # them for entries a coarser sweep would have missed. Where that is not true
+    # of a class, this floor would hide a finer table and must not be used.
+    steps = []
+    for reading in kept:
+        value = int(reading["value"])
+        if value == 0:
+            continue
+        before = rate_of(model, printed_range, value - 1)
+        after = rate_of(model, printed_range, value)
+        if after > before > 0:
+            steps.append(float(np.log2(after / before)))
+    model_floor = float(np.median(steps)) if steps else 0.0
+    floor = max(run_floor, model_floor)
+    rows = []
+    slowest_value = min((int(r["value"]) for r in kept), default=0)
+    base_unit = next(
+        (float(r["rate_hz"]) for r in kept if int(r["value"]) == slowest_value), 1.0
+    )
+    base_model = rate_of(model, printed_range, slowest_value)
+    for reading in sorted(kept, key=lambda r: int(r["value"])):
+        value = int(reading["value"])
+        said = rate_of(model, printed_range, value)
+        answered = float(reading["rate_hz"])
+        rows.append(
+            {
+                "value": value,
+                "model_reading": [round(float(np.log2(said)), 5)],
+                "unit_reading": [round(float(np.log2(answered)), 5)],
+                "residual": [round(float(np.log2(said / answered)), 5)],
+                "model_largest": round(float(np.log2(said / base_model)), 5),
+                "unit_largest": round(float(np.log2(answered / base_unit)), 5),
+                "model_hz": round(said, 4),
+                "unit_hz": round(answered, 4),
+            }
+        )
+
+    flat = np.array([abs(row["residual"][0]) for row in rows], dtype=float)
+    every = [row["unit_reading"][0] for row in rows]
+    span = float(max(every) - min(every)) if every else 0.0
+    worst = float(flat.max()) if flat.size else 0.0
+    worst_where = next(
+        ({"value": row["value"], "hz": row["unit_hz"]} for row in rows
+         if abs(row["residual"][0]) == worst),
+        None,
+    )
+    leans, why_leans = _structured(rows, floor, "octaves")
+    model_largest = max((abs(row["model_largest"]) for row in rows), default=0.0)
+    return {
+        "record": None,
+        "address": record.get("address"),
+        "measured_in": "octaves",
+        "printed_range": printed_range,
+        "span": round(span, 4),
+        "floor": round(floor, 5),
+        "floor_the_run_resolved": round(run_floor, 6),
+        "floor_of_one_entry": round(model_floor, 6),
+        "is_null_record": span <= 2.0 * floor,
+        "settled_by": 0.0,
+        # No escape hatch on this path. On the band records one exists because the
+        # record publishes a figure saying the profile had not levelled off inside
+        # the band set, so the corner taken from it is a bound. A rate record
+        # publishes no such figure, and inventing one here would turn every lean
+        # into a measurement's limit, which is the loophole the gates exist to
+        # close.
+        "reading_is_a_value_not_a_bound": True,
+        "sign_property": "faster or slower than the slowest setting of the byte",
+        "above": "faster",
+        "below": "slower",
+        "model_largest": round(model_largest, 4),
+        "model_stays_inside_the_floor": bool(model_largest <= floor),
+        "median_abs": round(float(np.median(flat)), 5) if flat.size else 0.0,
+        "worst_abs": round(worst, 5),
+        "worst_at": worst_where,
+        "structured": leans,
+        "why_structured": why_leans,
+        "readings_left_out": left_out,
+        "rows": rows,
+    }
+
+
+# ---------------------------------------------------------------- the gates
 
 
 def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
@@ -487,11 +750,19 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
     together are what stops a uniformly poor fit from passing on a large
     separation, and a strawman decoy from manufacturing one.
     """
-    carrying = [s for s in scored if not s["is_null_record"] and s["span_db"] > 0]
+    units = {s.get("measured_in", "dB") for s in scored}
+    if len(units) > 1:
+        raise ValueError(
+            f"these records were scored in {sorted(units)} and one gate cannot span them: a "
+            "share of a span means nothing across two units, and the lean would be compared "
+            "against the wrong floor"
+        )
+    unit_name = units.pop() if units else "dB"
+    carrying = [s for s in scored if not s["is_null_record"] and s["span"] > 0]
     nulls = [s for s in scored if s["is_null_record"]]
 
-    spans = [s["span_db"] for s in carrying]
-    shares = [s["median_abs_db"] / s["span_db"] for s in carrying]
+    spans = [s["span"] for s in carrying]
+    shares = [s["median_abs"] / s["span"] for s in carrying]
     # The worst record and not the average of them. "Roughly reproduces it" has to
     # hold for every row the type has, or the rows it fails are rows a reader has
     # no warning about.
@@ -500,17 +771,17 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
     gross_ok = share <= GROSS_CEILING and not over_the_floor
 
     broke = [
-        {"record": s["record"], "at": s["worst_at"], "residual_db": s["worst_abs_db"],
-         "share_of_span": round(s["worst_abs_db"] / s["span_db"], 3)}
+        {"record": s["record"], "at": s["worst_at"], "residual": s["worst_abs"],
+         "share_of_span": round(s["worst_abs"] / s["span"], 3)}
         for s in carrying
-        if s["worst_abs_db"] > BREAKDOWN_SHARE * s["span_db"]
+        if s["worst_abs"] > BREAKDOWN_SHARE * s["span"]
     ]
     leaning = [
         s["record"] for s in carrying
-        if s["structured"] and s["profile_settled_inside_the_bands"]
+        if s["structured"] and s["reading_is_a_value_not_a_bound"]
     ]
     unreached = [
-        {"record": s["record"], "still_moving_db": s["settled_by_db"],
+        {"record": s["record"], "still_moving": s["settled_by"],
          "why": (
              "The profile had not levelled off where the band set ended, so the corner the "
              "model takes from this record is a lower bound. A residual leaning across the "
@@ -518,14 +789,14 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
              "further, not a different model."
          )}
         for s in carrying
-        if s["structured"] and not s["profile_settled_inside_the_bands"]
+        if s["structured"] and not s["reading_is_a_value_not_a_bound"]
     ]
     breakdown_ok = not broke and not leaning
 
     checked = []
     for s in scored:
         for row in s["rows"]:
-            unit_largest, said = row.get("unit_largest_db"), row.get("largest_db")
+            unit_largest, said = row.get("unit_largest"), row.get("model_largest")
             if unit_largest is None or said is None:
                 continue
             # Only where both readings said something. A deviation inside the
@@ -533,15 +804,15 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
             # reproduce that is asked to reproduce a coin toss. Symmetric on
             # purpose: the model saying nothing where the unit said a decibel is
             # not a sign error either, it is two readings in the noise.
-            if abs(unit_largest) <= s["floor_db"] or abs(said) <= s["floor_db"]:
+            if abs(unit_largest) <= s["floor"] or abs(said) <= s["floor"]:
                 continue
             checked.append(
                 {
                     "record": s["record"],
                     "value": row["value"],
-                    "property": "the sign of the largest deviation",
-                    "unit": "boost" if unit_largest > 0 else "cut",
-                    "model": "boost" if said > 0 else "cut",
+                    "property": s.get("sign_property", "the sign of the largest deviation"),
+                    "unit": s.get("above", "boost") if unit_largest > 0 else s.get("below", "cut"),
+                    "model": s.get("above", "boost") if said > 0 else s.get("below", "cut"),
                     "same": (unit_largest > 0) == (said > 0),
                 }
             )
@@ -550,8 +821,8 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
             {
                 "record": s["record"],
                 "property": "the unit's null control shows nothing, and so must the model",
-                "unit": f"nothing above a floor of {s['floor_db']:.2f} dB",
-                "model": f"{s['model_largest_db']:.2f} dB",
+                "unit": f"nothing above a floor of {s['floor']:.4g} {unit_name}",
+                "model": f"{s['model_largest']:.4g} {unit_name}",
                 "same": s["model_stays_inside_the_floor"],
             }
         )
@@ -571,10 +842,11 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
         runner and gross_ok and not leaning and runner["leaning_records"] > len(leaning)
     )
     return {
+        "measured_in": unit_name,
         "gross": {
             "passed": gross_ok,
             "residual_over_span": round(share, 3),
-            "span_db": round(max(spans), 2) if spans else 0.0,
+            "span": round(max(spans), 3) if spans else 0.0,
             "ceiling": GROSS_CEILING,
             "why": (
                 "The median residual over the span the effect commands, taken as the worst of "
@@ -609,7 +881,7 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
             "passed": breakdown_ok,
             "breaks_down_at": (broke or None) if broke else None,
             "leaning_records": leaning or None,
-            "records_the_bands_did_not_contain": unreached or None,
+            "records_the_run_did_not_reach": unreached or None,
             "why": (
                 f"A point worse than {BREAKDOWN_SHARE:g} of the span is a failure at that point "
                 "rather than error at it. A residual that leans with the setting or with "
@@ -634,12 +906,23 @@ def verdict(result: dict, *, candidates_in_class: int) -> str:
     return "reproduces"
 
 
+RENDERED = ("lti", "table")
+"""The kinds of model this module can hold against the archive.
+
+Named rather than open so that a class nobody has written a renderer for cannot
+be scored by accident. A saturating type would need its harmonics produced and a
+modulated one its waveform, and neither is written; a model claiming to be either
+is refused at the door instead of being fitted with the wrong instrument.
+"""
+
+
 def load(path: str | Path) -> dict:
     model = json.loads(Path(path).read_text())
-    if model["model"].get("kind") != "lti":
+    kind = model["model"].get("kind")
+    if kind not in RENDERED:
         raise ValueError(
-            f"{path} is a {model['model'].get('kind')!r} model and this renderer holds only "
-            "time-invariant linear ones. A modulated or saturating type needs a time-domain "
-            "renderer, and that is not written."
+            f"{path} is a {kind!r} model and this renderer holds only time-invariant linear "
+            "ones and tables. A modulated or saturating type needs a time-domain renderer, "
+            "and that is not written."
         )
     return model
