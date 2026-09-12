@@ -522,6 +522,14 @@ def cmd_efx_bands(args) -> int:
         + " ".join(f"{v:.0f}" for v in picked["reference_db"])
         + " dBFS"
     )
+    if (beside := found["other_channel"]["read"]) is not None:
+        apart = [abs(r["apart_db"]) for r in found["readings"] if r.get("apart_db") is not None]
+        moved = [abs(r["other_db"]) for r in found["readings"] if r.get("other_db") is not None]
+        if apart:
+            print(
+                f"  channel {beside} moved up to {max(moved):.2f} dB of its own and "
+                f"stayed within {max(apart):.2f} dB of channel {picked['read']}"
+            )
     if not found["readings"]:
         print(
             f"no take under {args.takes} has a setting matching {args.setting!r}; "

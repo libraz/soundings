@@ -147,6 +147,22 @@ WHY_CHANNEL = (
     "what the figures cannot say on their own."
 )
 
+WHY_OTHER = (
+    "The same readings taken from a second channel of the interface, each against "
+    "that channel's own repeats of the flat setting. A profile measured in one "
+    "channel is the whole answer only if the other answers the same way, and for a "
+    "type printed as a stereo one that is a measurement rather than an assumption. "
+    "Per reading, `other_db` is how far this channel itself moved -- which is also "
+    "what says whether it carried the unit at all, because an input nobody plugged "
+    "anything into does not follow a parameter -- and `apart_db` is the largest "
+    "disagreement between the two, band by band. Each is taken against its own "
+    "reference first, so a standing difference in level between the channels is not "
+    "counted as a disagreement about frequency; what is left is the shape, which is "
+    "the thing one channel cannot report on its own. Which channel this is was not "
+    "chosen by knowing the wiring: it is the second highest of the reference takes, "
+    "and `channel.reference_db` is what a reader checks that against."
+)
+
 WHY_HELD = (
     "What else the run had written when it took these readings. A band profile is the "
     "whole chain's, so a parameter read with another of the type's stages moved and "
@@ -190,23 +206,28 @@ def _profile(
     name: str,
     entry: dict,
     *,
-    channel: int,
+    channels: tuple[int, ...],
     lead_s: float,
     trim_s: float,
     hold_s: float | None,
     centres,
-) -> tuple[list[float], float, float, int]:
+) -> tuple[dict[int, list[float]], dict[int, float], float, int]:
+    """Every channel asked for, out of one read of the take.
+
+    Read once and measured twice rather than read twice: the second channel is a
+    control over the first, and a control that costs another pass over a hundred
+    and fifty gigabytes is a control that gets left out of the next run.
+    """
     samples, rate = takes.read(where / name)
     seconds = float(entry.get("seconds") or samples.shape[0] / rate)
     hold = hold_s if hold_s is not None else seconds - 1.0
-    body = _body(samples, rate, index=channel, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+    bands, heard = {}, {}
+    for index in channels:
+        body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+        bands[index] = energies(body, rate, centres)
+        heard[index] = round(_loudness_db(samples, index), 1)
     own = int(np.argmax(takes.channel_levels(samples)))
-    return (
-        energies(body, rate, centres),
-        round(_loudness_db(samples, channel), 1),
-        round(hold, 3),
-        own,
-    )
+    return bands, heard, round(hold, 3), own
 
 
 def _against(profile, reference, floor, centres) -> dict:
@@ -296,16 +317,26 @@ def read_directory(
         where, [name for name, _, _ in flats]
     )
     used = reached if channel is None else int(channel)
+    # The second highest of the reference takes, read alongside as a control. It is
+    # named rather than assumed to be the unit's other output: what says whether it
+    # carried the unit is that it follows the parameter, which is reported per
+    # reading, and `reference_db` is beside it for a reader to judge.
+    ranked = sorted(range(len(reference_levels)), key=lambda i: -reference_levels[i])
+    beside = next((i for i in ranked if i != used), None)
+    wanted = (used,) if beside is None else (used, beside)
     elsewhere: list[str] = []
 
     def profile(name: str, entry: dict):
         bands, loud, hold, own = _profile(
-            where, name, entry, channel=used,
+            where, name, entry, channels=wanted,
             lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, centres=centres,
         )
         if own != used and name not in elsewhere:
             elsewhere.append(name)
         return bands, loud, hold
+
+    def averaged(rows: list[list[float]]) -> list[float]:
+        return [round(float(np.mean([row[i] for row in rows])), 3) for i in range(len(centres))]
 
     # The floor next, because the reference itself is a take and a reader has to
     # be able to see how far above the floor even that was.
@@ -318,28 +349,48 @@ def read_directory(
         for name, entry, _ in _matched(quiet, listed, files):
             quiets.append(name)
             bands, loud, _hold = profile(name, entry)
-            found.append(bands)
-            heard.append(loud)
+            found.append(bands[used])
+            heard.append(loud[used])
         if found:
-            floor_bands = [
-                round(float(np.mean([row[i] for row in found])), 3)
-                for i in range(len(centres))
-            ]
+            floor_bands = averaged(found)
             floor_heard = round(float(np.mean(heard)), 1)
 
     def above(heard: float) -> float | None:
         return None if floor_heard is None else round(heard - floor_heard, 1)
 
-    rows = [profile(name, entry)[0] for name, entry, _ in flats]
+    flat_read = [profile(name, entry) for name, entry, _ in flats]
+    rows = [bands[used] for bands, _, _ in flat_read]
     floor = [
         round(max(row[i] for row in rows) - min(row[i] for row in rows), 2)
         for i in range(len(centres))
     ]
-    middle = [round(float(np.mean([row[i] for row in rows])), 3) for i in range(len(centres))]
-
-    flat_heard = round(
-        float(np.mean([profile(name, entry)[1] for name, entry, _ in flats])), 1
+    middle = averaged(rows)
+    beside_middle = (
+        averaged([bands[beside] for bands, _, _ in flat_read]) if beside is not None else None
     )
+    flat_heard = round(float(np.mean([loud[used] for _, loud, _ in flat_read])), 1)
+
+    def apart(bands: dict[int, list[float]]) -> dict:
+        """How far the second channel's own deviation is from the first channel's.
+
+        Each channel against its own repeats of the flat setting, so a standing
+        difference in level between the two is not counted as a disagreement about
+        frequency -- what is left is the shape, which is the thing one channel
+        cannot report on its own.
+        """
+        if beside is None or beside_middle is None:
+            return {}
+        mine = [a - b for a, b in zip(bands[used], middle, strict=True)]
+        theirs = [a - b for a, b in zip(bands[beside], beside_middle, strict=True)]
+        gap = max(
+            ((round(a - b, 2), centre) for a, b, centre in zip(mine, theirs, centres, strict=True)),
+            key=lambda pair: abs(pair[0]),
+        )
+        return {
+            "other_db": round(max(theirs, key=abs), 2),
+            "apart_db": gap[0],
+            "apart_at_hz": gap[1],
+        }
 
     claimed = {name for name, _, _ in flats} | set(quiets)
     controls = []
@@ -349,9 +400,10 @@ def read_directory(
             found, heard, _hold = profile(name, entry)
             controls.append(
                 {
-                    **_against(found, middle, floor, centres),
-                    "heard_db": heard,
-                    "above_the_silence_db": above(heard),
+                    **_against(found[used], middle, floor, centres),
+                    **apart(found),
+                    "heard_db": heard[used],
+                    "above_the_silence_db": above(heard[used]),
                     "take": name,
                 }
             )
@@ -364,9 +416,10 @@ def read_directory(
         measured, heard, hold = profile(name, entry)
         reading = {
             VALUE: int(found.group(VALUE)),
-            **_against(measured, middle, floor, centres),
-            "heard_db": heard,
-            "above_the_silence_db": above(heard),
+            **_against(measured[used], middle, floor, centres),
+            **apart(measured),
+            "heard_db": heard[used],
+            "above_the_silence_db": above(heard[used]),
             "hold_s": hold,
             "take": name,
             "named_by": source,
@@ -390,6 +443,11 @@ def read_directory(
             "reference_db": reference_levels,
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_CHANNEL,
+        },
+        "other_channel": {
+            "read": beside,
+            "band_db": beside_middle,
+            "why": WHY_OTHER,
         },
         "silence": {
             "takes": sorted(quiets),

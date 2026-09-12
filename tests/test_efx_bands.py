@@ -96,11 +96,13 @@ def read(where, **extra):
         address="40 03 04",
         setting=r"held-04-(?P<value>\d+)-00",
         reference=r"held-flat-\d+-00",
-        control=r"held-bypassed-\d+-00",
-        silence=r"held-silence-\d+-00",
-        bands_hz=BANDS,
-        hold_s=SECONDS - 1.2,
-        **extra,
+        **{
+            "control": r"held-bypassed-\d+-00",
+            "silence": r"held-silence-\d+-00",
+            "bands_hz": BANDS,
+            "hold_s": SECONDS - 1.2,
+            **extra,
+        },
     )
 
 
@@ -312,3 +314,66 @@ def test_a_channel_given_on_the_command_line_is_used_and_said_to_be(crossed) -> 
     assert found["channel"]["chosen_by"] == "given"
     # Every reading is now of the other input, so the byte moves nothing.
     assert all(r["largest_db"] is None for r in found["readings"])
+
+
+@pytest.fixture
+def two_legs(tmp_path):
+    """A run whose second channel is the unit's other output rather than an input.
+
+    The fixture's takes carry the same shaping in both channels at half the level,
+    so the second channel follows the parameter and disagrees with the first about
+    nothing -- which is what a record has to be able to say, and what it cannot say
+    from one channel.
+    """
+    store = takes.Store.open(tmp_path / "run")
+    for index in range(4):
+        store.keep(FakeRecording(noise(index)), stimulus="held", setting=f"flat-{index:02d}", take=0)
+    for value, by_db in ((0, -12.0), (64, 0.0), (127, 6.0)):
+        store.keep(
+            FakeRecording(noise(0, cut_at=1000, by_db=by_db)),
+            stimulus="held",
+            setting=f"04-{value:03d}",
+            take=0,
+        )
+    store.close(question="a synthetic run on two legs")
+    return tmp_path / "run"
+
+
+def test_the_second_channel_is_read_and_named(two_legs) -> None:
+    found = read(two_legs, silence=None, control=None)
+    beside = found["other_channel"]
+    assert beside["read"] == 1
+    assert len(beside["band_db"]) == len(BANDS)
+
+
+def test_the_second_channel_follows_the_parameter_and_agrees_with_the_first(
+    two_legs,
+) -> None:
+    """Both halves matter. That it moved says it carried the unit rather than an
+    idle input; that it agrees says one channel was the whole answer here."""
+    found = read(two_legs, silence=None, control=None)
+    cut = next(r for r in found["readings"] if r["value"] == 0)
+    assert cut["other_db"] == pytest.approx(-12.0, abs=0.5)
+    assert abs(cut["apart_db"]) < 0.5
+
+
+def test_a_second_channel_carrying_something_else_does_not_follow(crossed) -> None:
+    """The control's own control. The other channel here is an unrelated input, so
+    it stays put while the first swings, and the record shows exactly that."""
+    found = crossed_read(crossed)
+    assert found["other_channel"]["read"] == 1
+    for reading in found["readings"]:
+        assert abs(reading["other_db"]) < 1.0
+
+
+def test_a_take_with_one_channel_reports_no_second_one(tmp_path) -> None:
+    store = takes.Store.open(tmp_path / "run")
+    mono = lambda seed: noise(seed)[:, :1]  # noqa: E731
+    for index in range(4):
+        store.keep(FakeRecording(mono(index)), stimulus="held", setting=f"flat-{index:02d}", take=0)
+    for value in (0, 64):
+        store.keep(FakeRecording(mono(0)), stimulus="held", setting=f"04-{value:03d}", take=0)
+    store.close(question="a mono run")
+    found = read(tmp_path / "run", silence=None, control=None)
+    assert found["other_channel"]["read"] is None
+    assert all("apart_db" not in r for r in found["readings"])
