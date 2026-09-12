@@ -517,6 +517,14 @@ def _span_said(reading) -> str:
     )
 
 
+def _steepest_said(reading) -> str:
+    """How fast the deviation ran at its fastest, where it has a figure at all."""
+    slope = reading.get("steepest_db_per_octave")
+    if slope is None:
+        return ""
+    return f"  {slope:+.1f} dB/oct at {reading['steepest_at_hz']:.0f} Hz"
+
+
 def cmd_efx_bands(args) -> int:
     """What one parameter did to each band, read from takes already saved."""
     from .. import efxbands
@@ -538,6 +546,7 @@ def cmd_efx_bands(args) -> int:
             )
             + f"  {moved:2d} bands  {reading['heard_db']:.0f} dBFS"
             + _span_said(reading)
+            + _steepest_said(reading)
         )
 
     found = efxbands.read_directory(

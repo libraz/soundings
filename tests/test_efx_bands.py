@@ -199,11 +199,50 @@ def test_a_profile_still_deepening_where_the_bands_end_says_how_much(profiles) -
     assert found["settled_below_db"] == pytest.approx(-4.0, abs=0.7)
 
 
+def test_a_slope_of_a_known_rate_is_read_at_that_rate(profiles) -> None:
+    """The figure the shelves are read with, checked against a shape that has one."""
+    found = profile(profiles, 4)
+    assert found["steepest_db_per_octave"] == pytest.approx(12.0, abs=1.0)
+    # Not at either end: the outermost half window has no symmetric window to fit.
+    assert FINE[0] < found["steepest_at_hz"] < FINE[-1]
+
+
+def test_a_deviation_narrower_than_the_window_is_read_slower_than_it_ran(profiles) -> None:
+    """The band width lesson again, one resolution up.
+
+    The same twelve decibels: one of them spread over an octave, the other taken
+    out in a twelfth of one and put back. The second ran far faster than the first
+    and is reported as running far slower, because a window an octave wide averages
+    the whole of it with the flat either side.
+    """
+    steep = profile(profiles, 4)["steepest_db_per_octave"]
+    notch = profile(profiles, 1)["steepest_db_per_octave"]
+    assert abs(notch) < 0.5 * abs(steep)
+
+
+def test_the_window_a_slope_was_fitted_over_is_published_beside_it(profiles) -> None:
+    """Two resolutions of the same takes are fitted over two windows, not one."""
+    fine = profile(profiles, 4)
+    coarse = profile(profiles, 4, bands_hz=FINE[::4], band_width_octaves=1 / 3)
+    assert fine["steepest_over_octaves"] == pytest.approx(1.0, abs=0.01)
+    assert coarse["steepest_over_octaves"] == pytest.approx(2 / 3, abs=0.01)
+    # A rate that does not change with the window, because this shape holds the
+    # same rate everywhere. One that changed with it would be the window's.
+    assert coarse["steepest_db_per_octave"] == pytest.approx(
+        fine["steepest_db_per_octave"], abs=1.5
+    )
+
+
 def test_a_reading_inside_the_floor_has_no_span_to_report(directory) -> None:
     found = read(directory)
     flat = next(r for r in found["readings"] if r["value"] == 64)
     assert flat["half_below_hz"] is None
     assert flat["settled_below_db"] is None
+    assert flat["steepest_db_per_octave"] is None
+    # This run's bands are an octave apart, so no window fits inside one centred on
+    # a band. A set too coarse to hold the window says so rather than quietly
+    # fitting a narrower one and reporting it as the same figure.
+    assert flat["steepest_over_octaves"] is None
 
 
 def test_a_setting_with_nothing_done_to_it_reads_far_below_one_with_a_shape(

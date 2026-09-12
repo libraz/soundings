@@ -157,7 +157,9 @@ LIMITS = (
     "where `settled_below_db` or `settled_above_db` is not near zero the profile was "
     "still changing when the bands ran out, so the largest figure is where the set "
     "ended rather than where the effect did. Both are answered by reading the same "
-    "takes again at another resolution, not by reading further into these figures."
+    "takes again at another resolution, not by reading further into these figures. "
+    "`steepest_db_per_octave` is bounded the same way by the window it was fitted "
+    "over, which is the third resolution in this record and is stated beside it."
 )
 
 NOT_HERE = (
@@ -242,6 +244,29 @@ WHY_SPAN = (
     "else says the largest figure is where the set ended. None of the four is a "
     "corner, a width or an order -- a filter would give each of them a name, and "
     "naming them is the fit this record does not make."
+)
+
+WHY_STEEPEST = (
+    "How fast the deviation was running at its fastest, in decibels per octave, and at "
+    "which band -- fitted by least squares over a window of `steepest_over_octaves` "
+    "octaves centred on each band, and the largest of those. The span figures say how "
+    "wide the deviation was and the level it reached; this says how quickly it got "
+    "there, which is the one thing about a profile's shape that neither a height nor a "
+    "width carries. "
+    "The window is a resolution in the same way the band width is: a transition that "
+    "begins and ends inside one window is averaged with the flat either side of it and "
+    "comes back shallower than it ran, so for a deviation narrower than the window this "
+    "figure is a lower bound rather than a rate. The window is the widest whole number "
+    "of bands that fits in an octave, which is why it is reported rather than assumed: "
+    "the same takes read at a coarser set are fitted over a narrower window, and the "
+    "two figures are not the same measurement. The outermost half window at each end of "
+    "the set has no symmetric window to fit and carries no figure. "
+    "It is not an order and not a slope asymptote. An order is a property of a filter "
+    "that has been named, the naming is a fit, and the fit is not made here: what is "
+    "reported is how many decibels the measured profile crossed in an octave of "
+    "measured frequency. What the same figure comes back as when the byte was doing "
+    "nothing is in this run's own null record, which is read from separate takes of the "
+    "same stimulus and is the floor this one has to clear."
 )
 
 WHY_HELD = (
@@ -371,6 +396,74 @@ def _span(moved: list[float], centres, largest_db, largest_at) -> dict:
     }
 
 
+SLOPE_OCTAVES = 1.0
+"""The widest window a rate of change is fitted over, in octaves.
+
+An octave because that is the unit the figure is reported in, so the window and
+the quantity are the same width and a reader does not have to hold two numbers
+against each other to know what was averaged.
+
+**A ceiling and not the window.** A band set that does not divide an octave into
+an even number of bands cannot centre one on a band, so what is fitted is the
+widest whole number of bands that fits inside this, and the record reports that
+rather than this: a third octave set fits two thirds of an octave and a twelfth
+octave set fits the whole of it, and the same figure read at the two resolutions
+was averaged over different widths.
+"""
+
+
+def _steepest(moved: list[float], centres, largest_db, *, over: float = SLOPE_OCTAVES) -> dict:
+    """How fast the deviation was running at its fastest, per octave, and where.
+
+    Fitted by least squares over a window centred on each band rather than taken as
+    the difference between the window's two ends, so that one band's own scatter
+    moves the figure by a fraction of what it moves that difference: the largest of
+    many windows is picked here, and picking a largest is the operation that turns
+    scatter into a reading.
+
+    **The window is a resolution, exactly as the band width is.** A transition that
+    begins and ends inside one window is averaged with the flat either side of it
+    and reported shallower than it ran, so the figure is a lower bound for anything
+    narrower than the window. The outermost half window at each end of the set has
+    no symmetric window to fit and so has no figure, which is the same end the
+    `settled_*_db` pair describes from the other side.
+    """
+    spot = np.log2(np.asarray(centres, dtype=float))
+    # Counted in bands from the set's mean spacing: both sets offered by name are
+    # evenly spaced in log frequency, and a set given band by band on the command
+    # line may not be, so the fit itself uses each band's own frequency and only
+    # the window's width in bands comes from the mean. Rounded down, so the window
+    # reported is one the set can actually hold rather than the one asked for.
+    spacing = (spot[-1] - spot[0]) / max(len(spot) - 1, 1)
+    # The tolerance is against the centres and not against the window. A band set
+    # is a list of printed frequencies rounded to a tenth of a hertz, so the
+    # spacing those centres imply is not quite the spacing they were built from --
+    # and a twelfth octave set divides an octave into 5.9998 of them, which without
+    # this is fitted over five bands either side and reported as five sixths of an
+    # octave. One part in a hundred of a band, which no set spaces its bands by.
+    reach = int(over / 2.0 / spacing + 0.01) if spacing > 0 else 0
+    fitted = round(2 * reach * spacing, 3) if reach else None
+    empty = {
+        "steepest_db_per_octave": None,
+        "steepest_at_hz": None,
+        "steepest_over_octaves": fitted,
+    }
+    if largest_db is None or reach < 1 or 2 * reach + 1 > len(spot):
+        return empty
+    moved_at = np.asarray(moved, dtype=float)
+    best: tuple[float | None, float | None] = (None, None)
+    for i in range(reach, len(spot) - reach):
+        window = slice(i - reach, i + reach + 1)
+        slope = float(np.polyfit(spot[window], moved_at[window], 1)[0])
+        if best[0] is None or abs(slope) > abs(best[0]):
+            best = (round(slope, 2), centres[i])
+    return {
+        "steepest_db_per_octave": best[0],
+        "steepest_at_hz": best[1],
+        "steepest_over_octaves": fitted,
+    }
+
+
 def _against(profile, reference, floor, centres) -> dict:
     """One profile as a deviation from the reference, with what cleared the floor."""
     moved = [round(a - b, 2) for a, b in zip(profile, reference, strict=True)]
@@ -393,6 +486,7 @@ def _against(profile, reference, floor, centres) -> dict:
         "largest_db": largest[0],
         "largest_at_hz": largest[1],
         **_span(moved, centres, largest[0], largest[1]),
+        **_steepest(moved, centres, largest[0]),
     }
 
 
@@ -584,6 +678,7 @@ def read_directory(
         "bands_hz": centres,
         "band_width_octaves": round(band_width_octaves, 6),
         "why_span": WHY_SPAN,
+        "why_steepest": WHY_STEEPEST,
         "channel": {
             "read": used,
             "chosen_by": "given" if channel is not None else "loudest in the reference takes",
