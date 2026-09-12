@@ -454,3 +454,151 @@ def test_two_units_of_measure_cannot_be_gated_together():
     rate = dict(scored(), measured_in="octaves")
     with pytest.raises(ValueError, match="one gate cannot span them"):
         reproduce.gates([band, rate], ranking=ranking(0, 3))
+
+
+# ---------------------------------------------------------------- a byte as a place
+
+BANDS = [round(1000.0 * 2 ** (k / 12), 1) for k in range(-40, 40)]
+"""Twelfth octaves, which is the finest set the equaliser records were read at."""
+
+
+def band_scored(model_peaks: dict[int, float], unit_peaks: dict[int, float]) -> dict:
+    """A band-scored result carrying nothing but where each profile was largest.
+
+    The peak scorer reads only those, so the rest of a real result would be
+    scenery. What it must not do is invent a peak where a record has none, and
+    the empty rows below are how that is asked.
+    """
+    return {
+        "record": "a.json",
+        "address": "40 03 07",
+        "measured_in": "dB",
+        "band_width_octaves": 1 / 12,
+        "span": 12.0,
+        "floor": 1.0,
+        "is_null_record": False,
+        "rows": [
+            {
+                "value": value,
+                "model_peak_hz": model_peaks[value],
+                "unit_peak_hz": unit_peaks[value],
+                "residual": [0.0],
+            }
+            for value in sorted(unit_peaks)
+        ],
+    }
+
+
+def stepped(entries, per_entry):
+    return {"kind": "stepped-table", "entries": list(entries), "per_entry": per_entry}
+
+
+def test_a_strided_table_reads_the_same_entry_for_every_byte_in_its_stride():
+    spec = stepped([200.0, 250.0, 315.0], 8)
+    assert [reproduce._from_map(spec, v) for v in (0, 3, 7)] == [200.0, 200.0, 200.0]
+    assert [reproduce._from_map(spec, v) for v in (8, 15)] == [250.0, 250.0]
+    assert reproduce._from_map(spec, 16) == 315.0
+
+
+def test_a_strided_table_holds_its_last_entry_where_the_byte_runs_past_it():
+    """Three entries at eight apart reach 23, and the byte reaches 127."""
+    spec = stepped([200.0, 250.0, 315.0], 8)
+    assert reproduce._from_map(spec, 24) == 315.0
+    assert reproduce._from_map(spec, 127) == 315.0
+
+
+def test_a_place_is_compared_in_octaves_and_not_in_hertz():
+    """Two hundred hertz is most of the bottom entry and nothing at the top.
+
+    Both pairs below are out by the same two hundred hertz. In hertz they are one
+    error; the reading is a ratio and they are not.
+    """
+    here = reproduce.score_against_peaks(
+        band_scored({0: 400.0, 127: 6300.0}, {0: 200.0, 127: 6100.0})
+    )
+    assert here["measured_in"] == "octaves"
+    low, high = (abs(r["residual"][0]) for r in here["rows"])
+    assert low > 0.9 and high < 0.05
+
+
+def test_a_candidate_with_the_wrong_stride_contradicts_what_the_reading_showed():
+    """The failure a residual in decibels cannot see.
+
+    A table of half the stride puts the feature two bands off at settings the
+    unit did not tell apart. Its residual stays the same size throughout, so it
+    never leans -- and the readings still say plainly that it is wrong.
+    """
+    unit = {0: 176.8, 4: 176.8, 8: 236.0, 12: 236.0}
+    right = reproduce.score_against_peaks(
+        band_scored({0: 198.4, 4: 198.4, 8: 250.0, 12: 250.0}, unit)
+    )
+    wrong = reproduce.score_against_peaks(
+        band_scored({0: 198.4, 4: 222.7, 8: 250.0, 12: 280.6}, unit)
+    )
+    assert all(p["same"] for p in right["properties"])
+    missed = [p for p in wrong["properties"] if not p["same"]]
+    assert [p["value"] for p in missed] == [4, 12]
+    assert missed[0]["unit"] == "not told apart"
+    assert missed[0]["model"] == "told apart"
+
+
+def test_a_candidate_of_the_wrong_stride_the_other_way_is_caught_too():
+    """Bracketed, so that the property is not a one-sided test."""
+    unit = {0: 176.8, 8: 236.0, 16: 280.6}
+    coarse = reproduce.score_against_peaks(
+        band_scored({0: 198.4, 8: 198.4, 16: 333.7}, unit)
+    )
+    assert [p["value"] for p in coarse["properties"] if not p["same"]] == [8]
+
+
+def test_two_settings_one_band_apart_are_not_told_apart():
+    """The floor and not equality, because the model cannot differ where the unit can.
+
+    A model renders both settings of one entry from the same takes and returns the
+    same number twice. The unit's two takes are two takes, and read finely enough
+    the largest band moves between them. Read as equality that is the model's
+    failure; read against the floor it is what it is.
+    """
+    here = reproduce.score_against_peaks(
+        band_scored({0: 198.4, 4: 198.4}, {0: 176.8, 4: 187.3})
+    )
+    assert here["properties"][0]["unit"] == "not told apart"
+    assert here["properties"][0]["same"]
+
+
+def test_a_property_the_scorer_stated_is_a_gate_and_not_a_note():
+    wrong = reproduce.score_against_peaks(
+        band_scored({0: 198.4, 4: 222.7}, {0: 176.8, 4: 176.8})
+    )
+    got = reproduce.gates([wrong], ranking=ranking(0, 3))
+    assert not got["qualitative"]["passed"]
+    assert any(not c["same"] for c in got["qualitative"]["checked"])
+
+
+def test_a_property_that_does_not_say_whether_it_holds_is_refused():
+    """A property nobody answered would pass the gate by not being asked."""
+    broken = scored()
+    broken["properties"] = [{"property": "something", "unit": "a", "model": "b"}]
+    with pytest.raises(ValueError, match="does not say whether it holds"):
+        reproduce.gates([broken], ranking=ranking(0, 3))
+
+
+def test_a_decoy_that_contradicts_a_property_is_a_decoy_that_was_beaten():
+    """A candidate can be beaten without leaning, and once was not counted as beaten.
+
+    Putting the feature in the wrong place at every setting is a constant error,
+    and a constant error does not lean. Reading that as no separation reported
+    four candidates two bands apart as equivalent.
+    """
+    winner = [scored(leans=False)]
+    by_lean = ranking(0, 3)
+    assert reproduce.gates(winner, ranking=by_lean)["power"]["passed"]
+
+    neither = [dict(r, leaning_records=0) for r in ranking(0, 0)]
+    assert not reproduce.gates(winner, ranking=neither)["power"]["passed"]
+
+    by_property = [dict(r) for r in neither]
+    by_property[1]["contradicts_a_property"] = True
+    got = reproduce.gates(winner, ranking=by_property)
+    assert got["power"]["passed"]
+    assert got["power"]["beaten_by"] == "contradicting a property the winner satisfies"

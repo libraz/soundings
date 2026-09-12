@@ -78,13 +78,25 @@ def _clamped(value: float, low: float, high: float) -> float:
 def _from_map(spec: dict, byte_value: int) -> float:
     """One byte turned into the quantity a stage takes, by the model's own rule.
 
-    Four rules, and each of them is a shape this archive has measured rather than
+    Five rules, and each of them is a shape this archive has measured rather than
     a shape a model wanted. A byte that answers over a window and sticks at both
     ends, a byte that has two states, a byte read at some values and interpolated
     between them, and a byte that indexes a short table and returns the first
-    entry for anything past its end -- all four are in the equaliser alone.
+    entry for anything past its end -- all four are in the equaliser alone. The
+    fifth is a byte whose top bits index a table and whose bottom bits do nothing,
+    which is a divide the era did not have to write: a stride that is a power of
+    two is a shift, and a table read that way holds its last entry rather than
+    running off the end.
+
+    `points` with `log` set to true and only the two printed ends in it is how a
+    candidate says the byte is continuous, so nothing here needs a rule for that.
     """
     kind = spec["kind"]
+    if kind == "stepped-table":
+        entries = spec["entries"]
+        stride = int(spec["per_entry"])
+        index = min(byte_value // stride, len(entries) - 1)
+        return float(entries[index])
     if kind == "window":
         low, high = spec["low"], spec["high"]
         clamped = _clamped(byte_value, low, high)
@@ -355,6 +367,18 @@ def _structured(rows: list[dict], floor: float, unit: str = "dB") -> tuple[bool,
     )
 
 
+def _peak_band(profile: list[float], usable: list[int], centres: list[float]) -> float | None:
+    """The band a deviation profile is largest in, by absolute size.
+
+    Absolute because a cut is as much a feature as a boost, and a byte that moves
+    a notch is the same question as one that moves a peak.
+    """
+    if not usable:
+        return None
+    values = [abs(profile[i]) for i in usable]
+    return float(centres[int(np.argmax(values))])
+
+
 def score_against_bands(
     model: dict,
     record: dict,
@@ -417,6 +441,7 @@ def score_against_bands(
         said = [round(wet[i] - dry[i], 2) for i in range(len(centres))]
         answered = reading["band_db"]
         residual = [round(said[i] - answered[i], 2) for i in usable]
+        here = [centres[i] for i in usable]
         rows.append(
             {
                 "value": value,
@@ -425,6 +450,12 @@ def score_against_bands(
                 "residual": residual,
                 "model_largest": max((said[i] for i in usable), key=abs, default=None),
                 "unit_largest": reading.get("largest_db"),
+                # Which band each profile is largest in, both read off the same set.
+                # The band and not a frequency: a peak is located to a band here, and
+                # the model's figure goes through the same takes and the same window,
+                # so whatever the reading does to a broad peak it does to both.
+                "model_peak_hz": _peak_band(said, usable, here),
+                "unit_peak_hz": _peak_band(answered, usable, here),
             }
         )
 
@@ -478,6 +509,7 @@ def score_against_bands(
         "record": None,
         "address": record.get("address"),
         "measured_in": "dB",
+        "band_width_octaves": width,
         "span": round(span, 2),
         "floor": round(floor, 2),
         "is_null_record": is_null,
@@ -494,6 +526,119 @@ def score_against_bands(
         "readings_left_out": left_out,
         "rows": rows,
     }
+
+
+# ---------------------------------------------------------------- a byte as a place
+
+
+def score_against_peaks(scored: dict) -> dict:
+    """The same rendering read again, as where the feature sits rather than how big it is.
+
+    A residual in decibels is the wrong instrument for a byte that moves a feature
+    along the frequency axis. Sliding a peak of moderate width by a sixth of an
+    octave costs a decibel or two on its flanks and nothing at its top, which is
+    under the run's own floor over most of the profile -- so a byte read this way
+    reports every candidate as fitting and none as leaning, which is not that the
+    candidates agree but that the reading cannot hear them. Four candidates
+    separated by two bands at every setting came back `equivalent_under_this_test`
+    that way.
+
+    Both peaks are read off the same band set, from the same takes, through the
+    same window: the model's profile is rendered and then measured exactly as the
+    unit's was. Whatever a band-energy reading does to a broad peak it does to
+    both of them, so the comparison carries no correction and needs none.
+
+    The floor is one band, which is what the reading resolves and what the record
+    publishes. There is no second floor here. One entry of the candidate's table
+    would be a coarser one and would swallow the disagreement, but that floor is
+    only admissible where the step has been measured -- and on this class the
+    stride is the question, so assuming it would be assuming the answer.
+    """
+    rows = [
+        r for r in scored["rows"]
+        if r.get("unit_peak_hz") and r.get("model_peak_hz")
+    ]
+    floor = float(scored["band_width_octaves"])
+    out = []
+    for row in rows:
+        unit, said = float(row["unit_peak_hz"]), float(row["model_peak_hz"])
+        out.append(
+            {
+                "value": row["value"],
+                "unit_reading": [unit],
+                "model_reading": [said],
+                "residual": [float(np.log2(said / unit))],
+                "bands_apart": round(float(np.log2(said / unit)) / floor, 2),
+            }
+        )
+    flat = np.array([abs(r["residual"][0]) for r in out], dtype=float)
+    heard = [r["unit_reading"][0] for r in out]
+    span = float(np.log2(max(heard) / min(heard))) if len(heard) > 1 else 0.0
+    leans, why = _structured(out, floor, unit="octaves")
+    return {
+        "record": scored.get("record"),
+        "address": scored.get("address"),
+        "measured_in": "octaves",
+        "span": round(span, 4),
+        "floor": round(floor, 4),
+        "is_null_record": bool(scored["is_null_record"]),
+        "settled_by": 0.0,
+        "reading_is_a_value_not_a_bound": True,
+        "model_largest": 0.0,
+        "model_stays_inside_the_floor": True,
+        "median_abs": round(float(np.median(flat)), 4) if flat.size else 0.0,
+        "worst_abs": round(float(flat.max()), 4) if flat.size else 0.0,
+        "worst_at": (
+            {"value": max(out, key=lambda r: abs(r["residual"][0]))["value"]} if out else None
+        ),
+        "structured": leans,
+        "why_structured": why,
+        "readings_left_out": [],
+        "properties": _which_settings_moved(out, floor),
+        "rows": out,
+    }
+
+
+def _which_settings_moved(rows: list[dict], floor: float) -> list[dict]:
+    """Which neighbouring settings the reading tells apart at all, asked of both.
+
+    This is the property that separates a table from a curve and one stride from
+    another, and it survives an error in where the table sits: a candidate whose
+    entries are all a band low still repeats in the same places. It is stated as
+    a property rather than folded into the residual because those are two
+    different disagreements -- one says the table is in the wrong place, the other
+    says it does not have this many entries -- and a model can be wrong in either
+    without being wrong in the other.
+
+    Against the floor and not by equality. Two settings of one entry are the same
+    number to the model, which renders them from the same takes and cannot differ,
+    and two takes to the unit, which can. Read at a twelfth of an octave the two
+    land in one band and equality would hold; read four times finer they do not,
+    because the top of a peak of this width is flat enough that a tenth of a
+    decibel moves which band is largest. Asking whether the reading tells them
+    apart rather than whether it repeats itself is the same question at every
+    resolution, and it is the question the rest of this file asks.
+    """
+    def apart(before: dict, after: dict, key: str) -> bool:
+        return bool(abs(np.log2(after[key][0] / before[key][0])) > floor)
+
+    out = []
+    for before, after in zip(rows, rows[1:], strict=False):
+        unit_apart = apart(before, after, "unit_reading")
+        model_apart = apart(before, after, "model_reading")
+        out.append(
+            {
+                "value": after["value"],
+                "property": (
+                    f"the reading tells settings {before['value']} and "
+                    f"{after['value']} apart, or it does not"
+                ),
+                "unit": "told apart" if unit_apart else "not told apart",
+                "model": "told apart" if model_apart else "not told apart",
+                "same": unit_apart == model_apart,
+            }
+        )
+    return out
 
 
 # ---------------------------------------------------------------- a byte as a table
@@ -816,6 +961,19 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
                     "same": (unit_largest > 0) == (said > 0),
                 }
             )
+    # Properties the scorer stated for itself. The sign of a deviation is the one
+    # this gate can work out from a row unaided; anything else is a property of
+    # what was being measured -- which settings returned the same band, which way
+    # a reading ran -- and the scorer that knows the unit knows it. The gate stays
+    # the arbiter: it does not decide what a property is, only that every one
+    # stated has to hold.
+    for s in scored:
+        for stated in s.get("properties", []):
+            if "same" not in stated:
+                raise ValueError(
+                    f"a property stated by {s.get('record')!r} does not say whether it holds"
+                )
+            checked.append({"record": s["record"], **stated})
     for s in nulls:
         checked.append(
             {
@@ -837,9 +995,22 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
     # and that is the same instrument the breakdown gate uses. Tightening the
     # ceiling until the residual separated them instead would be the chase after
     # the analogue that the ceiling exists to stop.
+    #
+    # Leaning is one way to be beaten and not the only one. A candidate that puts
+    # the feature in the wrong place at every setting does not lean -- its residual
+    # is the same size throughout -- and it is more plainly wrong than one that
+    # does. Where the runner-up contradicts a property the winner satisfies, that
+    # is the separation, and reading it as no separation is how four candidates two
+    # bands apart were once reported as equivalent.
     runner = ranking[1] if len(ranking) > 1 else None
     power_ok = bool(
-        runner and gross_ok and not leaning and runner["leaning_records"] > len(leaning)
+        runner
+        and gross_ok
+        and not leaning
+        and (
+            runner["leaning_records"] > len(leaning)
+            or runner.get("contradicts_a_property", False)
+        )
     )
     return {
         "measured_in": unit_name,
@@ -866,13 +1037,23 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
             "passed": power_ok,
             "ranking": ranking,
             "decoy": runner["candidate"] if runner else None,
+            "beaten_by": (
+                None
+                if not runner
+                else "leaning where the winner does not"
+                if runner["leaning_records"] > len(leaning)
+                else "contradicting a property the winner satisfies"
+                if runner.get("contradicts_a_property", False)
+                else None
+            ),
             "separation": (
                 round(runner["worst_share_of_span"] - share, 3) if runner else None
             ),
             "why": (
                 "The runner-up in the catalogue, scored on the same records, and whether it "
-                "fails the gross gate the winner passed. The decoy is not chosen -- it is "
-                "whichever candidate came second, so a strawman cannot be put up in its place. "
+                "leans or contradicts a property where the winner does neither. The decoy is "
+                "not chosen -- it is whichever candidate came second, so a strawman cannot be "
+                "put up in its place. "
                 "A class holding one candidate is a catalogue that is unfinished, which is a "
                 "finding and not a pass."
             ),
