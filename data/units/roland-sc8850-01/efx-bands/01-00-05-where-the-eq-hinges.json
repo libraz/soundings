@@ -21,8 +21,8 @@
       "--silence",
       "held-126-silence-\\d+-00"
     ],
-    "measured_at": "2026-09-11T22:03:30+00:00",
-    "elapsed_s": 0.3,
+    "measured_at": "2026-09-12T04:01:07+00:00",
+    "elapsed_s": 0.2,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -30,7 +30,7 @@
   "type": "01 00",
   "address": "40 03 05",
   "method": "A stimulus was held through the effect at one setting of one byte and the energy of each third octave band of the take was measured. The figure reported per band is that energy against the same band of a setting the run held flat, and the spread of several takes of that flat setting is the floor each of them has to clear.",
-  "limits": "`floor_db` is the observed spread across the run's own repeats of one setting, band by band, and a deviation inside it is not a reading. It is a range over a handful of takes and not a bound: a band where those takes happened to agree closely has a small floor because it was sampled a few times, so a deviation just outside the floor is not thereby a reading either, and how many takes drew it is in `reference`. `heard_db` is the loudest channel's level over the body of the take, and `above_the_silence_db` is how far that is above what the same chain recorded with nothing played: a setting that turns the output down far enough returns the room and the converter, and the bands of that are the floor's own shape rather than anything the byte did. The floor's profile is in `silence` so the comparison can be made rather than taken on trust. Band energy is measured over the held part of the take only, so a setting whose effect is in the attack or the release is not in these figures at all. A band the stimulus does not reach cannot report what the effect did there, which is a limit of the stimulus and not a bound on the unit.",
+  "limits": "`floor_db` is the observed spread across the run's own repeats of one setting, band by band, and a deviation inside it is not a reading. It is a range over a handful of takes and not a bound: a band where those takes happened to agree closely has a small floor because it was sampled a few times, so a deviation just outside the floor is not thereby a reading either, and how many takes drew it is in `reference`. `heard_db` is the level over the whole take of the one channel named in `channel`, and `above_the_silence_db` is how far that is above what the same chain recorded with nothing played: a setting that turns the output down far enough returns the room and the converter, and the bands of that are the floor's own shape rather than anything the byte did. The floor's profile is in `silence` so the comparison can be made rather than taken on trust. Band energy is measured over the held part of the take only, so a setting whose effect is in the attack or the release is not in these figures at all. A band the stimulus does not reach cannot report what the effect did there, which is a limit of the stimulus and not a bound on the unit.",
   "not_in_this_record": "No filter, no corner and no order: which curve these bands lie on and where a shelf hinges is a fit across settings and types, and the fit is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
   "bands_hz": [
     100,
@@ -56,36 +56,53 @@
     10000,
     12500
   ],
+  "channel": {
+    "read": 2,
+    "chosen_by": "loudest in the reference takes",
+    "reference_db": [
+      -70.0,
+      -75.2,
+      -53.3,
+      -62.8,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [
+      "held-126-silence-00-00.wav",
+      "held-126-silence-01-00.wav"
+    ],
+    "why": "The channel every figure in this record was read from, and what each channel of the interface held while the reference takes were sounding. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a full, ragged, plausible profile of something else entirely. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
   "silence": {
     "takes": [
       "held-126-silence-00-00.wav",
       "held-126-silence-01-00.wav"
     ],
     "band_db": [
-      13.637,
-      7.655,
-      12.582,
-      13.22,
-      13.119,
-      10.929,
-      10.482,
-      11.534,
-      13.802,
-      15.996,
-      24.843,
-      16.034,
-      16.058,
-      21.757,
-      16.969,
-      19.044,
-      18.312,
-      22.685,
-      21.459,
-      21.255,
-      23.81,
-      22.64
+      -26.874,
+      -32.135,
+      -29.517,
+      -27.211,
+      -24.838,
+      -28.569,
+      -28.593,
+      -27.551,
+      -25.892,
+      -23.976,
+      -16.05,
+      -23.55,
+      -23.25,
+      -18.812,
+      -21.755,
+      -20.277,
+      -20.142,
+      -17.084,
+      -17.6,
+      -17.236,
+      -15.267,
+      -15.516
     ],
-    "heard_db": -71.7,
+    "heard_db": -110.6,
     "why": "The same chain with nothing played, as a level and as a profile. A setting that turns the output off does not stop the take being recorded, so what comes back is the room, the converter and whatever the machine puts out idle -- and read as a deviation from the flat setting that is a large, ragged, frequency-dependent figure, which is what a reading of the floor looks like and is not what a reader would guess it was. Published as a profile rather than as a single number so that a reading suspected of being the floor can be held against the floor's own shape."
   },
   "reference": {
@@ -144,7 +161,7 @@
       0.05
     ],
     "heard_db": -53.3,
-    "above_the_silence_db": 18.4,
+    "above_the_silence_db": 57.3,
     "why": "The setting every profile below is reported against, and the repeats that give it its floor. Taken in the same session rather than carried from an earlier run: what a noise stimulus fails to repeat belongs to the evening it was recorded in, and a deviation read against another run's floor is read against a reference that was never in the room."
   },
   "control": {
@@ -204,7 +221,7 @@
         "largest_db": 0.38,
         "largest_at_hz": 400,
         "heard_db": -53.0,
-        "above_the_silence_db": 18.7,
+        "above_the_silence_db": 57.6,
         "take": "held-126-bypassed-00-00.wav"
       },
       {
@@ -259,7 +276,7 @@
         "largest_db": 0.38,
         "largest_at_hz": 400,
         "heard_db": -53.0,
-        "above_the_silence_db": 18.7,
+        "above_the_silence_db": 57.6,
         "take": "held-126-bypassed-01-00.wav"
       }
     ],
@@ -432,7 +449,7 @@
       "largest_db": 10.53,
       "largest_at_hz": 12500,
       "heard_db": -50.1,
-      "above_the_silence_db": 21.6,
+      "above_the_silence_db": 60.5,
       "hold_s": 8.045,
       "take": "held-126-hifreq-000-00.wav",
       "named_by": "file name"
@@ -480,7 +497,7 @@
       "largest_db": 7.24,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-001-00.wav",
       "named_by": "file name"
@@ -528,7 +545,7 @@
       "largest_db": 7.23,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-002-00.wav",
       "named_by": "file name"
@@ -577,7 +594,7 @@
       "largest_db": 7.25,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-003-00.wav",
       "named_by": "file name"
@@ -626,7 +643,7 @@
       "largest_db": 7.27,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-004-00.wav",
       "named_by": "file name"
@@ -675,7 +692,7 @@
       "largest_db": 7.24,
       "largest_at_hz": 12500,
       "heard_db": -52.3,
-      "above_the_silence_db": 19.4,
+      "above_the_silence_db": 58.3,
       "hold_s": 8.045,
       "take": "held-126-hifreq-032-00.wav",
       "named_by": "file name"
@@ -723,7 +740,7 @@
       "largest_db": 7.26,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-064-00.wav",
       "named_by": "file name"
@@ -771,7 +788,7 @@
       "largest_db": 7.23,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-096-00.wav",
       "named_by": "file name"
@@ -819,7 +836,7 @@
       "largest_db": 7.25,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-126-00.wav",
       "named_by": "file name"
@@ -868,7 +885,7 @@
       "largest_db": 7.28,
       "largest_at_hz": 12500,
       "heard_db": -52.4,
-      "above_the_silence_db": 19.3,
+      "above_the_silence_db": 58.2,
       "hold_s": 8.045,
       "take": "held-126-hifreq-127-00.wav",
       "named_by": "file name"
