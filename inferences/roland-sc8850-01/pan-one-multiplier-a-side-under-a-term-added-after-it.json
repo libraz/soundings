@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-13T19:40:30.463313+00:00",
-    "made_by": "backup/the-pan-the-output-stage-prints.py, backup/is-the-pan-the-pan-or-the-patch.py, backup/read-the-pan.py, backup/annotate-the-pan-records.py, backup/build-pan-models.py, backup/run-pan-reproduce.py, backup/write-pan-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-13T20:27:17.989352+00:00",
+    "made_by": "backup/the-pan-the-output-stage-prints.py, backup/is-the-pan-the-pan-or-the-patch.py, backup/read-the-pan.py, backup/annotate-the-pan-records.py, backup/build-pan-models.py, backup/run-pan-reproduce.py, backup/write-pan-inference.py, backup/read-the-pan-by-band.py, backup/is-the-far-side-a-multiplier-under-a-floor.py, backup/write-the-pan-round-two.py, backup/read-the-pan-by-band.py, backup/is-the-far-side-a-multiplier-under-a-floor.py, backup/write-the-pan-round-two.py, backup/read-the-pan-by-band.py, backup/is-the-far-side-a-multiplier-under-a-floor.py, backup/write-the-pan-round-two.py, backup/read-the-pan-by-band.py, backup/is-the-far-side-a-multiplier-under-a-floor.py, backup/write-the-pan-round-two.py, backup/read-the-pan-by-band.py, backup/is-the-far-side-a-multiplier-under-a-floor.py, backup/write-the-pan-round-two.py",
+    "rounds": 2,
     "about": {
       "scope": "class",
       "class": "output-pan",
@@ -20,9 +20,9 @@
       "printed_range": "L63 - 0 - R63"
     }
   },
-  "claim": "A byte printed `L63 - 0 - R63` is one pair of multipliers, the same pair on types whose front halves have nothing in common, and it does not take either channel to silence: the two stop 20.6 decibels apart at one end of the byte and 25.1 at the other. That is the unit's and not the reading's -- the quieter channel is still 28 decibels above the take's own lead there, and the same pair of inputs has separated by 58.7 on another address of this unit. No closed form in the catalogue reproduces the sweep under either reading, so what the machine holds is a table and its shape is published as a readout rather than named.",
+  "claim": "A byte printed `L63 - 0 - R63` is one multiplier a side, the same pair on types whose front halves have nothing in common, and what stops it twenty-five decibels short of silence is not the multiplier. Read one band at a time the two channels separate by 33.7 decibels more in some bands than in others at the ends of the sweep and alike in all of them through the middle, against the same pair of channels with the effect taken out of the path separating alike everywhere to 0.1 of a decibel. A pair of multipliers has no frequency in it and cannot do that. Allow one term added after the pan and nineteen settings of twenty bands come back as one multiplier each, over 342 readings to a median of 0.17 decibels -- agreeing with the broadband balance to a tenth through the middle of the sweep and departing from it by two decibels at the last byte, which is where the broadband reading was reading the added term. The table's two sides are one table read in opposite directions, 0.54 of a decibel apart at worst over 17 settings, and its centre entry sits 2.44 decibels under its end -- neither the 3.01 of a constant-power pair nor the 6.02 of a straight crossfade.",
   "named": null,
-  "why_not_named": "There is nothing to name yet. What is established is that the pair is shared and where it stops, and both of those are readings rather than structures. The shape between the ends is a table this run measured and no candidate predicted, and naming a table after the measurement that produced it would be naming the measurement.",
+  "why_not_named": "The table is recovered and still unnamed. Every closed form in the catalogue falls away faster than it does, and half of every sweep is the table's own flat top where nothing that goes through the centre can be wrong -- so what decides is the other half. At byte 112, the last one the table is sure of, the three are 2.84, 4.99, 8.86 decibels out, against a table whose own reading repeats to a few tenths. The nearest of them is also the one that contradicts a property rather than missing a number: it holds the near side at unity to the centre of the byte, where the table has fallen 2.44 decibels. A table read off the measurement is the measurement, so what is published is a readout. What round one could not say and this can is that the entry is one number rather than one per band, which is what makes a closed form the right kind of thing to look for; and that how far the last entry goes is bounded from one side only, so a candidate taking it to silence is not refuted by anything here.",
   "rests_on": {
     "measurements": [
       {
@@ -248,6 +248,50 @@
           ]
         ],
         "why": "The same byte under three voices ten decibels and a spectrum apart. Every take of the sweep shared one voice, and a source that is already two signals compresses a difference between channels and stops it short of silence -- which is the pair of departures the sweep reports. This is what says the reading is the byte's. It is also the floor the scoring uses, per setting: what bounds a reading of a pan is not how well a take repeats but how far it moves when the voice changes, which is 0.87 dB in the middle and 3.70 at the ends."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/balance-bands/40-03-15-the-output-pan.json",
+        "keys": [
+          "runs[name=01-01].flattest_setting_spreads_db",
+          "runs[name=01-01].widest_setting_spreads_db",
+          "runs[name=01-01-bypassed].flattest_setting_spreads_db",
+          "runs[name=01-01-bypassed].widest_setting_spreads_db",
+          "runs[name=01-30].flattest_setting_spreads_db",
+          "runs[name=01-30].widest_setting_spreads_db",
+          "runs[name=01-03].flattest_setting_spreads_db",
+          "runs[name=01-03].widest_setting_spreads_db"
+        ],
+        "values": [
+          4.34,
+          33.67,
+          0.07,
+          0.07,
+          3.86,
+          28.74,
+          3.44,
+          11.88
+        ],
+        "why": "The same sweep read one band at a time. The two figures cited per run are how far the separation moved across the bands at the setting where it moved least and at the setting where it moved most: the first is the chain's own mismatch between two inputs plus what a band fails to repeat, and the second is what has to be explained. The control routed past the effect carries both and is the reason the second is the unit's."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/balance-bands/40-03-15-the-pan-under-three-voices.json",
+        "keys": [
+          "runs[name=broadband-60].flattest_setting_spreads_db",
+          "runs[name=broadband-60].widest_setting_spreads_db",
+          "runs[name=organ-81].flattest_setting_spreads_db",
+          "runs[name=organ-81].widest_setting_spreads_db",
+          "runs[name=piano-60].flattest_setting_spreads_db",
+          "runs[name=piano-60].widest_setting_spreads_db"
+        ],
+        "values": [
+          0.74,
+          5.98,
+          4.4,
+          22.4,
+          13.68,
+          22.27
+        ],
+        "why": "The same byte under three voices, band by band. A stimulus with no valleys in it separates alike in every band where the two tonal voices do not, which is what a term added under the signal looks like and is the reading's control on itself: it responds to what was played rather than reporting the rig."
       }
     ],
     "documents": [
@@ -276,7 +320,7 @@
     ],
     "community": []
   },
-  "adds": "The records say what each setting of the byte did to the two channels on three types. What is read out of them here is that the three are one law rather than three, that where the law stops is the unit's rather than the rig's, and that no closed form in the catalogue puts the two channels where this unit puts them.",
+  "adds": "The records say what each setting of the byte did to the two channels on three types, under three voices, and band by band. What is read out of them here is that the three types are one law rather than three; that a pair of multipliers cannot produce a separation with a shape in it, so a term is added downstream of the pan; that once it is allowed, one multiplier per setting accounts for every band of every setting; and that the multiplier so recovered is refuted by no closed form in the catalogue and refutes all three of them.",
   "alternatives": [
     {
       "reading": "The pair is shared because the three types share one output stage, rather than because three separate stages were given the same table.",
@@ -288,7 +332,7 @@
     {
       "reading": "The far channel at the ends is not the pan's own floor but a fixed leak between the unit's two output channels, with the pan itself reaching silence.",
       "standing": false,
-      "ruled_out_by": "Three voices. A fixed leak is a fixed share of the near channel, so the separation would be one number; measured it is 2.85 dB apart at one end and 3.70 at the other across the three, while the middle of the sweep agrees to 0.87. What limits the ends depends on what was played, so it is not a fixed share of anything. What it is instead is not read here."
+      "ruled_out_by": "The band reading. A leak between two channels is a filter on the louder one, so the separation it produces is fixed in each band and the same under any signal; measured, the same band of the same note under two types puts the quieter channel four to nine decibels apart while the louder one agrees to two tenths of a decibel. Half of the reading stands, though, and is now the claim: that the pan itself may reach silence is consistent with everything here."
     },
     {
       "reading": "Something reaches the output without passing the effect's output stage, and the separation is the sum of a panned signal and an unpanned one.",
@@ -299,9 +343,16 @@
       "reading": "The compression is the voice's rather than the byte's, because the sweep was read through a single patch that is itself two signals.",
       "standing": false,
       "ruled_out_by": "Three voices at six settings, ten decibels and a spectrum apart. The four in the middle agree to 0.87 dB, where the sweep's departure from the nearest closed form is a third of the span the two channels together move over."
+    },
+    {
+      "reading": "The term added after the pan is the rounding of the pan's own multiply, rather than a noise the stage makes on its own.",
+      "standing": true,
+      "separated_by": {
+        "why_not_separable": "Both put a term in the quieter channel that does not scale with the multiplier and whose size follows what the stage was handed, which is all the output can be asked. What would tell them apart is the term's own spectrum against the signal's, and at the depth it sits the reading cannot hold a band steady enough to take one: at the last two bytes the bands of the quieter channel already move several decibels between adjacent settings of a byte whose broadband balance moves by a tenth."
+      }
     }
   ],
-  "refuted_by": "A setting of this byte on any of these types whose two channels land somewhere the published table does not put them, by more than the spread three voices produce at that setting. Or the same byte on a fourth type returning a different pair -- two of the three here agree to 0.11 dB at every setting and the third to 0.93, so a type disagreeing by a decibel would say the tail is not one structure after all.",
+  "refuted_by": "A setting of this byte on any of these types whose two channels land somewhere the published table does not put them, by more than the spread three voices produce at that setting. Or a band of one setting at which the two channels separate by what the recovered multiplier says while another band of the same setting does not, which is the one thing the added term is not allowed to do -- it is a term, not a filter on the pan. Or the same byte on a fourth type returning a different pair: two of the three here agree to 0.11 dB at every setting and the third to 0.93, so a type disagreeing by a decibel would say the tail is not one structure after all.",
   "reproduces": {
     "model": "inferences/models/pan-a-sine-cosine-pair.json",
     "compared_against": {
@@ -798,17 +849,86 @@
   },
   "what_this_does_not_close": [
     {
-      "what": "What the table between the ends actually is. The sweep measured it at nineteen settings and no candidate predicted it; a shape read off the measurement is the measurement, so nothing is named.",
-      "bounded_by": "Nineteen of a hundred and twenty-eight settings on one type, nine on two others. What would narrow it is not more settings -- it is a candidate with a reason to exist, and the catalogue does not hold one that fits."
+      "what": "What the table is. Nineteen settings of one type and nine of two others are measured and no candidate predicts them; a shape read off the measurement is the measurement, so nothing is named.",
+      "bounded_by": "What would narrow it is not more settings -- it is a candidate with a reason to exist. The recovered table gives one that the raw sweep could not: its centre entry is 2.44 decibels under its end, so the two sides together are louder in the middle of the byte than at either end, which is a law rather than a rounding and is what a candidate now has to produce."
     },
     {
-      "what": "What limits the separation at the ends. It is the unit's, it depends on what was played, and it is not a fixed share of the near channel. Whether it is the pan's own table bottoming out or something the effect's output stage does is not read here.",
-      "bounded_by": "Three voices at the two ends. A fourth reading that would separate the two is the far channel's spectrum against the near channel's, take by take, which the saved takes can answer with no machine at all."
+      "what": "Where the term added after the pan is made. It is not the interface's -- it stands fifty decibels over the take's own lead -- and it is not a fixed share of the louder channel, since the same band of the same note under two types gives levels four to nine decibels apart while the louder channel agrees to two tenths.",
+      "bounded_by": "It is downstream of the multiplier, because it does not scale with it. It is upstream of the output, because the type's own output level written to zero leaves both channels at the take's lead. Those two put it inside a stage the three types share, and yet it differs between them, which leaves a term whose size depends on what the stage was handed. Separating that from a second noise-making stage per type is not a reading of the output and no run here can make it."
+    },
+    {
+      "what": "How far down the last entry of the table goes. The output stops twenty-five decibels down and the multiplier does not have to.",
+      "bounded_by": "At least 300 decibels under the first entry, from the added term not being negative. Nothing bounds it from the other side, and nothing measured at the output can: a multiplier that reaches silence and one that stops below the term added after it put the same numbers on the two channels."
     },
     {
       "what": "Whether the pan is one pan on the machine. The part panpot is a different byte in a different block and reaches full separation where this one does not, so they are not the same table; whether they are the same shape between the ends is not asked here.",
       "bounded_by": "Two settings of the part panpot are published and nineteen of this one. The comparison needs the part byte swept, which is a run and not a reading."
     }
   ],
-  "what_it_would_change": "Forty-three rows over thirty types stop being unknown as a shape and become known as a table that is not any of the obvious ones. A renderer that panned these types with a sine-cosine pair would be right in the middle of the byte and wrong at the ends by more than 34 decibels of separation, which is the difference between an image that stays put and one that leaves the loudspeaker."
+  "what_it_would_change": "Forty-three rows over thirty types stop being unknown as a shape and become known as a table that is not any of the obvious ones, with the reason the obvious ones fail now separated from the reason the output stops. A renderer panning these types with a sine-cosine pair would be right at the top of the byte and wrong by 3 decibels by byte 112 and further past it, which is the difference between an image that stays put and one that leaves the loudspeaker; and a renderer reproducing the stop as part of the pan law would put a floor under every panned signal that this unit only puts under what the pan has already taken down.",
+  "against_the_recovered_table": {
+    "readout": "inferences/models/pan-a-table-of-one-multiplier-per-side.json",
+    "why_this_is_not_the_scored_comparison": "The scored comparison below is against the record, which is where a residual has to be taken. This one is against a table that was itself fitted, so it cannot decide a candidate on its own -- what it is for is that it removes the added term, which the record has in it and which every candidate here was failing at the ends because of. A candidate that came back close under it and far under the record would have been rejected for the wrong reason. None did.",
+    "ranking": [
+      {
+        "candidate": "the-far-side-alone-is-attenuated",
+        "median_db": 1.13,
+        "entries": 36,
+        "past_the_flat_top": {
+          "entries": 24,
+          "median_db": 1.66,
+          "leans": "both ways"
+        },
+        "at_the_last_byte_the_table_is_sure_of": {
+          "byte": 112,
+          "side": "left",
+          "apart_db": 2.84
+        },
+        "worst_db": 11.56,
+        "worst_at": "byte 126, the left side"
+      },
+      {
+        "candidate": "a-sine-cosine-pair",
+        "median_db": 0.41,
+        "entries": 36,
+        "past_the_flat_top": {
+          "entries": 24,
+          "median_db": 1.78,
+          "leans": "all one way"
+        },
+        "at_the_last_byte_the_table_is_sure_of": {
+          "byte": 112,
+          "side": "left",
+          "apart_db": 4.99
+        },
+        "worst_db": 13.66,
+        "worst_at": "byte 126, the left side"
+      },
+      {
+        "candidate": "a-crossfade-on-the-amplitudes",
+        "median_db": 3.28,
+        "entries": 36,
+        "past_the_flat_top": {
+          "entries": 24,
+          "median_db": 5.26,
+          "leans": "all one way"
+        },
+        "at_the_last_byte_the_table_is_sure_of": {
+          "byte": 112,
+          "side": "left",
+          "apart_db": 8.86
+        },
+        "worst_db": 17.58,
+        "worst_at": "byte 126, the left side"
+      }
+    ],
+    "the_two_sides_are_one_table": {
+      "settings": 17,
+      "worst_db": 0.54,
+      "worst_at_byte": 120,
+      "median_db": 0.04,
+      "how": "The left side at a byte against the right side at the byte's mirror, the second interpolated between the settings the sweep holds."
+    },
+    "centre_entry_db": -2.44
+  }
 }
