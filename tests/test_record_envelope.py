@@ -39,6 +39,7 @@ to have been stamped.
 SENTENCE_KEYS = frozenset(
     {
         "answered_here_and_declined_there",
+        "band_above_the_floor_db",
         "captured_is_asserted_not_measured",
         "does_not_see_a_mirrored_block",
         "input_is_asserted_not_measured",
@@ -50,10 +51,13 @@ SENTENCE_KEYS = frozenset(
         "records_the_plan_does_not_name",
         "regions_reaching_past_their_mapped_end",
         "shallower_than_the_control_recovered",
+        "why_a_band_has_to_repeat",
+        "why_a_flat_separation_is_the_yardstick",
         "why_one_setting_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
         "why_the_pair_is_in_input_order",
         "why_the_total_is_reported",
+        "why_the_windows_are_one_length",
     }
 )
 """Top-level keys shaped like a sentence, which is a signal and not a verdict.
@@ -66,7 +70,7 @@ value, which is the archive's own rule about one unit's findings turned on its
 own records. Three such keys have come out into `findings` entries, whose kind is
 the question and whose fields are this unit's answer to it.
 
-The sixteen left are not that. The test cannot tell them apart, because what it
+The twenty left are not that. The test cannot tell them apart, because what it
 measures is how many underscores a key has, so it catches verbosity and the
 defect alike. Each of these was read: some are a limitation of the stage rather
 than a finding of it, some are a caveat about how the run was made, and the rest
@@ -86,7 +90,15 @@ of two inputs is subtracted from the other decides the sign of every balance in 
 record, and the sentence spells the convention rather than this unit's answer under
 it -- the next unit gets the same sentence and its own numbers.
 
-So a seventeenth entry is a key to go and look at, not a key that is wrong. Read
+The four the band reading of a separation adds are all of the first kind -- a
+limitation of the stage rather than a finding of it. `band_above_the_floor_db` and
+`why_a_band_has_to_repeat` are the two reasons a band is left out of that reading,
+`why_the_windows_are_one_length` says what every figure in it was measured over,
+and `why_a_flat_separation_is_the_yardstick` names what the frequency dependence
+is judged against. None of them spells an answer: the next unit gets the same four
+sentences and its own bands.
+
+So a twenty-first entry is a key to go and look at, not a key that is wrong. Read
 the value, decide which of the two it is, and either migrate it or add it here.
 """
 
