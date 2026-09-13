@@ -298,11 +298,7 @@ def test_a_rate_is_compared_in_octaves_and_not_in_hertz():
     """
     record = rate_record([(0, 0.05), (99, 5.0), (127, 10.0)], slowest=0.01)
     good = reproduce.score_against_rates(TEN, record, printed_range="0.05 - 10.0")
-    bent = {
-        "tables": {
-            "0.05 - 10.0": dict(TEN["tables"]["0.05 - 10.0"], first_hz=0.15)
-        }
-    }
+    bent = {"tables": {"0.05 - 10.0": dict(TEN["tables"]["0.05 - 10.0"], first_hz=0.15)}}
     bad = reproduce.score_against_rates(bent, record, printed_range="0.05 - 10.0")
     assert good["measured_in"] == "octaves"
     assert good["worst_abs"] < 0.01
@@ -355,9 +351,7 @@ def test_the_same_readings_do_not_separate_two_candidates_that_agree_on_them():
             }
         }
     }
-    straight = {
-        "tables": {"0.05 - 6.40": {"kind": "linear", "first_hz": 0.05, "top_hz": 6.40}}
-    }
+    straight = {"tables": {"0.05 - 6.40": {"kind": "linear", "first_hz": 0.05, "top_hz": 6.40}}}
     for v in (0, 1, 32, 99, 127):
         assert reproduce.rate_of(stepped, "0.05 - 6.40", v) == pytest.approx(
             reproduce.rate_of(straight, "0.05 - 6.40", v)
@@ -647,9 +641,7 @@ def test_a_candidate_with_the_wrong_stride_contradicts_what_the_reading_showed()
 def test_a_candidate_of_the_wrong_stride_the_other_way_is_caught_too():
     """Bracketed, so that the property is not a one-sided test."""
     unit = {0: 176.8, 8: 236.0, 16: 280.6}
-    coarse = reproduce.score_against_peaks(
-        band_scored({0: 198.4, 8: 198.4, 16: 333.7}, unit)
-    )
+    coarse = reproduce.score_against_peaks(band_scored({0: 198.4, 8: 198.4, 16: 333.7}, unit))
     assert [p["value"] for p in coarse["properties"] if not p["same"]] == [8]
 
 
@@ -661,17 +653,13 @@ def test_two_settings_one_band_apart_are_not_told_apart():
     the largest band moves between them. Read as equality that is the model's
     failure; read against the floor it is what it is.
     """
-    here = reproduce.score_against_peaks(
-        band_scored({0: 198.4, 4: 198.4}, {0: 176.8, 4: 187.3})
-    )
+    here = reproduce.score_against_peaks(band_scored({0: 198.4, 4: 198.4}, {0: 176.8, 4: 187.3}))
     assert here["properties"][0]["unit"] == "not told apart"
     assert here["properties"][0]["same"]
 
 
 def test_a_property_the_scorer_stated_is_a_gate_and_not_a_note():
-    wrong = reproduce.score_against_peaks(
-        band_scored({0: 198.4, 4: 222.7}, {0: 176.8, 4: 176.8})
-    )
+    wrong = reproduce.score_against_peaks(band_scored({0: 198.4, 4: 222.7}, {0: 176.8, 4: 176.8}))
     got = reproduce.gates([wrong], ranking=ranking(0, 3))
     assert not got["qualitative"]["passed"]
     assert any(not c["same"] for c in got["qualitative"]["checked"])
@@ -763,9 +751,7 @@ def test_a_law_that_bends_the_wrong_way_leans():
 def test_a_take_too_close_to_the_chains_silence_is_left_out_by_name():
     """A level read at the floor is the room's, and a curve bends there for its sake."""
     unit = level_record({1: -108.0, 8: -77.0, 64: -59.0, 127: -53.0}, silence=-110.0)
-    got = reproduce.score_against_levels(
-        level_model(list(range(128))), unit, address="40 03 16"
-    )
+    got = reproduce.score_against_levels(level_model(list(range(128))), unit, address="40 03 16")
     assert [r["value"] for r in got["readings_left_out"]] == [1]
     assert [r["value"] for r in got["rows"]] == [8, 64, 127]
 
@@ -773,9 +759,7 @@ def test_a_take_too_close_to_the_chains_silence_is_left_out_by_name():
 def test_the_floor_is_the_coarser_of_the_run_and_one_entry_of_the_table():
     """The two-floor rule, which is admissible because every setting was asked."""
     unit = level_record({v: -53.0 + 20 * np.log10(v / 127) for v in range(8, 128, 8)})
-    got = reproduce.score_against_levels(
-        level_model(list(range(128))), unit, address="40 03 16"
-    )
+    got = reproduce.score_against_levels(level_model(list(range(128))), unit, address="40 03 16")
     assert got["floor"] == max(got["floor_the_run_resolved"], got["floor_of_one_entry"])
     assert got["floor_of_one_entry"] > got["floor_the_run_resolved"]
 
@@ -783,9 +767,7 @@ def test_the_floor_is_the_coarser_of_the_run_and_one_entry_of_the_table():
 def test_a_grid_the_multipliers_sit_on_is_found_and_beats_its_neighbours():
     """The scan is the control: one denominator tried alone has nothing to beat."""
     top = -53.0
-    on_a_grid = {
-        v: top + 20 * np.log10(round(127 * (v / 127) ** 1.3) / 127) for v in range(4, 128)
-    }
+    on_a_grid = {v: top + 20 * np.log10(round(127 * (v / 127) ** 1.3) / 127) for v in range(4, 128)}
     on_a_grid[127] = top
     got = reproduce.quantum_of(level_record(on_a_grid), over=range(100, 161))
     assert got["winner"]["denominator"] == 127
@@ -800,3 +782,141 @@ def test_multipliers_on_no_grid_sit_where_a_random_number_would():
     scattered[127] = top
     got = reproduce.quantum_of(level_record(scattered), over=range(100, 161))
     assert got["winner"]["median_away"] > 0.15
+
+
+# --- a pan, which is two multipliers and two readings ----------------------
+
+
+def pan_model(law, *, name: str = "a-candidate") -> dict:
+    """A candidate as the pair of tables the scorer reads, over the whole byte."""
+    return {
+        "model": {"schema_version": 1, "id": name, "candidate": name, "kind": "pan"},
+        "sides": {
+            "left": [[n, law(n)[0]] for n in range(128)],
+            "right": [[n, law(n)[1]] for n in range(128)],
+        },
+    }
+
+
+def pan_record(
+    law,
+    *,
+    settings=(0, 16, 32, 64, 96, 112, 127),
+    run: str = "01-01",
+    scatter: float = 0.01,
+    extra: list | None = None,
+) -> dict:
+    """A saved balance run whose two channels follow a law exactly."""
+    by = []
+    for n in settings:
+        left, right = law(n)
+        a, b = 20 * np.log10(max(left, 1e-9)), 20 * np.log10(max(right, 1e-9))
+        total = 10 * np.log10((left**2 + right**2) / 2 + 1e-18)
+        by.append(
+            {
+                "setting": f"{n:03d}",
+                "balance_db": [round(a - b, 4)] * 2,
+                "together_db": [round(total, 4)] * 2,
+                "balance_spread_db": scatter,
+                "together_spread_db": scatter,
+            }
+        )
+    return {"runs": [{"name": run, "measured": True, "by_setting": by + (extra or [])}]}
+
+
+def sine_cosine(n: int) -> tuple[float, float]:
+    return float(np.cos(n * np.pi / 254)), float(np.sin(n * np.pi / 254))
+
+
+def shallow(n: int) -> tuple[float, float]:
+    """A pan that stops short of silence, which is what this unit measured."""
+    left, right = sine_cosine(n)
+    return left + 0.1 * right, right + 0.1 * left
+
+
+def test_a_pan_that_follows_a_candidate_exactly_leaves_no_residual():
+    """The scorer has to be able to return zero, or a residual it returns means
+    nothing. Both readings, because the class claims what survived both."""
+    model = pan_model(sine_cosine)
+    record = pan_record(sine_cosine)
+
+    for reading in ("balance", "together"):
+        got = reproduce.score_against_pans(
+            model, record, run="01-01", reading=reading, separation_ceiling_db=58.7
+        )
+        assert got["median_abs"] < 1e-6, reading
+
+
+def test_a_candidate_predicting_silence_is_a_property_and_not_a_residual():
+    """Every closed form in this class takes its far side to zero at the extreme
+    setting, so its balance there is infinite and any residual against it is set
+    by the smallest number the arithmetic would divide by -- a two-hundred-decibel
+    figure about a clamp. The unit reached 20.6 dB where this chain has separated
+    by 58.7, so the disagreement is real and it is stated as a property."""
+    model = pan_model(sine_cosine)
+    record = pan_record(shallow)
+
+    got = reproduce.score_against_pans(
+        model, record, run="01-01", reading="balance", separation_ceiling_db=58.7
+    )
+
+    assert [p["value"] for p in got["properties"]] == [0, 127]
+    assert all(p["same"] is False for p in got["properties"])
+    assert [row["value"] for row in got["rows"]] == [16, 32, 64, 96, 112]
+    assert got["worst_abs"] < 20.0
+
+
+def test_a_control_the_run_filed_beside_its_sweep_is_not_a_setting():
+    """The bypassed take is a reading of the chain and not of the byte, and a
+    chain with an imbalance of its own scored as a setting is that imbalance
+    arriving as a thing the parameter did."""
+    record = pan_record(
+        sine_cosine,
+        extra=[
+            {
+                "setting": "bypassed",
+                "balance_db": [9.0],
+                "together_db": [-50.0],
+                "balance_spread_db": 0.0,
+                "together_spread_db": 0.0,
+            }
+        ],
+    )
+
+    kept, left_out = reproduce.admitted_pans(record, run="01-01")
+
+    assert [s["value"] for s in kept] == [0, 16, 32, 64, 96, 112, 127]
+    assert [s["value"] for s in left_out] == ["bypassed"]
+
+
+def test_the_floor_of_a_pan_is_the_stimulus_and_not_the_scatter():
+    """What bounds a reading of a pan is not how well a take repeats -- hundredths
+    of a decibel here -- it is how far the reading moves when the one thing it
+    must not depend on is changed. Measured, that is three decibels at the ends
+    where it is a tenth in the middle, so a single floor would read the ends as
+    the sharpest part of the comparison when they are the softest."""
+    model = pan_model(sine_cosine)
+    record = pan_record(sine_cosine, scatter=0.01)
+
+    got = reproduce.score_against_pans(
+        model,
+        record,
+        run="01-01",
+        reading="balance",
+        floor_by_value={16: 0.9, 32: 0.4, 64: 0.15, 96: 0.15, 112: 0.9},
+        separation_ceiling_db=58.7,
+    )
+
+    assert got["floor_by_setting"] == [0.9, 0.4, 0.15, 0.15, 0.9]
+    assert got["floor"] == 0.4
+
+
+def test_a_run_the_stage_could_not_measure_yields_no_readings_and_says_why():
+    """A stimulus the run asked and the stage could not answer is absent from a
+    scoring rather than scored as nothing, and absent reads as never asked."""
+    record = {"runs": [{"name": "01-01", "measured": False, "not_measured": "only one channel"}]}
+
+    kept, left_out = reproduce.admitted_pans(record, run="01-01")
+
+    assert kept == []
+    assert left_out == [{"value": "01-01", "why": "only one channel"}]

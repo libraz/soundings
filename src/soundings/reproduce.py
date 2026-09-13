@@ -1110,6 +1110,219 @@ def admitted_levels(record: dict) -> tuple[list[dict], list[dict]]:
     return kept, left_out
 
 
+PAN_CENTRE = 64
+"""The byte the printed range calls 0, which every pan reading is taken against.
+
+Named rather than fitted. The absolute level a take arrives at is the whole
+chain's, so a pan can only be read as what it does relative to some setting, and
+which setting that is has to come from the printed range rather than from the
+numbers -- picking the setting where the two channels came out nearest would be
+choosing the reference to make the reference right.
+"""
+
+
+def _pan_sides(model: dict, byte_value: int) -> tuple[float, float]:
+    """A pan candidate's two multipliers at one setting of its byte."""
+    sides = model["sides"]
+    return (
+        _from_map({"kind": "points", "log": False, "points": sides["left"]}, byte_value),
+        _from_map({"kind": "points", "log": False, "points": sides["right"]}, byte_value),
+    )
+
+
+def _pan_reading(model: dict, byte_value: int, reading: str) -> float:
+    left, right = _pan_sides(model, byte_value)
+    if reading == "balance":
+        return 20.0 * float(np.log10(max(left, 1e-12) / max(right, 1e-12)))
+    return 10.0 * float(np.log10(max(left * left + right * right, 1e-24) / 2.0))
+
+
+def admitted_pans(record: dict, *, run: str) -> tuple[list[dict], list[dict]]:
+    """The settings of one saved run that are a reading of the byte, and the rest.
+
+    Two exclusions and both are the record's own. A run the stage could not
+    measure has no balance to read; and a setting whose name is not a byte is a
+    control the run filed beside its sweep -- the bypassed take, where the part
+    was routed past the effect -- which is a reading of the chain rather than of
+    the byte, and putting it in the series would have the chain's own imbalance
+    scored as a setting.
+    """
+    found = next((r for r in record.get("runs", []) if r.get("name") == run), None)
+    if found is None or not found.get("measured"):
+        return [], [{"value": run, "why": found.get("not_measured") if found else "no such run"}]
+    kept, left_out = [], []
+    for setting in found["by_setting"]:
+        name = str(setting["setting"])
+        if not name.isdigit():
+            left_out.append(
+                {
+                    "value": name,
+                    "why": (
+                        "Not a setting of the byte. The run filed its control beside its sweep "
+                        "and a control read as a setting is the chain's own imbalance scored as "
+                        "one."
+                    ),
+                }
+            )
+            continue
+        kept.append({**setting, "value": int(name)})
+    return sorted(kept, key=lambda s: s["value"]), left_out
+
+
+def score_against_pans(
+    model: dict,
+    record: dict,
+    *,
+    run: str,
+    reading: str = "balance",
+    floor_by_value: dict[int, float] | None = None,
+    separation_ceiling_db: float | None = None,
+) -> dict:
+    """One saved pan sweep, answered by a candidate pair of multipliers.
+
+    **Two readings and neither is the better one.** The difference between the
+    channels is what the byte is printed to move, and three of the candidates in
+    this class give the same difference to within a decibel or two. The two
+    channels together is what separates them -- a crossfade on the amplitudes is
+    three decibels down at the centre, a sine-cosine pair is flat, and a law that
+    attenuates only the far side is three decibels up -- and it is the figure a
+    comparison made in one channel does not have at all. So a candidate is scored
+    under both and claims what survived twice.
+
+    Both sides are taken against PAN_CENTRE, because the level a take arrives at is
+    the whole chain's and only a relative reading is the pan's.
+
+    **The floor is per setting, because the reading is.** What bounds a reading of
+    a pan is not the take-to-take scatter, which is hundredths of a decibel here;
+    it is how far the reading moves when the one thing it must not depend on --
+    which voice was sounded -- is changed. That is measured, in the record beside
+    this one, and it is three decibels at the ends where it is a tenth in the
+    middle. Passing it in is what stops the ends, where every candidate is furthest
+    apart, from being read as the sharpest part of the comparison when they are the
+    softest.
+
+    **A candidate that predicts silence in a channel is not predicting a number.**
+    Every closed form in this class takes its far side to zero at the extreme
+    setting, so its balance there is infinite and whatever the arithmetic returns
+    is set by the smallest number the code was willing to divide by. That is a
+    limit of the writing and it would arrive in the record as a two-hundred-decibel
+    residual, which is a figure about a clamp. Where the candidate's separation
+    exceeds `separation_ceiling_db` -- what this rig has been shown to resolve, on
+    another address, in a record the sweep cites -- the setting leaves the residual
+    and becomes a property instead: whether the separation the unit reached is past
+    what the rig resolves, which the unit answers and the candidate answers, and
+    they either agree or they do not.
+    """
+    kept, left_out = admitted_pans(record, run=run)
+    floors = floor_by_value or {}
+    scatter = "balance_spread_db" if reading == "balance" else "together_spread_db"
+    at_centre = next((s for s in kept if s["value"] == PAN_CENTRE), None)
+    if at_centre is None:
+        raise ValueError(
+            f"{run} was not asked at {PAN_CENTRE}, which is the byte the printed range calls 0 "
+            "and the only setting a pan can be read against without choosing one"
+        )
+
+    def measured(setting: dict) -> float:
+        values = setting["balance_db"] if reading == "balance" else setting["together_db"]
+        return float(np.median(values))
+
+    base_unit = measured(at_centre)
+    base_model = _pan_reading(model, PAN_CENTRE, reading)
+
+    rows, per_setting, properties = [], [], []
+    ceiling = separation_ceiling_db
+    for setting in kept:
+        value = setting["value"]
+        answered = measured(setting) - base_unit
+        predicted = _pan_reading(model, value, reading) - base_model
+        if ceiling is not None and abs(_pan_reading(model, value, "balance")) > ceiling:
+            reached = abs(float(np.median(setting["balance_db"])))
+            properties.append(
+                {
+                    "value": value,
+                    "property": (
+                        f"the two channels stand further apart than the {ceiling:.1f} dB this "
+                        "chain has been shown to separate"
+                    ),
+                    "unit": f"no, {reached:.1f} dB",
+                    "model": "yes, the far channel is silent",
+                    "same": bool(reached > ceiling),
+                }
+            )
+            left_out.append(
+                {
+                    "value": value,
+                    "why": (
+                        "The candidate takes its far side to zero here, so the separation it "
+                        "predicts is infinite and any residual against it is set by the smallest "
+                        f"number the arithmetic would divide by. The unit reached {reached:.1f} "
+                        f"dB, against {ceiling:.1f} dB this chain has separated on another "
+                        "address, so the disagreement is real and it is stated as a property "
+                        "rather than as a number the clamp chose."
+                    ),
+                }
+            )
+            continue
+        here = max(float(setting.get(scatter) or 0.0), float(floors.get(value, 0.0)))
+        per_setting.append(here)
+        rows.append(
+            {
+                "value": value,
+                "model_reading": [round(predicted, 4)],
+                "unit_reading": [round(answered, 4)],
+                "residual": [round(predicted - answered, 4)],
+                "model_largest": round(predicted, 4),
+                "unit_largest": round(answered, 4),
+                "floor_db": round(here, 4),
+            }
+        )
+
+    floor = float(np.median(per_setting)) if per_setting else 0.0
+    flat = np.array([abs(row["residual"][0]) for row in rows], dtype=float)
+    every = [row["unit_reading"][0] for row in rows]
+    span = float(max(every) - min(every)) if every else 0.0
+    worst = float(flat.max()) if flat.size else 0.0
+    worst_where = next(
+        ({"value": row["value"]} for row in rows if abs(row["residual"][0]) == worst), None
+    )
+    leans, why_leans = _structured(rows, floor, "dB")
+    model_largest = max((abs(row["model_largest"]) for row in rows), default=0.0)
+    return {
+        "record": None,
+        "run": run,
+        "reading": reading,
+        "measured_in": "dB",
+        "span": round(span, 4),
+        "floor": round(floor, 4),
+        "floor_by_setting": [round(v, 4) for v in per_setting],
+        "is_null_record": span <= 2.0 * floor,
+        "settled_by": 0.0,
+        # The far channel at both ends sits thirty to forty decibels above the
+        # take's own lead and the same pair of inputs has separated by fifty-eight
+        # on another address, so where this reading stops is the unit's and not a
+        # bound the run could not see past.
+        "reading_is_a_value_not_a_bound": True,
+        "sign_property": (
+            "towards the lower-numbered input or the higher"
+            if reading == "balance"
+            else "louder or quieter than the centre of the byte"
+        ),
+        "above": "towards the lower-numbered input" if reading == "balance" else "louder",
+        "below": "towards the higher-numbered input" if reading == "balance" else "quieter",
+        "model_largest": round(model_largest, 4),
+        "model_stays_inside_the_floor": bool(model_largest <= floor),
+        "median_abs": round(float(np.median(flat)), 4) if flat.size else 0.0,
+        "worst_abs": round(worst, 4),
+        "worst_at": worst_where,
+        "structured": leans,
+        "why_structured": why_leans,
+        "properties": properties,
+        "readings_left_out": left_out,
+        "rows": rows,
+    }
+
+
 def score_against_levels(model: dict, record: dict, *, address: str) -> dict:
     """One published level sweep, answered by a candidate multiplier law.
 
@@ -1448,13 +1661,17 @@ def verdict(result: dict, *, candidates_in_class: int) -> str:
     return "reproduces"
 
 
-RENDERED = ("lti", "table")
+RENDERED = ("lti", "table", "pan")
 """The kinds of model this module can hold against the archive.
 
 Named rather than open so that a class nobody has written a renderer for cannot
 be scored by accident. A saturating type would need its harmonics produced and a
 modulated one its waveform, and neither is written; a model claiming to be either
 is refused at the door instead of being fitted with the wrong instrument.
+
+A pan is here because its renderer is written and is two multipliers: nothing has
+to be produced for it, since what the archive holds is the level of each channel
+and what a candidate says is the level of each channel.
 """
 
 
