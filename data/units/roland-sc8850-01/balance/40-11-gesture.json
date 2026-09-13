@@ -9,8 +9,8 @@
       "--out",
       "data/units/roland-sc8850-01/balance/40-11-gesture.json"
     ],
-    "measured_at": "2026-09-13T18:50:36+00:00",
-    "elapsed_s": 1.0,
+    "measured_at": "2026-09-13T19:17:24+00:00",
+    "elapsed_s": 1.6,
     "midi_device_id": null,
     "midi_model_id": null,
     "not_recorded": {
@@ -26,9 +26,7 @@
   "method": "The two channels the unit arrived on were measured separately on every take, and what is reported is the level difference between them. A parameter that moves signal between the channels does not change either take in the way a residual measures, so it is invisible to a comparison made in one channel -- and a balance that lands somewhere new on each take reads there as the unit failing to repeat itself. Both the movement between the settings and the scatter within one are judged against the same run's own spread, since a chain with an imbalance of its own would otherwise read as a parameter that pans.",
   "why_the_total_is_reported": "Reported beside the two channels together, because a balance that moves while the pair's total stays put is a pan and one that moves with it is a level change reaching one channel. The difference is not visible in either channel on its own.",
   "why_the_pair_is_in_input_order": "Which two inputs the unit arrived on is decided by level; which of the two is subtracted from the other is decided by the input's own number. Ordering the pair by level as well leaves the sign of every balance in the hands of whichever channel was louder by a hair: two readings of one saved run returned +10.18 dB and -10.18 dB, each self-consistent with the pair it also reported, and nothing in the figure said which convention it was under. A parameter printed as a pan is a direction before it is a size, so the direction has to survive being read twice. Which of the unit's outputs is on the lower-numbered input is a fact about the cabling and this does not establish it -- the pair is reported beside the figure so a reader can map it.",
-  "moved_the_balance": [
-    "40-11-1C"
-  ],
+  "moved_the_balance": [],
   "runs": [
     {
       "name": "40-11-00",
@@ -3033,52 +3031,9 @@
     {
       "name": "40-11-1C",
       "stimulus_name": "struck_moved",
-      "channels": [
-        2,
-        3
-      ],
-      "measured": true,
-      "margin_db": 6.0,
-      "yardstick_db": 8.99,
-      "moved_between_settings": false,
-      "did_not_repeat_within_a_setting": true,
-      "while_the_two_together_held_still": true,
-      "by_setting": [
-        {
-          "setting": "127",
-          "balance_db": [
-            -2.81,
-            6.04,
-            6.02,
-            6.18
-          ],
-          "together_db": [
-            -69.2,
-            -69.1,
-            -69.09,
-            -71.53
-          ],
-          "balance_spread_db": 8.99,
-          "together_spread_db": 2.44
-        },
-        {
-          "setting": "0",
-          "balance_db": [
-            2.97,
-            -10.25,
-            -7.14,
-            11.23
-          ],
-          "together_db": [
-            -80.38,
-            -88.25,
-            -77.79,
-            -82.25
-          ],
-          "balance_spread_db": 21.48,
-          "together_spread_db": 10.47
-        }
-      ]
+      "channels": null,
+      "measured": false,
+      "not_measured": "Only one channel carried the unit, so there is no balance to measure and no null here either: what a parameter does between two channels cannot be asked of one."
     },
     {
       "name": "40-11-1C",
@@ -4232,7 +4187,7 @@
     }
   ],
   "what_moved_in_this_reading": {
-    "what": "Every run here was read again with the two inputs put into the interface's own order rather than into the order they were loudest in. What that changes is the sign of every balance whose louder input was the higher-numbered one, and the pair reported beside it, together.",
+    "what": "Every run here was read again, after two changes to the reading. The two inputs are put into the interface's own order rather than into the order they were loudest in, which changes the sign of every balance whose louder input was the higher-numbered one and the pair reported beside it, together. And the floor the quieter channel has to clear is read from those two channels' own lead rather than from every input the interface has.",
     "signs_that_flipped": 54,
     "runs_read": 84,
     "why_it_is_not_a_correction": "No figure published here was wrong. Each carried the pair it was the difference of, so each said what it meant. What it did not do is say the same thing when the same takes were read a second time, because two inputs within a hair of each other put the order in the hands of the noise -- and a byte printed as a pan is a direction before it is a size. A sweep of such a byte is the case where the two are nearest, so the old order would have been a coin toss exactly where it mattered most.",
