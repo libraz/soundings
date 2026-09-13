@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-12T23:14:09.444378+00:00",
-    "made_by": "backup/run-rate-reproduce.py, backup/write-rate-inference.py",
-    "rounds": 1,
+    "made_by": "backup/run-rate-reproduce.py, backup/write-rate-inference.py, backup/settle-where-the-table-bends.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -151,6 +151,22 @@
           5.5434,
           6.3953
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/02-01-09-where-the-table-bends.json",
+        "keys": [
+          "readings[value=116].rate_hz",
+          "readings[value=119].rate_hz",
+          "readings[value=120].rate_hz",
+          "readings[value=124].rate_hz"
+        ],
+        "values": [
+          6.6972,
+          7.0004,
+          7.5001,
+          9.5011
+        ],
+        "why": "Nine consecutive settings across the place the table's step goes from a tenth of a hertz to a half, on a slot other than the one the bends were measured at. Three of the nine repeat settings the same slot already has, so the run carries its own check that the two agree before their readings are put side by side."
       }
     ],
     "document_rows": [
@@ -199,7 +215,7 @@
     {
       "reading": "The wide table's second and third steps begin somewhere other than settings 100 and 120 -- the bend is real everywhere, but its position is only measured at one slot.",
       "candidate": "stepped-table-per-printed-range",
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
       "separated_by": {
         "observable": "The rate at settings 116 through 124 at any wide-range slot other than 01 21 / 40 03 07.",
@@ -227,7 +243,8 @@
           "minutes": 3,
           "why_this_slot": "It already has a fifteen-point curve of its own, so the new settings join a sweep whose lower half is measured rather than standing alone, and its type prints one rate."
         }
-      }
+      },
+      "ruled_out_by": "The run it asked for was made and the bend is where the first slot put it. At 9 consecutive settings from 116 to 124 on 02 01 / 40 03 09 the rate is the shared table's to a worst 0.0028 Hz, which is 0.0006 octaves against a table entry of 0.021 and a margin that asked for 4. The step is a tenth of a hertz up to 119, where the rate is 7.000, and a half from 120, where it is 7.500 -- the two readings the two candidate positions differ by, and they came out on the side the first slot did. The three settings this run repeats agree with the earlier sweep of the same slot to 0.0004 Hz, so the nine are one measurement and not a second opinion about a different evening."
     },
     {
       "reading": "The step is a twentieth of a hertz everywhere, and the wider printed range is what the page says rather than what the part does.",
@@ -2207,6 +2224,10 @@
       "what": "Whether the rotary types' rate slots use this table. Their readings move with the byte and sit a little below it, and the difference is not a constant ratio.",
       "why": "A rotary has two rotors and accelerates, and the record's own limits say a take begun before it settles returns the ramp's average. Reading its shortfall as a different table would be reading the ramp as a parameter.",
       "what_would_close_it": "The same slots with the other rotor silenced and a settle wait recorded, which one record already does. That is a rotary question, not a rate-table one, and it belongs to whichever claim takes on that class."
+    },
+    {
+      "what": "Where the table's first bend is, at setting 100. Two slots now agree about the bend at 120 and only one has been read either side of 100.",
+      "bounded_by": "The slot read here has 99, 100 and 110 in its earlier sweep -- 4.9992, 5.1004 and 6.1011 -- which puts a tenth-of-a-hertz step from 100 and a different one below it, but with nine settings between 100 and 110 unasked. A bend inside that gap would not show. It is the same shape of question the run above answered and it costs the same three minutes."
     }
   ],
   "a_note_on_what_was_left_out": "Twenty-eight readings of the twenty-one admissible slots were left out by the records' own controls: a figure fewer than half the take's partials found, or a figure at or under the slowest rate the take was long enough to carry. Both exclusions are stated per reading in the run and neither looks at any model. The second is the one that matters: a take too short returns its analysis floor at every setting, which is stable, and stable is what makes it look like a byte that does nothing."
