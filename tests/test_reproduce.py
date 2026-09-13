@@ -489,6 +489,108 @@ def band_scored(model_peaks: dict[int, float], unit_peaks: dict[int, float]) -> 
     }
 
 
+def height_scored(
+    model_heights: dict[int, float],
+    unit_heights: dict[int, float],
+    *,
+    floor: float = 0.05,
+    skirt: float = 0.0,
+) -> dict:
+    """A band-scored result carrying a height per setting, and a profile around it.
+
+    `skirt` is how far apart the two profiles are on every band that is not the
+    feature's top. It is what the height reading exists to see past: a candidate
+    can agree everywhere the feature is small and be wrong where it is not.
+    """
+    return {
+        "record": "a.json",
+        "address": "40 03 0C",
+        "measured_in": "dB",
+        "band_width_octaves": 1 / 12,
+        "span": 24.0,
+        "floor": floor,
+        # A profile whose feature sits at a kilohertz and whose quietest band, where
+        # the feature is nothing, scatters twenty times as far.
+        "floor_by_band_db": [floor, floor, 20 * floor],
+        "bands_hz": [500.0, 1000.0, 12500.0],
+        "is_null_record": False,
+        "settled_by": 0.0,
+        "reading_is_a_value_not_a_bound": True,
+        "model_largest": max(abs(v) for v in model_heights.values()),
+        "model_stays_inside_the_floor": False,
+        "readings_left_out": [],
+        "rows": [
+            {
+                "value": value,
+                "model_largest": model_heights[value],
+                "unit_largest": unit_heights[value],
+                "unit_peak_hz": 1000.0,
+                "residual": [skirt] * 20 + [model_heights[value] - unit_heights[value]],
+            }
+            for value in sorted(unit_heights)
+        ],
+    }
+
+
+def test_a_height_is_read_off_both_sides_of_the_same_band_set():
+    """A candidate a decibel out at the top is a decibel out, however wide the skirt."""
+    here = reproduce.score_against_heights(
+        height_scored({52: -11.0, 76: 11.0}, {52: -12.0, 76: 12.0})
+    )
+    assert here["measured_in"] == "dB"
+    assert here["read_as"] == "height"
+    assert [abs(r["residual"][0]) for r in here["rows"]] == [1.0, 1.0]
+    assert here["median_abs"] == 1.0
+
+
+def test_a_profile_of_skirts_hides_what_the_height_shows():
+    """Why this reading exists, stated as the comparison that goes the wrong way.
+
+    Two candidates against one record. The first is right at the top of the feature
+    and slightly out on every band of its skirt; the second is right on the skirt
+    and two decibels out where the whole quantity lives. Over the profile the second
+    wins on the median, because a profile is mostly skirt. Read as a height it does
+    not.
+    """
+    settings = {52: -12.0, 64: 0.0, 76: 12.0}
+    right = height_scored({52: -12.0, 64: 0.0, 76: 12.0}, settings, skirt=0.2)
+    wrong = height_scored({52: -10.0, 64: 0.0, 76: 10.0}, settings, skirt=0.0)
+    over_the_profile = [
+        float(np.median([abs(v) for row in s["rows"] for v in row["residual"]]))
+        for s in (right, wrong)
+    ]
+    assert over_the_profile[0] > over_the_profile[1]
+    as_heights = [reproduce.score_against_heights(s)["median_abs"] for s in (right, wrong)]
+    assert as_heights[0] < as_heights[1]
+
+
+def test_a_height_inside_the_runs_own_floor_is_not_a_disagreement():
+    here = reproduce.score_against_heights(
+        height_scored({52: -12.03, 76: 11.98}, {52: -12.0, 76: 12.0}, floor=0.1)
+    )
+    assert not here["structured"]
+    assert here["worst_abs"] < here["floor"]
+
+
+def test_a_height_is_bounded_by_the_band_it_was_read_in_and_not_by_the_quietest():
+    """The limit of the reading, kept from being written down as the unit's own.
+
+    The record's worst band is twenty times its peak band's, because the feature is
+    nothing there and the take sits nearest the floor. Taken as what a height read
+    at the peak resolves, a disagreement six times that band's spread disappears.
+    """
+    scored = height_scored({52: -11.4, 76: 12.0}, {52: -12.0, 76: 12.0}, floor=0.1)
+    here = reproduce.score_against_heights(scored)
+    assert here["floor"] == 0.1
+    assert here["worst_abs"] > here["floor"]
+    without = dict(scored)
+    without.pop("floor_by_band_db")
+    assert reproduce.score_against_heights(without)["floor"] == 0.1
+    coarse = dict(scored, floor=2.0)
+    coarse.pop("floor_by_band_db")
+    assert reproduce.score_against_heights(coarse)["worst_abs"] < 2.0
+
+
 def stepped(entries, per_entry):
     return {"kind": "stepped-table", "entries": list(entries), "per_entry": per_entry}
 

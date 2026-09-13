@@ -533,6 +533,13 @@ def score_against_bands(
         "structured": leans,
         "why_structured": why_leans,
         "bands_above_the_models_nyquist_hz": dropped,
+        # Band by band, so that a reading taken at one band can be given the floor
+        # of that band. `floor` above is the worst of these and is right for a
+        # residual spread over the whole profile; it is not right for a figure read
+        # at the top of a feature, where a band the feature never reaches would
+        # otherwise set what the reading is taken to resolve.
+        "floor_by_band_db": [round(float(f), 3) for f in floors],
+        "bands_hz": centres,
         "readings_left_out": left_out,
         "rows": rows,
     }
@@ -635,7 +642,129 @@ def score_against_peaks(scored: dict, *, located_by: str = "band") -> dict:
     }
 
 
-def _which_settings_moved(rows: list[dict], floor: float) -> list[dict]:
+# ------------------------------------------------------------- a byte as a height
+
+
+def _floor_where_the_feature_is(scored: dict, rows: list[dict]) -> float:
+    """The run's own spread, at the bands the unit's feature was largest in.
+
+    The worst of them, over the settings scored, so one setting whose peak happens
+    to land in a quiet band does not set the floor for the rest. Where a record
+    does not carry its floor band by band the profile's own worst is used, which is
+    the older behaviour and errs towards calling a disagreement noise.
+    """
+    per_band = scored.get("floor_by_band_db")
+    centres = scored.get("bands_hz")
+    if not per_band or not centres:
+        return float(scored["floor"])
+    seen = []
+    for row in rows:
+        at = row.get("unit_peak_hz")
+        if at is None:
+            continue
+        nearest = min(range(len(centres)), key=lambda i: abs(np.log2(centres[i] / at)))
+        seen.append(float(per_band[nearest]))
+    return max(seen) if seen else float(scored["floor"])
+
+
+def score_against_heights(scored: dict) -> dict:
+    """The same rendering read again, as how big the feature is rather than as a profile.
+
+    A residual taken over every band is the wrong instrument for a byte whose whole
+    quantity is one height. Most of a band set is skirt: a gain byte that is out by
+    half a decibel at the top of its feature is out by a tenth of that two octaves
+    away, and there are twenty such bands against the two or three that carry the
+    height. The median over the profile is then mostly a reading of the bands where
+    every candidate agrees, and a candidate wrong by two decibels where it matters
+    ranks ahead of one that is right there -- which is what the gain class returned
+    before this was written, with the winner leaning and the runner-up not.
+
+    Both heights are read off the same band set, from the same takes, through the
+    same window, so whatever a band-energy reading takes off the top of a broad
+    feature it takes off both. A section whose peak the band set reads at ninety-nine
+    hundredths of its true height gives back ninety-nine hundredths on either side of
+    the comparison, and the ratio is the whole of what is compared here.
+
+    The floor is the record's own spread of its repeats, taken at the bands the
+    feature was actually largest in rather than across the whole profile. A height
+    read at one kilohertz is not bounded by how far the repeats scattered at twelve
+    and a half, where the feature is nothing and the takes are nearest the floor --
+    quoting the worst band anywhere as what this reading resolves is a limit of the
+    reading being written down as a property of the unit, and it is over a decibel
+    on records whose peak band repeats to three hundredths.
+
+    There is no second floor. One entry of a candidate's table would be coarser and
+    would swallow the disagreement, and on this class the entries are the question.
+    """
+    # A height needs a feature. At the setting a run took its reference from, the
+    # deviation is nothing and the largest band is whichever one the noise won --
+    # a number that is a reading of the room, against a model that correctly says
+    # zero. Three records leaned on that single row and on nothing else. Left out
+    # by name rather than dropped: what the model owes such a setting is that it
+    # shows nothing there too, which `model_stays_inside_the_floor` already says.
+    coarse = float(scored["floor"])
+    rows, left_out = [], list(scored.get("readings_left_out", []))
+    for row in scored["rows"]:
+        if row.get("unit_largest") is None or row.get("model_largest") is None:
+            continue
+        if abs(float(row["unit_largest"])) <= coarse:
+            left_out.append(
+                {
+                    "value": row["value"],
+                    "why": (
+                        f"the unit's profile reaches {abs(float(row['unit_largest'])):.2f} dB "
+                        f"here against the run's own floor of {coarse:.2f}, so there is no "
+                        "feature to read a height off"
+                    ),
+                }
+            )
+            continue
+        rows.append(row)
+    floor = _floor_where_the_feature_is(scored, rows)
+    out = []
+    for row in rows:
+        unit, said = float(row["unit_largest"]), float(row["model_largest"])
+        out.append(
+            {
+                "value": row["value"],
+                "unit_reading": [unit],
+                "model_reading": [said],
+                "residual": [said - unit],
+                "floors_apart": round((said - unit) / floor, 2) if floor else None,
+            }
+        )
+    flat = np.array([abs(r["residual"][0]) for r in out], dtype=float)
+    heard = [r["unit_reading"][0] for r in out]
+    span = float(max(heard) - min(heard)) if len(heard) > 1 else 0.0
+    leans, why = _structured(out, floor)
+    return {
+        "record": scored.get("record"),
+        "address": scored.get("address"),
+        "measured_in": "dB",
+        "read_as": "height",
+        "span": round(span, 3),
+        "floor": round(floor, 3),
+        "is_null_record": bool(scored["is_null_record"]),
+        "settled_by": scored.get("settled_by", 0.0),
+        "reading_is_a_value_not_a_bound": bool(scored.get("reading_is_a_value_not_a_bound", True)),
+        "model_largest": scored.get("model_largest", 0.0),
+        "model_stays_inside_the_floor": bool(scored.get("model_stays_inside_the_floor", False)),
+        "median_abs": round(float(np.median(flat)), 4) if flat.size else 0.0,
+        "worst_abs": round(float(flat.max()), 4) if flat.size else 0.0,
+        "worst_at": (
+            {"value": max(out, key=lambda r: abs(r["residual"][0]))["value"]} if out else None
+        ),
+        "structured": leans,
+        "why_structured": why,
+        "readings_left_out": left_out,
+        "properties": _which_settings_moved(out, floor, as_ratio=False),
+        "rows": out,
+    }
+
+
+def _which_settings_moved(
+    rows: list[dict], floor: float, *, as_ratio: bool = True
+) -> list[dict]:
     """Which neighbouring settings the reading tells apart at all, asked of both.
 
     This is the property that separates a table from a curve and one stride from
@@ -655,8 +784,15 @@ def _which_settings_moved(rows: list[dict], floor: float) -> list[dict]:
     apart rather than whether it repeats itself is the same question at every
     resolution, and it is the question the rest of this file asks.
     """
+    # Where the quantity is a place, two settings are apart by the ratio between
+    # them and the floor is a width in octaves. Where it is a height, they are
+    # apart by the difference and the floor is a spread in decibels -- and a ratio
+    # would be meaningless there, because a height passes through zero and changes
+    # sign, which a frequency does not.
     def apart(before: dict, after: dict, key: str) -> bool:
-        return bool(abs(np.log2(after[key][0] / before[key][0])) > floor)
+        if as_ratio:
+            return bool(abs(np.log2(after[key][0] / before[key][0])) > floor)
+        return bool(abs(after[key][0] - before[key][0]) > floor)
 
     out = []
     for before, after in zip(rows, rows[1:], strict=False):
