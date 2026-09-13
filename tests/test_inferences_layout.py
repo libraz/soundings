@@ -234,6 +234,52 @@ def test_a_model_names_the_class_it_is_a_candidate_in():
         )
 
 
+def test_a_generated_comparison_set_is_still_what_the_index_yields():
+    """The quiet failure the staleness query cannot see.
+
+    A claim's comparison set is generated so that nobody chooses which readings a
+    model is held against. Once generated it is committed, and records go on being
+    published under the same type -- so the set the claim names drifts away from
+    the set its own rule yields, and nothing fails. Three frequency records did
+    exactly that: they turned the equaliser's breakdown gate over, and the claim
+    carrying the old verdict passed every check in this file, because they were
+    records it did not cite.
+
+    So the rule is written down as a rule and re-applied here. A claim whose set
+    cannot be expressed as one says why, which is a thing to read rather than a
+    thing to pass.
+    """
+    for path in sorted(HERE.glob("*/*.json")):
+        if path.name == "index.json":
+            continue
+        claim = json.loads(path.read_text())
+        against = (claim.get("reproduces") or {}).get("compared_against")
+        if not against or not against.get("records"):
+            continue
+        where = f"{path.parent.name}/{path.name}"
+        spec = against.get("filter")
+        if spec is None:
+            assert (against.get("why_not_a_filter") or "").strip(), (
+                f"{where} names a comparison set and neither generates it from a "
+                "filter nor says why it cannot"
+            )
+            continue
+        # What the filter yields and the scoring could not read are two different
+        # lists, and both are the claim's to carry. A record the run dropped is
+        # named with the reason rather than left out of the total, so that a set
+        # that shrank and a set that was never that big do not read the same.
+        dropped = against.get("then_dropped") or []
+        for item in dropped:
+            assert item.get("file") and (item.get("why") or "").strip(), (
+                f"{where} drops a record from its comparison set without saying which or why"
+            )
+        named = sorted(against["records"] + [item["file"] for item in dropped])
+        assert inferences.comparison_set(ROOT, spec) == named, (
+            f"{where} was scored against a set the index no longer yields -- "
+            "re-run the scoring and republish the claim"
+        )
+
+
 def test_what_is_not_chased_says_how_each_was_bounded():
     """The list that keeps `not explained` and `not required` apart.
 

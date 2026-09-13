@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-12T23:51:12.882900+00:00",
-    "made_by": "backup/run-freq-reproduce.py, backup/write-freq-inference.py, backup/close-the-third-entry.py",
-    "rounds": 2,
+    "made_by": "backup/run-freq-reproduce.py, backup/write-freq-inference.py, backup/update-freq-inference.py, backup/close-freq-alternative.py, backup/close-the-third-entry.py, backup/one-list-or-one-per-range.py, backup/refresh-the-freq-comparison.py",
+    "rounds": 3,
     "about": {
       "scope": "unit",
       "types": [
@@ -461,20 +461,42 @@
     "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
     "compared_against": {
       "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json"
       ],
-      "generated_from": "data/units/roland-sc8850-01/index.json, filtered to the efx-bands records of type 01 00 whose swept address is a mid frequency byte, at the finest resolution published.",
-      "excluded": [
+      "generated_from": "data/units/roland-sc8850-01/index.json, filtered to the efx-bands records of type 01 00 whose swept address is a mid frequency byte, at the finest resolution published for each",
+      "filter": {
+        "index": "data/units/roland-sc8850-01/index.json",
+        "stage": "efx-bands",
+        "type": "01 00",
+        "address_in": [
+          "40 03 07",
+          "40 03 0A"
+        ],
+        "file_ends_with": "-in-twelfths.json"
+      },
+      "then_dropped": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-null-in-twelfths.json",
+          "why": "The null control, where the byte was swept with the gain it shapes at its centre. There is no feature to put anywhere, so there is no place to be right or wrong about, and the run drops it by that rule rather than by name. The record is still answered -- with nothing -- and that answer is a level and is scored as one."
+        },
         {
           "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-null-in-twelfths.json",
-          "why": "The null control, where the byte was swept with the gain it shapes at its centre. There is no feature to put anywhere, so there is no place to be right or wrong about. The record is still answered -- with nothing -- and that answer is a level and is scored as one."
+          "why": "The null control, where the byte was swept with the gain it shapes at its centre. There is no feature to put anywhere, so there is no place to be right or wrong about, and the run drops it by that rule rather than by name. The record is still answered -- with nothing -- and that answer is a level and is scored as one."
         },
         {
           "file": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-null-in-twelfths.json",
-          "why": "The same, for the other mid section."
+          "why": "The null control, where the byte was swept with the gain it shapes at its centre. There is no feature to put anywhere, so there is no place to be right or wrong about, and the run drops it by that rule rather than by name. The record is still answered -- with nothing -- and that answer is a level and is scored as one."
+        }
+      ],
+      "excluded": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-bands/*.json (third-octave)",
+          "why": "The same takes read at the coarser set. Scoring both resolutions counts one measurement twice."
         }
       ]
     },
@@ -489,8 +511,8 @@
       "outside": "Every printed frequency range except 200 - 6.3k, and every type except 01 00. The range that holds twenty third octaves rather than sixteen is the one this claim most expects to behave differently and it has not been measured. Which setting selects Bypass, on the fourteen ranges that print it. The two shelf corners of this same type, printed 200/400 and 4k/8k: a page's shelf frequency and a measurement of one are not defined at the same point, so those slots are not evidence here. The width of what sits at the frequency, which is a separate byte. Any setting between the twelve asked."
     },
     "residual": {
-      "median": 0.0,
-      "worst": 0.1668,
+      "median": 0.1294,
+      "worst": 0.668,
       "unit": "octaves between the band the model peaks in and the band the unit peaks in",
       "worst_at": {
         "value": 16,
@@ -499,8 +521,8 @@
       "structured": true,
       "why": "Zero at every entry but one under the band reading: the model's rendered profile peaks in the unit's own band at fifteen of the sixteen. The one it misses is the third, by two bands. The residual still leans, and outside that entry the lean is a bias of a median 0.030 octaves with the unit always below the model -- every value of which is inside what one band resolves, which is why it shows as a lean and not as a point of breakdown.",
       "also_read_as": {
-        "median": 0.0305,
-        "worst": 0.1801,
+        "median": 0.1574,
+        "worst": 0.8478,
         "unit": "octaves between where a fit puts the model's peak and where it puts the unit's",
         "why": "The same rendering and the same records, located by a fit over the whole feature instead of by the largest band. The winner, the ranking and the verdict are the same under both, and the entry that misses is the same entry: 0.167 octaves read one way and 0.180 the other."
       }
@@ -508,8 +530,8 @@
     "gates": {
       "measured_in": "octaves",
       "gross": {
-        "passed": true,
-        "residual_over_span": 0.067,
+        "passed": false,
+        "residual_over_span": 0.668,
         "span": 5.167,
         "ceiling": 0.2,
         "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
@@ -517,6 +539,30 @@
       "qualitative": {
         "passed": true,
         "checked": [
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 17,
+            "property": "the reading tells settings 15 and 17 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 20,
+            "property": "the reading tells settings 17 and 20 apart, or it does not",
+            "unit": "not told apart",
+            "model": "not told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 23,
+            "property": "the reading tells settings 20 and 23 apart, or it does not",
+            "unit": "not told apart",
+            "model": "not told apart",
+            "same": true
+          },
           {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
             "value": 4,
@@ -774,6 +820,30 @@
             "same": true
           },
           {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 8,
+            "property": "the reading tells settings 0 and 8 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 16,
+            "property": "the reading tells settings 8 and 16 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+            "value": 24,
+            "property": "the reading tells settings 16 and 24 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
             "value": 64,
             "property": "the reading tells settings 0 and 64 apart, or it does not",
@@ -798,17 +868,19 @@
           {
             "candidate": "third-octave-table-of-sixteen",
             "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
-            "mean_share_of_span": 0.0167,
-            "worst_share_of_span": 0.0666,
-            "worst_point_share": 0.1334,
-            "records_scored": 4,
+            "mean_share_of_span": 0.1294,
+            "worst_share_of_span": 0.668,
+            "worst_point_share": 0.668,
+            "records_scored": 6,
             "contradicts_a_property": false,
             "properties_contradicted": 0,
-            "leaning_records": 4,
+            "leaning_records": 6,
             "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": []
@@ -816,17 +888,19 @@
           {
             "candidate": "table-of-thirty-two-between-the-printed-ends",
             "model": "inferences/models/freq-table-of-thirty-two-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0309,
-            "worst_share_of_span": 0.0666,
-            "worst_point_share": 0.1334,
-            "records_scored": 4,
+            "mean_share_of_span": 0.2222,
+            "worst_share_of_span": 1.1682,
+            "worst_point_share": 1.336,
+            "records_scored": 6,
             "contradicts_a_property": true,
-            "properties_contradicted": 5,
-            "leaning_records": 4,
+            "properties_contradicted": 6,
+            "leaning_records": 6,
             "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": []
@@ -834,17 +908,19 @@
           {
             "candidate": "geometric-between-the-printed-ends",
             "model": "inferences/models/freq-geometric-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0328,
-            "worst_share_of_span": 0.0333,
-            "worst_point_share": 0.1334,
-            "records_scored": 4,
+            "mean_share_of_span": 0.2583,
+            "worst_share_of_span": 1.3352,
+            "worst_point_share": 1.6692,
+            "records_scored": 6,
             "contradicts_a_property": true,
-            "properties_contradicted": 5,
-            "leaning_records": 4,
+            "properties_contradicted": 6,
+            "leaning_records": 6,
             "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": []
@@ -852,17 +928,19 @@
           {
             "candidate": "straight-line-between-the-printed-ends",
             "model": "inferences/models/freq-straight-line-between-the-printed-ends.json",
-            "mean_share_of_span": 0.4352,
-            "worst_share_of_span": 1.2332,
-            "worst_point_share": 1.4667,
-            "records_scored": 4,
+            "mean_share_of_span": 1.9096,
+            "worst_share_of_span": 8.1762,
+            "worst_point_share": 9.0108,
+            "records_scored": 6,
             "contradicts_a_property": true,
-            "properties_contradicted": 7,
-            "leaning_records": 4,
+            "properties_contradicted": 10,
+            "leaning_records": 6,
             "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": []
@@ -870,17 +948,19 @@
           {
             "candidate": "table-of-eight-between-the-printed-ends",
             "model": "inferences/models/freq-table-of-eight-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0681,
-            "worst_share_of_span": 0.1667,
-            "worst_point_share": 0.2003,
-            "records_scored": 4,
+            "mean_share_of_span": 0.254,
+            "worst_share_of_span": 1.0012,
+            "worst_point_share": 1.0028,
+            "records_scored": 6,
             "contradicts_a_property": true,
-            "properties_contradicted": 11,
-            "leaning_records": 4,
+            "properties_contradicted": 13,
+            "leaning_records": 6,
             "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": []
@@ -888,23 +968,34 @@
         ],
         "decoy": "table-of-thirty-two-between-the-printed-ends",
         "beaten_by": "contradicting a property the winner satisfies",
-        "separation": -0.0,
+        "separation": 0.5,
         "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
       },
       "breakdown": {
         "passed": false,
-        "breaks_down_at": null,
+        "breaks_down_at": [
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+            "at": {
+              "value": 17
+            },
+            "residual": 0.1668,
+            "share_of_span": 0.668
+          }
+        ],
         "leaning_records": [
+          "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json"
         ],
         "records_the_run_did_not_reach": null,
         "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
       }
     },
-    "verdict": "breaks_down",
+    "verdict": "rejected",
     "ranking": [
       {
         "candidate": "third-octave-table-of-sixteen",
@@ -997,7 +1088,484 @@
         "records_the_run_did_not_reach": []
       }
     ],
-    "decoy": "table-of-thirty-two-between-the-printed-ends"
+    "decoy": "table-of-thirty-two-between-the-printed-ends",
+    "also_read_as_a_fit": {
+      "gates": {
+        "measured_in": "octaves",
+        "gross": {
+          "passed": false,
+          "residual_over_span": 0.848,
+          "span": 5.081,
+          "ceiling": 0.2,
+          "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+        },
+        "qualitative": {
+          "passed": true,
+          "checked": [
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 17,
+              "property": "the reading tells settings 15 and 17 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 20,
+              "property": "the reading tells settings 17 and 20 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 23,
+              "property": "the reading tells settings 20 and 23 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 4,
+              "property": "the reading tells settings 0 and 4 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 8,
+              "property": "the reading tells settings 4 and 8 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 12,
+              "property": "the reading tells settings 8 and 12 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 16,
+              "property": "the reading tells settings 12 and 16 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 24,
+              "property": "the reading tells settings 16 and 24 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 32,
+              "property": "the reading tells settings 24 and 32 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 40,
+              "property": "the reading tells settings 32 and 40 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 48,
+              "property": "the reading tells settings 40 and 48 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 56,
+              "property": "the reading tells settings 48 and 56 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 64,
+              "property": "the reading tells settings 56 and 64 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 72,
+              "property": "the reading tells settings 64 and 72 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 80,
+              "property": "the reading tells settings 72 and 80 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 88,
+              "property": "the reading tells settings 80 and 88 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 96,
+              "property": "the reading tells settings 88 and 96 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 104,
+              "property": "the reading tells settings 96 and 104 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 112,
+              "property": "the reading tells settings 104 and 112 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 120,
+              "property": "the reading tells settings 112 and 120 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+              "value": 127,
+              "property": "the reading tells settings 120 and 127 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+              "value": 8,
+              "property": "the reading tells settings 0 and 8 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+              "value": 16,
+              "property": "the reading tells settings 8 and 16 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+              "value": 32,
+              "property": "the reading tells settings 16 and 32 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 4,
+              "property": "the reading tells settings 0 and 4 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 8,
+              "property": "the reading tells settings 4 and 8 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 12,
+              "property": "the reading tells settings 8 and 12 apart, or it does not",
+              "unit": "not told apart",
+              "model": "not told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 16,
+              "property": "the reading tells settings 12 and 16 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 32,
+              "property": "the reading tells settings 16 and 32 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 48,
+              "property": "the reading tells settings 32 and 48 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 64,
+              "property": "the reading tells settings 48 and 64 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 80,
+              "property": "the reading tells settings 64 and 80 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 96,
+              "property": "the reading tells settings 80 and 96 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 112,
+              "property": "the reading tells settings 96 and 112 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "value": 127,
+              "property": "the reading tells settings 112 and 127 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 8,
+              "property": "the reading tells settings 0 and 8 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 16,
+              "property": "the reading tells settings 8 and 16 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+              "value": 24,
+              "property": "the reading tells settings 16 and 24 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+              "value": 64,
+              "property": "the reading tells settings 0 and 64 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            },
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+              "value": 127,
+              "property": "the reading tells settings 64 and 127 apart, or it does not",
+              "unit": "told apart",
+              "model": "told apart",
+              "same": true
+            }
+          ],
+          "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
+        },
+        "power": {
+          "passed": false,
+          "ranking": [
+            {
+              "candidate": "third-octave-table-of-sixteen",
+              "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
+              "mean_share_of_span": 0.1574,
+              "worst_share_of_span": 0.8478,
+              "worst_point_share": 0.8525,
+              "records_scored": 6,
+              "contradicts_a_property": false,
+              "properties_contradicted": 0,
+              "leaning_records": 6,
+              "leaning_on": [
+                "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+                "01-00-07-where-the-eq-hinges-in-twelfths.json",
+                "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+              ],
+              "records_the_run_did_not_reach": []
+            },
+            {
+              "candidate": "table-of-thirty-two-between-the-printed-ends",
+              "model": "inferences/models/freq-table-of-thirty-two-between-the-printed-ends.json",
+              "mean_share_of_span": 0.2296,
+              "worst_share_of_span": 1.265,
+              "worst_point_share": 1.5225,
+              "records_scored": 6,
+              "contradicts_a_property": true,
+              "properties_contradicted": 6,
+              "leaning_records": 6,
+              "leaning_on": [
+                "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+                "01-00-07-where-the-eq-hinges-in-twelfths.json",
+                "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+              ],
+              "records_the_run_did_not_reach": []
+            },
+            {
+              "candidate": "straight-line-between-the-printed-ends",
+              "model": "inferences/models/freq-straight-line-between-the-printed-ends.json",
+              "mean_share_of_span": 2.0968,
+              "worst_share_of_span": 9.3371,
+              "worst_point_share": 10.404,
+              "records_scored": 6,
+              "contradicts_a_property": true,
+              "properties_contradicted": 6,
+              "leaning_records": 6,
+              "leaning_on": [
+                "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+                "01-00-07-where-the-eq-hinges-in-twelfths.json",
+                "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+              ],
+              "records_the_run_did_not_reach": []
+            },
+            {
+              "candidate": "geometric-between-the-printed-ends",
+              "model": "inferences/models/freq-geometric-between-the-printed-ends.json",
+              "mean_share_of_span": 0.2754,
+              "worst_share_of_span": 1.4911,
+              "worst_point_share": 1.9757,
+              "records_scored": 6,
+              "contradicts_a_property": true,
+              "properties_contradicted": 8,
+              "leaning_records": 6,
+              "leaning_on": [
+                "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+                "01-00-07-where-the-eq-hinges-in-twelfths.json",
+                "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+              ],
+              "records_the_run_did_not_reach": []
+            },
+            {
+              "candidate": "table-of-eight-between-the-printed-ends",
+              "model": "inferences/models/freq-table-of-eight-between-the-printed-ends.json",
+              "mean_share_of_span": 0.2746,
+              "worst_share_of_span": 1.1339,
+              "worst_point_share": 1.265,
+              "records_scored": 6,
+              "contradicts_a_property": true,
+              "properties_contradicted": 13,
+              "leaning_records": 6,
+              "leaning_on": [
+                "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-in-twelfths.json",
+                "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+                "01-00-07-where-the-eq-hinges-in-twelfths.json",
+                "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+                "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+              ],
+              "records_the_run_did_not_reach": []
+            }
+          ],
+          "decoy": "table-of-thirty-two-between-the-printed-ends",
+          "beaten_by": "contradicting a property the winner satisfies",
+          "separation": 0.417,
+          "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
+        },
+        "breakdown": {
+          "passed": false,
+          "breaks_down_at": [
+            {
+              "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "at": {
+                "value": 17
+              },
+              "residual": 0.1821,
+              "share_of_span": 0.853
+            }
+          ],
+          "leaning_records": [
+            "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json"
+          ],
+          "records_the_run_did_not_reach": null,
+          "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
+        }
+      },
+      "verdict": "rejected"
+    },
+    "what_moved_the_verdict": {
+      "was": "breaks_down, on four records",
+      "now": "rejected, on 6",
+      "why": "Two records that sweep the byte inside its third entry alone were added to the set. The model puts that entry where the printed series does and the unit does not, so the residual is the same 0.167 octaves at every setting of them -- and a record that deliberately moves the byte inside one entry has almost no span of its own for that to be a share of. On 01-00-07-the-entry-that-is-not-printed-in-twelfths.json the span is 0.250 octaves and the median residual is 0.1668, which is 0.668 of it against a ceiling of 0.2. The gross gate had passed at 0.067 and now fails.",
+      "what_is_new_in_it": "Nothing about the unit. The entry that misses is the same entry, by the same 0.167 octaves, and no reading of any byte changed. What changed is that the archive now holds a record whose whole span is inside that entry, so the one departure this class has is being asked to be a small share of a small number."
+    }
   },
   "what_this_does_not_close": [
     {
@@ -1030,6 +1598,10 @@
     {
       "what": "What the phaser's manual table holds. Its own entries were not recovered and this claim does not extend to that address.",
       "bounded_by": "Four notches are in the record with their positions at nine settings, so a later reading that can account for a moving comb has the takes it needs. Nothing here says the manual is or is not a table."
+    },
+    {
+      "what": "Whether a record swept inside one entry of a table should carry the gross gate. The rule that sets a record aside as a null is a span of no more than twice the run's floor, and it was chosen where this type's records left a clear gap -- every ratio below 1.6 or above 6. The record added here sits at 3.0, in the gap, so the reason the figure was said not to decide anything no longer holds on this type.",
+      "bounded_by": "It decides one verdict and no reading. The residual, the entry that misses, the ranking and the runner-up are what they were; only the share the gross gate takes of a 0.25 octave span has moved. Nothing here changes the rule, because a threshold moved after seeing what it did to a result is not a threshold."
     }
   ],
   "what_it_would_change": [

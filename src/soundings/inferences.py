@@ -171,6 +171,41 @@ def stale(root: str | Path) -> list[dict]:
     return out
 
 
+def comparison_set(root: str | Path, spec: dict) -> list[str]:
+    """The records a claim was scored against, generated again from the index.
+
+    A claim that chooses its comparison set by hand can be right about the records
+    it looked at and wrong about the archive, so the sets here are generated. What
+    that buys is only kept if the rule is written down as a rule: a list generated
+    once and then committed goes on standing while records are added around it, and
+    the claim that rests on it does not fail, it quietly stops being about the
+    archive it says it is about. That happened -- three records published under a
+    type turned a verdict over and the claim carrying the old one passed every
+    check in this file, because the checks were about figures it cited and these
+    were records it did not.
+
+    Every field is optional except the stage. A filter naming nothing but the stage
+    is a claim scored against every record of it, which is a thing a claim may be.
+    """
+    root = Path(root)
+    index = json.loads((root / spec["index"]).read_text())
+    unit = Path(spec["index"]).parent
+    out = []
+    for entry in index["stages"].get(spec["stage"], []):
+        name = entry["file"]
+        ends = spec.get("file_ends_with")
+        if ends and not name.endswith(ends):
+            continue
+        record = json.loads((root / unit / name).read_text())
+        if spec.get("type") and record.get("type") != spec["type"]:
+            continue
+        addresses = spec.get("address_in")
+        if addresses and record.get("address") not in addresses:
+            continue
+        out.append(str(unit / name))
+    return sorted(out)
+
+
 def citing_an_inference(root: str | Path) -> list[dict]:
     """Records under data/ that name this directory, which none may.
 

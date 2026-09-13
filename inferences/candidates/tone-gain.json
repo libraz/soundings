@@ -1,0 +1,69 @@
+{
+  "class": "tone-gain",
+  "what_the_class_is": "A gain byte printed -12 - +12. There are a hundred and eighteen of them and eighty-six are the two-band tone control that forty-three of the sixty-five types carry at their last-but-two and last-but-one parameters, with no frequency printed beside either. The rest are an equaliser's own sections, an overdrive's pair, and one eight-band graphic. The question is what decibel each setting of the byte stands for, whether the twenty-five live settings are computed from the byte or stored, and whether the answer is one answer for all of them.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A filter gain is not a multiplier the way an output level is. It enters the coefficients of a section, so a table of gains is a table of coefficient sets and its cost is multiplied by every frequency and every width the same section offers. Twenty-five gains against sixteen centres and five widths is two thousand entries, which nothing of the period spends on a tone control.",
+      "But the coefficients are recomputed when a parameter changes and not per sample, so the control processor can afford a formula here that the audio path could not. This is the opposite of the effect-level class and the reason to say so: there a runtime formula buys nothing because the table is a hundred and twenty-eight bytes, and here a table buys nothing because it would be two thousand.",
+      "The cheap topology makes the gain one multiplier again. A section built as a fixed band-pass whose output is scaled and summed with the dry needs one coefficient per gain and no recomputation at all, and it is what the period's mixing consoles are. If that is the structure here, twenty-five stored multipliers cost twenty-five bytes and the argument above reverses.",
+      "Twenty-five settings out of a hundred and twenty-eight means the byte is not the quantity. Something maps a printed -12 - +12 onto a stretch of the byte and refuses the rest, and where that stretch sits is measurable rather than arguable.",
+      "Decibels are what the panel is marked in, so a designer who can afford the arithmetic puts the step in decibels. What the period cannot say is whether the step is exactly one decibel or a rounded fixed-point approximation of one, and that is the whole of the difference between the first two candidates below."
+    ],
+    "would_be_wrong_if": "The twenty-five settings returned decibels that were neither equal steps nor a repeatable set of unequal ones -- that is, if two sections given the same byte disagreed by more than the reading resolves, which would say the gain is computed from something else beside the byte."
+  },
+  "candidates": [
+    {
+      "id": "decibels-are-the-byte-minus-sixty-four",
+      "what": "A formula and no table: the gain in decibels is the byte minus sixty-four, live from 52 to 76 and stuck at the printed ends outside that. Nothing is stored and the control processor computes the coefficients from the number.",
+      "predicts": {
+        "the_step": "Exactly one decibel between every adjacent pair of the twenty-five, everywhere, with no step differing from any other by more than the reading's own floor.",
+        "the_ends": "Setting 52 is 12.000 dB down and setting 76 is 12.000 dB up, and the two are the same size.",
+        "the_symmetry": "Setting 64 minus n and setting 64 plus n are equal and opposite at every n."
+      }
+    },
+    {
+      "id": "a-table-of-twenty-five-decibel-values",
+      "what": "Twenty-five entries stored as decibels on whatever grid the firmware writes them in -- a quarter of a decibel, a sixteenth, a byte over some scale. The values are near the integers because that is what the panel prints, and they are not the integers because a stored number lands where its grid puts it.",
+      "predicts": {
+        "the_step": "Steps near one decibel and not equal to it, differing from each other by more than the floor and by less than a tenth of a decibel. Which steps are short and which are long is the table's own and cannot be argued from anything here.",
+        "the_ends": "Near twelve and not necessarily twelve.",
+        "the_symmetry": "Whatever the table holds. Symmetry is the cheap thing to store, so it is likely and it is not predicted."
+      }
+    },
+    {
+      "id": "a-linear-multiplier-on-a-fixed-point-grid",
+      "what": "The gain reaches the section as a linear coefficient held to a fixed number of bits, so the decibels are whatever that grid lands on. This is what a section built as a scaled band-pass summed with the dry gives, and it is the candidate that says the gain is one multiplier rather than a coefficient set.",
+      "predicts": {
+        "the_step": "Steps that shrink towards the boost end and grow towards the cut end, because a uniform grid in amplitude is not a uniform grid in decibels. How much depends on the word length, and at any word length short enough to matter the top step is visibly under a decibel while the bottom one is over.",
+        "the_ends": "Near twelve at both, because the ends are what the grid was scaled to reach.",
+        "the_symmetry": "Broken, and broken in a stated direction: the boost side is compressed relative to the cut side."
+      }
+    },
+    {
+      "id": "the-byte-is-decibels-over-its-whole-range",
+      "what": "The naive reading, kept because it is the one a reader arrives with: the byte is the gain in decibels offset by sixty-four over all hundred and twenty-eight settings, and the printed -12 - +12 is a recommendation rather than a limit.",
+      "predicts": {
+        "the_step": "One decibel per step everywhere, including outside 52 to 76.",
+        "the_ends": "Setting 0 is 64 dB down and setting 127 is 63 dB up.",
+        "the_symmetry": "Exact, over the whole byte."
+      }
+    },
+    {
+      "id": "boost-and-cut-are-one-structure-inverted",
+      "what": "Not a claim about the number but about where it goes. One section serves both directions, with cut the reciprocal of boost rather than a second design -- the standard way to get a symmetric-in-decibels control out of one band-pass and one multiplier.",
+      "predicts": {
+        "the_step": "Nothing. This candidate takes whichever step law wins above and says the same law drives both directions.",
+        "the_ends": "Equal heights at the two ends.",
+        "the_shape": "Mirrored settings have the same height and not the same width. A reciprocal cut is narrower at its half-depth than the boost it inverts is at its half-height, by an amount the width byte does not change, and that is the one thing this candidate can be wrong about."
+      }
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Where the tone control's corners sit on the forty-three types that print no frequency beside the two gains. That is a filter question and this is a gain class; a record of what the byte does to a band profile on such a type is what a later round would read it out of, and a height measured here says nothing about it.",
+    "The absolute gain of the chain. What a take carries is the whole chain and every figure in this class is a setting against another setting, so a candidate differing from another by a constant at every setting is not separated here.",
+    "Whether a peaking section's gain and a shelf's gain come from one table. They are printed the same range and they need not share anything, and the run that answers it has to read both on one type.",
+    "What the eight-band graphic equaliser's bands do. Eight gains printed -12 - +12 with no frequency, width or count printed against any of them is a type-shaped question rather than a class-shaped one."
+  ],
+  "note": "The reading that decides this class is the step and not the height. Every candidate here puts the ends within a fraction of a decibel of twelve, so a run that reads only the extremes agrees with all of them and separates none -- which is what this unit's records already hold, three settings on each of two sections. What can be wrong is whether the twenty-four steps between are equal, and a step of a decibel against a floor of a few hundredths is a reading with room in it. Read the height where the height is readable: a shelf's asymptote is outside the band set at both ends of this unit's, so a shelf returns a flank and a flank is a filter reading wearing a gain reading's clothes. A peaking section with its width at the widest and its centre in the middle of the band set returns the gain itself."
+}
