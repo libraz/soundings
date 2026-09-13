@@ -40,14 +40,22 @@ was defined for a pair and quietly returns false everywhere else.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
 
 from .efxbands import BAND_SETS, energies
-from .takes import read
+from .takes import (
+    SECOND_CHANNEL_ABOVE_DB,
+    WHY_THE_FLOOR_IS_THE_PAIRS_OWN,
+    grouped,
+    level_db,
+    pair_of_channels,
+    read,
+    rms,
+    spread,
+)
 
 METHOD = (
     "The two channels the unit arrived on were measured separately on every take, and what is "
@@ -70,14 +78,6 @@ MONO_SOURCE = (
     "either: what a parameter does between two channels cannot be asked of one."
 )
 
-SECOND_CHANNEL_ABOVE_DB = 20.0
-"""How far over the noise the second channel has to sit to be a channel at all.
-
-Below this the pair is one channel and a floor, and a balance computed from it is
-the floor's own wander. The inputs this ran on sit near -94 dB unloaded against a
-unit arriving at -48, so the separation is not a fine judgement.
-"""
-
 
 @dataclass
 class SettingBalance:
@@ -92,11 +92,11 @@ class SettingBalance:
 
     @property
     def spread_db(self) -> float:
-        return _spread(self.balance_db)
+        return spread(self.balance_db)
 
     @property
     def total_spread_db(self) -> float:
-        return _spread(self.total_db)
+        return spread(self.total_db)
 
     @property
     def typical_db(self) -> float:
@@ -225,29 +225,6 @@ class Verdict:
         }
 
 
-def _db(x: float) -> float:
-    return float(20.0 * np.log10(x + 1e-15))
-
-
-def _rms(frame: np.ndarray) -> float:
-    return float(np.sqrt(np.mean(frame * frame)))
-
-
-def _spread(values: list[float]) -> float:
-    return float(max(values) - min(values)) if len(values) > 1 else 0.0
-
-
-#: Why the channels are chosen from every take rather than from one of them.
-WHY_ACROSS_THE_SETTINGS = (
-    "A channel the unit arrived on is one that carried signal at some point in the run, so "
-    "each channel is taken at the loudest it ever reached. Asking a single take instead "
-    "cannot see a parameter that moves signal from one channel to the other: taken to its "
-    "two ends a panpot leaves every take with one live channel and one empty one, so "
-    "whichever take is asked answers mono -- and the one parameter this measurement exists "
-    "for is the one it would refuse."
-)
-
-
 WHY_THE_PAIR_IS_IN_INPUT_ORDER = (
     "Which two inputs the unit arrived on is decided by level; which of the two is subtracted "
     "from the other is decided by the input's own number. Ordering the pair by level as well "
@@ -258,18 +235,6 @@ WHY_THE_PAIR_IS_IN_INPUT_ORDER = (
     "survive being read twice. Which of the unit's outputs is on the lower-numbered input is a "
     "fact about the cabling and this does not establish it -- the pair is reported beside the "
     "figure so a reader can map it."
-)
-
-
-WHY_THE_FLOOR_IS_THE_PAIRS_OWN = (
-    "The floor the quieter channel has to clear is read from the lead of the channels the unit "
-    "arrived on, and not from the lead of every input the interface has. An input the unit is "
-    "not on is not silent: measured here, two unused inputs sat at -70 and -75 dBFS through "
-    "every take while the two carrying the unit sat at -110, so a floor taken over all of them "
-    "was thirty decibels above the one the reading is against. A run whose quieter channel "
-    "reached -59.7 was refused as a mono source by three tenths of a decibel on that account -- "
-    "which is not a bound being reported, it is a statement that the unit arrived on one "
-    "channel, and it was false."
 )
 
 
@@ -292,55 +257,6 @@ WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED = (
 )
 
 
-def _pair_of_channels(
-    takes: list[np.ndarray], lead: np.ndarray | None
-) -> tuple[tuple[int, int] | None, float]:
-    """The two channels the unit arrived on, in the interface's own order, and their floor.
-
-    Each channel is taken at the loudest it reached across every take of every
-    setting, per WHY_ACROSS_THE_SETTINGS. The pair is picked on level alone, which
-    needs no floor, and the floor is then read from those two channels' own lead,
-    per WHY_THE_FLOOR_IS_THE_PAIRS_OWN. None when the quieter of the two does not
-    clear it. The pair is put back into input order, per
-    WHY_THE_PAIR_IS_IN_INPUT_ORDER.
-    """
-    if not takes:
-        return None, -120.0
-    width = min(frames.shape[1] for frames in takes)
-    levels = [max(_db(_rms(frames[:, c])) for frames in takes) for c in range(width)]
-    order = sorted(range(len(levels)), key=lambda c: levels[c], reverse=True)
-    if len(order) < 2:
-        return None, -120.0
-    pair = sorted(order[:2])
-    floor = _db(_rms(lead[:, pair])) if lead is not None and lead.shape[0] else -120.0
-    if levels[order[1]] < floor + SECOND_CHANNEL_ABOVE_DB:
-        return None, floor
-    return (pair[0], pair[1]), floor
-
-
-def _grouped(
-    root: Path,
-) -> tuple[dict[str, float], dict[str, dict[str, list[Path]]], dict[str, list[str]]]:
-    """A run's takes, by stimulus and then by setting, in the order it asked them.
-
-    The order matters and a dictionary's insertion order is the only thing holding
-    it: a sweep's settings are a table's index, and a record that lists them
-    sorted as strings puts 8 after 120.
-    """
-    manifest = json.loads((root / "takes-manifest.json").read_text())
-    leads = {s.get("name"): s.get("lead_s") or 0.6 for s in manifest.get("stimuli", [])}
-    grouped: dict[str, dict[str, list[Path]]] = {}
-    order: dict[str, list[str]] = {}
-    for entry in manifest.get("takes", []):
-        setting = str(entry.get("setting"))
-        stimulus = str(entry.get("stimulus"))
-        grouped.setdefault(stimulus, {}).setdefault(setting, []).append(root / entry["file"])
-        seen = order.setdefault(stimulus, [])
-        if setting not in seen:
-            seen.append(setting)
-    return leads, grouped, order
-
-
 def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
     """Read a saved run and say what each setting did to the balance.
 
@@ -348,17 +264,17 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
     several notes carries what each of them saw, as everywhere else here.
     """
     root = Path(root)
-    leads, grouped, order = _grouped(root)
+    leads, by_setting, order = grouped(root)
 
     out = []
-    for stimulus, settings in grouped.items():
+    for stimulus, settings in by_setting.items():
         loaded = {k: [read(p) for p in v] for k, v in settings.items()}
         # The rate and the noise floor come from the setting that sounded
         # loudest, not from the first one: a parameter that silences its part at
         # one of its two values would otherwise have its floor read out of noise.
         # Measured here, one address in the part block silences the part at 127,
         # which is the setting the plan asks first. The channels are a separate
-        # question and are asked of every take, per WHY_ACROSS_THE_SETTINGS.
+        # question and are asked of every take, per `takes.WHY_ACROSS_THE_SETTINGS`.
         loudest = max(
             (loaded[s][0] for s in order[stimulus]), key=lambda t: float(np.abs(t[0]).max())
         )
@@ -366,7 +282,7 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
         lead = int((leads.get(stimulus, 0.6) * 0.8) * rate)
         head = loudest[0][:lead] if lead > rate // 100 else None
         every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
-        channels, _floor = _pair_of_channels(every, head)
+        channels, _floor = pair_of_channels(every, head)
         if channels is None:
             out.append(
                 Verdict(stimulus=stimulus, settings=[], channels=None, not_measured=MONO_SOURCE)
@@ -377,9 +293,9 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
         for setting in order[stimulus]:
             found = SettingBalance(setting=setting)
             for frames, _ in loaded[setting]:
-                a, b = _db(_rms(frames[:, left])), _db(_rms(frames[:, right]))
+                a, b = level_db(rms(frames[:, left])), level_db(rms(frames[:, right]))
                 found.balance_db.append(a - b)
-                found.total_db.append(_db(_rms(frames[:, [left, right]])))
+                found.total_db.append(level_db(rms(frames[:, [left, right]])))
             measured.append(found)
         out.append(
             Verdict(stimulus=stimulus, settings=measured, channels=channels, margin_db=margin_db)
@@ -629,10 +545,10 @@ def by_band(
     root = Path(root)
     centres, width = BAND_SETS[band_set]
     centres = list(centres)
-    leads, grouped, order = _grouped(root)
+    leads, by_setting, order = grouped(root)
 
     out = []
-    for stimulus, settings in grouped.items():
+    for stimulus, settings in by_setting.items():
         loaded = {k: [read(p) for p in v] for k, v in settings.items()}
         loudest = max(
             (loaded[s][0] for s in order[stimulus]), key=lambda t: float(np.abs(t[0]).max())
@@ -642,7 +558,7 @@ def by_band(
         lead_n = int(lead_s * 0.8 * rate)
         head = loudest[0][:lead_n] if lead_n > rate // 100 else None
         every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
-        channels, _floor = _pair_of_channels(every, head)
+        channels, _floor = pair_of_channels(every, head)
         if channels is None or head is None:
             out.append(BandVerdict(stimulus=stimulus, channels=None, not_measured=MONO_SOURCE))
             continue

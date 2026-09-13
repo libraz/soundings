@@ -120,9 +120,7 @@ def channel_across(*samples: np.ndarray) -> tuple[int, list[float]]:
     return int(np.argmax(highest)), highest
 
 
-def channel_reaching(
-    root: str | Path, names, *, seconds: float = 2.0
-) -> tuple[int, list[float]]:
+def channel_reaching(root: str | Path, names, *, seconds: float = 2.0) -> tuple[int, list[float]]:
     """Which channel the unit is on, and the highest each channel reached.
 
     **The highest a channel ever reached, not its average.** A run sweeps a
@@ -163,6 +161,107 @@ WHY_CHANNEL = (
     "from that input and subtracted from a different one -- leaving a residual of nothing that "
     "reads as an effect doing nothing."
 )
+
+
+SECOND_CHANNEL_ABOVE_DB = 20.0
+"""How far over the noise the second channel has to sit to be a channel at all.
+
+Below this the pair is one channel and a floor, and anything computed from it is
+the floor's own wander. The inputs this ran on sit near -94 dB unloaded against a
+unit arriving at -48, so the separation is not a fine judgement.
+"""
+
+
+WHY_ACROSS_THE_SETTINGS = (
+    "A channel the unit arrived on is one that carried signal at some point in the run, so "
+    "each channel is taken at the loudest it ever reached. Asking a single take instead "
+    "cannot see a parameter that moves signal from one channel to the other: taken to its "
+    "two ends a panpot leaves every take with one live channel and one empty one, so "
+    "whichever take is asked answers mono -- and the one parameter this measurement exists "
+    "for is the one it would refuse."
+)
+
+
+WHY_THE_FLOOR_IS_THE_PAIRS_OWN = (
+    "The floor the quieter channel has to clear is read from the lead of the channels the unit "
+    "arrived on, and not from the lead of every input the interface has. An input the unit is "
+    "not on is not silent: measured here, two unused inputs sat at -70 and -75 dBFS through "
+    "every take while the two carrying the unit sat at -110, so a floor taken over all of them "
+    "was thirty decibels above the one the reading is against. A run whose quieter channel "
+    "reached -59.7 was refused as a mono source by three tenths of a decibel on that account -- "
+    "which is not a bound being reported, it is a statement that the unit arrived on one "
+    "channel, and it was false."
+)
+
+
+def level_db(x: float) -> float:
+    """A linear amplitude as decibels, with a floor that keeps silence finite."""
+    return float(20.0 * np.log10(x + 1e-15))
+
+
+def rms(frame: np.ndarray) -> float:
+    return float(np.sqrt(np.mean(frame * frame)))
+
+
+def spread(values: list[float]) -> float:
+    """How far a set of readings of one thing moved, which is nothing when there is one."""
+    return float(max(values) - min(values)) if len(values) > 1 else 0.0
+
+
+def pair_of_channels(
+    frames_of_every_take: list[np.ndarray], lead: np.ndarray | None
+) -> tuple[tuple[int, int] | None, float]:
+    """The two channels the unit arrived on, in the interface's own order, and their floor.
+
+    Each channel is taken at the loudest it reached across every take of every
+    setting, per `WHY_ACROSS_THE_SETTINGS`. The pair is picked on level alone,
+    which needs no floor, and the floor is then read from those two channels' own
+    lead, per `WHY_THE_FLOOR_IS_THE_PAIRS_OWN`. None when the quieter of the two
+    does not clear it.
+
+    The pair comes back sorted by input number rather than by level. Which of the
+    two is subtracted from the other decides the sign of every figure read out of
+    them, and ordering by level puts that sign in the hands of whichever channel
+    was louder by a hair.
+    """
+    if not frames_of_every_take:
+        return None, -120.0
+    width = min(frames.shape[1] for frames in frames_of_every_take)
+    levels = [
+        max(level_db(rms(frames[:, c])) for frames in frames_of_every_take) for c in range(width)
+    ]
+    order = sorted(range(len(levels)), key=lambda c: levels[c], reverse=True)
+    if len(order) < 2:
+        return None, -120.0
+    pair = sorted(order[:2])
+    floor = level_db(rms(lead[:, pair])) if lead is not None and lead.shape[0] else -120.0
+    if levels[order[1]] < floor + SECOND_CHANNEL_ABOVE_DB:
+        return None, floor
+    return (pair[0], pair[1]), floor
+
+
+def grouped(
+    root: str | Path,
+) -> tuple[dict[str, float], dict[str, dict[str, list[Path]]], dict[str, list[str]]]:
+    """A run's takes, by stimulus and then by setting, in the order it asked them.
+
+    The order matters and a dictionary's insertion order is the only thing holding
+    it: a sweep's settings are a table's index, and a record that lists them
+    sorted as strings puts 8 after 120.
+    """
+    root = Path(root)
+    manifest = json.loads((root / "takes-manifest.json").read_text())
+    leads = {s.get("name"): s.get("lead_s") or 0.6 for s in manifest.get("stimuli", [])}
+    by_stimulus: dict[str, dict[str, list[Path]]] = {}
+    order: dict[str, list[str]] = {}
+    for entry in manifest.get("takes", []):
+        setting = str(entry.get("setting"))
+        stimulus = str(entry.get("stimulus"))
+        by_stimulus.setdefault(stimulus, {}).setdefault(setting, []).append(root / entry["file"])
+        seen = order.setdefault(stimulus, [])
+        if setting not in seen:
+            seen.append(setting)
+    return leads, by_stimulus, order
 
 
 def read_pair(dry_path, wet_path, *, on: int | None = None):
