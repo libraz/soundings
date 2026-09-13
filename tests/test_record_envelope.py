@@ -52,11 +52,14 @@ SENTENCE_KEYS = frozenset(
         "regions_reaching_past_their_mapped_end",
         "shallower_than_the_control_recovered",
         "why_a_band_has_to_repeat",
+        "why_a_return_that_overlaps_is_refused",
         "why_a_flat_separation_is_the_yardstick",
         "why_one_setting_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
+        "why_the_lead_is_the_floor",
         "why_the_pair_is_in_input_order",
         "why_the_total_is_reported",
+        "why_the_windows_are_measured_and_not_printed",
         "why_the_windows_are_one_length",
     }
 )
@@ -70,7 +73,7 @@ value, which is the archive's own rule about one unit's findings turned on its
 own records. Three such keys have come out into `findings` entries, whose kind is
 the question and whose fields are this unit's answer to it.
 
-The twenty left are not that. The test cannot tell them apart, because what it
+The twenty-three left are not that. The test cannot tell them apart, because what it
 measures is how many underscores a key has, so it catches verbosity and the
 defect alike. Each of these was read: some are a limitation of the stage rather
 than a finding of it, some are a caveat about how the run was made, and the rest
@@ -98,7 +101,23 @@ and `why_a_flat_separation_is_the_yardstick` names what the frequency dependence
 is judged against. None of them spells an answer: the next unit gets the same four
 sentences and its own bands.
 
-So a twenty-first entry is a key to go and look at, not a key that is wrong. Read
+The three the arrival reading adds are of that kind too.
+`why_the_windows_are_measured_and_not_printed` says where the windows it read came
+from, which on this reading is the whole of what separates it from one placed
+against a printed delay time; `why_the_lead_is_the_floor` names what a window's
+level is reported against once a sweep's end empties it; and
+`why_a_return_that_overlaps_is_refused` names the types the reading has no window
+for, which is a limitation of the stage and not a finding about any of them.
+
+`why_the_windows_are_one_length` is carried by two stages and is deliberately one
+key. The question -- why the windows a reading compares are matched in length --
+is the same question, and each stage's value is its own reason: a band's energy
+scales with the window differently for a tone than for noise, and a floor read
+long against a signal read short differ before either has said anything. A second
+key spelled for the second stage would make a reader match key names per stage to
+ask one thing, which is the defect this list exists to catch.
+
+So a twenty-fourth entry is a key to go and look at, not a key that is wrong. Read
 the value, decide which of the two it is, and either migrate it or add it here.
 """
 
