@@ -17,7 +17,7 @@
       ]
     }
   },
-  "claim": "A frequency byte does not drive a formula and does not have a hundred and twenty-eight values. Its top four bits index a table of sixteen entries, so eight settings share each entry, and the entries are the named third octaves between the two frequencies the page prints against that address. On 200 - 6.3k that is 200, 250, 315, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k, 6.3k. Rendered through the same bands the takes were read in, the model's peak lands in exactly the unit's band at every setting from 32 up -- 7 of 12 at one address and both of the two at the other. It does not hold at the bottom: the three entries below 315 Hz read one to two twelfth-octave bands lower than the named series puts them, at settings 0, 4, 8, 12, 16, repeatably and at both addresses.",
+  "claim": "A frequency byte does not drive a formula and does not have a hundred and twenty-eight values. Its top four bits index a table of sixteen entries, so eight settings share each entry, and the entries are the named third octaves between the two frequencies the page prints against that address. On 200 - 6.3k that is 200, 250, 315, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k, 6.3k. Rendered through the same bands the takes were read in, the model's peak lands in exactly the unit's band at every setting from 32 up -- 7 of 12 at one address and both of the two at the other -- and read again by a fit over the whole feature the two are 0.013 to 0.047 octaves apart there, which is a fifth of a band. It does not hold at the bottom: the three entries below 315 Hz read 0.06 to 0.17 octaves below where the named series puts them, at settings 0, 4, 8, 12, 16, repeatably, at both addresses, at two band widths and under both readings.",
   "named": "a third-octave coefficient table indexed by the byte's high nibble",
   "why_not_named": null,
   "rests_on": {
@@ -117,6 +117,62 @@
             127
           ]
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].fitted_at_hz",
+          "readings[value=8].fitted_at_hz",
+          "readings[value=16].fitted_at_hz",
+          "readings[value=32].fitted_at_hz",
+          "readings[value=64].fitted_at_hz",
+          "readings[value=127].fitted_at_hz"
+        ],
+        "values": [
+          179.2,
+          240.3,
+          279.7,
+          484.0,
+          1229.3,
+          6059.2
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].fitted_at_hz",
+          "readings[value=64].fitted_at_hz",
+          "readings[value=127].fitted_at_hz"
+        ],
+        "values": [
+          179.1,
+          1227.3,
+          6062.1
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=0].fitted_at_hz",
+          "readings[value=0].fitted_over_bands",
+          "readings[value=3].fitted_at_hz",
+          "readings[value=3].fitted_over_bands",
+          "readings[value=4].fitted_at_hz",
+          "readings[value=4].fitted_over_bands",
+          "readings[value=0].largest_at_hz",
+          "readings[value=4].largest_at_hz"
+        ],
+        "values": [
+          1212.8,
+          49,
+          1232.5,
+          8,
+          1223.4,
+          4,
+          1334.8,
+          1189.2
+        ],
+        "read_as": "The width byte of the same section, swept with the frequency byte held at 64. It is the control on the reading and not evidence about the table: a byte that changes how wide a feature is and not where it sits must leave a reading of where it sits alone. The fitted position holds inside 0.024 octaves while the window it was fitted over runs from four bands to forty-nine, and the largest band moves 0.167 octaves over the same settings -- so what the bottom three entries disagree by is not the feature's width being read as its place."
       }
     ],
     "document_rows": [
@@ -181,41 +237,45 @@
       }
     },
     {
-      "reading": "The three entries below 315 Hz really are 200, 250 and 315 and the disagreement is the reading, not the table: the largest band of a peak this wide is a coarse estimator, and the peak's top is flat enough that a tenth of a decibel moves it.",
+      "reading": "The three entries are 200, 250 and 315 and the filter built from them does not peak there. A table entry of this period is a set of coefficients rather than a frequency, so what is stored is already the filter -- and a section whose response below 300 Hz is not the peaking biquad the model renders would put its top somewhere else while the entry behind it is exactly the named one.",
       "candidate": null,
       "standing": true,
+      "equivalent_under_this_test": false,
       "separated_by": {
-        "observable": "Where the same takes put the peak when it is located by a fit over the whole profile rather than by which band is largest.",
+        "observable": "Whether the fitted position moves with the width byte at the bottom of the frequency byte's range, where at the middle of it it does not.",
+        "divergence": "0.15 octaves, which is how far below the named series the three low entries read and is what either answer has to account for",
+        "sensitivity_here": "One twelfth-octave band, 0.083 octaves. The floor is the band and not what a fit can do, because how far apart the same setting's own takes put a fitted position has not been measured anywhere in this archive -- so the run is queued against the figure that has been",
+        "margin": 1.8,
         "predicts": {
-          "the reading is coarse": "A fit puts the three entries within a fifth of a band of 200, 250 and 315, as it already does for every entry above them.",
-          "the entries are lower": "A fit puts them where the largest band does, near 177, 236 and 281."
+          "the entry is where it is read": "The fitted position holds within a few hundredths of an octave across the width byte's values, exactly as it does at setting 64, and stays near 179 Hz at all of them.",
+          "the section is not a biquad down there": "The fitted position moves with the width byte by more than the band it is read against, because a response that is not symmetric in log frequency is read at a different place as its flanks change."
         },
-        "divergence": "0.17 octaves at the bottom entry",
-        "sensitivity_here": "Re-reading these takes at a twenty-fourth and a forty-eighth octave does not sharpen it -- the largest band moves by 0.08 to 0.12 octaves between two takes of settings the table says are one entry, and the flat repeats' own spread worsens from 0.09 dB to 0.20 dB. So the sensitivity of a finer grid is worse than the divergence and a finer grid must not be queued. What is queued is a different reading of the same takes, which costs no hardware at all.",
-        "margin": 2.0,
         "run": {
           "stage": "efx-bands",
           "type": "01 00",
-          "address": "40 03 07",
+          "address": "40 03 08",
           "settings": [
             0,
+            1,
+            2,
+            3,
             4,
-            8,
-            12,
-            16,
-            32,
-            48,
-            64,
-            80,
-            96,
-            112,
-            127
+            5
           ],
-          "stimulus": "none -- the takes are the ones already read",
-          "takes": 0,
-          "minutes": 0
+          "held": {
+            "40 03 07": 0,
+            "40 03 09": 127
+          },
+          "why_this_shape": "The same sweep the width byte already has at data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json, with the frequency byte at 0 instead of 64. That record is the control this one is read against, so it is the one run that answers the question and nothing else has to be repeated. Only six settings because the byte answers to 0 through 4 and reads everything above as 0, which that record already showed.",
+          "minutes": 2
         }
       }
+    },
+    {
+      "reading": "The three entries below 315 Hz really are 200, 250 and 315 and the disagreement is the reading, not the table: the largest band of a peak this wide is a coarse estimator, and the peak's top is flat enough that a tenth of a decibel moves it.",
+      "candidate": null,
+      "standing": false,
+      "ruled_out_by": "The reading it asked for was made and says the opposite. Located by a fit over the whole feature rather than by the largest band, the three entries read 179.2, 240.3 and 279.7 Hz against 200, 250 and 315 -- 0.06 to 0.17 octaves low, where the same reading puts every entry above them inside a fifth of a band of the model. It is not scatter in the fit: the other mid section, which shares nothing with this one but the table, reads 179.1 Hz at the same setting, and the same takes read at a third of an octave instead of a twelfth put the low group 0.13 octaves out rather than 0.15. It is not the feature's width being read as its place either: the width byte of this section moves the fitted position by 0.024 octaves across every value it answers to, while moving the window that position is fitted over from four bands to forty-nine."
     },
     {
       "reading": "Thirty-two entries at equal ratios, four settings each.",
@@ -280,7 +340,13 @@
         "value": 16
       },
       "structured": true,
-      "why": "Zero at eight of the twelve settings and at two of the three at the other address: the model's peak falls in the identical band, not a near one. The residual leans because the four that are not zero are all at the bottom, one to two bands high, which is a structure and is reported as one rather than averaged away. The floor is one band, which is what the reading resolves. There is no second floor here: one entry of the table would be a coarser one and would swallow the disagreement, and that floor is only admissible where the stride has been measured -- on this class the stride is the question."
+      "why": "Zero at eight of the twelve settings and at two of the three at the other address: the model's peak falls in the identical band, not a near one. The residual leans because the four that are not zero are all at the bottom, one to two bands high, which is a structure and is reported as one rather than averaged away. The floor is one band, which is what the reading resolves. There is no second floor here: one entry of the table would be a coarser one and would swallow the disagreement, and that floor is only admissible where the stride has been measured -- on this class the stride is the question.",
+      "also_read_as": {
+        "median": 0.0383,
+        "worst": 0.1706,
+        "unit": "octaves between where a fit puts the model's peak and where it puts the unit's",
+        "why": "The same rendering and the same records, located by a fit over the whole feature instead of by the largest band, which is the run the claim queued and cost no hardware. Every figure moves and nothing about the finding does. The ranking is unchanged and the winner is unchanged; the winner's residual rises from zero to 0.038 octaves and the runner-up's falls from 0.125 to 0.091, so the two are 2.2 times apart rather than infinitely, which is the honest separation and the other was partly the band set rounding both to the same place. Above setting 32 the disagreement is 0.013 to 0.047 octaves. Below it, it is 0.056 to 0.171 -- the same breakdown, in the same place, at the same size."
+      }
     },
     "gates": {
       "measured_in": "octaves",
@@ -539,8 +605,8 @@
   "what_this_does_not_close": [
     {
       "what": "The three entries below 315 Hz.",
-      "why": "They read 0.08 to 0.18 octaves below where the named series puts them, at both addresses and at three band widths. That is the breakdown, it is why the verdict is not `reproduces`, and it is the second alternative above.",
-      "what_would": "A reading of where a feature sits that is not the largest band. The record already publishes one -- the geometric mean of the two half points -- and it is better at the bottom and worse at the top, because the upper half point runs into the unit's own bandwidth above 5 kHz. Neither published reading is good at both ends, and that is the gap: `efx-bands` should say where a symmetric fit over the whole profile puts the feature. No hardware -- the takes are on disk."
+      "why": "They read 0.06 to 0.17 octaves below where the named series puts them, at both addresses, at two band widths and under both readings of where a feature sits. That is the breakdown, it is why the verdict is not `reproduces`, and it is the second alternative above. What it is not is the reading: the run that would have shown that has been made and shows the opposite.",
+      "what_would": "Whether the section is still a peaking biquad down there. Everything measured so far says the number belongs to the unit and not to the instrument -- two sections that share nothing but the table agree at setting 0 to 0.0008 octaves, the figure survives a fourfold change in band width, and the width byte moves the fitted position by 0.024 octaves while moving the window it is fitted over twelvefold. What is left is that a table entry of 200 Hz is right and the filter built from it does not peak at 200 Hz, which nothing here separates from an entry that is not 200 Hz. Sweeping the width byte with the frequency byte at 0 separates them: a fitted position that moves with the width is a section not behaving like a biquad, and one that holds is an entry that is where it is read."
     },
     {
       "what": "The other thirty-four slots the page prints a frequency range against.",
@@ -557,5 +623,5 @@
     "inferences/roland-sc8850-01/0100-a-chain-of-four-sections-and-an-output-gain.json"
   ],
   "a_note_on_what_it_replaces": "That claim's sentence already says a centre moves for every eighth value of its byte, and its model does not: the model carries the twelve settings the run asked and interpolates between them, which is the measurement wearing the clothes of a law. This is the same sentence held against a catalogue instead of asserted, and with the entries named. Nothing about the chain around it changes -- the model here is that model with one map swapped, so that the residual answers one question.",
-  "a_note_on_what_was_left_out": "The first pass over this class scored the same five candidates as whole band profiles in decibels and returned `equivalent_under_this_test`: every candidate passed the gross gate and none leaned. That was not the candidates agreeing. Sliding a peak of this width by a sixth of an octave costs a decibel or two on its flanks and nothing at its top, so the residual in decibels stayed under the run's own floor for candidates that were two bands out at every setting -- and a residual that is the same size everywhere does not lean, so the gate that catches a wrong structure could not catch a wrong place either. The reading was changed, not the gate's threshold: where the feature sits is what the byte moves, and the record already published it."
+  "a_note_on_what_was_left_out": "The first pass over this class scored the same five candidates as whole band profiles in decibels and returned `equivalent_under_this_test`: every candidate passed the gross gate and none leaned. That was not the candidates agreeing. Sliding a peak of this width by a sixth of an octave costs a decibel or two on its flanks and nothing at its top, so the residual in decibels stayed under the run's own floor for candidates that were two bands out at every setting -- and a residual that is the same size everywhere does not lean, so the gate that catches a wrong structure could not catch a wrong place either. The reading was changed, not the gate's threshold: where the feature sits is what the byte moves, and the record already published it. The reading it was changed to was then changed again, and this is the second half of the same lesson. The largest band is quantised to a band, so a peak halfway between two of them cannot be read closer than half a band however good the takes are, and on a broad feature a tenth of a decibel decides which of the two it is: the width byte above moves it two bands without moving the feature at all. A fit over the whole feature is not quantised and does not do that -- and it has a bias the largest band does not, because a symmetric curve fitted to a feature whose flanks are not symmetric tops out towards the longer one. Neither reading is the better one, which is why the record now publishes both, and why what was done here was to score the same candidates twice rather than to swap one reading for the other. The finding is what survived both."
 }

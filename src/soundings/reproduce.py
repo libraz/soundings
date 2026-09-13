@@ -456,6 +456,16 @@ def score_against_bands(
                 # so whatever the reading does to a broad peak it does to both.
                 "model_peak_hz": _peak_band(said, usable, here),
                 "unit_peak_hz": _peak_band(answered, usable, here),
+                # And where a fit over the whole feature puts each of them, which is
+                # the same question asked without the band quantising the answer.
+                # The archive's own reading, applied to both sides here rather than
+                # taken from the record on one side and computed on the other.
+                "model_fitted_hz": efxbands.fitted_position(
+                    [said[i] for i in usable], here
+                ),
+                "unit_fitted_hz": efxbands.fitted_position(
+                    [answered[i] for i in usable], here
+                ),
             }
         )
 
@@ -531,7 +541,23 @@ def score_against_bands(
 # ---------------------------------------------------------------- a byte as a place
 
 
-def score_against_peaks(scored: dict) -> dict:
+LOCATED_BY = {"band": "peak_hz", "fit": "fitted_hz"}
+"""The two readings of where a feature sits, and the field each of them lands in.
+
+`band` is which band the profile is largest in. It is quantised to a band and
+cannot be finer however good the takes are, and it carries no bias: whatever the
+band set does to a broad feature it does to whichever profile went through it.
+
+`fit` is the top of a curve fitted over the feature's whole width. It lands
+between bands and one band's scatter moves it by a fraction of what it moves the
+largest -- and it is pulled towards the longer flank of a feature that is not
+symmetric, which a peaking filter is not once the bilinear transform has squeezed
+its upper side. Both sides of a comparison go through whichever is asked for, so
+either bias cancels; what does not cancel is reading one side one way.
+"""
+
+
+def score_against_peaks(scored: dict, *, located_by: str = "band") -> dict:
     """The same rendering read again, as where the feature sits rather than how big it is.
 
     A residual in decibels is the wrong instrument for a byte that moves a feature
@@ -553,15 +579,24 @@ def score_against_peaks(scored: dict) -> dict:
     would be a coarser one and would swallow the disagreement, but that floor is
     only admissible where the step has been measured -- and on this class the
     stride is the question, so assuming it would be assuming the answer.
+
+    A fitted position is finer than that and keeps the same floor, which is then a
+    bound and not a resolution: how far apart the same setting's own takes put a
+    fitted position is not measured anywhere in this archive, so the number that is
+    measured is used instead. It errs towards calling a disagreement noise, which
+    is the direction to err in.
     """
+    if located_by not in LOCATED_BY:
+        raise ValueError(f"a feature is located by {' or '.join(LOCATED_BY)}, not {located_by!r}")
+    field = LOCATED_BY[located_by]
     rows = [
         r for r in scored["rows"]
-        if r.get("unit_peak_hz") and r.get("model_peak_hz")
+        if r.get(f"unit_{field}") and r.get(f"model_{field}")
     ]
     floor = float(scored["band_width_octaves"])
     out = []
     for row in rows:
-        unit, said = float(row["unit_peak_hz"]), float(row["model_peak_hz"])
+        unit, said = float(row[f"unit_{field}"]), float(row[f"model_{field}"])
         out.append(
             {
                 "value": row["value"],
@@ -579,6 +614,7 @@ def score_against_peaks(scored: dict) -> dict:
         "record": scored.get("record"),
         "address": scored.get("address"),
         "measured_in": "octaves",
+        "located_by": located_by,
         "span": round(span, 4),
         "floor": round(floor, 4),
         "is_null_record": bool(scored["is_null_record"]),
