@@ -918,6 +918,195 @@ def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dic
     }
 
 
+# ---- a byte as a multiplier
+
+ABOVE_THE_SILENCE_DB = 20.0
+"""How far a take has to be above the same chain's silence to be read as a level.
+
+Silence adds to the take rather than replacing it, so a reading this far above it
+is high by 0.04 dB, which is what one entry of a table of this size is worth at
+the top of the byte where the entries are closest together. At ten decibels it
+would be high by 0.41 dB, which is six entries, and the curve would bend at the
+bottom for a reason belonging to the room.
+
+A threshold and not a correction. The silence could be subtracted in power and
+the excluded settings brought back, and that would be a derivation resting on the
+silence takes being the same silence -- taken in the same session, but not at the
+same moment as the take they would be subtracted from. The settings it would buy
+are the three quietest of a hundred and twenty-eight.
+"""
+
+
+def _level_of(model: dict, address: str, byte_value: int) -> float:
+    """What a candidate says the multiplier is at one setting, as a bare ratio.
+
+    Through the same five rules every other map in this module goes through, so a
+    candidate that is a formula and one that is a stored table are written in the
+    same language and neither gets a shape of its own to be right in.
+    """
+    return float(_from_map(model["multipliers"][address], byte_value))
+
+
+def admitted_levels(record: dict) -> tuple[list[dict], list[dict]]:
+    """The readings of a level sweep the record's own controls stand behind.
+
+    One exclusion and the record states it itself: a take whose level is not far
+    enough above what the same chain recorded with nothing played is a reading of
+    the room and the converters, and the figure it returns is the floor's rather
+    than the byte's. Which settings those are is read from `above_the_silence_db`,
+    which the stage publishes per reading for exactly this.
+    """
+    kept, left_out = [], []
+    for reading in sorted(record.get("readings", []), key=lambda r: int(r["value"])):
+        above = reading.get("above_the_silence_db")
+        if above is None or float(above) < ABOVE_THE_SILENCE_DB:
+            left_out.append(
+                {
+                    "value": int(reading["value"]),
+                    "why": (
+                        f"{above} dB above the same chain's silence, and a level is not "
+                        f"read below {ABOVE_THE_SILENCE_DB:.0f}"
+                    ),
+                }
+            )
+            continue
+        kept.append(reading)
+    return kept, left_out
+
+
+def score_against_levels(model: dict, record: dict, *, address: str) -> dict:
+    """One published level sweep, answered by a candidate multiplier law.
+
+    In decibels relative to the loudest setting, on both sides. **The absolute
+    gain is not measurable from this record and the comparison does not pretend
+    it is.** What the take carries is the whole chain -- the effect's own
+    insertion loss included -- and the run's bypass control says that chain is not
+    transparent when its gains are centred: it differs from the flat setting by up
+    to four tenths of a decibel. So a law saying the multiplier is the byte over a
+    hundred and twenty-seven and one saying it is the byte over a hundred and
+    twenty-eight are the same law here, and that is reported as an equivalence
+    rather than resolved by picking one.
+
+    The lean is judged against the coarser of what the run resolved and what one
+    entry of the candidate's own table is worth, which is admissible because the
+    step is measured: every one of the hundred and twenty-eight settings was
+    asked, so nothing hides between them.
+    """
+    kept, left_out = admitted_levels(record)
+    run_floor = float(record.get("reference", {}).get("heard_floor_db") or 0.0)
+    loudest = max((int(r["value"]) for r in kept), default=127)
+    base_unit = next(float(r["heard_db"]) for r in kept if int(r["value"]) == loudest)
+    base_model = _level_of(model, address, loudest)
+
+    steps = []
+    for value in range(1, 128):
+        before = _level_of(model, address, value - 1)
+        after = _level_of(model, address, value)
+        if after > before > 0:
+            steps.append(20.0 * float(np.log10(after / before)))
+    model_floor = float(np.median(steps)) if steps else 0.0
+    floor = max(run_floor, model_floor)
+
+    rows = []
+    for reading in kept:
+        value = int(reading["value"])
+        said = _level_of(model, address, value)
+        answered = float(reading["heard_db"]) - base_unit
+        predicted = 20.0 * float(np.log10(max(said, 1e-12) / base_model))
+        rows.append(
+            {
+                "value": value,
+                "model_reading": [round(predicted, 4)],
+                "unit_reading": [round(answered, 4)],
+                "residual": [round(predicted - answered, 4)],
+                "model_largest": round(predicted, 4),
+                "unit_largest": round(answered, 4),
+            }
+        )
+
+    flat = np.array([abs(row["residual"][0]) for row in rows], dtype=float)
+    every = [row["unit_reading"][0] for row in rows]
+    span = float(max(every) - min(every)) if every else 0.0
+    worst = float(flat.max()) if flat.size else 0.0
+    worst_where = next(
+        ({"value": row["value"]} for row in rows if abs(row["residual"][0]) == worst),
+        None,
+    )
+    leans, why_leans = _structured(rows, floor, "dB")
+    model_largest = max((abs(row["model_largest"]) for row in rows), default=0.0)
+    return {
+        "record": None,
+        "address": address,
+        "measured_in": "dB",
+        "span": round(span, 4),
+        "floor": round(floor, 4),
+        "floor_the_run_resolved": round(run_floor, 4),
+        "floor_of_one_entry": round(model_floor, 4),
+        "is_null_record": span <= 2.0 * floor,
+        "settled_by": 0.0,
+        # The same refusal the rate path makes. A level record publishes no figure
+        # saying its reading is a bound rather than a value, so there is nothing
+        # here that could turn a lean into the measurement's own limit.
+        "reading_is_a_value_not_a_bound": True,
+        "sign_property": "louder or quieter than the loudest setting of the byte",
+        "above": "louder",
+        "below": "quieter",
+        "model_largest": round(model_largest, 4),
+        "model_stays_inside_the_floor": bool(model_largest <= floor),
+        "median_abs": round(float(np.median(flat)), 4) if flat.size else 0.0,
+        "worst_abs": round(worst, 4),
+        "worst_at": worst_where,
+        "structured": leans,
+        "why_structured": why_leans,
+        "readings_left_out": left_out,
+        "rows": rows,
+    }
+
+
+def quantum_of(record: dict, *, over: range) -> dict:
+    """Which whole-number denominator the measured multipliers land on, if any.
+
+    A gain stored as a fixed-point number lands on a multiple of its own quantum,
+    and one computed at the part's word length does not land on anything a sweep
+    of this size could see. So the reading is: take every admitted setting's
+    multiplier against the loudest, multiply by a candidate denominator, and ask
+    how far the results sit from whole numbers. Random reals sit a quarter away on
+    average; a denominator that is the real one sits at the measurement's own
+    error instead.
+
+    The scan is the control. One denominator tried alone would report a small
+    number and there would be nothing to read it against, which is the negative
+    with no stated sensitivity this project refuses to publish. What is returned
+    is every denominator asked and the runner-up beside the winner.
+    """
+    kept, left_out = admitted_levels(record)
+    loudest = max(int(r["value"]) for r in kept)
+    base = next(float(r["heard_db"]) for r in kept if int(r["value"]) == loudest)
+    amp = np.array(
+        [10.0 ** ((float(r["heard_db"]) - base) / 20.0) for r in kept], dtype=float
+    )
+    scan = []
+    for n in over:
+        away = np.abs(amp * n - np.round(amp * n))
+        scan.append(
+            {
+                "denominator": int(n),
+                "median_away": round(float(np.median(away)), 4),
+                "worst_away": round(float(away.max()), 4),
+            }
+        )
+    ranked = sorted(scan, key=lambda row: row["median_away"])
+    return {
+        "settings_read": len(kept),
+        "settings_left_out": left_out,
+        "asked": [int(n) for n in over],
+        "winner": ranked[0],
+        "runner_up": ranked[1] if len(ranked) > 1 else None,
+        "a_random_real_would_be": 0.25,
+        "scan": scan,
+    }
+
+
 # ---------------------------------------------------------------- the gates
 
 

@@ -602,3 +602,99 @@ def test_a_decoy_that_contradicts_a_property_is_a_decoy_that_was_beaten():
     got = reproduce.gates(winner, ranking=by_property)
     assert got["power"]["passed"]
     assert got["power"]["beaten_by"] == "contradicting a property the winner satisfies"
+
+
+# ---------------------------------------------------------------- a byte as a multiplier
+
+
+def level_record(levels: dict[int, float], *, floor: float = 0.01, silence: float = -110.0):
+    """A level sweep in the shape the stage publishes one."""
+    return {
+        "address": "40 03 16",
+        "reference": {"heard_floor_db": floor},
+        "readings": [
+            {
+                "value": value,
+                "heard_db": db,
+                "above_the_silence_db": round(db - silence, 1),
+            }
+            for value, db in sorted(levels.items())
+        ],
+    }
+
+
+def level_model(entries):
+    return {
+        "model": {"kind": "table", "candidate": "a-candidate"},
+        "multipliers": {
+            "40 03 16": {"kind": "table", "entries": list(entries), "out_of_range": 127}
+        },
+    }
+
+
+def test_a_level_is_scored_against_the_loudest_setting_and_not_against_unity():
+    """The absolute gain is not in the take, so the comparison does not use one.
+
+    Two candidates a constant factor apart are the same candidate here, which is
+    the equivalence this class has to report rather than resolve.
+    """
+    unit = level_record({v: -53.0 + 20 * np.log10(v / 127) for v in (32, 64, 96, 127)})
+    over_127 = reproduce.score_against_levels(
+        level_model([v for v in range(128)]), unit, address="40 03 16"
+    )
+    over_128 = reproduce.score_against_levels(
+        level_model([v * 127 / 128 for v in range(128)]), unit, address="40 03 16"
+    )
+    assert over_127["median_abs"] == pytest.approx(0.0, abs=0.001)
+    assert over_128["median_abs"] == pytest.approx(over_127["median_abs"], abs=0.001)
+
+
+def test_a_law_that_bends_the_wrong_way_leans():
+    unit = level_record({v: -53.0 + 20 * np.log10(v / 127) for v in range(8, 128, 8)})
+    squared = reproduce.score_against_levels(
+        level_model([127 * (v / 127) ** 2 for v in range(128)]), unit, address="40 03 16"
+    )
+    assert squared["structured"] is True
+    assert squared["measured_in"] == "dB"
+
+
+def test_a_take_too_close_to_the_chains_silence_is_left_out_by_name():
+    """A level read at the floor is the room's, and a curve bends there for its sake."""
+    unit = level_record({1: -108.0, 8: -77.0, 64: -59.0, 127: -53.0}, silence=-110.0)
+    got = reproduce.score_against_levels(
+        level_model(list(range(128))), unit, address="40 03 16"
+    )
+    assert [r["value"] for r in got["readings_left_out"]] == [1]
+    assert [r["value"] for r in got["rows"]] == [8, 64, 127]
+
+
+def test_the_floor_is_the_coarser_of_the_run_and_one_entry_of_the_table():
+    """The two-floor rule, which is admissible because every setting was asked."""
+    unit = level_record({v: -53.0 + 20 * np.log10(v / 127) for v in range(8, 128, 8)})
+    got = reproduce.score_against_levels(
+        level_model(list(range(128))), unit, address="40 03 16"
+    )
+    assert got["floor"] == max(got["floor_the_run_resolved"], got["floor_of_one_entry"])
+    assert got["floor_of_one_entry"] > got["floor_the_run_resolved"]
+
+
+def test_a_grid_the_multipliers_sit_on_is_found_and_beats_its_neighbours():
+    """The scan is the control: one denominator tried alone has nothing to beat."""
+    top = -53.0
+    on_a_grid = {
+        v: top + 20 * np.log10(round(127 * (v / 127) ** 1.3) / 127) for v in range(4, 128)
+    }
+    on_a_grid[127] = top
+    got = reproduce.quantum_of(level_record(on_a_grid), over=range(100, 161))
+    assert got["winner"]["denominator"] == 127
+    assert got["winner"]["median_away"] < got["runner_up"]["median_away"] / 5
+
+
+def test_multipliers_on_no_grid_sit_where_a_random_number_would():
+    """Otherwise the scan would report a winner whatever it was given."""
+    rng = np.random.default_rng(7)
+    top = -53.0
+    scattered = {v: top + 20 * np.log10(rng.uniform(0.01, 1.0)) for v in range(4, 128)}
+    scattered[127] = top
+    got = reproduce.quantum_of(level_record(scattered), over=range(100, 161))
+    assert got["winner"]["median_away"] > 0.15
