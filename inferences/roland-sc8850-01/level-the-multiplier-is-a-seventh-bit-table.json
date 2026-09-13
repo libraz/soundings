@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T00:33:50.409897+00:00",
-    "made_by": "backup/build-level-models.py, backup/run-level-reproduce.py, backup/write-level-inference.py",
-    "rounds": 1,
+    "made_by": "backup/run-level-reproduce.py, backup/write-level-inference.py, backup/run-level-second-type.py, backup/fold-in-the-second-type.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -191,6 +191,24 @@
           0.37
         ],
         "read_as": "The bypass control, which is why this claim says nothing about the absolute gain. Routed past the effect the take is 0.30 dB louder than with the effect in at its loudest setting -- but the same control differs from the flat setting by up to 0.37 dB band by band, so the chain is not transparent when its gains are centred and the 0.30 cannot be attributed to the level byte. The byte over 127 and the byte over 128 differ by 0.068 dB and are the same law under this record."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-40-16-the-level-on-another-type.json",
+        "keys": [
+          "readings[value=8].heard_db",
+          "readings[value=32].heard_db",
+          "readings[value=64].heard_db",
+          "readings[value=127].heard_db",
+          "silence.heard_db"
+        ],
+        "values": [
+          -87.6,
+          -75.55,
+          -68.71,
+          -61.12,
+          -110.6
+        ],
+        "why": "The same address on a type built round a modulator and a delay line rather than round four filter sections, with the modulator's depth parked and the balance fully across to the effect. Fifteen settings weighted towards the bottom of the byte, which is the only stretch where the stored curve and the laws part company by more than the reading resolves."
       }
     ],
     "document_rows": [
@@ -397,7 +415,15 @@
       2
     ],
     "why": "Settings 0, 1 and 2, whose takes sit 1.1, 15.3 and 15.3 decibels above what the same chain recorded with nothing played. A level read that close to the floor is the room's, and at fifteen decibels above it the figure is high by 0.14 dB, which is two entries where the entries are this far apart. They are filled with the straight line the byte gives and named rather than left as holes.",
-    "the_shape_of_it": "Monotone, 127 at the top, and eleven settings where it does not move beside eleven where it moves by two. Three quarters of the byte from setting 4 to setting 32, to the entry -- 3, 6, 12 and 24 -- and then a ratio that climbs to one at the top. Six decibels per doubling of the byte over the bottom three octaves of it, which is what a multiplier proportional to the byte does, at three quarters the size."
+    "the_shape_of_it": "Monotone, 127 at the top, and eleven settings where it does not move beside eleven where it moves by two. Three quarters of the byte from setting 4 to setting 32, to the entry -- 3, 6, 12 and 24 -- and then a ratio that climbs to one at the top. Six decibels per doubling of the byte over the bottom three octaves of it, which is what a multiplier proportional to the byte does, at three quarters the size.",
+    "held_out": {
+      "what": "The same entries, read off the first type's sweep, held against the second type's. On the record they were read from they are the measurement agreeing with itself and mean nothing. On this one they were not fitted to anything: eleven settings, a type they have never seen.",
+      "median_db": 0.011,
+      "worst_db": 0.042,
+      "floor_db": 0.166,
+      "leans": false,
+      "read_as": "A median 0.011 dB and a worst 0.042, against a floor of 0.166 -- under the floor at every setting, and not leaning. That is a prediction and not a fit, and it is the only figure in this file the readout has earned. It is still not in the ranking: what it would be ranked against is the record it was made from."
+    }
   },
   "alternatives": [
     {
@@ -419,35 +445,10 @@
       "standing": true,
       "equivalent_under_this_test": false,
       "separated_by": {
-        "observable": "Whether another type's level byte returns the same hundred and twenty-eight entries.",
-        "predicts": {
-          "a law": "Every type's level byte returns the same curve, because a law is evaluated and there is only one of it.",
-          "a stored curve": "The same curve is likely but not necessary: a table is pointed at, and a designer who wanted a reverb return to behave differently from an equaliser's output could point at another one. A second type returning a different curve would settle this outright; a second type returning the same one leaves it where it is."
-        },
-        "divergence": "Whatever the difference between two curves turns out to be. Read against the byte-as-multiplier law, which is what a second curve would have to differ from, that is 1.61 decibels at the median",
-        "sensitivity_here": "0.136 decibels, which is the coarser of the run's own floor of 0.01 and what one entry of this table is worth at the median",
-        "margin": 11.8,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 40",
-          "address": "40 03 13",
-          "settings": [
-            0,
-            4,
-            8,
-            16,
-            32,
-            48,
-            64,
-            80,
-            96,
-            112,
-            127
-          ],
-          "stimulus": "A held note through the effect, as the equaliser sweeps used. The type has to be one whose other parameters can be left where they are without the level being the only thing moving, and the record has to say which they were.",
-          "takes": 16,
-          "minutes": 3
-        }
+        "observable": "Whether the same address on another type returns the same hundred and twenty-eight multipliers.",
+        "what_the_run_returned": "It was run. Eleven settings over 26.5 dB on 01 40 agree with 01 00 to a worst 0.04 dB. That refutes a curve computed per type and it separates a table from a law by nothing at all, because both predicted exactly this.",
+        "run": null,
+        "why_not_separable": "A law that returns these hundred and twenty-eight numbers and a table holding them differ in where the numbers come from and in nothing that comes out, so no reading of this unit's output can tell them apart. The class does not rest on the difference: what is claimed is the multiplier and its quantum, and both readings give the same multiplier. What argues for the table is the era and not a measurement -- 128 entries cost 128 bytes -- and a prior may carry a claim and may not close one, so this stays open and says why."
       }
     }
   ],
@@ -1574,6 +1575,10 @@
       "what": "The other sixty-four types' level bytes.",
       "why": "All sixty-five are printed 0 - 127 against the last parameter of their list and none but this one has been swept. A table is pointed at, so the same printed range need not be the same table.",
       "what_would": "One sweep of a second type's level byte at eleven settings, which is the third alternative above."
+    },
+    {
+      "what": "The three lowest settings. 0, 1 and 2 sit under the admission rule on the first type, and on the second type 0 and 2 do as well -- 0 comes back 1.1 dB over the silence, which is not a reading of anything.",
+      "bounded_by": "Both types put setting 2 about 41 dB under the loudest one, which makes its multiplier 1 rather than the 2 the entry list carries there. The entry list says those three were not read, and this does not change it: two readings that agree with each other 8 dB over a floor are still two readings 8 dB over a floor."
     }
   ],
   "what_it_would_change": [
@@ -1582,5 +1587,43 @@
       "how": "A renderer using the byte as the multiplier is three and a half decibels loud at the bottom of the byte and a decibel and a half loud through the middle of it, in the direction that matters: it is loud where a part was meant to sit back. The table is a hundred and twenty-eight bytes and removes all of it."
     }
   ],
-  "a_note_on_what_was_left_out": "The candidate whose entries are the measurement was written, scored and then taken out of the ranking, and the first run of this class left it in -- where it came first with a residual of two ten-thousandths of the span and the four gates returned `reproduces`. That verdict was the measurement agreeing with itself. It is the same failure the equaliser's centre frequencies already had in this archive, where a model carrying twelve measured settings and interpolating between them was published as a law, and it is worth naming twice because it does not look like a failure from inside: every gate passes, the residual is beautiful, and nothing in the numbers says the model was copied from the thing it is being held against. What separates a readout from a law is whether it could have come out wrong, and a table with a free entry per setting could not. So the readout is published as a readout, its residual is reported as the reading's own rounding error, and the claim rests on the one thing a free table cannot arrange -- that the unrounded measurements sit on a grid, scanned against every nearby denominator."
+  "a_note_on_what_was_left_out": "The candidate whose entries are the measurement was written, scored and then taken out of the ranking, and the first run of this class left it in -- where it came first with a residual of two ten-thousandths of the span and the four gates returned `reproduces`. That verdict was the measurement agreeing with itself. It is the same failure the equaliser's centre frequencies already had in this archive, where a model carrying twelve measured settings and interpolating between them was published as a law, and it is worth naming twice because it does not look like a failure from inside: every gate passes, the residual is beautiful, and nothing in the numbers says the model was copied from the thing it is being held against. What separates a readout from a law is whether it could have come out wrong, and a table with a free entry per setting could not. So the readout is published as a readout, its residual is reported as the reading's own rounding error, and the claim rests on the one thing a free table cannot arrange -- that the unrounded measurements sit on a grid, scanned against every nearby denominator.",
+  "a_second_type": {
+    "what_was_asked": "The same address, 40 03 16, on 01 40 -- a type with a modulator where the class was read on a type with none. Two measurements held against each other, with no model between them, which is the only comparison that can say whether the curve is one curve.",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-40-16-the-level-on-another-type.json",
+    "settings_admitted": 11,
+    "settings_left_out": 4,
+    "admitted_by": "The class's own rule: a setting more than 20 dB over the silence taken through the same chain. Four fall under it here, at the bottom of the byte, where the type's own output sits nearer the floor than the other type's did.",
+    "the_two_types_apart_db": {
+      "median": 0.01,
+      "worst": 0.04,
+      "settings": 11,
+      "over_db": 26.5
+    },
+    "what_it_settles": "The curve is the machine's and not the type's. Over 11 settings and 26.5 dB of range the two types return the same gain to a median 0.01 dB and a worst 0.04, which is a fifth of what one of these readings resolves. Any reading in which a type carries its own gain curve is out by more than the measurement at every setting, and there is nothing left of it.",
+    "what_it_does_not_settle": "Whether the numbers are stored or computed. A law that returns them and a table holding them both return them on every type, so agreement here was predicted by both readings and separates neither. That is written into the alternative rather than left as a gap.",
+    "and_the_laws_again": {
+      "the-byte-is-the-multiplier": {
+        "median_db": 1.999,
+        "worst_db": 2.498,
+        "leans": true
+      },
+      "the-byte-over-a-power-of-two": {
+        "median_db": 1.999,
+        "worst_db": 2.498,
+        "leans": true
+      },
+      "the-byte-squared": {
+        "median_db": 6.452,
+        "worst_db": 21.549,
+        "leans": true
+      },
+      "decibels-linear-in-the-byte": {
+        "median_db": 12.252,
+        "worst_db": 15.491,
+        "leans": true
+      }
+    },
+    "why_that_matters": "Every law in the catalogue was rejected on the first type and every one is rejected again here, on a different type, at settings chosen for where they differ. The nearest of them, the-byte-is-the-multiplier, is out by a median 1.999 dB against a floor of 0.136 and it leans. A second record is not a second opinion about the same takes -- it is the rejection holding where it had no reason to unless it is right."
+  }
 }
