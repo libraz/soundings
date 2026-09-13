@@ -21,12 +21,13 @@ RATE = 8000
 LEAD = 0.6
 
 
-def take(path, *, left_db: float, right_db: float, seed: int) -> None:
+def take(path, *, left_db: float, right_db: float, seed: int, idle_db: float = -100.0) -> None:
     """A take with a note at a given level in each of two channels of four.
 
     Four channels because the interface has more inputs than the unit uses, and
     which two carry it is something the reading has to work out rather than be
-    told.
+    told. `idle_db` is what the two the unit is *not* on hold, through the lead as
+    well as the body: an input nothing is plugged into is not silent.
     """
     rng = np.random.default_rng(seed)
     n = int(RATE * 2.0)
@@ -34,12 +35,19 @@ def take(path, *, left_db: float, right_db: float, seed: int) -> None:
     note = np.zeros(n)
     note[lead:] = np.sin(2 * np.pi * 220 * np.arange(n - lead) / RATE)
     frames = rng.normal(0, 1e-5, (n, 4))
+    frames[:, 0] += rng.normal(0, 1.0, n) * 10 ** (idle_db / 20)
+    frames[:, 1] += rng.normal(0, 1.0, n) * 10 ** ((idle_db - 5.0) / 20)
     frames[:, 2] += note * 10 ** (left_db / 20)
     frames[:, 3] += note * 10 ** (right_db / 20)
     write(path, frames, RATE)
 
 
-def saved(tmp_path, settings: dict[str, list[tuple[float, float]]], stimulus: str = "struck"):
+def saved(
+    tmp_path,
+    settings: dict[str, list[tuple[float, float]]],
+    stimulus: str = "struck",
+    idle_db: float = -100.0,
+):
     """A directory shaped like one a --save run leaves."""
     takes = []
     seed = 0
@@ -47,7 +55,7 @@ def saved(tmp_path, settings: dict[str, list[tuple[float, float]]], stimulus: st
         for index, (left, right) in enumerate(levels):
             name = f"{stimulus}-{setting}-{index:02d}.wav"
             seed += 1
-            take(tmp_path / name, left_db=left, right_db=right, seed=seed)
+            take(tmp_path / name, left_db=left, right_db=right, seed=seed, idle_db=idle_db)
             takes.append({"stimulus": stimulus, "setting": setting, "take": index, "file": name})
     (tmp_path / "takes-manifest.json").write_text(
         json.dumps({"stimuli": [{"name": stimulus, "lead_s": LEAD}], "takes": takes})
@@ -170,6 +178,28 @@ def test_the_yardstick_is_the_steadier_setting_not_the_wider(tmp_path) -> None:
     (found,) = balance.measure(root)
 
     assert found.yardstick_db < 1.0
+
+
+def test_an_input_the_unit_is_not_on_does_not_refuse_the_run(tmp_path) -> None:
+    """An input nothing is plugged into is not silent, and reading the floor over
+    every input it has puts the bar thirty decibels above where the reading is.
+
+    Measured: two unused inputs sat at -70 and -75 dBFS through every take of a
+    control run while the two carrying the unit sat at -110 in their leads. Two of
+    the run's three voices came back as mono sources -- the quieter channel
+    reaching -59.7 against a floor of -79.4 -- which is not a bound being reported,
+    it is a statement that the unit arrived on one channel, and it was false."""
+    root = saved(
+        tmp_path,
+        {"0": [(-59.5, -300.0)] * 3, "127": [(-300.0, -59.7)] * 3},
+        idle_db=-70.0,
+    )
+
+    found = balance.measure(root)
+
+    assert len(found) == 1
+    assert found[0].not_measured is None
+    assert found[0].channels == (2, 3)
 
 
 def test_the_sign_of_a_balance_does_not_depend_on_which_channel_was_louder(tmp_path) -> None:

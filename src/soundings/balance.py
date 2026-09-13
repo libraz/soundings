@@ -260,23 +260,42 @@ WHY_THE_PAIR_IS_IN_INPUT_ORDER = (
 )
 
 
-def _pair_of_channels(takes: list[np.ndarray], floor_db: float) -> tuple[int, int] | None:
-    """The two channels the unit arrived on, in the interface's own order.
+WHY_THE_FLOOR_IS_THE_PAIRS_OWN = (
+    "The floor the quieter channel has to clear is read from the lead of the channels the unit "
+    "arrived on, and not from the lead of every input the interface has. An input the unit is "
+    "not on is not silent: measured here, two unused inputs sat at -70 and -75 dBFS through "
+    "every take while the two carrying the unit sat at -110, so a floor taken over all of them "
+    "was thirty decibels above the one the reading is against. A run whose quieter channel "
+    "reached -59.7 was refused as a mono source by three tenths of a decibel on that account -- "
+    "which is not a bound being reported, it is a statement that the unit arrived on one "
+    "channel, and it was false."
+)
+
+
+def _pair_of_channels(
+    takes: list[np.ndarray], lead: np.ndarray | None
+) -> tuple[tuple[int, int] | None, float]:
+    """The two channels the unit arrived on, in the interface's own order, and their floor.
 
     Each channel is taken at the loudest it reached across every take of every
-    setting, per WHY_ACROSS_THE_SETTINGS. None when only one of them clears the
-    floor anywhere in the run. The pair is then put back into input order, per
+    setting, per WHY_ACROSS_THE_SETTINGS. The pair is picked on level alone, which
+    needs no floor, and the floor is then read from those two channels' own lead,
+    per WHY_THE_FLOOR_IS_THE_PAIRS_OWN. None when the quieter of the two does not
+    clear it. The pair is put back into input order, per
     WHY_THE_PAIR_IS_IN_INPUT_ORDER.
     """
     if not takes:
-        return None
+        return None, -120.0
     width = min(frames.shape[1] for frames in takes)
     levels = [max(_db(_rms(frames[:, c])) for frames in takes) for c in range(width)]
     order = sorted(range(len(levels)), key=lambda c: levels[c], reverse=True)
-    if len(order) < 2 or levels[order[1]] < floor_db + SECOND_CHANNEL_ABOVE_DB:
-        return None
-    first, second = sorted(order[:2])
-    return first, second
+    if len(order) < 2:
+        return None, -120.0
+    pair = sorted(order[:2])
+    floor = _db(_rms(lead[:, pair])) if lead is not None and lead.shape[0] else -120.0
+    if levels[order[1]] < floor + SECOND_CHANNEL_ABOVE_DB:
+        return None, floor
+    return (pair[0], pair[1]), floor
 
 
 def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
@@ -313,9 +332,9 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
         )
         rate = loudest[1]
         lead = int((leads.get(stimulus, 0.6) * 0.8) * rate)
-        floor = _db(_rms(loudest[0][:lead])) if lead > rate // 100 else -120.0
+        head = loudest[0][:lead] if lead > rate // 100 else None
         every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
-        channels = _pair_of_channels(every, floor)
+        channels, _floor = _pair_of_channels(every, head)
         if channels is None:
             out.append(
                 Verdict(stimulus=stimulus, settings=[], channels=None, not_measured=MONO_SOURCE)
@@ -341,6 +360,7 @@ __all__ = [
     "MONO_SOURCE",
     "SECOND_CHANNEL_ABOVE_DB",
     "WHY_NOT_A_LEVEL",
+    "WHY_THE_FLOOR_IS_THE_PAIRS_OWN",
     "WHY_THE_PAIR_IS_IN_INPUT_ORDER",
     "SettingBalance",
     "Verdict",
