@@ -1,0 +1,88 @@
+{
+  "class": "effect-balance",
+  "what_the_class_is": "The byte that says how much of what leaves an insertion effect went through it and how much went past it. Sixty-five rows over forty-six types are printed `D> 0E - D 0<E`, almost all of them as parameter sixteen, four places ahead of the Low Gain, Hi Gain, Pan and Level tail the same types carry. What has been measured is which end is which. The question here is what pair of multipliers the byte stands for, whether the pair is one law or one per type, and whether it is the same pair the panpot uses.",
+  "why_it_needs_its_own_reading": "A pan puts its two halves on two channels, so measuring the channels apart measures the halves apart, and that is what the pan class turned on. A balance puts both halves on both channels. No reading of the output separates them -- what comes back is one level per channel, and one level is one number however many things went into it. A band reading does not help either, because the two halves are the same note and share most of their spectrum. What separates them is time: where the effect is a delay and its feedback is at nothing, its return is one copy of the note arriving later, so a take of a gated note holds one half in one window and the other in another. That reading is not general -- a type whose return begins while the note is still sounding has no window to be read in -- and the types that carry it are named rather than assumed.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A balance is two multipliers, applied at audio rate while the control processor works them out once when the byte is written. The same reasoning the pan class gives applies unchanged: what costs anything is not the multiply, it is whatever the control processor does between receiving a byte and handing over two numbers, and in this period that is a table lookup.",
+      "**This is the third parameter on the same machine that is a pair of stored gains**, after the effect level and the output pan, and that is what makes the class worth asking rather than assuming. A designer with a gain table already written has a reason to index it again rather than carry a third, and the archive now holds both of the earlier tables as measured numbers -- the level's hundred and twenty-eight entries on a 1/127 grid, and the pan's nineteen recovered entries. So this class has two sharp predictions available to it that no earlier class had, because in both cases the table it would be reusing has already been read.",
+      "The two halves are not symmetric the way a pan's are. A pan's two multipliers act on one signal and go to two places; a balance's act on two different signals and go to the same place. Nothing about the part makes the pair symmetric, and a designer who wanted the dry half to survive a wet half being turned up would have written it so.",
+      "Reaching silence costs nothing to store at either end, and whether either end reaches it is measured rather than assumed. The bound here is not the same bound the pan had: the pan's far channel was found to stop short of silence because of a term added after it, and a term added after a mix is added to the mix and not to one of its halves, so what stopped the pan does not have to stop this."
+    ],
+    "would_be_wrong_if": "The two windows' levels moved with the byte in a way no pair of multipliers reproduces -- if the byte reached a filter or a delay time rather than a pair of gains. A reading that shows the return arriving at a different time, or either half changing shape, as the byte moves is not a balance and this class does not hold it."
+  },
+  "candidates": [
+    {
+      "id": "a-crossfade-on-the-amplitudes",
+      "what": "The two multipliers are the byte and its complement, straight: the effect gets n/127 and the signal past it (127-n)/127. The cheapest thing that can be called a balance, and the one a table is not needed for.",
+      "predicts": {
+        "the_two_together": "Three decibels down at the centre against either end, because two halves of an amplitude are a quarter of a power each.",
+        "the_difference": "At a quarter of the travel, 9.45 dB between the windows. At an eighth, 16.9 dB.",
+        "the_ends": "One window empty at each end, so what is read there is whatever else reaches it and not a figure about the unit."
+      }
+    },
+    {
+      "id": "a-pair-whose-squares-sum-to-one",
+      "what": "The multipliers are the cosine and sine of a quarter turn spread over the byte, which is the mix law a desk of the period is laid out around: the output holds its power while the blend moves.",
+      "predicts": {
+        "the_two_together": "Flat across every setting, to within what the run resolves.",
+        "the_difference": "At a quarter of the travel, 7.66 dB -- 1.79 dB apart from the crossfade.",
+        "the_ends": "One window empty at each end, and each window three decibels down at the centre."
+      }
+    },
+    {
+      "id": "the-effect-alone-is-scaled",
+      "what": "The signal past the effect is left at unity and only the effect's own return is turned up, which is what a part with one gain and nothing to spend does. It is not a crossfade: nothing is taken away from the half being turned down.",
+      "predicts": {
+        "the_two_together": "Three decibels UP at the setting where the two are equal, against the end where the effect is off, which is the opposite sign to the crossfade.",
+        "the_difference": "The same as whichever law scales the effect, so this candidate does not differ from its neighbours in the difference at all -- only in the total.",
+        "the_ends": "The window the signal past the effect arrives in never changes level across the whole sweep, and at the effect end it is still there."
+      }
+    },
+    {
+      "id": "two-lookups-into-the-level-table",
+      "what": "The balance reuses the gain table the effect level already indexes, read at two places that move in opposite directions as the byte moves. One table serves three parameters, which is what a designer with a hundred and twenty-eight bytes already spent would do.",
+      "predicts": {
+        "the_two_together": "Whatever the level table's own shape gives, which is neither flat nor three decibels down: that table was measured to be three quarters of the byte over the bottom quarter of its range and the byte itself at the top, so the sum of two of its entries is not the sum of two straight lines.",
+        "the_difference": "Every value the sweep returns is a difference of two entries the level table holds, so the multipliers land on the same 1/127 grid the level class measured and on no finer one.",
+        "the_ends": "Whatever the level table holds at its two ends, and the bottom of that table is a measured number rather than silence."
+      }
+    },
+    {
+      "id": "the-pan-table-read-twice",
+      "what": "The balance is the panpot's table, indexed the same way: one half gets the entry the pan's near side would get and the other gets the far side's. Two parameters printed differently over one stored curve.",
+      "predicts": {
+        "the_two_together": "The pan table's own centre figure, which was measured at 2.44 decibels under its end -- neither the 3.01 of a crossfade nor the 6.02 of a straight blend, and a number nothing else in the catalogue predicts.",
+        "the_difference": "Entry for entry what the recovered pan table gives, which is published at nineteen settings.",
+        "the_ends": "At least twenty-five decibels down and no deeper, if what stopped the pan short of silence is the table. A balance measured to empty a window further than that refutes this whatever else it agrees with, and that is the sharpest edge in the catalogue."
+      }
+    },
+    {
+      "id": "a-table-of-one-multiplier-per-half",
+      "what": "A free table: one pair of numbers per setting, stored and answering to nothing. This is what the machine has if the shape is none of the above.",
+      "predicts": {
+        "the_two_together": "Anything.",
+        "the_difference": "Anything.",
+        "the_ends": "Anything."
+      },
+      "kept_out_of_the_ranking": "A candidate with a free entry per setting cannot come out wrong, so it wins every gate and means nothing. It is here because it is what the machine may actually hold, and it is excluded by name wherever candidates are scored -- what a claim may rest on is the part of it a free table could not have arranged."
+    },
+    {
+      "id": "two-ramps-that-meet-at-full",
+      "what": "Each half is a straight line in amplitude clamped at both ends, and the two are offset so that they meet at full rather than crossing. The half that goes past the effect holds at unity to the middle of the byte and falls to nothing at 114; the effect's own half is at nothing to about 13 and reaches unity at the middle. Two subtractions and two comparisons, and no table at all.",
+      "predicts": {
+        "the_two_together": "Three decibels UP in the middle against either end, where both halves are at full at once -- the opposite sign to the crossfade and the opposite of flat.",
+        "the_difference": "Zero change in the half that goes past the effect over the whole bottom half of the byte, and a straight line in amplitude, not in decibels, over the top half.",
+        "the_ends": "Both reach true nothing, with more than ten counts of clamp at each end where no reading can tell one value from its neighbour."
+      },
+      "found_after_the_measurement": "Read off the sweep rather than named before it, so it is not in the ranking either. The five above were written first and the run refuted all five; this is the shape that was left, and a shape fitted to a measurement is the measurement until something it did not see agrees with it. It is written down here so that the next round has a prediction to be wrong against -- the knees are the part it can fail on, and the run that reads them is queued."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Whether the law is symmetric about the centre. A hundred and twenty-seven printed positions do not divide a hundred and twenty-eight byte values, so one value is spare, and where it went is a fact about the table rather than about the law. It is asked by reading both ends twice.",
+    "Whether the balance is one balance. The rows sit four places ahead of a tail already measured to be one structure shared across types, which makes one shared balance the thing to expect and not the thing to assume. It is asked by putting the same byte on types whose front halves have nothing in common.",
+    "What happens on the types this reading cannot reach. Forty-odd of the forty-six carry a return that is not a copy arriving later -- a chorus, a filter, a compressor -- and nothing measured on a delay says by itself that their byte is the same byte. What would say so is the tail argument the pan class used, and that is a reading of other records rather than a prediction of this one."
+  ],
+  "note": "Two figures decide this class and they are the same two the pan turned on, read between two windows of one take instead of between two channels. The difference between the windows separates the laws in the quarters; the total separates them in the middle, and the total is the figure a reading made at one instant does not have at all. What is new here is that two of the candidates name tables this archive has already measured, so they can be wrong against a published number rather than against a shape."
+}

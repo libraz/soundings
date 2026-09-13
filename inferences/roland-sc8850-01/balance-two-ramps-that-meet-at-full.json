@@ -1,0 +1,394 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-13T21:18:08.497287+00:00",
+    "made_by": "backup/where-the-return-lands.py, backup/the-balance-the-effect-prints.py, backup/publish-the-balance-sweep.py, backup/write-the-balance-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "class",
+      "class": "effect-balance",
+      "types": [
+        "01 50",
+        "01 54",
+        "01 57"
+      ],
+      "addresses": [
+        "40 03 12"
+      ],
+      "printed_range": "D> 0E - D 0<E"
+    }
+  },
+  "claim": "A byte printed `D> 0E - D 0<E` is two multipliers that are each a straight line in amplitude, clamped at both ends, and they are offset so that both are at full in the middle of the byte rather than crossing there. Read in the window the direct sound arrives in, the half that goes past the effect does not move at all from 0 to 64 -- -0.03 to 0.00 decibels against its own loudest reading, on three types, against takes that repeat to two hundredths of a decibel -- and then falls in a straight line to nothing at 114. Read in the window the return arrives in, the effect's own half is at nothing until about 13 and rises in a straight line to full at 64, with the same slope to within four parts in a hundred: one unit of amplitude per fifty counts, measured in two different windows at two different levels. So at 64 the output carries both halves at full and stands three decibels over either end, which is the opposite sign to a crossfade and not flat. Both ends reach true nothing: the direct window at the effect end falls to 1.1 decibels over the same take's own lead, which is the interface and not the unit. The shape is the same shape on all three types to five hundredths of a decibel, and against it two reference levels a type reproduce that type's nine to nineteen measured totals to a median of three hundredths of a decibel.",
+  "named": null,
+  "why_not_named": "The catalogue was written before the run and every candidate in it is refuted by the one reading that repeats best. Four of the five are refuted by where the dry half sits at the centre of the byte: a crossfade on the amplitudes puts it 6.02 decibels down there, a pair whose squares sum to one 3.01 down, the pan table read twice 2.44 down, and the level table read at two places somewhere between -- the measurement puts it at nothing at all, unmoved from the dry end, on three types. The fifth said the dry half never moves across the whole sweep, which is right over the bottom half of the byte and wrong over the top half, where it goes to silence. The pan table is refuted twice over and on the edge its own entry named: it cannot empty a window further than about twenty-five decibels and this one empties to the lead. So what is published is a readout. The two ramps and their knees were read off this sweep after it was made, and a shape fitted to a measurement is the measurement until something it did not see agrees with it.",
+  "could_have_been_refuted_by": "Each of the five was written with a figure at the centre of the byte and a figure at the ends, and the run returned both. A dry half 3.01 decibels down at the centre would have carried the constant-power pair; 6.02 the crossfade; 2.44 the pan table; a bottom that stopped twenty-five decibels short of the lead would have carried the pan table on its other prediction. None of those came back.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/arrival/40-03-12-the-effect-balance.json",
+        "keys": [
+          "runs[name=01-50].by_setting[setting=000].early_db",
+          "runs[name=01-50].by_setting[setting=064].early_db",
+          "runs[name=01-50].by_setting[setting=112].early_db",
+          "runs[name=01-50].by_setting[setting=127].early_db",
+          "runs[name=01-54].by_setting[setting=000].early_db",
+          "runs[name=01-54].by_setting[setting=064].early_db",
+          "runs[name=01-54].by_setting[setting=112].early_db",
+          "runs[name=01-54].by_setting[setting=127].early_db",
+          "runs[name=01-57].by_setting[setting=000].early_db",
+          "runs[name=01-57].by_setting[setting=064].early_db",
+          "runs[name=01-57].by_setting[setting=112].early_db",
+          "runs[name=01-57].by_setting[setting=127].early_db",
+          "runs[name=01-50].quietest_early_over_the_lead_db",
+          "runs[name=01-54].quietest_early_over_the_lead_db",
+          "runs[name=01-57].quietest_early_over_the_lead_db"
+        ],
+        "values": [
+          [
+            -48.45,
+            -48.45,
+            -48.43,
+            -48.43
+          ],
+          [
+            -48.45,
+            -48.43,
+            -48.45,
+            -48.44
+          ],
+          [
+            -76.55,
+            -76.54
+          ],
+          [
+            -109.43,
+            -109.35
+          ],
+          [
+            -48.43,
+            -48.44,
+            -48.43,
+            -48.45
+          ],
+          [
+            -48.42,
+            -48.42,
+            -48.43,
+            -48.43
+          ],
+          [
+            -76.54,
+            -76.55
+          ],
+          [
+            -109.43,
+            -109.32
+          ],
+          [
+            -48.42,
+            -48.45,
+            -48.45,
+            -48.45
+          ],
+          [
+            -48.42,
+            -48.45,
+            -48.45,
+            -48.45
+          ],
+          [
+            -76.51,
+            -76.5
+          ],
+          [
+            -109.39,
+            -109.4
+          ],
+          1.27,
+          1.12,
+          1.15
+        ],
+        "why": "The byte at nineteen settings on one type and nine on two others, each type's front half held and its output stage left flat, read in three windows of one length whose places were measured in each type's own first two takes. The direct sound's window is the reading the claim rests on: it repeats to two hundredths of a decibel on every type and carries no part of the effect's return at all."
+      }
+    ],
+    "documents": [],
+    "era_priors": [
+      {
+        "claim": "A pair of multipliers worked out once by the control processor when the byte is written, not per sample. Two clamped straight lines are two subtractions and two comparisons, which is cheaper than the table this class expected and cheaper than the two the machine already carries.",
+        "why": "The same reasoning the effect level and the output pan were read under, and the reason this class expected a third table. What the measurement says is that the designer did not reuse either one, and did not store a third: a shape a straight line reproduces to a quarter of one percent over fifty settings is not a stored curve.",
+        "would_be_wrong_if": "The multipliers did not land on a straight line -- a stored table is free to curve and would, anywhere its designer wanted a taper."
+      },
+      {
+        "claim": "Both halves at full in the middle is a choice rather than an accident. It keeps the two ends at the level a bypass would give and removes the three-decibel dip a crossfade has in the middle, at the cost of three decibels of headroom there.",
+        "why": "An insertion effect on a part has to sound the same level with the effect off as with it on, or every patch that uses one has to be re-levelled. A crossfade does not give that; this does.",
+        "would_be_wrong_if": "The two ends did not come back at the same level as each other. They do not on two of the three types, and the reason is the effect's own return level rather than the balance -- which is why the claim is about each half's shape and not about the total."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The record says what each setting of the byte did to the two windows of one take. What is added here is that the two windows are the two halves of the mix, that each half is a straight line in amplitude with a clamp at either end, and that the two lines do not cross -- they meet at full. None of that is in the record, which does not name a window dry or wet and does not fit anything.",
+  "alternatives": [
+    {
+      "reading": "The two ramps are one stored table per half, of a hundred and twenty-eight entries, that happens to be straight over its moving part and rounds off where it meets each clamp.",
+      "standing": true,
+      "separated_by": {
+        "observable": "Whether either knee is sharp within one count. Read every setting from 56 to 72 and from 108 to 120, which is where the dry half leaves unity and where it reaches nothing.",
+        "divergence": "A table that rounds its knee over four counts departs from a pair of clamped lines by about 0.02 of the multiplier at the knee, which is 0.17 of a decibel there. A pair of lines departs by nothing.",
+        "sensitivity_here": "The direct window repeats to 0.02 of a decibel take to take on every type, and the law's own residual over the ramp is 0.0026 of the multiplier, which is 0.023 of a decibel. The coarser of the two is the repeat, and it is the one that applies.",
+        "margin": 7,
+        "predicts": {
+          "a pair of clamped lines": "Setting 63 reads level with setting 0 and setting 65 reads 0.02 of the multiplier under it, with no reading in between departing from the two lines by more than the take's own repeat.",
+          "a stored table": "The settings either side of each knee sit off the two lines by more than the repeat, and they do so in one direction rather than scattering."
+        },
+        "run": {
+          "stage": "arrival",
+          "type": "01 57",
+          "address": "40 03 12",
+          "settings": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120
+          ],
+          "minutes": 13,
+          "why_this_type": "Its return sits twenty-four decibels over the direct sound's own tail in the late window and its takes repeat to two hundredths of a decibel, which 01 54 does not."
+        }
+      }
+    },
+    {
+      "reading": "The ramps are fifty counts wide and meet at 64, against forty parts in a hundred of the printed travel meeting at half of it -- which puts the knees at 12.7, 63.5 and 114.3 rather than at 13, 64 and 114.",
+      "standing": true,
+      "separated_by": {
+        "margin": 0,
+        "why_not_separable": "The two differ by at most three tenths of a count, which is six thousandths of the multiplier, and the dry half's own readings scatter by two and a half thousandths against the law. Reading the byte at every count would not settle it either, because the difference is under the scatter at every setting where the two disagree. Which of the two numbers the machine holds is in ROM rather than in the air, and this is recorded as equivalent under this test rather than queued behind a run that could not answer.",
+        "run": null
+      }
+    },
+    {
+      "reading": "The wet half's slope is not the dry half's. Measured they are one unit of amplitude per 50.2 counts and per 51.1 to 52.4, which is two to four parts in a hundred apart.",
+      "standing": true,
+      "separated_by": {
+        "observable": "The wet half's slope read where the direct sound's own tail is far enough under the return to stop moving it -- a gate short enough, or a voice whose release is fast enough, that the tail has gone before the late window opens.",
+        "divergence": "Four parts in a hundred of the slope is 0.02 of the multiplier at the middle of the ramp, which is 0.17 of a decibel there.",
+        "sensitivity_here": "As it stands, not enough. The tail sits seventeen decibels under the return on 01 50 and twenty-four on 01 57, which moves a reading of the wet half by up to 1.1 and 0.55 of a decibel where the two add coherently -- larger than the difference being asked about, which is why the claim rests on the direct window. With the tail forty decibels down that becomes 0.09 of a decibel, against a repeat of 0.02.",
+        "margin": 1.9,
+        "predicts": {
+          "one slope": "The wet ramp comes back at 50.2 counts per unit, the same number the dry ramp gives on the same takes.",
+          "two slopes": "The wet ramp stays near 51 or 52 counts per unit with the tail taken away, and the knee at 64 moves with it."
+        },
+        "run": {
+          "stage": "arrival",
+          "type": "01 57",
+          "address": "40 03 12",
+          "settings": [
+            12,
+            16,
+            20,
+            24,
+            28,
+            32,
+            36,
+            40,
+            44,
+            48,
+            52,
+            56,
+            60,
+            64,
+            68
+          ],
+          "minutes": 6,
+          "what_changes": "The gate shortened and a voice whose release ends inside it, so the late window holds the return and not the note."
+        }
+      }
+    },
+    {
+      "reading": "The law is the same law on the forty-three types this reading cannot reach, whose return is not a copy of the note arriving later.",
+      "standing": true,
+      "separated_by": {
+        "margin": 0,
+        "why_not_separable": "Not by this reading, on any type. What it needs is a window holding one half and not the other, and those types do not give one: a chorus, a filter and a compressor all return something that begins while the note is still sounding. The byte sits four places ahead of a tail already read as one structure shared across types, which makes one shared balance the thing to expect rather than the thing to assume, and three delays agreeing is three types agreeing and not forty-six. What could carry it is the tail argument read off other records, which is a different claim and not a run.",
+        "run": null
+      }
+    }
+  ],
+  "refuted_by": "A setting of this byte on any of these types whose direct window lands more than a tenth of a decibel from `clamp((114 - n) / 50)` times its own reading at the dry end. In particular any reading at 64 that is not level with the reading at 0, or any reading between 114 and 127 that has not gone to the take's own lead.",
+  "reproduces": {
+    "domain": "The byte at nineteen settings on 01 54 and nine each on 01 50 and 01 57, read as the level in each of two windows of one take and as the two together.",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/arrival/40-03-12-the-effect-balance.json"
+      ],
+      "runs": [
+        "01-50",
+        "01-54",
+        "01-57"
+      ],
+      "why_not_a_filter": "An arrival record holds one run per directory of takes and carries no type on the run itself, so there is no field an index query could select on. The three runs are the whole of the record and naming them is naming it."
+    },
+    "residual": {
+      "read_as": "the multiplier, as a share of that half's own largest reading",
+      "unit": "share of full scale",
+      "median": 0.0031,
+      "worst": 0.0066,
+      "structured": false,
+      "why": "The dry half against two numbers, a knee and a width, with no entry per setting anywhere in it. The wet half's residual is larger and is reported per type rather than here, because on one of the three it is the take's own repeat scatter and not a departure from the law."
+    },
+    "figures": {
+      "per_type": {
+        "01-50": {
+          "the_dry_half_as_a_straight_line": {
+            "settings_on_the_ramp": 3,
+            "counts_per_unit": 50.25,
+            "reaches_unity_at": 63.66,
+            "reaches_nothing_at": 113.92,
+            "rms": 0.0016
+          },
+          "the_wet_half_as_a_straight_line": {
+            "settings_on_the_ramp": 3,
+            "counts_per_unit": 50.49,
+            "reaches_unity_at": 62.1,
+            "reaches_nothing_at": 11.61,
+            "rms": 0.0001
+          },
+          "dry_against_the_law": {
+            "rms": 0.0026,
+            "worst": 0.0058
+          },
+          "wet_against_the_law": {
+            "rms": 0.022,
+            "worst": 0.04
+          },
+          "the_two_windows_together_against_the_law_db": {
+            "median": 0.03,
+            "worst": 0.13,
+            "settings": 9,
+            "free_numbers": 2
+          }
+        },
+        "01-54": {
+          "the_dry_half_as_a_straight_line": {
+            "settings_on_the_ramp": 6,
+            "counts_per_unit": 50.15,
+            "reaches_unity_at": 63.75,
+            "reaches_nothing_at": 113.9,
+            "rms": 0.0021
+          },
+          "the_wet_half_as_a_straight_line": {
+            "settings_on_the_ramp": 7,
+            "counts_per_unit": 55.04,
+            "reaches_unity_at": 67.8,
+            "reaches_nothing_at": 12.77,
+            "rms": 0.033
+          },
+          "dry_against_the_law": {
+            "rms": 0.0026,
+            "worst": 0.0066
+          },
+          "wet_against_the_law": {
+            "rms": 0.0387,
+            "worst": 0.1329
+          },
+          "the_two_windows_together_against_the_law_db": {
+            "median": 0.03,
+            "worst": 0.62,
+            "settings": 19,
+            "free_numbers": 2
+          }
+        },
+        "01-57": {
+          "the_dry_half_as_a_straight_line": {
+            "settings_on_the_ramp": 3,
+            "counts_per_unit": 50.29,
+            "reaches_unity_at": 63.62,
+            "reaches_nothing_at": 113.91,
+            "rms": 0.002
+          },
+          "the_wet_half_as_a_straight_line": {
+            "settings_on_the_ramp": 3,
+            "counts_per_unit": 50.1,
+            "reaches_unity_at": 63.03,
+            "reaches_nothing_at": 12.94,
+            "rms": 0.0004
+          },
+          "dry_against_the_law": {
+            "rms": 0.0031,
+            "worst": 0.0066
+          },
+          "wet_against_the_law": {
+            "rms": 0.009,
+            "worst": 0.0213
+          },
+          "the_two_windows_together_against_the_law_db": {
+            "median": 0.01,
+            "worst": 0.08,
+            "settings": 9,
+            "free_numbers": 2
+          }
+        }
+      },
+      "the_law": {
+        "01-50": {
+          "dry_at_the_centre_db": -0.02,
+          "dry_at_112_db": -28.12
+        },
+        "01-54": {
+          "dry_at_the_centre_db": 0.0,
+          "dry_at_112_db": -28.12
+        },
+        "01-57": {
+          "dry_at_the_centre_db": -0.03,
+          "dry_at_112_db": -28.08
+        }
+      }
+    },
+    "why_the_wet_half_is_read_apart": "01 54 is a delay whose time is modulated, and its late window does not repeat: four takes of one setting spread 3.1 decibels and every pair splits the same way round, the first take of a setting reading 1.35 decibels over the second. The return walks in and out of a window that does not move. Its direct window repeats to a hundredth of a decibel over the same takes, which is why the claim is carried by the direct window and the other two types carry the wet half."
+  },
+  "what_this_does_not_close": [
+    {
+      "what": "Whether the knees are sharp or rounded over a few counts.",
+      "bounded_by": "The sweep's own spacing. Eight counts between settings on the densest type, so a knee up to seven counts wide would read as sharp."
+    },
+    {
+      "what": "Whether the byte's spare value goes to one end or the other.",
+      "bounded_by": "Both ends are clamped flat over more than ten counts here, so nothing at either end can tell one value from its neighbour."
+    },
+    {
+      "what": "Whether the part panpot's balance and this one are the same byte.",
+      "bounded_by": "Not asked. Nothing in this run touched a part, and the address swept is the effect's own."
+    },
+    {
+      "what": "What the law is on the types whose return overlaps the note -- a reverb, a chorus, a filter, a compressor.",
+      "bounded_by": "Named and refused rather than measured. A reverb's return was measured to begin a tenth of a second after the note, inside it, so this reading has no window there and says nothing about those rows."
+    }
+  ],
+  "what_it_would_change": "Sixty-five rows over forty-six types stop being unknown as a shape. Three of them are now read; the rest are read as the same shape only as far as the tail argument carries, which is a reading of other records and not of this one. What changes for a renderer is that the middle of this byte is not a mix at all -- putting a part's effect balance at 64 asks for both halves at full and three decibels more output than either end, and a renderer that crossfaded there would be six decibels light on the dry half at that setting."
+}
