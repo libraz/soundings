@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-13T21:18:08.497287+00:00",
+    "made_at": "2026-09-13T21:36:17.874290+00:00",
     "made_by": "backup/where-the-return-lands.py, backup/the-balance-the-effect-prints.py, backup/publish-the-balance-sweep.py, backup/write-the-balance-inference.py",
-    "rounds": 1,
+    "rounds": 2,
     "about": {
       "scope": "class",
       "class": "effect-balance",
@@ -20,10 +20,10 @@
       "printed_range": "D> 0E - D 0<E"
     }
   },
-  "claim": "A byte printed `D> 0E - D 0<E` is two multipliers that are each a straight line in amplitude, clamped at both ends, and they are offset so that both are at full in the middle of the byte rather than crossing there. Read in the window the direct sound arrives in, the half that goes past the effect does not move at all from 0 to 64 -- -0.03 to 0.00 decibels against its own loudest reading, on three types, against takes that repeat to two hundredths of a decibel -- and then falls in a straight line to nothing at 114. Read in the window the return arrives in, the effect's own half is at nothing until about 13 and rises in a straight line to full at 64, with the same slope to within four parts in a hundred: one unit of amplitude per fifty counts, measured in two different windows at two different levels. So at 64 the output carries both halves at full and stands three decibels over either end, which is the opposite sign to a crossfade and not flat. Both ends reach true nothing: the direct window at the effect end falls to 1.1 decibels over the same take's own lead, which is the interface and not the unit. The shape is the same shape on all three types to five hundredths of a decibel, and against it two reference levels a type reproduce that type's nine to nineteen measured totals to a median of three hundredths of a decibel.",
-  "named": null,
-  "why_not_named": "The catalogue was written before the run and every candidate in it is refuted by the one reading that repeats best. Four of the five are refuted by where the dry half sits at the centre of the byte: a crossfade on the amplitudes puts it 6.02 decibels down there, a pair whose squares sum to one 3.01 down, the pan table read twice 2.44 down, and the level table read at two places somewhere between -- the measurement puts it at nothing at all, unmoved from the dry end, on three types. The fifth said the dry half never moves across the whole sweep, which is right over the bottom half of the byte and wrong over the top half, where it goes to silence. The pan table is refuted twice over and on the edge its own entry named: it cannot empty a window further than about twenty-five decibels and this one empties to the lead. So what is published is a readout. The two ramps and their knees were read off this sweep after it was made, and a shape fitted to a measurement is the measurement until something it did not see agrees with it.",
-  "could_have_been_refuted_by": "Each of the five was written with a figure at the centre of the byte and a figure at the ends, and the run returned both. A dry half 3.01 decibels down at the centre would have carried the constant-power pair; 6.02 the crossfade; 2.44 the pan table; a bottom that stopped twenty-five decibels short of the lead would have carried the pan table on its other prediction. None of those came back.",
+  "claim": "A byte printed `D> 0E - D 0<E` is two multipliers, each of them the byte's distance from a corner divided by fifty, truncated onto a grid of a hundred and twenty-eight and clamped at both ends -- and the two are offset so that they meet at full rather than crossing. The half that goes past the effect holds at its dry-end level for every setting up to and including 64, leaves it at 65, and is at nothing from 114 on. Read every count over both corners, thirty-two settings land within a sixth of a step of `min(1, floor((114 - n) * 128 / 50) / 128)` on the ramp and within half a step anywhere, and each of the three numbers in it is pinned by the reading: a quarter of a count on the width costs six times the residual, rounding instead of truncating costs seven times it, and the multipliers sit a twelfth of a step from the grid's entries where a number on no grid would sit a quarter of one away. Read in the window the return arrives in, the effect's own half is the same shape reflected, at nothing to 13 and at full from 64. So the middle of the byte carries both halves at once and stands three decibels over either end, which is the opposite sign to a crossfade and not flat. Both ends reach true nothing: the direct window at the effect end falls to 1.1 decibels over the same take's own lead, which is the interface and not the unit. The law was found on one type at one count and holds on the two others, read at eight counts on a different day, to seven tenths of a step.",
+  "named": "min(1, floor((114 - n) * 128 / 50) / 128) past the effect, and the same reflected through the middle of the byte for the effect's own half",
+  "why_it_can_be_named": "The sweep read this byte every eight counts and left a shape that was read off it afterwards, which is a readout and not a name. What makes it a name is that the readout was written down as a prediction -- corners sharp within one count, at 64 and at 114 -- and then read at one count, where it could have failed and did not. Three things came back that the sweep could not have arranged: both corners are sharp, the width is fifty counts and not forty-nine and three quarters or fifty and a quarter, and the multipliers sit on a grid. None of the three is a free parameter fitted per setting; the whole law is three numbers against thirty-two readings, and a fourteen-setting run of alternating step sizes that no straight line predicts and a truncated one does.",
+  "could_have_been_refuted_by": "The catalogue's five candidates each named a figure at the centre of the byte and a figure at the ends, and the run returned both: a dry half 3.01 decibels down at the centre would have carried the constant-power pair, 6.02 the crossfade, 2.44 the pan table, and a bottom stopping twenty-five decibels short of the lead would have carried the pan table on its other prediction. None came back. Then the shape left standing made three predictions of its own and was read at six times the resolution: a corner rounded over as little as two counts would have shown the settings either side of 64 leaving the clamp early and in one direction, a width off by a quarter of a count would have shown a whole step of error, and multipliers not on a grid would have sat a quarter of a step from every entry. All three could have happened and none did.",
   "rests_on": {
     "measurements": [
       {
@@ -111,6 +111,68 @@
           1.15
         ],
         "why": "The byte at nineteen settings on one type and nine on two others, each type's front half held and its output stage left flat, read in three windows of one length whose places were measured in each type's own first two takes. The direct sound's window is the reading the claim rests on: it repeats to two hundredths of a decibel on every type and carries no part of the effect's return at all."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/arrival/40-03-12-where-the-balance-knees-are.json",
+        "keys": [
+          "runs[name=01-57].by_setting[setting=000].early_db",
+          "runs[name=01-57].by_setting[setting=063].early_db",
+          "runs[name=01-57].by_setting[setting=064].early_db",
+          "runs[name=01-57].by_setting[setting=065].early_db",
+          "runs[name=01-57].by_setting[setting=072].early_db",
+          "runs[name=01-57].by_setting[setting=108].early_db",
+          "runs[name=01-57].by_setting[setting=113].early_db",
+          "runs[name=01-57].by_setting[setting=114].early_db",
+          "runs[name=01-57].by_setting[setting=120].early_db",
+          "runs[name=01-57].by_setting[setting=127].early_db"
+        ],
+        "values": [
+          [
+            -48.42,
+            -48.45,
+            -48.45,
+            -48.45
+          ],
+          [
+            -48.43,
+            -48.45
+          ],
+          [
+            -48.43,
+            -48.42,
+            -48.43,
+            -48.45
+          ],
+          [
+            -48.64,
+            -48.66
+          ],
+          [
+            -50.02,
+            -49.99
+          ],
+          [
+            -67.0,
+            -66.97
+          ],
+          [
+            -84.46,
+            -84.45
+          ],
+          [
+            -109.5,
+            -109.48
+          ],
+          [
+            -109.4,
+            -109.47
+          ],
+          [
+            -109.51,
+            -109.31
+          ]
+        ],
+        "why": "Every count from 56 to 72 and from 108 to 120, on the type whose takes repeat best, with the same block held and the windows found the same way. This is the run the shape could have failed in: eight counts between settings cannot tell a sharp corner from a rounded one or see a step pattern at all, and one count does both."
       }
     ],
     "documents": [],
@@ -132,101 +194,74 @@
   "alternatives": [
     {
       "reading": "The two ramps are one stored table per half, of a hundred and twenty-eight entries, that happens to be straight over its moving part and rounds off where it meets each clamp.",
-      "standing": true,
-      "separated_by": {
-        "observable": "Whether either knee is sharp within one count. Read every setting from 56 to 72 and from 108 to 120, which is where the dry half leaves unity and where it reaches nothing.",
-        "divergence": "A table that rounds its knee over four counts departs from a pair of clamped lines by about 0.02 of the multiplier at the knee, which is 0.17 of a decibel there. A pair of lines departs by nothing.",
-        "sensitivity_here": "The direct window repeats to 0.02 of a decibel take to take on every type, and the law's own residual over the ramp is 0.0026 of the multiplier, which is 0.023 of a decibel. The coarser of the two is the repeat, and it is the one that applies.",
-        "margin": 7,
-        "predicts": {
-          "a pair of clamped lines": "Setting 63 reads level with setting 0 and setting 65 reads 0.02 of the multiplier under it, with no reading in between departing from the two lines by more than the take's own repeat.",
-          "a stored table": "The settings either side of each knee sit off the two lines by more than the repeat, and they do so in one direction rather than scattering."
-        },
-        "run": {
-          "stage": "arrival",
-          "type": "01 57",
-          "address": "40 03 12",
-          "settings": [
-            56,
-            57,
-            58,
-            59,
-            60,
-            61,
-            62,
-            63,
-            64,
-            65,
-            66,
-            67,
-            68,
-            69,
-            70,
-            71,
-            72,
-            108,
-            109,
-            110,
-            111,
-            112,
-            113,
-            114,
-            115,
-            116,
-            117,
-            118,
-            119,
-            120
-          ],
-          "minutes": 13,
-          "why_this_type": "Its return sits twenty-four decibels over the direct sound's own tail in the late window and its takes repeat to two hundredths of a decibel, which 01 54 does not."
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "Every count read over both corners. A table that rounds a corner leaves the clamp early and in one direction; measured, all nine settings from 56 to 64 sit at the dry end's own level to within what the takes repeat, 65 is already a full step down and on the line, 113 is one step over nothing and 114 is at nothing. Half of the alternative survives and is now the claim: the multipliers are on a grid, which is what a table would give -- what is refuted is a table free to hold any shape, because the entries are a truncated straight line and nothing else."
     },
     {
-      "reading": "The ramps are fifty counts wide and meet at 64, against forty parts in a hundred of the printed travel meeting at half of it -- which puts the knees at 12.7, 63.5 and 114.3 rather than at 13, 64 and 114.",
+      "reading": "The ramps are forty parts in a hundred of the printed travel meeting at half of it, putting the corners at 12.7, 63.5 and 114.3, rather than fifty counts meeting at 64.",
+      "standing": false,
+      "ruled_out_by": "The same run. Against the settings strictly inside the ramp the width of fifty and the corner at 114 are out by a sixth of a step at worst and the percentage reading by 1.17 steps, and a quarter of a count either way on the width costs a whole step. What the sweep could not separate, six times the resolution does."
+    },
+    {
+      "reading": "The grid is a hundred and twenty-seven rather than a hundred and twenty-eight.",
       "standing": true,
+      "equivalent_under_this_test": true,
       "separated_by": {
         "margin": 0,
-        "why_not_separable": "The two differ by at most three tenths of a count, which is six thousandths of the multiplier, and the dry half's own readings scatter by two and a half thousandths against the law. Reading the byte at every count would not settle it either, because the difference is under the scatter at every setting where the two disagree. Which of the two numbers the machine holds is in ROM rather than in the air, and this is recorded as equivalent under this test rather than queued behind a run that could not answer.",
+        "why_not_separable": "The two sit 0.0834 and 0.0854 of a step from their nearest entries over the same fourteen readings, which is a difference of two thousandths of a step against readings that scatter by a tenth of one. Every entry the two disagree about differs by less than the takes repeat, and reading more settings does not help because the disagreement is proportional and smallest where the readings are best. Recorded as equivalent rather than deferred. What the claim rests on is that there is a grid at all and that the multipliers are truncated onto it, and both readings give that.",
         "run": null
       }
     },
     {
-      "reading": "The wet half's slope is not the dry half's. Measured they are one unit of amplitude per 50.2 counts and per 51.1 to 52.4, which is two to four parts in a hundred apart.",
+      "reading": "The effect half's slope is not the direct half's. Read against the same law it reaches full at 63 rather than 64, which is one step of the grid.",
       "standing": true,
       "separated_by": {
-        "observable": "The wet half's slope read where the direct sound's own tail is far enough under the return to stop moving it -- a gate short enough, or a voice whose release is fast enough, that the tail has gone before the late window opens.",
-        "divergence": "Four parts in a hundred of the slope is 0.02 of the multiplier at the middle of the ramp, which is 0.17 of a decibel there.",
-        "sensitivity_here": "As it stands, not enough. The tail sits seventeen decibels under the return on 01 50 and twenty-four on 01 57, which moves a reading of the wet half by up to 1.1 and 0.55 of a decibel where the two add coherently -- larger than the difference being asked about, which is why the claim rests on the direct window. With the tail forty decibels down that becomes 0.09 of a decibel, against a repeat of 0.02.",
+        "observable": "The effect half's corner read where the direct sound's own tail is far enough under the return to stop moving it -- a gate short enough, or a voice whose release ends soon enough, that the tail has gone before the late window opens.",
+        "divergence": "One count of the corner is one step of the grid, which is 0.0078 of the multiplier and 0.07 of a decibel at the top of the ramp.",
+        "sensitivity_here": "As it stands, not enough. The tail sits seventeen decibels under the return on 01 50 and twenty-four on 01 57, which moves a reading of the effect half by up to 1.1 and 0.55 of a decibel where the two add coherently -- larger than the thing being asked about, which is why the claim's numbers come from the direct window. With the tail forty decibels down that becomes 0.09 of a decibel, against takes that repeat to 0.02. Which voice reaches forty decibels is itself measured before the run rather than chosen by name.",
         "margin": 1.9,
         "predicts": {
-          "one slope": "The wet ramp comes back at 50.2 counts per unit, the same number the dry ramp gives on the same takes.",
-          "two slopes": "The wet ramp stays near 51 or 52 counts per unit with the tail taken away, and the knee at 64 moves with it."
+          "one law reflected": "The effect half reaches full at 64 and leaves nothing at 13, the same fifty counts and the same grid as the direct half.",
+          "two laws": "It reaches full at 63 with the tail taken away as well as with it there, and the offset is thirteen on one side and fourteen on the other."
         },
         "run": {
           "stage": "arrival",
           "type": "01 57",
           "address": "40 03 12",
           "settings": [
+            10,
             12,
+            14,
             16,
+            18,
             20,
+            22,
             24,
+            26,
             28,
+            30,
             32,
+            34,
             36,
+            38,
             40,
+            42,
             44,
+            46,
             48,
+            50,
             52,
+            54,
             56,
+            58,
             60,
+            62,
             64,
+            66,
             68
           ],
-          "minutes": 6,
-          "what_changes": "The gate shortened and a voice whose release ends inside it, so the late window holds the return and not the note."
+          "minutes": 8,
+          "what_changes": "A voice whose tail has gone before the late window opens, chosen by a one-take-per-candidate probe rather than by name."
         }
       }
     },
@@ -240,12 +275,13 @@
       }
     }
   ],
-  "refuted_by": "A setting of this byte on any of these types whose direct window lands more than a tenth of a decibel from `clamp((114 - n) / 50)` times its own reading at the dry end. In particular any reading at 64 that is not level with the reading at 0, or any reading between 114 and 127 that has not gone to the take's own lead.",
+  "refuted_by": "A setting of this byte on any of these types whose direct window lands more than one step of the grid from `min(1, floor((114 - n) * 128 / 50) / 128)` times its own reading at the dry end. In particular any reading between 56 and 64 that is not level with the reading at 0, any reading between 114 and 127 that has not gone to the take's own lead, or a run of settings on the ramp whose steps do not alternate between two sizes -- a straight line that is not truncated steps evenly.",
   "reproduces": {
-    "domain": "The byte at nineteen settings on 01 54 and nine each on 01 50 and 01 57, read as the level in each of two windows of one take and as the two together.",
+    "domain": "The byte at nineteen settings on 01 54 and nine each on 01 50 and 01 57, read as the level in each of two windows of one take and as the two together, and then at every count from 56 to 72 and 108 to 120 on 01 57.",
     "compared_against": {
       "records": [
-        "data/units/roland-sc8850-01/arrival/40-03-12-the-effect-balance.json"
+        "data/units/roland-sc8850-01/arrival/40-03-12-the-effect-balance.json",
+        "data/units/roland-sc8850-01/arrival/40-03-12-where-the-balance-knees-are.json"
       ],
       "runs": [
         "01-50",
@@ -255,12 +291,12 @@
       "why_not_a_filter": "An arrival record holds one run per directory of takes and carries no type on the run itself, so there is no field an index query could select on. The three runs are the whole of the record and naming them is naming it."
     },
     "residual": {
-      "read_as": "the multiplier, as a share of that half's own largest reading",
-      "unit": "share of full scale",
-      "median": 0.0031,
-      "worst": 0.0066,
+      "read_as": "the multiplier, in steps of the grid it lands on",
+      "unit": "steps of 1/128",
+      "median": 0.17,
+      "worst": 0.768,
       "structured": false,
-      "why": "The dry half against two numbers, a knee and a width, with no entry per setting anywhere in it. The wet half's residual is larger and is reported per type rather than here, because on one of the three it is the take's own repeat scatter and not a departure from the law."
+      "why": "The direct half against three numbers -- a corner, a width and a grid -- with no entry per setting anywhere in it. Reported in steps of the grid rather than in decibels because a step is what the law can be wrong by: a share of full scale would be a number nothing here is quantised in. The first figure is the run that read every count, the second the worst any of the three types gives. The effect half's residual is larger and is reported per type below, because on one of the three it is the take's own repeat scatter and not a departure from the law."
     },
     "figures": {
       "per_type": {
@@ -280,15 +316,15 @@
             "rms": 0.0001
           },
           "dry_against_the_law": {
-            "rms": 0.0026,
-            "worst": 0.0058
+            "rms": 0.0024,
+            "worst": 0.0052
           },
           "wet_against_the_law": {
-            "rms": 0.022,
+            "rms": 0.0239,
             "worst": 0.04
           },
           "the_two_windows_together_against_the_law_db": {
-            "median": 0.03,
+            "median": 0.04,
             "worst": 0.13,
             "settings": 9,
             "free_numbers": 2
@@ -310,11 +346,11 @@
             "rms": 0.033
           },
           "dry_against_the_law": {
-            "rms": 0.0026,
-            "worst": 0.0066
+            "rms": 0.0022,
+            "worst": 0.006
           },
           "wet_against_the_law": {
-            "rms": 0.0387,
+            "rms": 0.0381,
             "worst": 0.1329
           },
           "the_two_windows_together_against_the_law_db": {
@@ -340,15 +376,15 @@
             "rms": 0.0004
           },
           "dry_against_the_law": {
-            "rms": 0.0031,
-            "worst": 0.0066
+            "rms": 0.0029,
+            "worst": 0.006
           },
           "wet_against_the_law": {
-            "rms": 0.009,
+            "rms": 0.0095,
             "worst": 0.0213
           },
           "the_two_windows_together_against_the_law_db": {
-            "median": 0.01,
+            "median": 0.02,
             "worst": 0.08,
             "settings": 9,
             "free_numbers": 2
@@ -367,6 +403,46 @@
         "01-57": {
           "dry_at_the_centre_db": -0.03,
           "dry_at_112_db": -28.08
+        }
+      },
+      "at_one_count": {
+        "settings": 32,
+        "settings_on_the_ramp": 14,
+        "against_the_law_in_steps_of_the_grid": {
+          "worst_on_the_ramp": 0.17,
+          "worst_anywhere": 0.44
+        },
+        "which_grid_the_multipliers_land_on": {
+          "read_as": "how far each multiplier sits from the nearest entry, as a share of one step",
+          "winner": {
+            "grid": 127,
+            "off_by": 0.0834
+          },
+          "runner_up": {
+            "grid": 507,
+            "off_by": 0.1172
+          },
+          "the_one_it_cannot_be_told_from": {
+            "grid": 128,
+            "off_by": 0.0854
+          },
+          "a_number_on_no_grid": 0.25
+        },
+        "truncated_or_rounded_in_steps": {
+          "truncated": 0.17,
+          "rounded": 1.13
+        },
+        "how_tightly_the_shape_is_pinned_in_steps": {
+          "fifty counts and a corner at 114": 0.17,
+          "a quarter of a count wider": 1.15,
+          "a quarter of a count narrower": 1.13,
+          "forty parts in a hundred of the printed travel": 1.17
+        },
+        "where_each_corner_is": {
+          "the_last_setting_at_the_dry_end_level": 64,
+          "the_first_setting_off_it": 65,
+          "the_last_setting_over_nothing": 113,
+          "the_first_setting_at_nothing": 114
         }
       }
     },
