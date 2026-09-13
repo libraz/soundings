@@ -1,12 +1,15 @@
 """What one saved run of takes shows, asked after the session ended.
 
-Four commands over the directory a `--save` run leaves. One re-reaches the
+Five commands over the directory a `--save` run leaves. One re-reaches the
 audible verdict the session reached, and the rest ask what that verdict cannot
 see: a parameter that moves signal between the channels is invisible to a
 comparison made in one of them, and a parameter that modulates pitch is invisible
 to a comparison of two takes at all. The separation between the channels is then
 asked again band by band, which is what tells one channel scaled down from one
-carrying something with a shape of its own.
+carrying something with a shape of its own. A parameter that mixes two signals
+onto the same channels is invisible to every one of those, and is asked by
+splitting the take in time instead: where an effect returns late enough, the two
+it mixes are in different parts of one take.
 
 None of them opens a MIDI port. The takes carry the settings, the stimuli and the
 label, so the only thing missing from the directory is the machine, and the
@@ -89,6 +92,26 @@ def register(sub) -> None:
     )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_balance_bands)
+
+    p = sub.add_parser(
+        "arrival",
+        help="say what a parameter put in the window a take's direct sound arrives in and "
+        "what it put in the window the effect's return arrives in",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory a --save run left, or one holding several of them. The manifest "
+        "has to carry the windows the run measured, since where a return lands is a "
+        "measurement and not a thing this can work out from a take",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=6.0,
+        help="dB a movement must clear the steadiest setting's own scatter by",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_arrival)
 
     p = sub.add_parser(
         "vibrato",
@@ -236,6 +259,54 @@ def cmd_balance_bands(args: argparse.Namespace) -> int:
             "band_above_the_floor_db": balance.BAND_ABOVE_THE_FLOOR_DB,
             "band_repeats_within_db": balance.BAND_REPEATS_WITHIN_DB,
             "separated_differently_by_band": shaped,
+            "runs": [{"name": n, **v.to_json()} for n, v in found],
+        },
+    )
+    return 0
+
+
+def cmd_arrival(args: argparse.Namespace) -> int:
+    """Say what each saved run put in the early window and what it put in the late one."""
+    from pathlib import Path
+
+    from .. import arrival
+
+    root = Path(args.takes)
+    roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
+    found = []
+    for one in roots:
+        if not (one / "takes-manifest.json").exists():
+            continue
+        for verdict in arrival.measure(one, margin_db=args.margin):
+            print(f"{one.name}: {verdict.describe()}")
+            found.append((one.name, verdict))
+    if not found:
+        print(f"no saved takes under {args.takes}")
+        return 1
+
+    moved = [n for n, v in found if v.moved_between_settings]
+    unmeasured = [n for n, v in found if v.not_measured]
+    print(
+        f"\n{len(moved)} of {len(found) - len(unmeasured)} moved signal between the two "
+        f"windows: {' | '.join(moved) or 'none'}"
+    )
+    if unmeasured:
+        print(f"{len(unmeasured)} could not be measured: {' | '.join(unmeasured)}")
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "method": arrival.METHOD,
+            "why_the_windows_are_one_length": arrival.WHY_THE_WINDOWS_ARE_ONE_LENGTH,
+            "why_the_windows_are_measured_and_not_printed": (
+                arrival.WHY_THE_WINDOWS_ARE_MEASURED_AND_NOT_PRINTED
+            ),
+            "why_the_lead_is_the_floor": arrival.WHY_THE_LEAD_IS_THE_FLOOR,
+            "why_a_return_that_overlaps_is_refused": (
+                arrival.WHY_A_RETURN_THAT_OVERLAPS_IS_REFUSED
+            ),
+            "moved_between_the_windows": moved,
             "runs": [{"name": n, **v.to_json()} for n, v in found],
         },
     )
