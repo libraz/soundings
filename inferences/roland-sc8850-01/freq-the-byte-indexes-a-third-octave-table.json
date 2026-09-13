@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-12T23:51:12.882900+00:00",
-    "made_by": "backup/run-freq-reproduce.py, backup/write-freq-inference.py",
-    "rounds": 1,
+    "made_by": "backup/run-freq-reproduce.py, backup/write-freq-inference.py, backup/close-the-third-entry.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -17,8 +17,8 @@
       ]
     }
   },
-  "claim": "A frequency byte does not drive a formula and does not have a hundred and twenty-eight values. Its top four bits index a table of sixteen entries, so eight settings share each entry, and the entries are the named third octaves between the two frequencies the page prints against that address. On 200 - 6.3k that is 200, 250, 315, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k, 6.3k. Rendered through the same bands the takes were read in, the model's peak lands in exactly the unit's band at every setting from 32 up -- 7 of 12 at one address and both of the two at the other -- and read again by a fit over the whole feature the two are 0.013 to 0.047 octaves apart there, which is a fifth of a band. It does not hold at the bottom: the three entries below 315 Hz read 0.06 to 0.17 octaves below where the named series puts them, at settings 0, 4, 8, 12, 16, repeatably, at both addresses, at two band widths and under both readings.",
-  "named": "a third-octave coefficient table indexed by the byte's high nibble",
+  "claim": "A frequency byte does not drive a formula and does not have a hundred and twenty-eight values. Its top four bits index a table of sixteen entries, so eight settings share each entry, and the entries are the named third octaves between the two frequencies the page prints against that address -- with one that is not. On 200 - 6.3k, fifteen of the sixteen sit within 0.07 octaves of 200, 250, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k and 6.3k, a median 0.03 and under what a twelfth-octave reading resolves. The third entry sits at 279 Hz where the series says 315, which is 0.18 octaves and two bands, and it is the only entry the reading and the series disagree about. Both mid sections return that same 279, and they return the whole of the first four entries to within 0.002 octaves of each other, so the two index one table rather than two. Read across its own eight settings the entry does not move -- 279.1, 278.7, 278.8 and 279.0 at 16, 17, 20 and 23 -- and the settings either side of it return the entries either side, so the stride is eight and the number in the table is 279.",
+  "named": "a third-octave coefficient table indexed by the byte's high nibble, with one entry that is not a third octave",
   "why_not_named": null,
   "rests_on": {
     "measurements": [
@@ -173,6 +173,106 @@
           1189.2
         ],
         "read_as": "The width byte of the same section, swept with the frequency byte held at 64. It is the control on the reading and not evidence about the table: a byte that changes how wide a feature is and not where it sits must leave a reading of where it sits alone. The fitted position holds inside 0.024 octaves while the window it was fitted over runs from four bands to forty-nine, and the largest band moves 0.167 octaves over the same settings -- so what the bottom three entries disagree by is not the feature's width being read as its place."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
+        "keys": [
+          "readings[value=2].fitted_at_hz",
+          "readings[value=3].fitted_at_hz",
+          "readings[value=4].fitted_at_hz"
+        ],
+        "values": [
+          179.3,
+          198.8,
+          198.6
+        ],
+        "why": "The width byte swept with the frequency byte at the bottom of its range. The top moves from 179 Hz at the width the table was first read at to 199 Hz two steps narrower, so a reading of this section at one width is a reading of that width's shape and not of the entry behind it."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
+        "keys": [
+          "readings[value=2].fitted_at_hz",
+          "readings[value=3].fitted_at_hz",
+          "readings[value=4].fitted_at_hz"
+        ],
+        "values": [
+          1228.4,
+          1232.5,
+          1223.4
+        ],
+        "why": "The same width sweep at the middle of the frequency byte's range, which is the control the run above is read against: there the top holds inside 0.02 octaves over the same three widths. The width moves the peak at the bottom of the range and not at the middle, and that is measured rather than argued."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+        "keys": [
+          "settings_asked",
+          "readings[value=0].fitted_at_hz",
+          "readings[value=8].fitted_at_hz",
+          "readings[value=16].fitted_at_hz",
+          "readings[value=24].fitted_at_hz",
+          "readings[value=120].fitted_at_hz"
+        ],
+        "values": [
+          [
+            0,
+            4,
+            8,
+            12,
+            16,
+            24,
+            32,
+            40,
+            48,
+            56,
+            64,
+            72,
+            80,
+            88,
+            96,
+            104,
+            112,
+            120,
+            127
+          ],
+          198.4,
+          240.5,
+          279.1,
+          397.9,
+          6166.8
+        ],
+        "why": "The whole table read at the narrowest width, one setting inside every one of the sixteen entries. The first reading of this table asked twelve settings that fall in ten entries, so six were never asked and were being assumed."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+        "keys": [
+          "readings[value=15].fitted_at_hz",
+          "readings[value=17].fitted_at_hz",
+          "readings[value=20].fitted_at_hz",
+          "readings[value=23].fitted_at_hz"
+        ],
+        "values": [
+          240.6,
+          278.7,
+          278.8,
+          279.0
+        ],
+        "why": "Four bytes across the third entry's own eight and the byte below it. A plateau measured at one byte is a point, and a boundary in the wrong place would look exactly like an entry in the wrong place."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+        "keys": [
+          "readings[value=0].fitted_at_hz",
+          "readings[value=8].fitted_at_hz",
+          "readings[value=16].fitted_at_hz",
+          "readings[value=24].fitted_at_hz"
+        ],
+        "values": [
+          198.7,
+          240.6,
+          278.7,
+          398.0
+        ],
+        "why": "The second mid asked at the same four entries at its own narrowest width. It returns 279 where the first does, which makes the entry the table's rather than one section's coefficients."
       }
     ],
     "document_rows": [
@@ -206,18 +306,19 @@
       }
     ]
   },
-  "adds": "Each record says which band the deviation was largest in at each setting it was asked at, and says in as many words that no filter, no corner and no order is in it. Nothing in either record says the readings are entries of a table, that the table has sixteen of them, that eight settings share one, or that the entries are the third octaves the page's two ends bracket. That is the whole of what is added here, and it is added by holding five candidate laws against the same readings rather than by fitting one to them.",
+  "adds": "Each record says which band the deviation was largest in at each setting it was asked at, where a curve fitted over the whole feature puts its top, and says in as many words that no filter, no corner and no order is in it. Nothing in any of them says the readings are entries of a table, that the table has sixteen of them, that eight settings share one, that the two mid sections share it, or that the entries are the third octaves the page's two ends bracket. That is the whole of what is added here, and it is added by holding five candidate laws against the same readings rather than by fitting one to them.",
   "alternatives": [
     {
-      "reading": "The entries are sixteen frequencies at equal ratios between the printed ends rather than the named third octaves. On 200 - 6.3k the two differ by at most a third of a percent.",
+      "reading": "The entries are not the named third octaves at all. Either sixteen frequencies at equal ratios between the printed ends -- which on 200 - 6.3k differs from the named series by at most a third of a percent -- or sixteen coefficient sets on a grid the third octaves were rounded onto, of which fifteen land within 0.07 octaves of a third octave and the sixteenth does not. The reading of this one range cannot tell any of those apart, and the entry at 279 is as much an argument for the grid as it is for a wrong constant in a named series.",
       "candidate": null,
       "standing": true,
       "equivalent_under_this_test": false,
       "separated_by": {
         "observable": "Where the entries of a printed range fall whose ends bracket a number of third octaves that is not sixteen.",
         "predicts": {
-          "the named third octaves": "The entries are the series whatever the ends, so 100 - 8.0k holds twenty of them. Twenty entries cannot be reached by a stride of eight, so the stride is six and the last eight settings return the last entry -- which is the shape the rate table already turned out to have.",
-          "sixteen at equal ratios": "The entries are recomputed from the ends, so 100 - 8.0k holds sixteen at 0.42 octaves apart, the stride stays eight, and none of the entries is a named third octave."
+          "the named third octaves": "The entries of any printed range are the third octaves that range brackets, so a range bracketing a number of them other than sixteen either repeats entries or stops short of its printed top.",
+          "equal ratios between the printed ends": "The entries always divide the printed range into fifteen equal ratios, whatever the range, so they only coincide with third octaves where the range happens to bracket sixteen of them.",
+          "a grid the series is rounded onto": "The entries of a different printed range land on the same numbers this one landed on wherever the two ranges overlap, including the 279 -- which neither of the other two readings has any reason to reproduce."
         },
         "divergence": "0.21 octaves at setting 72 and 0.27 at setting 96, on top of a stride of six against a stride of eight",
         "sensitivity_here": "One twelfth-octave band, 0.083 octaves, which is what the run resolves a feature to",
@@ -246,7 +347,7 @@
     {
       "reading": "The three entries are 200, 250 and 315 and the filter built from them does not peak there. A table entry of this period is a set of coefficients rather than a frequency, so what is stored is already the filter -- and a section whose response below 300 Hz is not the peaking biquad the model renders would put its top somewhere else while the entry behind it is exactly the named one.",
       "candidate": null,
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
       "separated_by": {
         "observable": "Whether the fitted position moves with the width byte at the bottom of the frequency byte's range, where at the middle of it it does not.",
@@ -276,7 +377,8 @@
           "why_this_shape": "The same sweep the width byte already has at data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json, with the frequency byte at 0 instead of 64. That record is the control this one is read against, so it is the one run that answers the question and nothing else has to be repeated. Only six settings because the byte answers to 0 through 4 and reads everything above as 0, which that record already showed.",
           "minutes": 2
         }
-      }
+      },
+      "ruled_out_by": "The run it asked for was made and it split the three. Sweeping the width byte with the frequency byte at the bottom moved the top 0.149 octaves, against 0.024 for the same sweep at the middle of the range -- six times the control where the margin asked for 1.8 -- and at the two narrowest widths the top landed on 198.8 and 198.6 Hz, which is the printed 200 to a hundredth of an octave. So the first entry is 200 and the filter built from it does peak there; what did not was the shape it was read through. Read again at the narrowest width the second entry moved inside the floor, from 240.3 to 240.5 against a printed 250, which is 0.056 octaves and less than one band. The third did not move at all: 279.7 at width 2, 280.1 at width 3, 279.1 at width 4. Two of the three were the width and the third is the table."
     },
     {
       "reading": "The three entries below 315 Hz really are 200, 250 and 315 and the disagreement is the reading, not the table: the largest band of a peak this wide is a coarse estimator, and the peak's top is flat enough that a tenth of a decibel moves it.",
@@ -314,6 +416,8 @@
     "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
     "compared_against": {
       "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json"
       ],
@@ -331,8 +435,8 @@
     },
     "domain": {
       "settings": {
-        "40 03 07": "12 settings: [0, 4, 8, 12, 16, 32, 48, 64, 80, 96, 112, 127]",
-        "40 03 0A": "3 settings: [0, 64, 127]"
+        "40 03 07": "19 settings at width 4: [0, 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 127], one inside each of the sixteen entries; 12 at width 2 and 4 at width 3 beside them",
+        "40 03 0A": "4 settings at width 4: [0, 8, 16, 24]; 3 at width 2 beside them"
       },
       "stimulus": [
         "A held note through the effect, its takes read as the energy of each twelfth octave against the run's own flat repeats."
@@ -344,22 +448,23 @@
       "worst": 0.1668,
       "unit": "octaves between the band the model peaks in and the band the unit peaks in",
       "worst_at": {
-        "value": 16
+        "value": 16,
+        "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json"
       },
       "structured": true,
-      "why": "Zero at eight of the twelve settings and at two of the three at the other address: the model's peak falls in the identical band, not a near one. The residual leans because the four that are not zero are all at the bottom, one to two bands high, which is a structure and is reported as one rather than averaged away. The floor is one band, which is what the reading resolves. There is no second floor here: one entry of the table would be a coarser one and would swallow the disagreement, and that floor is only admissible where the stride has been measured -- on this class the stride is the question.",
+      "why": "Zero at every entry but one under the band reading: the model's rendered profile peaks in the unit's own band at fifteen of the sixteen. The one it misses is the third, by two bands. The residual still leans, and outside that entry the lean is a bias of a median 0.030 octaves with the unit always below the model -- every value of which is inside what one band resolves, which is why it shows as a lean and not as a point of breakdown.",
       "also_read_as": {
-        "median": 0.0383,
-        "worst": 0.1706,
+        "median": 0.0305,
+        "worst": 0.1801,
         "unit": "octaves between where a fit puts the model's peak and where it puts the unit's",
-        "why": "The same rendering and the same records, located by a fit over the whole feature instead of by the largest band, which is the run the claim queued and cost no hardware. Every figure moves and nothing about the finding does. The ranking is unchanged and the winner is unchanged; the winner's residual rises from zero to 0.038 octaves and the runner-up's falls from 0.125 to 0.091, so the two are 2.2 times apart rather than infinitely, which is the honest separation and the other was partly the band set rounding both to the same place. Above setting 32 the disagreement is 0.013 to 0.047 octaves. Below it, it is 0.056 to 0.171 -- the same breakdown, in the same place, at the same size."
+        "why": "The same rendering and the same records, located by a fit over the whole feature instead of by the largest band. The winner, the ranking and the verdict are the same under both, and the entry that misses is the same entry: 0.167 octaves read one way and 0.180 the other."
       }
     },
     "gates": {
       "measured_in": "octaves",
       "gross": {
         "passed": true,
-        "residual_over_span": 0.0,
+        "residual_over_span": 0.067,
         "span": 5.167,
         "ceiling": 0.2,
         "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
@@ -367,6 +472,174 @@
       "qualitative": {
         "passed": true,
         "checked": [
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 4,
+            "property": "the reading tells settings 0 and 4 apart, or it does not",
+            "unit": "not told apart",
+            "model": "not told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 8,
+            "property": "the reading tells settings 4 and 8 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 12,
+            "property": "the reading tells settings 8 and 12 apart, or it does not",
+            "unit": "not told apart",
+            "model": "not told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 16,
+            "property": "the reading tells settings 12 and 16 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 24,
+            "property": "the reading tells settings 16 and 24 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 32,
+            "property": "the reading tells settings 24 and 32 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 40,
+            "property": "the reading tells settings 32 and 40 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 48,
+            "property": "the reading tells settings 40 and 48 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 56,
+            "property": "the reading tells settings 48 and 56 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 64,
+            "property": "the reading tells settings 56 and 64 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 72,
+            "property": "the reading tells settings 64 and 72 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 80,
+            "property": "the reading tells settings 72 and 80 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 88,
+            "property": "the reading tells settings 80 and 88 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 96,
+            "property": "the reading tells settings 88 and 96 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 104,
+            "property": "the reading tells settings 96 and 104 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 112,
+            "property": "the reading tells settings 104 and 112 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 120,
+            "property": "the reading tells settings 112 and 120 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+            "value": 127,
+            "property": "the reading tells settings 120 and 127 apart, or it does not",
+            "unit": "not told apart",
+            "model": "not told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+            "value": 8,
+            "property": "the reading tells settings 0 and 8 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+            "value": 16,
+            "property": "the reading tells settings 8 and 16 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+            "value": 32,
+            "property": "the reading tells settings 16 and 32 apart, or it does not",
+            "unit": "told apart",
+            "model": "told apart",
+            "same": true
+          },
           {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
             "value": 4,
@@ -480,14 +753,16 @@
           {
             "candidate": "third-octave-table-of-sixteen",
             "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
-            "mean_share_of_span": 0.0,
-            "worst_share_of_span": 0.0,
-            "worst_point_share": 0.0323,
-            "records_scored": 2,
+            "mean_share_of_span": 0.0167,
+            "worst_share_of_span": 0.0666,
+            "worst_point_share": 0.1334,
+            "records_scored": 4,
             "contradicts_a_property": false,
             "properties_contradicted": 0,
-            "leaning_records": 2,
+            "leaning_records": 4,
             "leaning_on": [
+              "01-00-07-the-table-read-narrow-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
@@ -496,14 +771,16 @@
           {
             "candidate": "table-of-thirty-two-between-the-printed-ends",
             "model": "inferences/models/freq-table-of-thirty-two-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0201,
-            "worst_share_of_span": 0.0242,
-            "worst_point_share": 0.0645,
-            "records_scored": 2,
+            "mean_share_of_span": 0.0309,
+            "worst_share_of_span": 0.0666,
+            "worst_point_share": 0.1334,
+            "records_scored": 4,
             "contradicts_a_property": true,
-            "properties_contradicted": 2,
-            "leaning_records": 2,
+            "properties_contradicted": 5,
+            "leaning_records": 4,
             "leaning_on": [
+              "01-00-07-the-table-read-narrow-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
@@ -512,30 +789,16 @@
           {
             "candidate": "geometric-between-the-printed-ends",
             "model": "inferences/models/freq-geometric-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0322,
-            "worst_share_of_span": 0.0322,
-            "worst_point_share": 0.0645,
-            "records_scored": 2,
+            "mean_share_of_span": 0.0328,
+            "worst_share_of_span": 0.0333,
+            "worst_point_share": 0.1334,
+            "records_scored": 4,
             "contradicts_a_property": true,
-            "properties_contradicted": 2,
-            "leaning_records": 2,
+            "properties_contradicted": 5,
+            "leaning_records": 4,
             "leaning_on": [
-              "01-00-07-where-the-eq-hinges-in-twelfths.json",
-              "01-00-0A-where-the-eq-hinges-in-twelfths.json"
-            ],
-            "records_the_run_did_not_reach": []
-          },
-          {
-            "candidate": "table-of-eight-between-the-printed-ends",
-            "model": "inferences/models/freq-table-of-eight-between-the-printed-ends.json",
-            "mean_share_of_span": 0.0363,
-            "worst_share_of_span": 0.0403,
-            "worst_point_share": 0.0645,
-            "records_scored": 2,
-            "contradicts_a_property": true,
-            "properties_contradicted": 2,
-            "leaning_records": 2,
-            "leaning_on": [
+              "01-00-07-the-table-read-narrow-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
@@ -544,14 +807,34 @@
           {
             "candidate": "straight-line-between-the-printed-ends",
             "model": "inferences/models/freq-straight-line-between-the-printed-ends.json",
-            "mean_share_of_span": 0.1371,
-            "worst_share_of_span": 0.2419,
-            "worst_point_share": 0.3387,
-            "records_scored": 2,
+            "mean_share_of_span": 0.4352,
+            "worst_share_of_span": 1.2332,
+            "worst_point_share": 1.4667,
+            "records_scored": 4,
             "contradicts_a_property": true,
-            "properties_contradicted": 2,
-            "leaning_records": 2,
+            "properties_contradicted": 7,
+            "leaning_records": 4,
             "leaning_on": [
+              "01-00-07-the-table-read-narrow-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+              "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+            ],
+            "records_the_run_did_not_reach": []
+          },
+          {
+            "candidate": "table-of-eight-between-the-printed-ends",
+            "model": "inferences/models/freq-table-of-eight-between-the-printed-ends.json",
+            "mean_share_of_span": 0.0681,
+            "worst_share_of_span": 0.1667,
+            "worst_point_share": 0.2003,
+            "records_scored": 4,
+            "contradicts_a_property": true,
+            "properties_contradicted": 11,
+            "leaning_records": 4,
+            "leaning_on": [
+              "01-00-07-the-table-read-narrow-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
               "01-00-0A-where-the-eq-hinges-in-twelfths.json"
             ],
@@ -560,13 +843,15 @@
         ],
         "decoy": "table-of-thirty-two-between-the-printed-ends",
         "beaten_by": "contradicting a property the winner satisfies",
-        "separation": 0.024,
+        "separation": -0.0,
         "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
       },
       "breakdown": {
         "passed": false,
         "breaks_down_at": null,
         "leaning_records": [
+          "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+          "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-07-where-the-eq-hinges-in-twelfths.json",
           "data/units/roland-sc8850-01/efx-bands/01-00-0A-where-the-eq-hinges-in-twelfths.json"
         ],
@@ -578,33 +863,93 @@
     "ranking": [
       {
         "candidate": "third-octave-table-of-sixteen",
-        "leaning_records": 2,
+        "model": "inferences/models/freq-third-octave-table-of-sixteen.json",
+        "mean_share_of_span": 0.0167,
+        "worst_share_of_span": 0.0666,
+        "worst_point_share": 0.1334,
+        "records_scored": 4,
+        "contradicts_a_property": false,
         "properties_contradicted": 0,
-        "worst_share_of_span": 0.0
+        "leaning_records": 4,
+        "leaning_on": [
+          "01-00-07-the-table-read-narrow-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+        ],
+        "records_the_run_did_not_reach": []
       },
       {
         "candidate": "table-of-thirty-two-between-the-printed-ends",
-        "leaning_records": 2,
-        "properties_contradicted": 2,
-        "worst_share_of_span": 0.0242
+        "model": "inferences/models/freq-table-of-thirty-two-between-the-printed-ends.json",
+        "mean_share_of_span": 0.0309,
+        "worst_share_of_span": 0.0666,
+        "worst_point_share": 0.1334,
+        "records_scored": 4,
+        "contradicts_a_property": true,
+        "properties_contradicted": 5,
+        "leaning_records": 4,
+        "leaning_on": [
+          "01-00-07-the-table-read-narrow-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+        ],
+        "records_the_run_did_not_reach": []
       },
       {
         "candidate": "geometric-between-the-printed-ends",
-        "leaning_records": 2,
-        "properties_contradicted": 2,
-        "worst_share_of_span": 0.0322
-      },
-      {
-        "candidate": "table-of-eight-between-the-printed-ends",
-        "leaning_records": 2,
-        "properties_contradicted": 2,
-        "worst_share_of_span": 0.0403
+        "model": "inferences/models/freq-geometric-between-the-printed-ends.json",
+        "mean_share_of_span": 0.0328,
+        "worst_share_of_span": 0.0333,
+        "worst_point_share": 0.1334,
+        "records_scored": 4,
+        "contradicts_a_property": true,
+        "properties_contradicted": 5,
+        "leaning_records": 4,
+        "leaning_on": [
+          "01-00-07-the-table-read-narrow-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+        ],
+        "records_the_run_did_not_reach": []
       },
       {
         "candidate": "straight-line-between-the-printed-ends",
-        "leaning_records": 2,
-        "properties_contradicted": 2,
-        "worst_share_of_span": 0.2419
+        "model": "inferences/models/freq-straight-line-between-the-printed-ends.json",
+        "mean_share_of_span": 0.4352,
+        "worst_share_of_span": 1.2332,
+        "worst_point_share": 1.4667,
+        "records_scored": 4,
+        "contradicts_a_property": true,
+        "properties_contradicted": 7,
+        "leaning_records": 4,
+        "leaning_on": [
+          "01-00-07-the-table-read-narrow-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+        ],
+        "records_the_run_did_not_reach": []
+      },
+      {
+        "candidate": "table-of-eight-between-the-printed-ends",
+        "model": "inferences/models/freq-table-of-eight-between-the-printed-ends.json",
+        "mean_share_of_span": 0.0681,
+        "worst_share_of_span": 0.1667,
+        "worst_point_share": 0.2003,
+        "records_scored": 4,
+        "contradicts_a_property": true,
+        "properties_contradicted": 11,
+        "leaning_records": 4,
+        "leaning_on": [
+          "01-00-07-the-table-read-narrow-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-07-where-the-eq-hinges-in-twelfths.json",
+          "01-00-0A-where-the-eq-hinges-in-twelfths.json"
+        ],
+        "records_the_run_did_not_reach": []
       }
     ],
     "decoy": "table-of-thirty-two-between-the-printed-ends"
@@ -624,11 +969,68 @@
       "what": "Whether the Q byte indexes its printed table the same way.",
       "why": "The page prints five values against it and the equaliser model fits five entries, which is the same shape. But the fitted entries are close to half the printed ones for four of the five and not for the fifth, which is a definition question about what Q means on each side rather than a table question, and it is not answered by anything here.",
       "what_would": "Nothing new to measure. The five entries were already read at every setting; what is missing is a statement of which bandwidth definition the printed figures are, and that is a reading of the page."
+    },
+    {
+      "what": "Why the third entry is 279. Nothing here says whether it is a wrong constant in a table of third octaves, a right constant in a table of something else, or a coefficient set that was computed correctly for a frequency this reading is not measuring.",
+      "bounded_by": "It is 0.18 octaves from 315 and 0.21 above the entry below it, read at three widths, at four bytes inside its own entry, at both mid sections and under both readings of where a feature sits. The reading resolves 0.083 octaves, so the disagreement is twice what the reading can be wrong by and the entry itself is not in doubt."
+    },
+    {
+      "what": "Whether every unit of this model holds 279 there. One unit was measured and a constant in one machine's ROM is a fact about that machine.",
+      "bounded_by": "Nothing in this archive can bound it. It needs a second unit, which is a shelf question rather than a measurement one."
+    },
+    {
+      "what": "The offset that every entry shares. The unit reads below the rendered model at all sixteen, by a median 0.030 octaves and never more than 0.070 outside the third entry, and the sign never changes.",
+      "bounded_by": "Every one of those is inside the 0.083 octaves one twelfth-octave band resolves, so no entry is individually in question -- but a bias that never changes sign is not the reading being noisy, and it is why the residual still leans and the class still breaks down. Separating a bias in the rendering from a bias in the unit needs the model rendered at a second sample rate, which is not a measurement of the unit."
     }
   ],
   "what_it_would_change": [
     "inferences/roland-sc8850-01/0100-a-chain-of-four-sections-and-an-output-gain.json"
   ],
   "a_note_on_what_it_replaces": "That claim's sentence already says a centre moves for every eighth value of its byte, and its model does not: the model carries the twelve settings the run asked and interpolates between them, which is the measurement wearing the clothes of a law. This is the same sentence held against a catalogue instead of asserted, and with the entries named. Nothing about the chain around it changes -- the model here is that model with one map swapped, so that the residual answers one question.",
-  "a_note_on_what_was_left_out": "The first pass over this class scored the same five candidates as whole band profiles in decibels and returned `equivalent_under_this_test`: every candidate passed the gross gate and none leaned. That was not the candidates agreeing. Sliding a peak of this width by a sixth of an octave costs a decibel or two on its flanks and nothing at its top, so the residual in decibels stayed under the run's own floor for candidates that were two bands out at every setting -- and a residual that is the same size everywhere does not lean, so the gate that catches a wrong structure could not catch a wrong place either. The reading was changed, not the gate's threshold: where the feature sits is what the byte moves, and the record already published it. The reading it was changed to was then changed again, and this is the second half of the same lesson. The largest band is quantised to a band, so a peak halfway between two of them cannot be read closer than half a band however good the takes are, and on a broad feature a tenth of a decibel decides which of the two it is: the width byte above moves it two bands without moving the feature at all. A fit over the whole feature is not quantised and does not do that -- and it has a bias the largest band does not, because a symmetric curve fitted to a feature whose flanks are not symmetric tops out towards the longer one. Neither reading is the better one, which is why the record now publishes both, and why what was done here was to score the same candidates twice rather than to swap one reading for the other. The finding is what survived both."
+  "a_note_on_what_was_left_out": "The first pass over this class scored the same five candidates as whole band profiles in decibels and returned `equivalent_under_this_test`: every candidate passed the gross gate and none leaned. That was not the candidates agreeing. Sliding a peak of this width by a sixth of an octave costs a decibel or two on its flanks and nothing at its top, so the residual in decibels stayed under the run's own floor for candidates that were two bands out at every setting -- and a residual that is the same size everywhere does not lean, so the gate that catches a wrong structure could not catch a wrong place either. The reading was changed, not the gate's threshold: where the feature sits is what the byte moves, and the record already published it. The reading it was changed to was then changed again, and this is the second half of the same lesson. The largest band is quantised to a band, so a peak halfway between two of them cannot be read closer than half a band however good the takes are, and on a broad feature a tenth of a decibel decides which of the two it is: the width byte above moves it two bands without moving the feature at all. A fit over the whole feature is not quantised and does not do that -- and it has a bias the largest band does not, because a symmetric curve fitted to a feature whose flanks are not symmetric tops out towards the longer one. Neither reading is the better one, which is why the record now publishes both, and why what was done here was to score the same candidates twice rather than to swap one reading for the other. The finding is what survived both.",
+  "a_readout_beside_the_claim": {
+    "what": "The sixteen entries as this run read them, in hertz, at the narrowest width the section has.",
+    "entries_hz": [
+      198.4,
+      240.5,
+      279.1,
+      397.9,
+      481.4,
+      600.0,
+      778.1,
+      977.3,
+      1224.4,
+      1585.0,
+      1952.3,
+      2468.9,
+      3105.0,
+      3948.8,
+      4931.8,
+      6166.8
+    ],
+    "printed_third_octaves_hz": [
+      200,
+      250,
+      315,
+      400,
+      500,
+      630,
+      800,
+      1000,
+      1250,
+      1600,
+      2000,
+      2500,
+      3150,
+      4000,
+      5000,
+      6300
+    ],
+    "not_a_candidate": "This is a readout and it is not in the ranking, because a table with a free entry per setting cannot come out wrong and would win on a residual that means nothing. What is claimed above is the named series, which could have come out wrong at any of sixteen entries and came out wrong at one. What is published here is what a reader downstream needs in order to render the section, including the entry the series does not account for.",
+    "read_at": {
+      "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+      "width_byte": "40 03 08 = 04",
+      "located_by": "a curve fitted over the whole feature, in twelfth octaves"
+    }
+  }
 }
