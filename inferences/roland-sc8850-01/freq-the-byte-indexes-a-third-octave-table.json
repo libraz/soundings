@@ -273,6 +273,70 @@
           398.0
         ],
         "why": "The second mid asked at the same four entries at its own narrowest width. It returns 279 where the first does, which makes the entry the table's rather than one section's coefficients."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-42-04-the-same-grid-elsewhere-lpf-in-twelfths.json",
+        "keys": [
+          "readings[value=0].steepest_at_hz",
+          "readings[value=8].steepest_at_hz",
+          "readings[value=16].steepest_at_hz",
+          "readings[value=24].steepest_at_hz",
+          "settings_asked"
+        ],
+        "values": [
+          8979.7,
+          10079.4,
+          10079.4,
+          10678.7,
+          [
+            0,
+            8,
+            16,
+            24,
+            32,
+            48,
+            64,
+            80,
+            96,
+            112,
+            127
+          ]
+        ],
+        "why": "A low-pass corner swept across a printed range that begins one third octave above the one the mid table was read on, so its second entry is the same element of any shared list as the mid range's third. The chorus it sits in is turned into a filter and nothing else -- no pre-delay, no modulation, the balance fully across to the effect -- and the reference is the same chain with the pre-filter switched off, which is a corner's own null."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-42-04-the-same-grid-elsewhere-hpf-in-twelfths.json",
+        "keys": [
+          "readings[value=0].steepest_at_hz",
+          "readings[value=8].steepest_at_hz",
+          "readings[value=16].steepest_at_hz",
+          "readings[value=24].steepest_at_hz"
+        ],
+        "values": [
+          83.4,
+          105.1,
+          111.4,
+          93.6
+        ],
+        "why": "The same four settings read through the high-pass instead. Two filters that share nothing but the byte behind them, so a corner both agree on is a number in a table rather than a property of one filter."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+        "keys": [
+          "readings[value=0].fitted_at_hz",
+          "readings[value=12].fitted_at_hz",
+          "readings[value=24].fitted_at_hz",
+          "readings[value=48].fitted_at_hz",
+          "readings[value=72].fitted_at_hz"
+        ],
+        "values": [
+          211.7,
+          332.7,
+          487.2,
+          945.4,
+          2638.9
+        ],
+        "why": "The run this claim queued, made. A phaser's manual on the one printed range this unit has whose ends bracket a number of third octaves other than sixteen -- and the run is reported rather than read, because it measured that its own instrument does not work."
       }
     ],
     "document_rows": [
@@ -309,39 +373,20 @@
   "adds": "Each record says which band the deviation was largest in at each setting it was asked at, where a curve fitted over the whole feature puts its top, and says in as many words that no filter, no corner and no order is in it. Nothing in any of them says the readings are entries of a table, that the table has sixteen of them, that eight settings share one, that the two mid sections share it, or that the entries are the third octaves the page's two ends bracket. That is the whole of what is added here, and it is added by holding five candidate laws against the same readings rather than by fitting one to them.",
   "alternatives": [
     {
-      "reading": "The entries are not the named third octaves at all. Either sixteen frequencies at equal ratios between the printed ends -- which on 200 - 6.3k differs from the named series by at most a third of a percent -- or sixteen coefficient sets on a grid the third octaves were rounded onto, of which fifteen land within 0.07 octaves of a third octave and the sixteenth does not. The reading of this one range cannot tell any of those apart, and the entry at 279 is as much an argument for the grid as it is for a wrong constant in a named series.",
+      "reading": "The entries are sixteen frequencies at equal ratios between the printed ends rather than the named third octaves. On a range whose ends bracket sixteen third octaves the two are the same series to within a third of a percent, and both ranges this claim has been read on are such a range.",
       "candidate": null,
       "standing": true,
       "equivalent_under_this_test": false,
       "separated_by": {
         "observable": "Where the entries of a printed range fall whose ends bracket a number of third octaves that is not sixteen.",
         "predicts": {
-          "the named third octaves": "The entries of any printed range are the third octaves that range brackets, so a range bracketing a number of them other than sixteen either repeats entries or stops short of its printed top.",
-          "equal ratios between the printed ends": "The entries always divide the printed range into fifteen equal ratios, whatever the range, so they only coincide with third octaves where the range happens to bracket sixteen of them.",
-          "a grid the series is rounded onto": "The entries of a different printed range land on the same numbers this one landed on wherever the two ranges overlap, including the 279 -- which neither of the other two readings has any reason to reproduce."
+          "the named third octaves": "The entries are third octaves whatever the range, so a range bracketing twenty of them either runs out before its printed top or does not step by eight settings.",
+          "equal ratios between the printed ends": "The entries always divide the printed range into fifteen equal ratios, so on 100 - 8.0k they step by 0.42 octaves rather than 0.33."
         },
-        "divergence": "0.21 octaves at setting 72 and 0.27 at setting 96, on top of a stride of six against a stride of eight",
-        "sensitivity_here": "One twelfth-octave band, 0.083 octaves, which is what the run resolves a feature to",
-        "margin": 3.2,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 20",
-          "address": "40 03 03",
-          "settings": [
-            0,
-            12,
-            24,
-            48,
-            72,
-            96,
-            114,
-            120,
-            127
-          ],
-          "stimulus": "A held note, as the equaliser sweeps used. This slot is a phaser's manual frequency and what it moves is a notch rather than a peak, so the run must hold the phaser's rate at its slowest first and the record has to say it did: a notch that is sweeping while the take runs averages to no notch at all.",
-          "takes": 13,
-          "minutes": 4
-        }
+        "sensitivity_here": "0.09 octaves an entry, accumulating to 1.3 across the byte, against a reading that resolves 0.083.",
+        "run": null,
+        "why_not_separable": "This unit prints exactly one such range, 100 - 8.0k, and it prints it against a phaser's manual on six types and nothing else. That run was made and the record says why it cannot be read: four notches whose ratios to each other move with the setting, so no factor maps a notch to an entry. Nothing else on this machine has a frequency range that separates the two, so the alternative stays open. A unit that prints one against a filter would answer it in four minutes, which is a shelf question rather than a measurement one.",
+        "what_was_ruled_out_instead": "The third reading this alternative used to carry -- one stored list of frequencies with a printed range naming a window of sixteen into it -- is gone. It predicted that the entry the mid range puts at 279 would come back at 279 on any range whose window reaches it, and on 250 - 8k it comes back at 325 through one filter and 324 through another."
       }
     },
     {
@@ -981,6 +1026,10 @@
     {
       "what": "The offset that every entry shares. The unit reads below the rendered model at all sixteen, by a median 0.030 octaves and never more than 0.070 outside the third entry, and the sign never changes.",
       "bounded_by": "Every one of those is inside the 0.083 octaves one twelfth-octave band resolves, so no entry is individually in question -- but a bias that never changes sign is not the reading being noisy, and it is why the residual still leans and the class still breaks down. Separating a bias in the rendering from a bias in the unit needs the model rendered at a second sample rate, which is not a measurement of the unit."
+    },
+    {
+      "what": "What the phaser's manual table holds. Its own entries were not recovered and this claim does not extend to that address.",
+      "bounded_by": "Four notches are in the record with their positions at nine settings, so a later reading that can account for a moving comb has the takes it needs. Nothing here says the manual is or is not a table."
     }
   ],
   "what_it_would_change": [
@@ -1031,6 +1080,37 @@
       "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
       "width_byte": "40 03 08 = 04",
       "located_by": "a curve fitted over the whole feature, in twelfth octaves"
+    }
+  },
+  "another_printed_range": {
+    "what_was_asked": "01 42's pre-filter cutoff, printed 250 - 8k. That range starts one third octave above the mid range's 200, so its second entry is the same element of a stored list as the mid range's third -- the one that came back at 279.1 Hz where the series says 315.",
+    "records": [
+      "data/units/roland-sc8850-01/efx-bands/01-42-04-the-same-grid-elsewhere-lpf-in-twelfths.json",
+      "data/units/roland-sc8850-01/efx-bands/01-42-04-the-same-grid-elsewhere-hpf-in-twelfths.json"
+    ],
+    "the_second_entry_hz": {
+      "through_the_low_pass": 325.2,
+      "through_the_high_pass": 324.2,
+      "the_two_filters_apart_octaves": 0.0044
+    },
+    "what_it_settles": "A printed range gets its own series. The second entry reads 325.2 Hz through the low-pass and 324.2 through the high-pass -- 0.0044 octaves apart from each other, and +0.046 from the printed 315 against +0.221 from the 279.1 the mid range put at the same element. One stored list windowed by the printed ends would have returned that number here and it did not, by 0.22 octaves against a reading that resolves 0.083. So the entry the mid table puts at 279 is a wrong constant in that range's own series, and not a number every range shares.",
+    "the_rest_of_the_range": {
+      "median_octaves_from_the_printed_series": 0.046,
+      "worst_octaves": 0.1639,
+      "worst_at": 32,
+      "read_as": "Eleven settings across the range, one inside each of seven entries and four inside the first four. A corner has no vertex to fit, so it is read where the deviation crosses three decibels, interpolated between the two bands either side. That is a coarser reading than a peak's and it says so: the scatter here is twice what the mid table's was."
+    },
+    "how_far_this_widens_the_claim": "To a second type and a third address, and to a printed range this claim had never been held against. What the claim says about a frequency byte is now measured on 01 00's two mid sections and on 01 42's pre-filter."
+  },
+  "the_run_that_could_not_read": {
+    "what_was_asked": "A phaser's manual frequency, on 100 - 8.0k -- the one printed range this unit has whose ends bracket a number of third octaves other than sixteen, and therefore the only one on which the named series and equal ratios between the printed ends differ.",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+    "why_it_does_not_read": "The type puts four notches in the band set, not one. Their ratios to each other are not constant across the sweep -- 1 : 3.36 : 7.13 at the bottom of the byte and 1 : 2.83 : 4.24 two thirds of the way up -- so there is no fixed factor between a notch and the entry behind it, and the entries cannot be recovered from where the notches are. That is measured in this record rather than assumed: the dips are in it.",
+    "the_number_it_returns_anyway": {
+      "octaves_across_the_byte": 5.006,
+      "sixteen_third_octaves_span": 5.0,
+      "sixteen_equal_ratios_over_this_range_span": 6.322,
+      "why_it_is_not_claimed": "It is nearer the third octaves than the equal ratios by an octave and a third, and it would settle the alternative if a notch were a fixed multiple of an entry. The same record measures that it is not. A figure whose one assumption the run itself refuted is reported and not read."
     }
   }
 }
