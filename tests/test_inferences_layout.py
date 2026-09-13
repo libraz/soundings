@@ -247,3 +247,37 @@ def test_what_is_not_chased_says_how_each_was_bounded():
         assert item["how_it_was_bounded"].strip(), (
             f"{item['what']!r} is not chased and does not say what bounds it"
         )
+
+
+# ---- a citation names a row by one of the row's own fields
+
+
+def test_a_row_named_by_a_take_resolves_through_the_dot_in_the_file_name():
+    """Otherwise a claim resting on a figure that is really there reads as stale.
+
+    A record names some of its rows by the take they came from, and a take is a
+    file name with a dot in it. Cutting a dotted key on every dot puts half that
+    name in one step and half in the next, so the citation comes back
+    unresolvable -- which the stale query reports as a figure that has moved.
+    """
+    record = {
+        "control": {
+            "readings": [
+                {"take": "held-126-bypassed-00-00.wav", "heard_db": -53.02},
+                {"take": "held-126-bypassed-01-00.wav", "heard_db": -53.01},
+            ]
+        }
+    }
+    key = "control.readings[take=held-126-bypassed-01-00.wav].heard_db"
+    assert inferences.resolve(record, key) == -53.01
+
+
+def test_a_row_named_by_a_number_with_a_decimal_point_resolves_too():
+    """The same cut, and the one a sweep's own figures run into first."""
+    record = {"readings": [{"largest_db": 0.37, "at": "a"}, {"largest_db": -1.5, "at": "b"}]}
+    assert inferences.resolve(record, "readings[largest_db=-1.5].at") == "b"
+
+
+def test_an_ordinary_dotted_key_is_still_cut_on_its_dots():
+    record = {"reference": {"heard_floor_db": 0.01}}
+    assert inferences.resolve(record, "reference.heard_floor_db") == 0.01

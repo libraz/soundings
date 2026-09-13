@@ -54,6 +54,30 @@ consuming attention, so that one type cannot absorb the work.
 _INDEXED = re.compile(r"^(?P<field>\w+)\[(?P<key>\w+)=(?P<value>[^\]]+)\]$")
 
 
+def _parts(key: str) -> list[str]:
+    """A dotted key cut into its steps, leaving the dots inside brackets alone.
+
+    A row is named by one of its own fields, and a record names some of its rows
+    by the take they came from -- which is a file name with a dot in it. Cutting
+    on every dot puts half of that name in one step and half in the next, and the
+    citation comes back unresolvable rather than wrong, so a claim resting on a
+    figure that is really there reads as stale.
+    """
+    out, depth, here = [], 0, ""
+    for char in key:
+        if char == "[":
+            depth += 1
+        elif char == "]":
+            depth -= 1
+        if char == "." and depth == 0:
+            out.append(here)
+            here = ""
+            continue
+        here += char
+    out.append(here)
+    return out
+
+
 def resolve(record: dict, key: str):
     """One dotted key out of a record, including `readings[value=52].largest_db`.
 
@@ -64,7 +88,7 @@ def resolve(record: dict, key: str):
     at a different row.
     """
     here = record
-    for part in key.split("."):
+    for part in _parts(key):
         found = _INDEXED.match(part)
         if found:
             rows = here[found["field"]]
