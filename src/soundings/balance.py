@@ -272,6 +272,25 @@ WHY_THE_FLOOR_IS_THE_PAIRS_OWN = (
 )
 
 
+WHY_A_SEPARATION_NEEDS_A_CEILING = (
+    "A separation that stops has to be shown to be the unit's and not the chain's, so what is "
+    "reported beside it is how far apart the same two inputs have been measured to put a signal "
+    "on some other address of the same unit. A reading that stops short of that is stopping "
+    "somewhere the chain could have seen past; one that stops at it is a bound and not a figure "
+    "about the parameter. The quieter channel's distance from the take's own lead is reported "
+    "for the same reason and answers a different question -- whether the reading is a level at "
+    "all."
+)
+
+WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED = (
+    "A separation between two channels is the separation of whatever reached them, so a second "
+    "path to the output that the parameter does not act on would set a floor under it that has "
+    "nothing to do with the parameter. What is reported is what the two channels hold with the "
+    "effect's own output level written to zero: if that is the take's own lead, there is no "
+    "second path for the reading to be the sum of."
+)
+
+
 def _pair_of_channels(
     takes: list[np.ndarray], lead: np.ndarray | None
 ) -> tuple[tuple[int, int] | None, float]:
@@ -359,6 +378,8 @@ __all__ = [
     "METHOD",
     "MONO_SOURCE",
     "SECOND_CHANNEL_ABOVE_DB",
+    "WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED",
+    "WHY_A_SEPARATION_NEEDS_A_CEILING",
     "WHY_NOT_A_LEVEL",
     "WHY_THE_FLOOR_IS_THE_PAIRS_OWN",
     "WHY_THE_PAIR_IS_IN_INPUT_ORDER",

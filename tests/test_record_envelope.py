@@ -52,6 +52,7 @@ SENTENCE_KEYS = frozenset(
         "shallower_than_the_control_recovered",
         "why_one_setting_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
+        "why_the_pair_is_in_input_order",
         "why_the_total_is_reported",
     }
 )
@@ -65,7 +66,7 @@ value, which is the archive's own rule about one unit's findings turned on its
 own records. Three such keys have come out into `findings` entries, whose kind is
 the question and whose fields are this unit's answer to it.
 
-The fifteen left are not that. The test cannot tell them apart, because what it
+The sixteen left are not that. The test cannot tell them apart, because what it
 measures is how many underscores a key has, so it catches verbosity and the
 defect alike. Each of these was read: some are a limitation of the stage rather
 than a finding of it, some are a caveat about how the run was made, and the rest
@@ -79,8 +80,14 @@ whoever ran it and not shown by the run. A power-on capture is only a power-on
 capture if the unit had just been switched on, and nothing in the reading can
 tell that from a unit somebody had already sent to.
 
-So a sixteenth entry is a key to go and look at, not a key that is wrong. Read the
-value, decide which of the two it is, and either migrate it or add it here.
+`why_the_pair_is_in_input_order` is the pair of `why_the_total_is_reported`: both
+are the balance stage saying what its two published figures are figures of. Which
+of two inputs is subtracted from the other decides the sign of every balance in the
+record, and the sentence spells the convention rather than this unit's answer under
+it -- the next unit gets the same sentence and its own numbers.
+
+So a seventeenth entry is a key to go and look at, not a key that is wrong. Read
+the value, decide which of the two it is, and either migrate it or add it here.
 """
 
 

@@ -156,6 +156,20 @@ NOT_RECORDED = (
     "repository, which bounds the measurement from above and is not when it was taken."
 )
 
+#: The same, for a record whose reading is recorded and whose capture is not.
+#: A run made before the envelope existed and read again by a command that stamps
+#: one is in neither of the other two positions: the invocation above is this
+#: record's own and can be run again, while the takes it reads still carry nothing
+#: saying how they were made. Saying `predates the record envelope` there would
+#: contradict the invocation printed beside it.
+CAPTURE_NOT_RECORDED = (
+    "The takes this is read from predate the record envelope, so the arguments the capture was "
+    "given and the moment it was taken are held nowhere and cannot be recovered without being "
+    "invented. The reading is not in that position: the invocation above is this record's own "
+    "and it can be run again. The date below is the day the first reading of these takes entered "
+    "the repository, which bounds the capture from above and is not when it was taken."
+)
+
 #: The same, for a record no command wrote at all.
 KEPT_BY_HAND = (
     "No command wrote this record: it is kept by hand, so there is no stage that produced "
