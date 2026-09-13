@@ -159,7 +159,18 @@ LIMITS = (
     "ended rather than where the effect did. Both are answered by reading the same "
     "takes again at another resolution, not by reading further into these figures. "
     "`steepest_db_per_octave` is bounded the same way by the window it was fitted "
-    "over, which is the third resolution in this record and is stated beside it."
+    "over, which is the third resolution in this record and is stated beside it. "
+    "`fitted_at_hz` is finer than a band and is not thereby better than one: it is a "
+    "least squares fit, so it carries the scatter of every band in its window rather "
+    "than of the one that was largest, and how far the same setting's own takes put it "
+    "apart is not a figure any single reading holds. The repeats this record draws its "
+    "floor from are of a setting with no feature in it, so they cannot bound it either, "
+    "and neither can the run's own null: asked of a byte swept with the stage it shapes "
+    "turned off, the fit refuses rather than returning a position, which says it does "
+    "not invent one where there is nothing but says nothing about how steady it is where "
+    "there is something. So the figure has no measured floor in this archive, and "
+    "anything held against it is held against the band width instead -- which is coarser "
+    "than the fit and errs towards calling a disagreement noise."
 )
 
 NOT_HERE = (
@@ -248,6 +259,38 @@ WHY_SPAN = (
     "else says the largest figure is where the set ended. None of the four is a "
     "corner, a width or an order -- a filter would give each of them a name, and "
     "naming them is the fit this record does not make."
+)
+
+WHY_FITTED = (
+    "Where the deviation sits, read off the whole feature rather than off one band. "
+    "`largest_at_hz` names the band the profile is largest in, which is a reading "
+    "quantised to a band however carefully the takes were made -- and it gets worse the "
+    "wider the feature is, because the top of a wide one is flat and a tenth of a "
+    "decibel of scatter is enough to hand the largest to the band next door. "
+    "`fitted_at_hz` is the top of a parabola fitted by least squares to the decibels "
+    "against log frequency, over the bands from `half_below_hz` to `half_above_hz` -- "
+    "the feature's own width as the span figures already define it, so the window is "
+    "not a number chosen here. It can land between two bands, and one band's scatter "
+    "moves it by a fraction of what it moves the largest. "
+    "It is not a corner and not a centre frequency: naming what the top of the fitted "
+    "curve is is the fit this record does not make. Nor is the parabola a claim about "
+    "the shape. A filter's response is not one except very near its top, and these "
+    "windows run well past that; what entitles the fit to a position is that a "
+    "symmetric curve fitted to a symmetric feature tops out where the feature is "
+    "centred, whatever either shape is. Where the feature is not symmetric the longer "
+    "flank pulls the top towards itself, and that bias belongs to this reading -- so it "
+    "cancels against another figure read the same way and does not cancel against "
+    "`largest_at_hz`, which has no such bias and is quantised to a band instead. "
+    "Neither is the better reading of the two in general, and the record publishes both "
+    "rather than choosing. "
+    "Null where the fit would be an extrapolation: where the deviation had not fallen "
+    "to half on both sides before the bands ran out, so the feature has no measured "
+    "width; where fewer than three bands sit inside that width; where the fitted curve "
+    "bends the wrong way, so the window holds a slope rather than a top; and where the "
+    "top falls outside the bands it was fitted over. `fitted_over_bands` is how many "
+    "bands were in the window and is reported in every one of those cases, because a "
+    "figure that is absent for want of width and one absent for want of curvature are "
+    "different readings."
 )
 
 WHY_STEEPEST = (
@@ -403,6 +446,92 @@ def _span(moved: list[float], centres, largest_db, largest_at) -> dict:
     }
 
 
+def _fitted(moved: list[float], centres, largest_db, largest_at, span: dict) -> dict:
+    """Where a fit over the whole feature puts the deviation, rather than which band is largest.
+
+    `largest_at_hz` is a coarse estimator and gets coarser the broader the feature
+    is: the top of a wide peak is flat, so a tenth of a decibel of scatter in one
+    band moves the reading by a whole band, and it can move by no less than that
+    however small the scatter was. A fit over every band the feature reaches uses
+    all of them, so the same tenth of a decibel moves it by a fraction of a band
+    and it can land between two of them.
+
+    A parabola in decibels against log frequency, least squares, over the bands
+    from `half_below_hz` to `half_above_hz` -- the feature's own width as this
+    record already defines it, rather than a window chosen here.
+
+    **What carries the reading is symmetry and not the parabola.** A filter's
+    response is not one except very near its top, and these windows run well past
+    that: on a wide peak the half points are more than an octave and a half apart.
+    A symmetric curve fitted to a symmetric feature puts its top where the feature
+    is centred whatever either shape is, which is why the fit is entitled to the
+    position and not to the height. The other side of that is the reading's own
+    bias: where the feature is *not* symmetric -- and a peaking biquad is not,
+    because the bilinear transform squeezes its upper flank towards Nyquist -- the
+    longer flank pulls the top towards itself, by a few hundredths of an octave
+    here and more the higher the feature sits. That bias belongs to this reading,
+    so it cancels only against something read the same way, and it does not cancel
+    against `largest_at_hz`.
+
+    Refused rather than approximated in three ways, each of which is a case where
+    the vertex would be an extrapolation dressed as a reading: where the deviation
+    had not fallen to half on both sides before the bands ran out, so the feature
+    has no measured width; where the fitted curve bends the wrong way, so the
+    window holds a slope and not a top; and where the vertex falls outside the
+    bands it was fitted over. `fitted_over_bands` is how many bands were in the
+    window, and it is reported even where the vertex was refused.
+    """
+    empty = {"fitted_at_hz": None, "fitted_over_bands": None}
+    below, above = span["half_below_hz"], span["half_above_hz"]
+    if largest_db is None or below is None or above is None:
+        return empty
+    listed = list(centres)
+    # Between the half points and not including them: those two bands are the first
+    # on each side that had already fallen below half, so they are outside the
+    # feature by the same definition that found them.
+    first, last = listed.index(below) + 1, listed.index(above) - 1
+    window = range(first, last + 1)
+    if len(window) < 3:
+        return {"fitted_at_hz": None, "fitted_over_bands": len(window)}
+    spot = np.log2(np.asarray([listed[j] for j in window], dtype=float))
+    height = np.asarray([moved[j] for j in window], dtype=float)
+    bend, slope, _ = np.polyfit(spot, height, 2)
+    if bend == 0 or bend * largest_db >= 0:
+        return {"fitted_at_hz": None, "fitted_over_bands": len(window)}
+    vertex = -slope / (2.0 * bend)
+    if not spot[0] <= vertex <= spot[-1]:
+        return {"fitted_at_hz": None, "fitted_over_bands": len(window)}
+    return {
+        "fitted_at_hz": round(float(2.0**vertex), 1),
+        "fitted_over_bands": len(window),
+    }
+
+
+def fitted_position(moved, centres) -> float | None:
+    """Where a fit puts the largest feature of a profile, with no floor in the way.
+
+    The reading `_fitted` makes, reached from a profile alone. A rendered profile
+    has no repeats to draw a floor from, so a model cannot be read through the
+    path the record publishes, and a figure of the model's compared against the
+    record's published one would be two readings compared rather than one applied
+    twice. This is that path with the floor taken out of it, and a measured
+    profile goes through it here as well: both sides are then read the same way,
+    which is the only thing that makes the difference between them a reading of
+    the model rather than of the two instruments.
+
+    Where a band cleared the floor and where it did not is the difference between
+    this and `fitted_at_hz`, and on a feature well clear of the floor there is
+    none. It is not the published figure and does not replace it.
+    """
+    height = np.asarray(moved, dtype=float)
+    if height.size == 0:
+        return None
+    at = int(np.argmax(np.abs(height)))
+    listed, top = list(centres), float(height[at])
+    span = _span(list(moved), listed, top, listed[at])
+    return _fitted(list(moved), listed, top, listed[at], span)["fitted_at_hz"]
+
+
 SLOPE_OCTAVES = 1.0
 """The widest window a rate of change is fitted over, in octaves.
 
@@ -487,12 +616,14 @@ def _against(profile, reference, floor, centres) -> dict:
         key=lambda pair: abs(pair[0]),
         default=(None, None),
     )
+    span = _span(moved, centres, largest[0], largest[1])
     return {
         "band_db": moved,
         "outside_the_floor_hz": outside,
         "largest_db": largest[0],
         "largest_at_hz": largest[1],
-        **_span(moved, centres, largest[0], largest[1]),
+        **span,
+        **_fitted(moved, centres, largest[0], largest[1], span),
         **_steepest(moved, centres, largest[0]),
     }
 
@@ -691,6 +822,7 @@ def read_directory(
         "bands_hz": centres,
         "band_width_octaves": round(band_width_octaves, 6),
         "why_span": WHY_SPAN,
+        "why_fitted": WHY_FITTED,
         "why_steepest": WHY_STEEPEST,
         "channel": {
             "read": used,

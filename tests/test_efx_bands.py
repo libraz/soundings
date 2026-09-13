@@ -233,6 +233,163 @@ def test_the_window_a_slope_was_fitted_over_is_published_beside_it(profiles) -> 
     )
 
 
+# ---- where a feature sits, off the whole feature
+
+
+def lorentzian(centre: float, width_octaves: float, by_db: float):
+    """A peak of `by_db` at `centre`, half of it `width_octaves` to each side.
+
+    In log frequency rather than in hertz, which is where a filter's peak is
+    symmetric and is the axis the fit works on. Near its top it is a parabola,
+    which is the part of the shape the fit is entitled to, and further out it is
+    not -- so a fit that reached past the half points would be fitting the wrong
+    curve, and the window stops there.
+    """
+    def gain(freq):
+        offset = np.log2(np.maximum(freq, 1.0) / centre) / width_octaves
+        return by_db / (1.0 + offset**2)
+
+    return gain
+
+
+BETWEEN_BANDS = float(np.sqrt(FINE[len(FINE) // 2] * FINE[len(FINE) // 2 + 1]))
+"""A peak put halfway between two band centres, which is the worst case for a band.
+
+Nothing the takes do can bring `largest_at_hz` closer than half a band here, and
+which of the two neighbours it names is decided by whichever way the noise fell.
+"""
+
+
+@pytest.fixture
+def peaks(tmp_path):
+    """A run whose sweep is peaks a fit can be held against."""
+    store = takes.Store.open(tmp_path / "peaks")
+    for index in range(4):
+        store.keep(
+            FakeRecording(shaped(index, lambda freq: np.zeros_like(freq))),
+            stimulus="held",
+            setting=f"flat-{index:02d}",
+            take=0,
+        )
+    for value, gain in (
+        # Halfway between two bands, and wide enough that several sit above half.
+        (0, lorentzian(BETWEEN_BANDS, 0.25, 12.0)),
+        # The same peak taken out instead of put in: a notch is the same question.
+        (1, lorentzian(BETWEEN_BANDS, 0.25, -12.0)),
+        # Narrow enough that the half points are two bands apart, so the window
+        # holds fewer than the three a parabola needs.
+        (2, lorentzian(BETWEEN_BANDS, 1 / 24, 12.0)),
+    ):
+        store.keep(
+            FakeRecording(shaped(0, gain)), stimulus="held", setting=f"04-{value:03d}", take=0
+        )
+    store.close(question="a run of known peaks")
+    return tmp_path / "peaks"
+
+
+def peak(where, value: int, **extra):
+    found = efxbands.read_directory(
+        where,
+        type_id="01 00",
+        address="40 03 04",
+        setting=r"held-04-(?P<value>\d+)-00",
+        reference=r"held-flat-\d+-00",
+        **{"bands_hz": FINE, "band_width_octaves": 1 / 12, "hold_s": LONG - 1.2, **extra},
+    )
+    return next(r for r in found["readings"] if r["value"] == value)
+
+
+def test_a_peak_between_two_bands_is_fitted_nearer_than_either_of_them(peaks) -> None:
+    """The reading the largest band cannot give however well the takes were made.
+
+    A band names a band. Where the feature is between two of them the answer is
+    half a band wrong at best, and the fit is entitled to land between them.
+    """
+    found = peak(peaks, 0)
+    by_band = abs(np.log2(found["largest_at_hz"] / BETWEEN_BANDS))
+    by_fit = abs(np.log2(found["fitted_at_hz"] / BETWEEN_BANDS))
+    # Half a band is a twenty-fourth of an octave, and that is the best the band
+    # can do rather than what it happened to do.
+    assert by_band == pytest.approx(1 / 24, abs=0.005)
+    assert by_fit < by_band / 3
+
+
+def test_a_notch_is_fitted_the_same_way_a_peak_is(peaks) -> None:
+    """Which way a byte moves the level is not the question this reading answers."""
+    found = peak(peaks, 1)
+    assert found["largest_db"] < 0
+    assert abs(np.log2(found["fitted_at_hz"] / BETWEEN_BANDS)) < 1 / 72
+
+
+def test_the_bands_a_position_was_fitted_over_are_published_beside_it(peaks) -> None:
+    """A window half an octave wide, at a twelfth of an octave a band."""
+    found = peak(peaks, 0)
+    assert found["fitted_over_bands"] == pytest.approx(6, abs=1)
+
+
+def test_a_feature_too_narrow_to_fit_says_how_narrow_rather_than_nothing(peaks) -> None:
+    """Absent for want of width and absent for want of curvature are different."""
+    found = peak(peaks, 2)
+    assert found["fitted_at_hz"] is None
+    assert found["fitted_over_bands"] is not None
+    assert found["fitted_over_bands"] < 3
+
+
+def test_a_feature_with_no_measured_width_is_not_fitted_at_all(profiles) -> None:
+    """No half point on one side is no window, which is not a narrow window."""
+    found = profile(profiles, 3)
+    assert found["half_below_hz"] is None
+    assert found["fitted_at_hz"] is None
+    assert found["fitted_over_bands"] is None
+
+
+def test_a_lopsided_feature_pulls_the_fit_towards_its_longer_flank() -> None:
+    """The bias this reading has and the largest band does not.
+
+    A symmetric curve fitted to an asymmetric feature does not top out where the
+    feature does, and nothing in the figure says so. It is why the record keeps
+    both readings: this one is finer and biased, that one is coarse and is not,
+    and which is wanted depends on whether what it will be held against went
+    through the same reading.
+    """
+    centres = [1000.0 * 2 ** (j / 12) for j in range(17)]
+    top = 8
+    spot = np.log2(np.asarray(centres) / centres[top])
+    # Half as steep below the top as above it, so the half point below is twice as
+    # far away and twice as many bands sit on that side.
+    moved = [float(12.0 - (16.0 if s > 0 else 4.0) * s**2) for s in spot]
+    span = {"half_below_hz": centres[0], "half_above_hz": centres[-1]}
+    found = efxbands._fitted(moved, centres, 12.0, centres[top], span)
+    assert found["fitted_at_hz"] < centres[top]
+
+
+def test_a_window_that_holds_a_slope_and_not_a_top_is_refused() -> None:
+    """A parabola through a slope has a top, and it is nowhere near the reading."""
+    centres = [1000.0 * 2 ** (j / 12) for j in range(9)]
+    # Rising the whole way, so the largest is the last band and there is no top
+    # inside the window at all.
+    moved = [float(j) for j in range(9)]
+    span = {"half_below_hz": centres[0], "half_above_hz": None}
+    assert efxbands._fitted(moved, centres, 8.0, centres[-1], span)["fitted_at_hz"] is None
+    # And the same window with both ends named still refuses, on the bend rather
+    # than on the width: a rising line curves neither way, and what little it does
+    # curve is as likely to open upwards as down.
+    bowl = {"half_below_hz": centres[0], "half_above_hz": centres[-1]}
+    dipped = [4.0, 2.0, 1.0, 0.5, 0.0, 0.5, 1.0, 2.0, 4.0]
+    assert efxbands._fitted(dipped, centres, 4.0, centres[0], bowl)["fitted_at_hz"] is None
+
+
+def test_a_top_that_falls_outside_the_bands_it_was_fitted_over_is_refused() -> None:
+    """An extrapolation is not a reading, however well the curve fitted."""
+    centres = [1000.0 * 2 ** (j / 12) for j in range(7)]
+    # A parabola whose top is well above the last band: inside the window it is
+    # only ever rising, so the fit is good and the vertex is somewhere else.
+    spot = np.log2(np.asarray(centres)) - np.log2(centres[-1]) - 1.0
+    moved = [float(12.0 - 4.0 * s**2) for s in spot]
+    span = {"half_below_hz": centres[0], "half_above_hz": centres[-1]}
+    assert efxbands._fitted(moved, centres, 12.0, centres[-1], span)["fitted_at_hz"] is None
+
+
 def test_a_reading_inside_the_floor_has_no_span_to_report(directory) -> None:
     found = read(directory)
     flat = next(r for r in found["readings"] if r["value"] == 64)
