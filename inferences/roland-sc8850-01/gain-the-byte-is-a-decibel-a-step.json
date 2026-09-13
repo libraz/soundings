@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-13T08:36:34.794138+00:00",
+    "made_at": "2026-09-13T22:27:41.001308+00:00",
     "made_by": "backup/how-big-is-one-step-of-a-gain.py, backup/read-the-cut-side-again.py, backup/does-the-dent-move-with-the-width.py, backup/the-tone-control-nobody-prints.py, backup/build-gain-models.py, backup/run-gain-reproduce.py, backup/where-the-dent-lives.py, backup/write-gain-inference.py",
     "rounds": 1,
     "about": {
@@ -11,7 +11,8 @@
       "class": "tone-gain",
       "types": [
         "01 00",
-        "01 42"
+        "01 42",
+        "01 50"
       ],
       "addresses": [
         "40 03 04",
@@ -315,6 +316,141 @@
         "why": "The other half of the same tone control, on the same takes."
       },
       {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json",
+        "keys": [
+          "settings_asked",
+          "readings[value=52].band_db",
+          "readings[value=76].band_db",
+          "readings[value=52].half_below_hz",
+          "readings[value=76].half_below_hz"
+        ],
+        "values": [
+          [
+            52,
+            58,
+            70,
+            76
+          ],
+          [
+            -6.23,
+            -5.46,
+            -4.13,
+            -3.08,
+            -2.28,
+            -1.61,
+            -1.08,
+            -0.74,
+            -0.5,
+            -0.3,
+            -0.18,
+            -0.13,
+            -0.07,
+            -0.04,
+            -0.02,
+            -0.01,
+            -0.01,
+            -0.01,
+            0.0,
+            -0.0,
+            -0.01,
+            0.02
+          ],
+          [
+            6.46,
+            5.47,
+            4.17,
+            3.13,
+            2.29,
+            1.64,
+            1.1,
+            0.74,
+            0.48,
+            0.3,
+            0.21,
+            0.14,
+            0.1,
+            0.06,
+            0.03,
+            0.03,
+            0.01,
+            0.01,
+            0.02,
+            0.0,
+            0.01,
+            0.03
+          ],
+          null,
+          null
+        ],
+        "why": "The same low gain on a third front half, and one that colours nothing: a delay with its feedback parked at nothing and its damping at bypass, so what reaches the shelves is one copy of the note. Asked for by this claim's own queue, and read off the same band set and the same stimulus as the other two so the three profiles are laid over each other with no correction."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json",
+        "keys": [
+          "readings[value=52].band_db",
+          "readings[value=76].band_db",
+          "readings[value=52].half_below_hz",
+          "readings[value=76].half_below_hz",
+          "readings[value=52].above_the_silence_db",
+          "readings[value=76].above_the_silence_db"
+        ],
+        "values": [
+          [
+            0.09,
+            0.01,
+            0.02,
+            0.0,
+            -0.0,
+            0.0,
+            -0.0,
+            -0.06,
+            -0.08,
+            -0.13,
+            -0.22,
+            -0.36,
+            -0.55,
+            -0.83,
+            -1.24,
+            -1.85,
+            -2.76,
+            -3.8,
+            -5.21,
+            -6.82,
+            -8.5,
+            -9.76
+          ],
+          [
+            0.12,
+            -0.02,
+            0.01,
+            0.03,
+            0.01,
+            0.04,
+            0.05,
+            0.06,
+            0.1,
+            0.13,
+            0.23,
+            0.32,
+            0.55,
+            0.88,
+            1.29,
+            1.84,
+            2.8,
+            3.88,
+            5.32,
+            6.93,
+            8.65,
+            10.45
+          ],
+          5000,
+          5000,
+          46.1,
+          46.8
+        ],
+        "why": "The other half of the same tone control on the same takes. Its distance over the silence is cited because it is what bounds the one band the three types do not agree at."
+      },
+      {
         "file": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges.json",
         "keys": [
           "readings[value=0].band_db",
@@ -556,6 +692,11 @@
     }
   },
   "alternatives": [
+    {
+      "reading": "The two shelves are the pair these two types carry and not the pair the class carries. Forty-three types print this address and two are read.",
+      "standing": false,
+      "ruled_out_by": "The run it asked for, on a delay whose feedback is parked at nothing and whose damping is at bypass, so its effect path returns one copy of the note and colours nothing. Both shelves hinge where the other two hinge -- five kilohertz, on all four readings -- and the profiles lie on each other to a mean of three hundredths of a decibel on the low gain and eight on the high, over twenty-two bands. One band disagrees: the topmost, on the high gain's cut, by 0.72 of a decibel. It is the reading's floor and not the type. The same shelf pushed the other way at the same band agrees to 0.06, and a shelf that belonged to the type would differ both ways -- a cut takes the top band down towards the silence and a boost takes it up away from it, and this run's takes stand nine decibels closer to the silence than the run it is being held against. Every band with room on both agrees to 0.12 or better."
+    },
     {
       "reading": "The multiplier steps evenly across the byte and the decibels are whatever that lands on, which is what a section built as a scaled band-pass summed with the dry gives.",
       "candidate": "a-multiplier-linear-in-the-byte",
@@ -2378,10 +2519,6 @@
     {
       "what": "The eight bands of the graphic equaliser. Eight gains printed -12 - +12 with no frequency, width or count printed against any of them.",
       "bounded_by": "Nothing measured. The claim's addresses do not include them and the class does not reach them."
-    },
-    {
-      "what": "Whether the forty-one other types that carry the two gains carry the same shelves. Two are measured and they agree.",
-      "bounded_by": "The two measured are as unlike each other as this address gets -- four filter sections and a delay line with a modulator -- and their profiles agree to within what the run resolves. A third would cost four minutes and the queue says so."
     }
   ],
   "what_it_would_change": "A hundred and eighteen parameters across sixty-five types stop being unknown. Eighty-six of them are two shelves whose corners no page prints and which now have a measured profile at both of their gains' ends, taken from a type that does print its corners. A renderer that has the equaliser has the tone control."
