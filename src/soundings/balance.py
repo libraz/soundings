@@ -28,6 +28,14 @@ same session.
 **Both are judged against a yardstick measured in the same run**, as everything
 else here is: a chain with a channel imbalance of its own, or a voice that is not
 centred, would otherwise read as a parameter that pans.
+
+Two settings is the screening question and not the shape of the reading. The same
+pair of numbers per take -- the difference between the channels and the two of them
+together -- is what a byte printed as a pan has to be read out of, so a run that
+asks a byte at a dozen settings is read here too and the verdicts are the widest
+gap and the widest difference in scatter over all of them. At two settings that is
+the same arithmetic; what it stops is a sweep publishing a screening verdict that
+was defined for a pair and quietly returns false everywhere else.
 """
 
 from __future__ import annotations
@@ -120,34 +128,46 @@ class Verdict:
 
     @property
     def yardstick_db(self) -> float:
-        """The steadier setting's own scatter, which is what a claim has to clear.
+        """The steadiest setting's own scatter, which is what a claim has to clear.
 
-        The steadier rather than the worse: the question the wider one is being
+        The steadiest rather than the worst: the question a wide setting is being
         asked is whether it is wide, so taking it into the yardstick would be
         measuring it against itself.
+
+        Over more than two settings the minimum is drawn from more settings and so
+        runs lower than the run's typical scatter. That is a bound on the yardstick
+        and not a finding about the parameter, and what absorbs it is the margin
+        rather than a different rule: a sweep whose gap does not clear the steadiest
+        setting's scatter by the margin was not going to clear the worst either.
         """
         spreads = [s.spread_db for s in self.settings]
         return min(spreads) if spreads else float("nan")
 
     @property
     def moved_between_settings(self) -> bool:
-        if len(self.settings) != 2:
+        """Whether any two of the settings sit further apart than the run resolves.
+
+        The widest gap in the run rather than the gap between the ends, because a
+        parameter need not be monotonic in its byte and a table that turns back on
+        itself would put its two ends in the same place.
+        """
+        if len(self.settings) < 2:
             return False
-        gap = abs(self.settings[0].typical_db - self.settings[1].typical_db)
-        return bool(gap > self.yardstick_db + self.margin_db)
+        typical = [s.typical_db for s in self.settings]
+        return bool(max(typical) - min(typical) > self.yardstick_db + self.margin_db)
 
     @property
     def did_not_repeat(self) -> bool:
         """Whether one setting's balance landed somewhere new on each take.
 
         The asymmetry is the evidence and it has to be an asymmetry: a chain that
-        wanders wanders at both settings, and a parameter is only implicated when
-        one setting is steady in the same session that the other is not.
+        wanders wanders at every setting, and a parameter is only implicated when
+        some setting is steady in the same session that another is not.
         """
-        if len(self.settings) != 2:
+        if len(self.settings) < 2:
             return False
-        first, second = (s.spread_db for s in self.settings)
-        return bool(abs(first - second) > self.margin_db * 2)
+        spreads = [s.spread_db for s in self.settings]
+        return bool(max(spreads) - min(spreads) > self.margin_db * 2)
 
     @property
     def while_the_total_stayed(self) -> bool:
@@ -227,12 +247,26 @@ WHY_ACROSS_THE_SETTINGS = (
 )
 
 
+WHY_THE_PAIR_IS_IN_INPUT_ORDER = (
+    "Which two inputs the unit arrived on is decided by level; which of the two is subtracted "
+    "from the other is decided by the input's own number. Ordering the pair by level as well "
+    "leaves the sign of every balance in the hands of whichever channel was louder by a hair: "
+    "two readings of one saved run returned +10.18 dB and -10.18 dB, each self-consistent with "
+    "the pair it also reported, and nothing in the figure said which convention it was under. "
+    "A parameter printed as a pan is a direction before it is a size, so the direction has to "
+    "survive being read twice. Which of the unit's outputs is on the lower-numbered input is a "
+    "fact about the cabling and this does not establish it -- the pair is reported beside the "
+    "figure so a reader can map it."
+)
+
+
 def _pair_of_channels(takes: list[np.ndarray], floor_db: float) -> tuple[int, int] | None:
-    """The two channels the unit arrived on, loudest first.
+    """The two channels the unit arrived on, in the interface's own order.
 
     Each channel is taken at the loudest it reached across every take of every
     setting, per WHY_ACROSS_THE_SETTINGS. None when only one of them clears the
-    floor anywhere in the run.
+    floor anywhere in the run. The pair is then put back into input order, per
+    WHY_THE_PAIR_IS_IN_INPUT_ORDER.
     """
     if not takes:
         return None
@@ -241,7 +275,8 @@ def _pair_of_channels(takes: list[np.ndarray], floor_db: float) -> tuple[int, in
     order = sorted(range(len(levels)), key=lambda c: levels[c], reverse=True)
     if len(order) < 2 or levels[order[1]] < floor_db + SECOND_CHANNEL_ABOVE_DB:
         return None
-    return order[0], order[1]
+    first, second = sorted(order[:2])
+    return first, second
 
 
 def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
@@ -306,6 +341,7 @@ __all__ = [
     "MONO_SOURCE",
     "SECOND_CHANNEL_ABOVE_DB",
     "WHY_NOT_A_LEVEL",
+    "WHY_THE_PAIR_IS_IN_INPUT_ORDER",
     "SettingBalance",
     "Verdict",
     "measure",

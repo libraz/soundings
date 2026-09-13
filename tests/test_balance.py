@@ -172,6 +172,76 @@ def test_the_yardstick_is_the_steadier_setting_not_the_wider(tmp_path) -> None:
     assert found.yardstick_db < 1.0
 
 
+def test_the_sign_of_a_balance_does_not_depend_on_which_channel_was_louder(tmp_path) -> None:
+    """A pan is a direction before it is a size, so the direction has to survive
+    being read twice. Ordering the pair by level put the sign in the hands of
+    whichever channel was louder by a hair: two readings of one saved run of the
+    part panpot returned +10.18 dB and -10.18 dB, each self-consistent with the
+    pair it also reported, and nothing in the figure said which it was under."""
+    quieter_first = saved(tmp_path / "a", {"0": [(-20.0, -10.0)] * 3, "127": [(-20.0, -10.0)] * 3})
+    louder_first = saved(tmp_path / "b", {"0": [(-10.0, -20.0)] * 3, "127": [(-10.0, -20.0)] * 3})
+
+    (low,) = balance.measure(quieter_first)
+    (high,) = balance.measure(louder_first)
+
+    assert low.channels == (2, 3) and high.channels == (2, 3)
+    assert low.settings[0].typical_db < 0 < high.settings[0].typical_db
+
+
+def test_a_sweep_is_read_and_not_silently_given_a_pairs_verdict(tmp_path) -> None:
+    """A byte printed as a pan is read at a dozen settings, and the screening
+    verdicts were arithmetic defined on exactly two. Read that way a sweep
+    returned false for every one of them -- not because nothing moved, but
+    because the count was wrong, which is the shape of a negative that cannot be
+    contradicted by the record carrying it."""
+    root = saved(
+        tmp_path,
+        {
+            str(value): [(-10.0 - value / 8.0, -30.0 + value / 8.0)] * 3
+            for value in (0, 16, 32, 48, 64, 80, 96, 112, 127)
+        },
+    )
+
+    (found,) = balance.measure(root)
+
+    assert len(found.settings) == 9
+    assert found.moved_between_settings
+    assert not found.did_not_repeat
+
+
+def test_a_sweep_that_turns_back_on_itself_is_not_read_off_its_ends(tmp_path) -> None:
+    """The widest gap in the run rather than the gap between the ends. A table
+    that returns to where it started would put its two ends in the same place,
+    and a reading taken there says the byte did nothing at all."""
+    root = saved(
+        tmp_path,
+        {
+            "0": [(-10.0, -30.0)] * 3,
+            "64": [(-30.0, -10.0)] * 3,
+            "127": [(-10.0, -30.0)] * 3,
+        },
+    )
+
+    (found,) = balance.measure(root)
+
+    assert found.moved_between_settings
+
+
+def test_a_sweep_of_a_byte_that_does_nothing_still_shows_nothing(tmp_path) -> None:
+    """The guard has to have an outside at a dozen settings as much as at two,
+    and the yardstick is now the steadiest of many rather than of a pair, so it
+    runs lower and the verdict is easier to trip."""
+    root = saved(
+        tmp_path,
+        {str(value): [(-20.0, -10.0)] * 3 for value in (0, 16, 32, 48, 64, 80, 96, 112, 127)},
+    )
+
+    (found,) = balance.measure(root)
+
+    assert not found.moved_between_settings
+    assert not found.did_not_repeat
+
+
 def test_every_number_survives_the_json_round_trip(tmp_path) -> None:
     """The record is the archive, so a figure the JSON drops did not happen."""
     root = saved(tmp_path, {"0": [(-10.0, -20.0)] * 4, "127": [(-20.0, -10.0)] * 4})

@@ -158,6 +158,7 @@ def cmd_balance(args: argparse.Namespace) -> int:
             "takes": str(args.takes),
             "method": balance.METHOD,
             "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
+            "why_the_pair_is_in_input_order": balance.WHY_THE_PAIR_IS_IN_INPUT_ORDER,
             "moved_the_balance": moved,
             "runs": [{"name": n, **v.to_json()} for n, v in found],
         },
