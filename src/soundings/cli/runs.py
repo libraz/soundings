@@ -1,10 +1,12 @@
 """What one saved run of takes shows, asked after the session ended.
 
-Three commands over the directory a `--save` run leaves. One re-reaches the
-audible verdict the session reached, and the other two ask what that verdict
-cannot see: a parameter that moves signal between the channels is invisible to a
+Four commands over the directory a `--save` run leaves. One re-reaches the
+audible verdict the session reached, and the rest ask what that verdict cannot
+see: a parameter that moves signal between the channels is invisible to a
 comparison made in one of them, and a parameter that modulates pitch is invisible
-to a comparison of two takes at all.
+to a comparison of two takes at all. The separation between the channels is then
+asked again band by band, which is what tells one channel scaled down from one
+carrying something with a shape of its own.
 
 None of them opens a MIDI port. The takes carry the settings, the stimuli and the
 label, so the only thing missing from the directory is the machine, and the
@@ -19,6 +21,8 @@ from . import options, report
 
 
 def register(sub) -> None:
+    from .. import efxbands
+
     p = sub.add_parser(
         "verdict",
         help="ask an audible verdict of takes recorded in an earlier session, with no "
@@ -61,6 +65,30 @@ def register(sub) -> None:
     )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_balance)
+
+    p = sub.add_parser(
+        "balance-bands",
+        help="say what a parameter did to the separation between the two channels band by "
+        "band, which tells one channel scaled from one with a shape of its own",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory a --save run left, or one holding several of them",
+    )
+    p.add_argument(
+        "--bands",
+        default="third-octave",
+        choices=sorted(efxbands.BAND_SETS),
+        help="the set of band centres, each read at the width that belongs to it",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=6.0,
+        help="dB a setting's spread across the bands must clear the flattest setting's by",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_balance_bands)
 
     p = sub.add_parser(
         "vibrato",
@@ -160,6 +188,54 @@ def cmd_balance(args: argparse.Namespace) -> int:
             "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
             "why_the_pair_is_in_input_order": balance.WHY_THE_PAIR_IS_IN_INPUT_ORDER,
             "moved_the_balance": moved,
+            "runs": [{"name": n, **v.to_json()} for n, v in found],
+        },
+    )
+    return 0
+
+
+def cmd_balance_bands(args: argparse.Namespace) -> int:
+    """Say what each saved run did to the separation, one band at a time."""
+    from pathlib import Path
+
+    from .. import balance
+
+    root = Path(args.takes)
+    roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
+    found = []
+    for one in roots:
+        if not (one / "takes-manifest.json").exists():
+            continue
+        for verdict in balance.by_band(one, margin_db=args.margin, band_set=args.bands):
+            print(f"{one.name}: {verdict.describe()}")
+            found.append((one.name, verdict))
+    if not found:
+        print(f"no saved takes under {args.takes}")
+        return 1
+
+    shaped = [n for n, v in found if v.depends_on_frequency]
+    unmeasured = [n for n, v in found if v.not_measured]
+    print(
+        f"\n{len(shaped)} of {len(found) - len(unmeasured)} separate differently by band: "
+        f"{' | '.join(shaped) or 'none'}"
+    )
+    if unmeasured:
+        print(f"{len(unmeasured)} could not be measured: {' | '.join(unmeasured)}")
+
+    report.write_json(
+        args.out,
+        {
+            "takes": str(args.takes),
+            "method": balance.SEPARATION_BY_BAND,
+            "why_the_windows_are_one_length": balance.WHY_THE_WINDOWS_ARE_ONE_LENGTH,
+            "why_a_flat_separation_is_the_yardstick": (
+                balance.WHY_A_FLAT_SEPARATION_IS_THE_YARDSTICK
+            ),
+            "why_a_band_has_to_repeat": balance.WHY_A_BAND_HAS_TO_REPEAT,
+            "why_the_pair_is_in_input_order": balance.WHY_THE_PAIR_IS_IN_INPUT_ORDER,
+            "band_above_the_floor_db": balance.BAND_ABOVE_THE_FLOOR_DB,
+            "band_repeats_within_db": balance.BAND_REPEATS_WITHIN_DB,
+            "separated_differently_by_band": shaped,
             "runs": [{"name": n, **v.to_json()} for n, v in found],
         },
     )

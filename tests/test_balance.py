@@ -281,3 +281,203 @@ def test_every_number_survives_the_json_round_trip(tmp_path) -> None:
     assert written["moved_between_settings"]
     assert [len(s["balance_db"]) for s in written["by_setting"]] == [4, 4]
     assert written["channels"] == [3, 2] or written["channels"] == [2, 3]
+
+
+BAND_TONES = (125.0, 250.0, 500.0, 1000.0, 2000.0)
+"""Third-octave centres a tone lands squarely inside, two octaves apart.
+
+Two octaves rather than one third, so that a band carrying a tone and a band
+carrying nothing but what the rest of the signal leaks into it are both in the
+set. A separation that holds in the first and not in the second is the whole
+question a band reading of one is asked.
+"""
+
+
+def _shaped(n: int, rate: int, levels: dict[float, float], seed: int) -> np.ndarray:
+    """One signal whose bands stand at given levels, and valleys between them."""
+    rng = np.random.default_rng(seed)
+    t = np.arange(n) / rate
+    out = rng.normal(0, 1.0, n) * 1e-6
+    for frequency, level in levels.items():
+        out += np.sin(2 * np.pi * frequency * t + rng.uniform(0, 6.28)) * 10 ** (level / 20)
+    return out
+
+
+def banded(
+    path,
+    *,
+    levels: dict[float, float],
+    attenuated_by_db: float,
+    floor_db: float,
+    seed: int,
+    only_in_the_quieter: dict[float, float] | None = None,
+) -> None:
+    """A take whose second channel is the first scaled, with an optional floor under it.
+
+    The floor is generated after the attenuation and does not go through it, which
+    is what a term added to a channel downstream of a multiplier looks like. With
+    the floor far below, the two channels are one signal and one number apart.
+
+    `only_in_the_quieter` puts content in the second channel and nowhere else, so
+    that one band of one take can be made to say something the other take does not.
+    """
+    rng = np.random.default_rng(seed)
+    rate, seconds = 8000, 4.0
+    n = int(rate * seconds)
+    lead = int(rate * LEAD)
+    near = np.zeros(n)
+    near[lead:] = _shaped(n - lead, rate, levels, seed)
+    far = near * 10 ** (-attenuated_by_db / 20)
+    far[lead:] += rng.normal(0, 1.0, n - lead) * 10 ** (floor_db / 20)
+    if only_in_the_quieter:
+        far[lead:] += _shaped(n - lead, rate, only_in_the_quieter, seed + 1)
+    frames = rng.normal(0, 1e-6, (n, 4))
+    frames[:, 2] += near
+    frames[:, 3] += far
+    write(path, frames, rate)
+
+
+def saved_bands(tmp_path, settings: dict[str, list[dict]], stimulus: str = "held") -> object:
+    takes = []
+    seed = 100
+    for setting, per_take in settings.items():
+        for index, how in enumerate(per_take):
+            name = f"{stimulus}-{setting}-{index:02d}.wav"
+            seed += 1
+            banded(tmp_path / name, seed=seed, **how)
+            takes.append({"stimulus": stimulus, "setting": setting, "take": index, "file": name})
+    (tmp_path / "takes-manifest.json").write_text(
+        json.dumps({"stimuli": [{"name": stimulus, "lead_s": LEAD}], "takes": takes})
+    )
+    return tmp_path
+
+
+def test_a_channel_that_is_the_other_one_scaled_separates_alike_in_every_band(tmp_path) -> None:
+    """What a pair of multipliers does, which is the reading's null.
+
+    A gain has no frequency in it, so however the source is shaped the two
+    channels stand the same distance apart in every band of it.
+    """
+    levels = {f: -20.0 for f in BAND_TONES}
+    root = saved_bands(
+        tmp_path,
+        {
+            "064": [{"levels": levels, "attenuated_by_db": 0.0, "floor_db": -120.0}] * 2,
+            "112": [{"levels": levels, "attenuated_by_db": 12.0, "floor_db": -120.0}] * 2,
+        },
+    )
+
+    (found,) = balance.by_band(root)
+
+    assert not found.depends_on_frequency
+    at = {s.setting: s for s in found.settings}
+    held = [v for v in at["112"].separation_db if v is not None]
+    assert held
+    assert all(abs(v - 12.0) < 1.0 for v in held)
+
+
+def test_a_floor_under_the_quieter_channel_shows_as_a_separation_that_has_a_shape(
+    tmp_path,
+) -> None:
+    """The one thing a broadband balance cannot tell from a pair of multipliers.
+
+    A term added after the multiplier is swamped where the signal is loud and
+    takes over where it is not, so the separation stops being one number -- and
+    broadband it still reads as a pan that stopped short of silence.
+    """
+    levels = {125.0: 0.0, 250.0: -40.0, 500.0: 0.0, 1000.0: -40.0, 2000.0: 0.0}
+    root = saved_bands(
+        tmp_path,
+        {
+            "064": [{"levels": levels, "attenuated_by_db": 0.0, "floor_db": -120.0}] * 2,
+            "127": [{"levels": levels, "attenuated_by_db": 40.0, "floor_db": -30.0}] * 2,
+        },
+    )
+
+    (found,) = balance.by_band(root)
+
+    assert found.depends_on_frequency
+    at = {s.setting: s for s in found.settings}
+    by_centre = dict(zip(found.centres, at["127"].separation_db, strict=True))
+    assert by_centre[125.0] is not None
+    assert by_centre[250.0] is not None
+    # The loud band still reports the multiplier; the quiet one reports the floor.
+    assert by_centre[125.0] > 30.0
+    assert by_centre[250.0] < 15.0
+
+
+def test_a_setting_the_run_holds_one_take_of_is_left_out_and_named(tmp_path) -> None:
+    """One take cannot say whether a band repeats, and zero scatter is not the answer.
+
+    Left out rather than read, because a band whose scatter is unknown would pass
+    the repeatability test it was never given.
+    """
+    levels = {f: -20.0 for f in BAND_TONES}
+    root = saved_bands(
+        tmp_path,
+        {
+            "000": [{"levels": levels, "attenuated_by_db": 0.0, "floor_db": -120.0}] * 2,
+            "064": [{"levels": levels, "attenuated_by_db": 6.0, "floor_db": -120.0}],
+            "127": [{"levels": levels, "attenuated_by_db": 12.0, "floor_db": -120.0}] * 2,
+        },
+    )
+
+    (found,) = balance.by_band(root)
+
+    assert found.settings_left_out == ["064"]
+    assert [s.setting for s in found.settings] == ["000", "127"]
+
+
+def test_a_band_the_two_takes_disagree_about_is_left_out_of_the_profile(tmp_path) -> None:
+    """A band can stand well over the interface's floor and still not repeat."""
+    steady = {f: -20.0 for f in BAND_TONES}
+    root = saved_bands(
+        tmp_path,
+        {
+            "064": [{"levels": steady, "attenuated_by_db": 0.0, "floor_db": -120.0}] * 2,
+            "127": [
+                {"levels": steady, "attenuated_by_db": 12.0, "floor_db": -120.0},
+                {
+                    "levels": steady,
+                    "attenuated_by_db": 12.0,
+                    "floor_db": -120.0,
+                    "only_in_the_quieter": {500.0: -28.0},
+                },
+            ],
+        },
+    )
+
+    (found,) = balance.by_band(root)
+
+    at = {s.setting: s for s in found.settings}
+    by_centre = dict(zip(found.centres, at["127"].separation_db, strict=True))
+    assert by_centre[500.0] is None
+    assert by_centre[250.0] is not None
+    assert max(at["127"].scatter_db) > balance.BAND_REPEATS_WITHIN_DB
+
+
+def test_the_rows_of_one_setting_are_on_one_scale_and_say_which(tmp_path) -> None:
+    """A record whose normaliser is not in it cannot lay two settings side by side.
+
+    The two channels' rows are against the two of them together, so their
+    difference is the separation exactly and the reference puts either back where
+    the take had it.
+    """
+    levels = {f: -20.0 for f in BAND_TONES}
+    root = saved_bands(
+        tmp_path,
+        {
+            "064": [{"levels": levels, "attenuated_by_db": 0.0, "floor_db": -120.0}] * 2,
+            "127": [{"levels": levels, "attenuated_by_db": 12.0, "floor_db": -120.0}] * 2,
+        },
+    )
+
+    written = balance.by_band(root)[0].to_json()
+
+    for block in written["by_setting"]:
+        assert isinstance(block["reference_db"], float)
+        for first, second, separation in zip(
+            block["first_db"], block["second_db"], block["separation_db"], strict=True
+        ):
+            if separation is not None:
+                assert abs((first - second) - separation) < 0.02

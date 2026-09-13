@@ -46,6 +46,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .efxbands import BAND_SETS, energies
 from .takes import read
 
 METHOD = (
@@ -317,16 +318,17 @@ def _pair_of_channels(
     return (pair[0], pair[1]), floor
 
 
-def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
-    """Read a saved run and say what each setting did to the balance.
+def _grouped(
+    root: Path,
+) -> tuple[dict[str, float], dict[str, dict[str, list[Path]]], dict[str, list[str]]]:
+    """A run's takes, by stimulus and then by setting, in the order it asked them.
 
-    One verdict per stimulus the run holds takes for, so a parameter asked under
-    several notes carries what each of them saw, as everywhere else here.
+    The order matters and a dictionary's insertion order is the only thing holding
+    it: a sweep's settings are a table's index, and a record that lists them
+    sorted as strings puts 8 after 120.
     """
-    root = Path(root)
     manifest = json.loads((root / "takes-manifest.json").read_text())
     leads = {s.get("name"): s.get("lead_s") or 0.6 for s in manifest.get("stimuli", [])}
-
     grouped: dict[str, dict[str, list[Path]]] = {}
     order: dict[str, list[str]] = {}
     for entry in manifest.get("takes", []):
@@ -336,6 +338,17 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
         seen = order.setdefault(stimulus, [])
         if setting not in seen:
             seen.append(setting)
+    return leads, grouped, order
+
+
+def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
+    """Read a saved run and say what each setting did to the balance.
+
+    One verdict per stimulus the run holds takes for, so a parameter asked under
+    several notes carries what each of them saw, as everywhere else here.
+    """
+    root = Path(root)
+    leads, grouped, order = _grouped(root)
 
     out = []
     for stimulus, settings in grouped.items():
@@ -374,10 +387,350 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
     return out
 
 
+BAND_ABOVE_THE_FLOOR_DB = 10.0
+"""How far a band of the quieter channel has to stand over its own lead to be read.
+
+Broadband the quieter channel can be thirty decibels clear of the lead while some
+band of it is not clear at all, because neither the signal nor the floor is flat.
+A separation computed in such a band is the distance from the louder channel to
+the converter, which is a number about the rig and would be published as a
+property of the byte.
+"""
+
+SEPARATION_BY_BAND = (
+    "The two channels the unit arrived on were measured band by band on every take, and what "
+    "is reported per band is the first channel's energy less the second's -- the same "
+    "difference the balance reports, asked of one band at a time instead of the whole take. "
+    "Both channels' bands are given against one number, the two of them together over the same "
+    "window, so the two rows are shapes that can be read on their own and their difference is "
+    "still exactly the separation."
+)
+
+WHY_THE_WINDOWS_ARE_ONE_LENGTH = (
+    "Every window read here is the length of the take's own lead, the body's being the average "
+    "of as many of them as fit between one lead's length after the note starts and one before "
+    "the take ends. A band's energy does not scale with the window the same way for a tone as "
+    "for noise -- summed over a band it grows with the window for one and with its square for "
+    "the other -- so a body read over seconds and a lead read over a fraction of one cannot be "
+    "subtracted without the answer depending on what was played. Matching the lengths removes "
+    "the question rather than correcting for it."
+)
+
+BAND_REPEATS_WITHIN_DB = 2.0
+"""How far a band's separation may move between a setting's own takes and be read.
+
+A broadband balance repeats to a hundredth of a decibel on this rig, so nothing
+there needs a rule of this kind. One band of a channel carrying almost nothing is
+a different reading: measured here, two takes of one byte disagree by eight
+decibels in bands where the quieter channel is thirty above the interface's floor
+and at the unit's own, and a curve drawn through those bands would be a shape read
+out of noise.
+
+The number is the coarsest thing the run's own flat settings need. Where the two
+channels carry the same signal every band repeats within a few tenths, so this
+leaves those untouched and reaches only the bands where the reading has stopped
+working.
+"""
+
+WHY_A_BAND_HAS_TO_REPEAT = (
+    "A band is read only where it cleared the take's own lead and where the setting's two "
+    "takes agreed about it. The second is not the first: a band of the quieter channel can sit "
+    "thirty decibels over the interface's floor and still be at the unit's own, and there it "
+    "returns a different figure on each take while never once looking like silence. Both "
+    "reasons a band was left out are named against it, so a profile with holes in it is a "
+    "statement about where the reading stopped rather than a curve that quietly got shorter."
+)
+
+WHY_A_FLAT_SEPARATION_IS_THE_YARDSTICK = (
+    "What a separation being frequency dependent has to be judged against is the same pair of "
+    "channels carrying the same signal, which is the setting whose separation varies least "
+    "across the bands. That is the chain's own mismatch between two inputs plus what a band "
+    "reading fails to repeat, and it is measured in the same run rather than assumed to be "
+    "zero. A sweep with no such setting in it has no yardstick here and says so."
+)
+
+
+@dataclass
+class BandSetting:
+    """One setting's two channels, band by band."""
+
+    setting: str
+    reference_db: float = 0.0
+    """The two channels together over the window, which every row here is against.
+
+    Published rather than divided out and forgotten. Without it no two settings
+    can be laid on one scale, and the question a band reading of a separation is
+    asked -- whether the quieter channel stopped falling while the louder one went
+    on -- is a question about two settings.
+    """
+
+    first_db: list[float] = field(default_factory=list)
+    second_db: list[float] = field(default_factory=list)
+    floor_db: list[float] = field(default_factory=list)
+    """Per band, the louder of the two channels' leads, on this setting's own scale.
+
+    Carried per setting rather than once for the run because every row here is
+    against the two channels together over the same window, and that number is
+    the setting's. A floor written once in the run's own units would be the one
+    row in the record a reader had to convert before using.
+    """
+
+    scatter_db: list[float] = field(default_factory=list)
+    """Per band, how far the separation moved between this setting's own takes.
+
+    The reading's own floor, per WHY_A_BAND_HAS_TO_REPEAT, and the one a broadband
+    balance does not need: over a whole take the two channels repeat to a hundredth
+    of a decibel, while a single band of a channel carrying almost nothing does not
+    repeat at all.
+    """
+
+    kept: list[bool] = field(default_factory=list)
+    """Whether the band cleared its own lead and repeated between the takes."""
+
+    @property
+    def separation_db(self) -> list[float | None]:
+        return [
+            round(a - b, 2) if keep else None
+            for a, b, keep in zip(self.first_db, self.second_db, self.kept, strict=True)
+        ]
+
+    @property
+    def spread_over_bands_db(self) -> float:
+        """How far the separation moved across the bands that were read."""
+        held = [v for v in self.separation_db if v is not None]
+        return float(max(held) - min(held)) if len(held) > 1 else 0.0
+
+    @property
+    def worst_scatter_db(self) -> float:
+        """The widest take-to-take scatter among the bands this setting kept."""
+        held = [s for s, keep in zip(self.scatter_db, self.kept, strict=True) if keep]
+        return max(held) if held else 0.0
+
+    def to_json(self) -> dict:
+        return {
+            "setting": self.setting,
+            "reference_db": round(self.reference_db, 2),
+            "separation_db": self.separation_db,
+            "first_db": [round(v, 2) for v in self.first_db],
+            "second_db": [round(v, 2) for v in self.second_db],
+            "floor_db": [round(v, 2) for v in self.floor_db],
+            "scatter_db": [round(v, 2) for v in self.scatter_db],
+            "spread_over_bands_db": round(self.spread_over_bands_db, 2),
+            "worst_scatter_db": round(self.worst_scatter_db, 2),
+            "bands_read": int(sum(self.kept)),
+        }
+
+
+@dataclass
+class BandVerdict:
+    """What one stimulus' settings did to the separation, band by band."""
+
+    stimulus: str
+    channels: tuple[int, int] | None
+    centres: list[float] = field(default_factory=list)
+    width_octaves: float = 1 / 3
+    settings: list[BandSetting] = field(default_factory=list)
+    settings_left_out: list[str] = field(default_factory=list)
+    """Settings the run holds one take of, which cannot say whether a band repeats."""
+
+    margin_db: float = 6.0
+    not_measured: str | None = None
+
+    @property
+    def flattest_db(self) -> float:
+        return min((s.spread_over_bands_db for s in self.settings), default=float("nan"))
+
+    @property
+    def widest_db(self) -> float:
+        return max((s.spread_over_bands_db for s in self.settings), default=float("nan"))
+
+    @property
+    def depends_on_frequency(self) -> bool:
+        """Whether some setting's separation varies across the bands and another's does not.
+
+        The asymmetry is the evidence, per WHY_A_FLAT_SEPARATION_IS_THE_YARDSTICK.
+        A pair of channels that never agree across the bands at any setting is a
+        chain with a response mismatch, and calling that the byte's would be
+        reporting the rig.
+        """
+        if len(self.settings) < 2:
+            return False
+        return bool(self.widest_db - self.flattest_db > self.margin_db)
+
+    def describe(self) -> str:
+        if self.not_measured:
+            return f"{self.stimulus}: not measured -- {self.not_measured}"
+        found = (
+            "the separation depends on which band it is read in"
+            if self.depends_on_frequency
+            else "the separation is the same in every band the run could read"
+        )
+        return (
+            f"{self.stimulus} (channels {self.channels[0]} and {self.channels[1]}): {found}. "
+            f"flattest setting spreads {self.flattest_db:.1f} dB over the bands, "
+            f"widest {self.widest_db:.1f}"
+        )
+
+    def to_json(self) -> dict:
+        if self.not_measured:
+            return {
+                "stimulus_name": self.stimulus,
+                "channels": None,
+                "measured": False,
+                "not_measured": self.not_measured,
+            }
+        return {
+            "stimulus_name": self.stimulus,
+            "channels": list(self.channels) if self.channels else None,
+            "measured": True,
+            "margin_db": self.margin_db,
+            "centres_hz": list(self.centres),
+            "width_octaves": round(self.width_octaves, 4),
+            "flattest_setting_spreads_db": round(self.flattest_db, 2),
+            "widest_setting_spreads_db": round(self.widest_db, 2),
+            "separation_depends_on_frequency": self.depends_on_frequency,
+            "settings_left_out_for_want_of_a_second_take": list(self.settings_left_out),
+            "by_setting": [s.to_json() for s in self.settings],
+        }
+
+
+def _one_length_windows(frames: np.ndarray, *, lead_n: int, start: int) -> list[np.ndarray]:
+    """The body as whole windows of the lead's own length, per WHY_THE_WINDOWS_ARE_ONE_LENGTH.
+
+    One window of the lead's length is dropped at each end of the body: the first
+    covers the note's onset, and the last would reach into whatever follows the
+    hold. What is left is averaged, so a band's figure is the mean of several
+    windows rather than one.
+    """
+    first = start + lead_n
+    last = frames.shape[0] - lead_n
+    return [frames[i : i + lead_n] for i in range(first, last - lead_n + 1, lead_n)]
+
+
+def _averaged_bands(windows: list[np.ndarray], channel: int, rate: int, centres, width) -> list:
+    """Band energies averaged over the windows, in power and then put back into dB."""
+    rows = [np.asarray(energies(w[:, channel], rate, centres, width)) for w in windows]
+    mean = np.mean([10.0 ** (row / 10.0) for row in rows], axis=0)
+    return [float(10.0 * np.log10(max(v, 1e-30))) for v in mean]
+
+
+def by_band(
+    root: str | Path,
+    *,
+    margin_db: float = 6.0,
+    band_set: str = "third-octave",
+) -> list[BandVerdict]:
+    """Read a saved run and say what each setting did to the separation, band by band.
+
+    The question a broadband balance cannot answer: whether the quieter channel is
+    the louder one scaled, which is what a pair of multipliers does, or something
+    with a shape of its own.
+    """
+    root = Path(root)
+    centres, width = BAND_SETS[band_set]
+    centres = list(centres)
+    leads, grouped, order = _grouped(root)
+
+    out = []
+    for stimulus, settings in grouped.items():
+        loaded = {k: [read(p) for p in v] for k, v in settings.items()}
+        loudest = max(
+            (loaded[s][0] for s in order[stimulus]), key=lambda t: float(np.abs(t[0]).max())
+        )
+        rate = loudest[1]
+        lead_s = leads.get(stimulus, 0.6)
+        lead_n = int(lead_s * 0.8 * rate)
+        head = loudest[0][:lead_n] if lead_n > rate // 100 else None
+        every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
+        channels, _floor = _pair_of_channels(every, head)
+        if channels is None or head is None:
+            out.append(BandVerdict(stimulus=stimulus, channels=None, not_measured=MONO_SOURCE))
+            continue
+        left, right = channels
+        floor = [
+            max(pair)
+            for pair in zip(
+                _averaged_bands([head], left, rate, centres, width),
+                _averaged_bands([head], right, rate, centres, width),
+                strict=True,
+            )
+        ]
+
+        measured: list[BandSetting] = []
+        left_out: list[str] = []
+        for setting in order[stimulus]:
+            rows: list[tuple[list[float], list[float]]] = []
+            for frames, _ in loaded[setting]:
+                windows = _one_length_windows(frames, lead_n=lead_n, start=int(lead_s * rate))
+                if not windows:
+                    continue
+                rows.append(
+                    (
+                        _averaged_bands(windows, left, rate, centres, width),
+                        _averaged_bands(windows, right, rate, centres, width),
+                    )
+                )
+            if len(rows) < 2:
+                # One take cannot say whether a band repeats, and a setting whose
+                # scatter is unknown would be read as a setting whose scatter is
+                # zero -- every band kept, on the one evidence this reading needs.
+                left_out.append(setting)
+                continue
+            firsts = np.mean([r[0] for r in rows], axis=0)
+            seconds = np.mean([r[1] for r in rows], axis=0)
+            per_take = np.asarray([np.asarray(r[0]) - np.asarray(r[1]) for r in rows])
+            scatter = (
+                per_take.max(axis=0) - per_take.min(axis=0)
+                if len(rows) > 1
+                else np.zeros(len(centres))
+            )
+            # One normaliser for the pair, so that the two rows are shapes a reader
+            # can use and their difference is still exactly the separation.
+            together = float(
+                10.0 * np.log10(np.mean(10.0 ** (firsts / 10.0) + 10.0 ** (seconds / 10.0)))
+            )
+            measured.append(
+                BandSetting(
+                    setting=setting,
+                    reference_db=together,
+                    first_db=[float(v) - together for v in firsts],
+                    second_db=[float(v) - together for v in seconds],
+                    floor_db=[v - together for v in floor],
+                    scatter_db=[float(v) for v in scatter],
+                    kept=[
+                        bool(min(a, b) > f + BAND_ABOVE_THE_FLOOR_DB)
+                        and bool(s <= BAND_REPEATS_WITHIN_DB)
+                        for a, b, f, s in zip(firsts, seconds, floor, scatter, strict=True)
+                    ],
+                )
+            )
+        out.append(
+            BandVerdict(
+                stimulus=stimulus,
+                channels=channels,
+                centres=centres,
+                width_octaves=width,
+                settings=measured,
+                settings_left_out=left_out,
+                margin_db=margin_db,
+            )
+        )
+    return out
+
+
 __all__ = [
+    "BAND_ABOVE_THE_FLOOR_DB",
+    "BAND_REPEATS_WITHIN_DB",
     "METHOD",
     "MONO_SOURCE",
     "SECOND_CHANNEL_ABOVE_DB",
+    "SEPARATION_BY_BAND",
+    "WHY_A_BAND_HAS_TO_REPEAT",
+    "WHY_A_FLAT_SEPARATION_IS_THE_YARDSTICK",
+    "WHY_THE_WINDOWS_ARE_ONE_LENGTH",
+    "BandSetting",
+    "BandVerdict",
+    "by_band",
     "WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED",
     "WHY_A_SEPARATION_NEEDS_A_CEILING",
     "WHY_NOT_A_LEVEL",
