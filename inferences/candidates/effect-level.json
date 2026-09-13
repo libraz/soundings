@@ -1,0 +1,72 @@
+{
+  "class": "effect-level",
+  "what_the_class_is": "The byte that says how loud an insertion effect comes back. Every one of the sixty-five types has one, printed 0 - 127 against the last parameter of its list, and the question is the same at every one of them. What multiplier does the byte stand for, and is that multiplier the byte itself.",
+
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A gain is one number, so a table of them is cheap. This is the opposite of the filter-frequency class and the reason to say so: a frequency entry is a set of coefficients and a designer buys as few as the ear needs, while a gain entry is a single multiplier and a hundred and twenty-eight of them fit in a hundred and twenty-eight bytes. Nothing about the period makes a designer prefer a runtime formula over storing the whole curve.",
+      "The multiplier is fixed point, so it lands on a whole number over some denominator. Which denominator is what says how the gain is stored, and it is measurable: a sweep of the byte at every value returns multipliers that are all near multiples of one quantum, or near nothing.",
+      "A denominator of 127 is a divide the part would not do. It is what a table of gains written to reach exactly unity at the top of the byte looks like, and it says the numbers were stored rather than computed -- the arithmetic a part actually runs at speed is a shift, so a computed multiplier would be the byte over 128.",
+      "The curve is not the byte. A fader that moves in equal steps of the byte sounds as though almost nothing happens over the top half and everything happens in the bottom eighth, and every mixing desk of the period is laid out to avoid that. A designer with a free table spends it here.",
+      "What the curve is cannot be argued from the period. Once the table is free, its values are a taste decision made once at a desk, and no amount of knowing the part narrows them."
+    ],
+    "would_be_wrong_if": "The measured multipliers landed no closer to multiples of 1/127 than to multiples of any other denominator, which would say the gain is computed at the part's own word length and there is no table to read."
+  },
+
+  "candidates": [
+    {
+      "id": "the-byte-is-the-multiplier",
+      "what": "No table at all: the gain is the byte over 127, so the byte is the multiplier and the level parameter costs one multiply.",
+      "predicts": {
+        "the_shape": "Six decibels for every doubling of the byte, everywhere, so the curve is a straight line against the byte in amplitude and a logarithm against it in decibels.",
+        "the_middle": "Setting 64 is 5.96 dB below setting 127.",
+        "the_quantum": "Every multiplier is a whole number over 127, because the byte is one."
+      }
+    },
+    {
+      "id": "the-byte-over-a-power-of-two",
+      "what": "The same, with the divide the part can actually do: the gain is the byte over 128, which is a multiply and a shift.",
+      "predicts": {
+        "the_shape": "The same shape as above. It differs from it only by a constant 0.068 dB at every setting, which is the whole of the difference between the two.",
+        "the_middle": "Setting 64 is 5.96 dB below setting 127, exactly as above.",
+        "the_quantum": "Every multiplier is a whole number over 128."
+      }
+    },
+    {
+      "id": "the-byte-squared",
+      "what": "The convention the MIDI volume controller is defined by: amplitude proportional to the square of the byte, so that the byte is linear in something nearer to loudness.",
+      "predicts": {
+        "the_shape": "Twelve decibels for every doubling of the byte.",
+        "the_middle": "Setting 64 is 11.9 dB below setting 127.",
+        "the_quantum": "Nothing in particular: a square computed at the part's word length lands on no quantum a sweep can see."
+      }
+    },
+    {
+      "id": "decibels-linear-in-the-byte",
+      "what": "A fader law: a constant number of decibels per step of the byte, which is what a control marked in decibels does and what an exponential taper on a physical fader gives.",
+      "predicts": {
+        "the_shape": "A straight line in decibels against the byte, so a constant step everywhere -- where every other candidate here has steps that grow enormously towards the bottom.",
+        "the_middle": "Whatever the range is divided by two. On a range reaching 40 dB down, setting 64 is 20 dB below setting 127.",
+        "the_quantum": "Nothing in particular."
+      }
+    },
+    {
+      "id": "a-stored-curve-of-seven-bit-multipliers",
+      "what": "A table of 128 entries, each a whole number over 127, whose values are a curve somebody chose rather than a formula the part evaluates. What it claims is the storage and not the values.",
+      "predicts": {
+        "the_shape": "Nothing. This candidate does not say what the curve is, and a reading of the curve is not evidence for it.",
+        "the_middle": "Nothing.",
+        "the_quantum": "Every multiplier is a whole number over 127 and none is a half. That is its whole content and it is the only thing it can be wrong about: measured against a scan of every nearby denominator, 127 has to be the one the readings sit closest to, and by a margin over what a random real would give."
+      }
+    }
+  ],
+
+  "what_no_candidate_here_predicts": [
+    "The absolute gain. What a take carries is the whole chain, the effect's own insertion loss included, and the run's bypass control says the chain is not transparent when its gains are centred -- it differs from the flat setting by up to four tenths of a decibel. So the byte over 127 and the byte over 128 are the same law under this reading, and separating them needs a chain whose unity gain is established rather than assumed.",
+    "Whether the byte means the same thing on the other sixty-four types. A level printed 0 - 127 against a reverb's return and one against an equaliser's output are the same printed range and need not be the same table.",
+    "What setting 0 is. A take at setting 0 sits a decibel above the same chain's silence, so the byte turns the effect off rather than turning it down to something -- which is a reading of the silence, and how far below the last audible setting it really is is not bounded by anything here."
+  ],
+
+  "note": "The reading that decides this class is not the curve, it is the quantum. A curve read off a sweep and published as a table is the measurement wearing the clothes of a law, and it is what this project caught itself doing on the equaliser's centre frequencies. What a candidate can be right or wrong about here is whether the multipliers land on a whole number over a stated denominator -- and that is decided by scanning every denominator nearby and reading the winner against the runner-up, not by trying one and reporting that it fitted."
+}
