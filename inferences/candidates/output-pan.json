@@ -1,0 +1,70 @@
+{
+  "class": "output-pan",
+  "what_the_class_is": "The byte that says where an insertion effect's output sits between the two channels. Forty-three rows over thirty types are printed `L63 - 0 - R63`, most of them as parameter nineteen of a tail four parameters long -- Low Gain, Hi Gain, Pan, Level -- which the same types carry in the same order. The question is what pair of multipliers the byte stands for, and whether the pair is one law or one law per type.",
+  "why_it_needs_its_own_reading": "Every other reading in this archive reduces a take to one channel, which is what makes a residual mean anything: two takes are compared sample against sample, so they have to be the same signal. A pan is exactly what that cannot see. It does not read as nothing there either -- a pan moved between two takes reads as the unit failing to repeat itself, which is a verdict about the machine wearing the parameter's name. The two figures this class turns on are the difference between the channels and the two of them together, and the second is the one that separates the candidates.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A pan is two multipliers, and the DSP applies them at audio rate while the control processor works them out once when the byte is written. So the cost that matters is not the multiply, it is whatever the control processor has to do between receiving a byte and handing over two numbers -- and in this period that is a table lookup, because a sine and a cosine are not something such a part computes on demand.",
+      "Which means the era decides that the pair is stored and does not decide what is stored. A table holding a sine-cosine pair and a part computing one are the same two numbers, and no reading of the output can tell them apart. What is left to measure is the shape, and the shape is a taste decision somebody made once at a desk.",
+      "The table is cheap. A hundred and twenty-eight settings of one multiplier is a hundred and twenty-eight bytes, and the far side is the near side read backwards if the law is symmetric, so the whole thing fits in half of that. Nothing about the period argues for spending arithmetic to avoid it.",
+      "There is a table of gains on this machine already -- the effect level's, measured at all hundred and twenty-eight settings and sitting on a 1/127 grid. A designer with one gain table and a pan to implement has a reason to index it twice rather than carry a second, and that is a prediction with a sharp edge: the pan's multipliers would land on values the level table holds.",
+      "Hard at the ends is not implied. A panpot that reaches silence costs nothing to store and a designer may still stop short of it, so whether the far channel goes to zero or to some floor is measured rather than assumed -- and what bounds it from below is this rig's own separation, not the unit's."
+    ],
+    "would_be_wrong_if": "The two channels together moved with the byte in a way no pair of multipliers reproduces -- if the byte reached the filter in front of the pan, or the level after it, rather than a pair of gains. A reading that shows the balance moving while the spectrum of either channel also moves is not a pan and this class does not hold it."
+  },
+  "candidates": [
+    {
+      "id": "a-crossfade-on-the-amplitudes",
+      "what": "The two multipliers are the byte and its complement, straight: one channel gets n/127 and the other (127-n)/127. The cheapest thing that can be called a pan, and the one a table is not needed for.",
+      "predicts": {
+        "the_two_together": "Three decibels down at the centre against either end, because two halves of an amplitude are a quarter of a power each and two quarters are a half.",
+        "the_difference": "At a quarter of the travel, 9.45 dB. At an eighth, 16.9 dB.",
+        "the_ends": "Silence in the far channel at both ends, so the separation is whatever this rig resolves and not a figure about the unit."
+      }
+    },
+    {
+      "id": "a-sine-cosine-pair",
+      "what": "The multipliers are the cosine and sine of a quarter turn spread over the byte, which is the pan every mixing desk of the period is laid out around: the two together hold still while the image moves.",
+      "predicts": {
+        "the_two_together": "Flat across every setting, to within what the run resolves.",
+        "the_difference": "At a quarter of the travel, 7.66 dB -- 1.79 dB apart from the crossfade, against a scatter measured at a hundredth of a decibel on this unit's part panpot. At an eighth, 13.98.",
+        "the_ends": "Silence in the far channel at both ends, as above, and each channel three decibels down at the centre."
+      }
+    },
+    {
+      "id": "the-far-side-alone-is-attenuated",
+      "what": "The near channel is left at unity and only the far one is turned down, which is what a part with one gain per channel and nothing to spend does. It is the cheapest of all and it is not a crossfade: nothing is taken away from the side being panned towards.",
+      "predicts": {
+        "the_two_together": "Three decibels UP at the centre against either end, which is the opposite sign to the crossfade and the reason these two are not variants of each other.",
+        "the_difference": "The same as whichever law attenuates the far side, so this candidate does not differ from its neighbours in the difference at all -- only in the total.",
+        "the_ends": "Silence in the far channel at both ends and unity in the near one, so the loudest channel never changes level across the whole sweep."
+      }
+    },
+    {
+      "id": "two-lookups-into-the-level-table",
+      "what": "The pan reuses the gain table the effect level already indexes, read at two places that move in opposite directions as the byte moves. One table serves two parameters, which is what a designer with a hundred and twenty-eight bytes already spent would do.",
+      "predicts": {
+        "the_two_together": "Whatever the level table's own shape gives, which is neither flat nor three decibels down: the level curve was measured not to be the byte, so the sum of two of its entries is not the sum of two straight lines either.",
+        "the_difference": "Every value the sweep returns is a difference of two entries the level table holds, so the multipliers land on the same 1/127 grid the level class measured and on no finer one.",
+        "the_ends": "Whatever the level table holds at its two ends, and the bottom of that table is a measured number rather than silence."
+      }
+    },
+    {
+      "id": "a-table-of-one-multiplier-per-side",
+      "what": "A free table: one pair of numbers per setting, stored and answering to nothing. This is what the machine has if the shape is none of the above.",
+      "predicts": {
+        "the_two_together": "Anything.",
+        "the_difference": "Anything.",
+        "the_ends": "Anything."
+      },
+      "kept_out_of_the_ranking": "A candidate with a free entry per setting cannot come out wrong, so it wins every gate and means nothing. It is here because it is what the machine may actually hold, and it is excluded by name wherever candidates are scored -- what a claim may rest on is the part of it a free table could not have arranged."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Whether the law is symmetric about the centre. A hundred and twenty-seven printed positions do not divide a hundred and twenty-eight byte values, so one value is spare, and where it went is a fact about the table rather than about the law. It is asked by reading both ends twice.",
+    "Whether the pan is one pan. The tail these rows sit in carries Low Gain and Hi Gain two parameters earlier, and those have already been measured to be one structure shared across types. That makes one shared pan the thing to expect and not the thing to assume, and it is asked by putting the same byte on types whose front halves have nothing in common.",
+    "What the machine's part panpot does. It is a different byte in a different block and it may or may not be the same table; the records for it exist and the comparison is a reading rather than a prior."
+  ],
+  "note": "The reading that decides this class is the total and not the difference. Three of the five candidates give the same difference to within a decibel or two and differ by six decibels in what the two channels together do at the centre, and the total is the figure a comparison made in one channel does not have at all."
+}
