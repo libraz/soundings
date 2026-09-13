@@ -9,8 +9,8 @@
       "--out",
       "data/units/roland-sc8850-01/balance/40-03-15-the-pan-under-three-voices.json"
     ],
-    "measured_at": "2026-09-13T19:19:42+00:00",
-    "elapsed_s": 0.1,
+    "measured_at": "2026-09-13T19:38:44+00:00",
+    "elapsed_s": 0.3,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -514,6 +514,18 @@
       }
     }
   ],
-  "what_this_asks": "Whether the byte does the same thing to the two channels under three voices, which is what says a reading of it is the pan's and not the patch's. Every take of the sweep beside this one was made under one voice, and a source that is already two signals compresses a difference between channels and stops it short of silence -- which is the pair of departures that sweep reports.",
-  "why_one_run_has_no_balance": "The three `level-at-zero` entries are the type's own output level written to zero with the pan hard over. Both channels then sit within a decibel of the take's own lead, so there is no second channel and no balance, and the stage says so rather than dividing one floor by another. What that run establishes is in `about.what_the_takes_hold`: it is a level and not a balance, and it is the whole of what reaches the output past the effect."
+  "findings": [
+    {
+      "kind": "what reaches the output with the effect's own output level at zero",
+      "runs": [
+        "level-at-zero"
+      ],
+      "held": {
+        "40 03 15": 0,
+        "40 03 16": 0
+      },
+      "read_in": "runs[name=level-at-zero].about.what_the_takes_hold",
+      "why": "A separation between two channels is the separation of whatever reached them, so a second path to the output that the parameter does not act on would set a floor under it that has nothing to do with the parameter. What is reported is what the two channels hold with the effect's own output level written to zero: if that is the take's own lead, there is no second path for the reading to be the sum of."
+    }
+  ]
 }

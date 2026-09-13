@@ -9,8 +9,8 @@
       "--out",
       "data/units/roland-sc8850-01/balance/40-03-15-the-output-pan-on-three-types.json"
     ],
-    "measured_at": "2026-09-13T19:19:39+00:00",
-    "elapsed_s": 0.2,
+    "measured_at": "2026-09-13T19:38:45+00:00",
+    "elapsed_s": 0.5,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -714,7 +714,6 @@
       }
     }
   ],
-  "what_the_byte_is": "40 03 15 is parameter nineteen of each of these types, which is offset 0x02 plus the printed parameter number. The manual prints it `L63 - 0 - R63` on thirty types, most of them at this same parameter, in a tail of four -- Low Gain, Hi Gain, Pan, Level -- that those types carry in the same order.",
   "what_bounds_the_separation": {
     "what_the_ends_reached": {
       "01-01": {
@@ -793,10 +792,11 @@
     "how_far_this_rig_has_separated": {
       "db": 58.69,
       "where": "balance/41-04-drum-note-36.json",
-      "on": "the same two inputs, 2 and 3",
-      "why_it_is_here": "A separation that stops has to be shown to be the unit's and not the rig's. The same pair of inputs returned 58.7 dB on a part panpot in the record named above, so a reading that stops near twenty is not stopping at what this chain resolves."
+      "on_channels": [
+        2,
+        3
+      ]
     },
-    "nothing_reaches_the_output_past_the_effect": "Measured in the record beside this one: with this type's output level written to zero and the pan hard over, both channels sit at -109.4 dB against a lead of -110.6, which is one decibel. There is no path around the effect's output stage for a separation to be the sum of."
-  },
-  "how_the_block_was_written": "Written and read back once per setting rather than once per take, so the repeats say how well a take repeats and not how well a write does. Every address in `held` was read back and matched before the setting was recorded, and a setting whose block did not read back is absent rather than recorded."
+    "why": "A separation that stops has to be shown to be the unit's and not the chain's, so what is reported beside it is how far apart the same two inputs have been measured to put a signal on some other address of the same unit. A reading that stops short of that is stopping somewhere the chain could have seen past; one that stops at it is a bound and not a figure about the parameter. The quieter channel's distance from the take's own lead is reported for the same reason and answers a different question -- whether the reading is a level at all."
+  }
 }
