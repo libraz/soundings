@@ -1,0 +1,2802 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-time",
+    "invocation": [
+      "efx-time",
+      ".cache/takes/every-step-of-a-pre-delay",
+      "--type",
+      "01 40",
+      "--slot",
+      "40 03 03",
+      "--setting",
+      "held-126-(?:delay|again)-(?P<value>\\d+)",
+      "--control",
+      "held-126-out-\\d+-00",
+      "--stimulus",
+      "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0",
+      "--longest",
+      "140.0",
+      "--frame",
+      "65536",
+      "--hop",
+      "16384",
+      "--hold",
+      "8.0",
+      "--held",
+      "40 42 22=01",
+      "--held",
+      "40 12 31=00",
+      "--held",
+      "40 03 04=00",
+      "--held",
+      "40 03 05=00",
+      "--held",
+      "40 03 06=00",
+      "--held",
+      "40 03 07=40",
+      "--held",
+      "40 03 08=00",
+      "--held",
+      "40 03 12=40",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-time/01-40-03-every-step-of-a-pre-delay.json"
+    ],
+    "measured_at": "2026-09-14T16:07:53+00:00",
+    "elapsed_s": 2.0,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "Where one insertion effect's delay slot put the copy it returns, at each setting of its byte, in milliseconds.",
+  "type": "01 40",
+  "address": "40 03 03",
+  "method": "One take per setting, with the effect's balance at the point that carries both the direct path and the return, so the output holds a sound and its copy at once. The cepstrum of the held part of the take is averaged over every frame that fits in it, the same curve taken with the part routed past the effect is subtracted, and the strongest peak of what is left is the delay. Two further peaks are reported beside it. The take is read from one channel named for the whole run, and a setting taken more than once gives the run its floor.",
+  "limits": "The reading places a copy and does not weigh one. How much of the output the return is does not come out of a cepstral peak -- the peak's height moves with it, but it moves with the stimulus and with the take's own roughness too, so the height is published as how far the peak stood over that roughness and is not a proportion of anything. A second tap and a feedback path both appear as further peaks at multiples of the first, which is where a single copy's own rahmonics appear as well, so this stage does not tell them apart and does not try. What it publishes is where the peaks are. The range searched is bounded at both ends by the frame: below by where a quefrency is shorter than the analysis can resolve, above by half the frame. A delay outside it is not reported as absent, it is not reported at all, and the searched range is in this record so that a reader can see which of the two a missing setting is.",
+  "not_in_this_record": "No curve and no table. Which shape these times lie on as the byte rises, and whether the steps between them are a stored table or a formula, is a fit across settings and types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "searched_ms": [
+    0.0625,
+    140.0
+  ],
+  "searched_asked_for_ms": [
+    0.0625,
+    140.0
+  ],
+  "why_searched": "What was searched, beside what was asked for. The frame reaches half of itself and no further, so a search asked past that is narrowed to it. The two are published separately because a record carrying only the wider figure would be claiming a range it never looked at -- and the one finding that would hide behind such a claim is a byte running past its printed end, which would come back sitting on the end and read as the page being right.",
+  "frame": 65536,
+  "hop": 16384,
+  "frames_averaged": 17,
+  "read_at_hz": 48000,
+  "why_read_at_hz": "The rate the takes were captured at, which is the grid every time below is quantised to: one quefrency is one sample of it. Stated rather than left to be divided back out of the step, which is rounded for reading and does not come back as a whole number of hertz -- and a reader comparing these times against a grid of their own needs the grid they are already on to be exact.",
+  "quefrency_step_ms": 0.020833,
+  "peaks_apart_ms": 0.0625,
+  "stands_out": 6.0,
+  "why_admitted": "A peak is read as a delay only where it stood over the carrier's own roughness by the margin an injected comb was measured to need. Below that the strongest peak of a curve is wherever the roughness happened to be highest, which is a number that looks exactly like a short delay and is not one. The settings that fail it are listed with what they returned rather than dropped: a byte whose bottom settings return nothing is a reading about the bottom of the range, and a record that simply omitted them would read as a shorter sweep.",
+  "floor_ms": 0.0,
+  "settings_taken_twice": [
+    64
+  ],
+  "why_floor": "How far apart the reading put one setting's own repeats, which is what a difference between two settings has to clear to be a difference. Null where no setting was taken twice -- in which case this run measured no floor, and the quefrency step below is the grid the answers are quantised to and not a substitute for one.",
+  "why_also": "The two next strongest peaks after the one read as the delay. A single copy puts its own at odd multiples of where it sits and not at even ones, because the even terms of the expanded log are negative; a second tap or a feedback path puts one at every multiple. Published so that which of those a reading found can be seen rather than assumed, and so that a first peak sitting at half of where the structure really is shows as a row whose neighbours do not fit.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "loudest in the takes with the effect out",
+    "reference_db": [
+      -69.8,
+      -75.0,
+      -51.9,
+      -61.9,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached while the takes with the effect out were sounding. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a full plausible cepstrum of something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "with_the_effect_out": {
+    "takes": [
+      "held-126-out-00-00.wav",
+      "held-126-out-01-00.wav"
+    ],
+    "ms": 0.0833,
+    "stands": 37.17,
+    "would_be_read_as_a_delay": false,
+    "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+    "with_nothing_in_its_path": {
+      "take": "held-126-out-00-00.wav",
+      "against": "held-126-out-01-00.wav",
+      "ms": 81.0,
+      "stands": 4.13,
+      "admitted": false
+    },
+    "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+  },
+  "held": [
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    },
+    {
+      "address": "40 12 31",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 08",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 12",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "Every address written before the takes were made, beside the one that was swept. A time read out of a cepstrum is a time through the whole chain, so what else was in the chain decides what the reading is of -- a feedback path returns further copies, a damping filter shapes them, and a balance that carries only the return leaves nothing for it to beat against and no peak at all.",
+  "takes_from": ".cache/takes/every-step-of-a-pre-delay",
+  "manifest": {
+    "lists": 0,
+    "files_present": 133,
+    "not_listed": [
+      "held-126-again-064-0-00.wav",
+      "held-126-again-064-1-00.wav",
+      "held-126-again-064-2-00.wav",
+      "held-126-delay-000-00.wav",
+      "held-126-delay-001-00.wav",
+      "held-126-delay-002-00.wav",
+      "held-126-delay-003-00.wav",
+      "held-126-delay-004-00.wav",
+      "held-126-delay-005-00.wav",
+      "held-126-delay-006-00.wav",
+      "held-126-delay-007-00.wav",
+      "held-126-delay-008-00.wav",
+      "held-126-delay-009-00.wav",
+      "held-126-delay-010-00.wav",
+      "held-126-delay-011-00.wav",
+      "held-126-delay-012-00.wav",
+      "held-126-delay-013-00.wav",
+      "held-126-delay-014-00.wav",
+      "held-126-delay-015-00.wav",
+      "held-126-delay-016-00.wav",
+      "held-126-delay-017-00.wav",
+      "held-126-delay-018-00.wav",
+      "held-126-delay-019-00.wav",
+      "held-126-delay-020-00.wav",
+      "held-126-delay-021-00.wav",
+      "held-126-delay-022-00.wav",
+      "held-126-delay-023-00.wav",
+      "held-126-delay-024-00.wav",
+      "held-126-delay-025-00.wav",
+      "held-126-delay-026-00.wav",
+      "held-126-delay-027-00.wav",
+      "held-126-delay-028-00.wav",
+      "held-126-delay-029-00.wav",
+      "held-126-delay-030-00.wav",
+      "held-126-delay-031-00.wav",
+      "held-126-delay-032-00.wav",
+      "held-126-delay-033-00.wav",
+      "held-126-delay-034-00.wav",
+      "held-126-delay-035-00.wav",
+      "held-126-delay-036-00.wav",
+      "held-126-delay-037-00.wav",
+      "held-126-delay-038-00.wav",
+      "held-126-delay-039-00.wav",
+      "held-126-delay-040-00.wav",
+      "held-126-delay-041-00.wav",
+      "held-126-delay-042-00.wav",
+      "held-126-delay-043-00.wav",
+      "held-126-delay-044-00.wav",
+      "held-126-delay-045-00.wav",
+      "held-126-delay-046-00.wav",
+      "held-126-delay-047-00.wav",
+      "held-126-delay-048-00.wav",
+      "held-126-delay-049-00.wav",
+      "held-126-delay-050-00.wav",
+      "held-126-delay-051-00.wav",
+      "held-126-delay-052-00.wav",
+      "held-126-delay-053-00.wav",
+      "held-126-delay-054-00.wav",
+      "held-126-delay-055-00.wav",
+      "held-126-delay-056-00.wav",
+      "held-126-delay-057-00.wav",
+      "held-126-delay-058-00.wav",
+      "held-126-delay-059-00.wav",
+      "held-126-delay-060-00.wav",
+      "held-126-delay-061-00.wav",
+      "held-126-delay-062-00.wav",
+      "held-126-delay-063-00.wav",
+      "held-126-delay-064-00.wav",
+      "held-126-delay-065-00.wav",
+      "held-126-delay-066-00.wav",
+      "held-126-delay-067-00.wav",
+      "held-126-delay-068-00.wav",
+      "held-126-delay-069-00.wav",
+      "held-126-delay-070-00.wav",
+      "held-126-delay-071-00.wav",
+      "held-126-delay-072-00.wav",
+      "held-126-delay-073-00.wav",
+      "held-126-delay-074-00.wav",
+      "held-126-delay-075-00.wav",
+      "held-126-delay-076-00.wav",
+      "held-126-delay-077-00.wav",
+      "held-126-delay-078-00.wav",
+      "held-126-delay-079-00.wav",
+      "held-126-delay-080-00.wav",
+      "held-126-delay-081-00.wav",
+      "held-126-delay-082-00.wav",
+      "held-126-delay-083-00.wav",
+      "held-126-delay-084-00.wav",
+      "held-126-delay-085-00.wav",
+      "held-126-delay-086-00.wav",
+      "held-126-delay-087-00.wav",
+      "held-126-delay-088-00.wav",
+      "held-126-delay-089-00.wav",
+      "held-126-delay-090-00.wav",
+      "held-126-delay-091-00.wav",
+      "held-126-delay-092-00.wav",
+      "held-126-delay-093-00.wav",
+      "held-126-delay-094-00.wav",
+      "held-126-delay-095-00.wav",
+      "held-126-delay-096-00.wav",
+      "held-126-delay-097-00.wav",
+      "held-126-delay-098-00.wav",
+      "held-126-delay-099-00.wav",
+      "held-126-delay-100-00.wav",
+      "held-126-delay-101-00.wav",
+      "held-126-delay-102-00.wav",
+      "held-126-delay-103-00.wav",
+      "held-126-delay-104-00.wav",
+      "held-126-delay-105-00.wav",
+      "held-126-delay-106-00.wav",
+      "held-126-delay-107-00.wav",
+      "held-126-delay-108-00.wav",
+      "held-126-delay-109-00.wav",
+      "held-126-delay-110-00.wav",
+      "held-126-delay-111-00.wav",
+      "held-126-delay-112-00.wav",
+      "held-126-delay-113-00.wav",
+      "held-126-delay-114-00.wav",
+      "held-126-delay-115-00.wav",
+      "held-126-delay-116-00.wav",
+      "held-126-delay-117-00.wav",
+      "held-126-delay-118-00.wav",
+      "held-126-delay-119-00.wav",
+      "held-126-delay-120-00.wav",
+      "held-126-delay-121-00.wav",
+      "held-126-delay-122-00.wav",
+      "held-126-delay-123-00.wav",
+      "held-126-delay-124-00.wav",
+      "held-126-delay-125-00.wav",
+      "held-126-delay-126-00.wav",
+      "held-126-delay-127-00.wav",
+      "held-126-out-00-00.wav",
+      "held-126-out-01-00.wav"
+    ],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127
+  ],
+  "settings_admitted": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127
+  ],
+  "readings": [
+    {
+      "value": 0,
+      "take": "held-126-delay-000-00.wav",
+      "ms": 0.0625,
+      "stands": 18.93,
+      "admitted": true,
+      "also_ms": [
+        0.125,
+        0.1875
+      ],
+      "also_stands": [
+        13.29,
+        10.75
+      ],
+      "roughness": 0.00158101,
+      "named_by": "file name"
+    },
+    {
+      "value": 1,
+      "take": "held-126-delay-001-00.wav",
+      "ms": 0.0833,
+      "stands": 54.24,
+      "admitted": true,
+      "also_ms": [
+        0.2917,
+        0.2292
+      ],
+      "also_stands": [
+        10.23,
+        3.71
+      ],
+      "roughness": 0.00406862,
+      "named_by": "file name"
+    },
+    {
+      "value": 2,
+      "take": "held-126-delay-002-00.wav",
+      "ms": 0.1875,
+      "stands": 60.45,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        0.5625
+      ],
+      "also_stands": [
+        10.47,
+        7.31
+      ],
+      "roughness": 0.00391577,
+      "named_by": "file name"
+    },
+    {
+      "value": 3,
+      "take": "held-126-delay-003-00.wav",
+      "ms": 0.2917,
+      "stands": 50.06,
+      "admitted": true,
+      "also_ms": [
+        0.8333,
+        0.0833
+      ],
+      "also_stands": [
+        9.29,
+        5.83
+      ],
+      "roughness": 0.00398452,
+      "named_by": "file name"
+    },
+    {
+      "value": 4,
+      "take": "held-126-delay-004-00.wav",
+      "ms": 0.375,
+      "stands": 59.81,
+      "admitted": true,
+      "also_ms": [
+        1.125,
+        0.0625
+      ],
+      "also_stands": [
+        9.06,
+        5.93
+      ],
+      "roughness": 0.00402621,
+      "named_by": "file name"
+    },
+    {
+      "value": 5,
+      "take": "held-126-delay-005-00.wav",
+      "ms": 0.5,
+      "stands": 59.97,
+      "admitted": true,
+      "also_ms": [
+        1.5,
+        0.375
+      ],
+      "also_stands": [
+        9.77,
+        5.61
+      ],
+      "roughness": 0.00392667,
+      "named_by": "file name"
+    },
+    {
+      "value": 6,
+      "take": "held-126-delay-006-00.wav",
+      "ms": 0.6042,
+      "stands": 50.08,
+      "admitted": true,
+      "also_ms": [
+        1.7917,
+        0.5208
+      ],
+      "also_stands": [
+        8.47,
+        5.97
+      ],
+      "roughness": 0.00403198,
+      "named_by": "file name"
+    },
+    {
+      "value": 7,
+      "take": "held-126-delay-007-00.wav",
+      "ms": 0.6875,
+      "stands": 59.98,
+      "admitted": true,
+      "also_ms": [
+        2.0625,
+        0.0833
+      ],
+      "also_stands": [
+        8.62,
+        4.75
+      ],
+      "roughness": 0.00398261,
+      "named_by": "file name"
+    },
+    {
+      "value": 8,
+      "take": "held-126-delay-008-00.wav",
+      "ms": 0.7708,
+      "stands": 49.3,
+      "admitted": true,
+      "also_ms": [
+        2.3333,
+        0.0625
+      ],
+      "also_stands": [
+        8.15,
+        5.61
+      ],
+      "roughness": 0.00391318,
+      "named_by": "file name"
+    },
+    {
+      "value": 9,
+      "take": "held-126-delay-009-00.wav",
+      "ms": 0.875,
+      "stands": 60.05,
+      "admitted": true,
+      "also_ms": [
+        2.625,
+        0.0625
+      ],
+      "also_stands": [
+        10.03,
+        5.34
+      ],
+      "roughness": 0.00398913,
+      "named_by": "file name"
+    },
+    {
+      "value": 10,
+      "take": "held-126-delay-010-00.wav",
+      "ms": 1.0,
+      "stands": 59.44,
+      "admitted": true,
+      "also_ms": [
+        3.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.57,
+        5.47
+      ],
+      "roughness": 0.00395307,
+      "named_by": "file name"
+    },
+    {
+      "value": 11,
+      "take": "held-126-delay-011-00.wav",
+      "ms": 1.1042,
+      "stands": 49.25,
+      "admitted": true,
+      "also_ms": [
+        3.2917,
+        0.0833
+      ],
+      "also_stands": [
+        8.77,
+        4.4
+      ],
+      "roughness": 0.0039439,
+      "named_by": "file name"
+    },
+    {
+      "value": 12,
+      "take": "held-126-delay-012-00.wav",
+      "ms": 1.1875,
+      "stands": 60.0,
+      "admitted": true,
+      "also_ms": [
+        3.5625,
+        0.0625
+      ],
+      "also_stands": [
+        9.15,
+        5.24
+      ],
+      "roughness": 0.00402178,
+      "named_by": "file name"
+    },
+    {
+      "value": 13,
+      "take": "held-126-delay-013-00.wav",
+      "ms": 1.2708,
+      "stands": 49.62,
+      "admitted": true,
+      "also_ms": [
+        3.8333,
+        1.3542
+      ],
+      "also_stands": [
+        8.34,
+        5.69
+      ],
+      "roughness": 0.00399029,
+      "named_by": "file name"
+    },
+    {
+      "value": 14,
+      "take": "held-126-delay-014-00.wav",
+      "ms": 1.375,
+      "stands": 59.46,
+      "admitted": true,
+      "also_ms": [
+        4.125,
+        0.0625
+      ],
+      "also_stands": [
+        9.03,
+        4.48
+      ],
+      "roughness": 0.00398536,
+      "named_by": "file name"
+    },
+    {
+      "value": 15,
+      "take": "held-126-delay-015-00.wav",
+      "ms": 1.5,
+      "stands": 60.74,
+      "admitted": true,
+      "also_ms": [
+        4.5,
+        0.0625
+      ],
+      "also_stands": [
+        9.11,
+        4.98
+      ],
+      "roughness": 0.0039177,
+      "named_by": "file name"
+    },
+    {
+      "value": 16,
+      "take": "held-126-delay-016-00.wav",
+      "ms": 1.5833,
+      "stands": 49.57,
+      "admitted": true,
+      "also_ms": [
+        4.7917,
+        0.0625
+      ],
+      "also_stands": [
+        8.56,
+        5.4
+      ],
+      "roughness": 0.00401291,
+      "named_by": "file name"
+    },
+    {
+      "value": 17,
+      "take": "held-126-delay-017-00.wav",
+      "ms": 1.6875,
+      "stands": 59.58,
+      "admitted": true,
+      "also_ms": [
+        5.0625,
+        1.5625
+      ],
+      "also_stands": [
+        8.73,
+        5.33
+      ],
+      "roughness": 0.0039731,
+      "named_by": "file name"
+    },
+    {
+      "value": 18,
+      "take": "held-126-delay-018-00.wav",
+      "ms": 1.7917,
+      "stands": 49.89,
+      "admitted": true,
+      "also_ms": [
+        5.3542,
+        1.7083
+      ],
+      "also_stands": [
+        8.23,
+        5.08
+      ],
+      "roughness": 0.00396825,
+      "named_by": "file name"
+    },
+    {
+      "value": 19,
+      "take": "held-126-delay-019-00.wav",
+      "ms": 1.875,
+      "stands": 60.2,
+      "admitted": true,
+      "also_ms": [
+        5.625,
+        0.0625
+      ],
+      "also_stands": [
+        9.5,
+        4.45
+      ],
+      "roughness": 0.00397828,
+      "named_by": "file name"
+    },
+    {
+      "value": 20,
+      "take": "held-126-delay-020-00.wav",
+      "ms": 2.0,
+      "stands": 59.66,
+      "admitted": true,
+      "also_ms": [
+        6.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.56,
+        4.35
+      ],
+      "roughness": 0.00396728,
+      "named_by": "file name"
+    },
+    {
+      "value": 21,
+      "take": "held-126-delay-021-00.wav",
+      "ms": 2.1042,
+      "stands": 49.69,
+      "admitted": true,
+      "also_ms": [
+        6.2917,
+        2.0208
+      ],
+      "also_stands": [
+        8.24,
+        5.29
+      ],
+      "roughness": 0.00400134,
+      "named_by": "file name"
+    },
+    {
+      "value": 22,
+      "take": "held-126-delay-022-00.wav",
+      "ms": 2.1875,
+      "stands": 60.16,
+      "admitted": true,
+      "also_ms": [
+        6.5625,
+        0.0625
+      ],
+      "also_stands": [
+        8.98,
+        5.0
+      ],
+      "roughness": 0.00395588,
+      "named_by": "file name"
+    },
+    {
+      "value": 23,
+      "take": "held-126-delay-023-00.wav",
+      "ms": 2.2917,
+      "stands": 48.98,
+      "admitted": true,
+      "also_ms": [
+        6.8542,
+        0.0625
+      ],
+      "also_stands": [
+        7.85,
+        4.67
+      ],
+      "roughness": 0.00396568,
+      "named_by": "file name"
+    },
+    {
+      "value": 24,
+      "take": "held-126-delay-024-00.wav",
+      "ms": 2.375,
+      "stands": 59.69,
+      "admitted": true,
+      "also_ms": [
+        7.125,
+        0.0625
+      ],
+      "also_stands": [
+        9.1,
+        5.6
+      ],
+      "roughness": 0.00394458,
+      "named_by": "file name"
+    },
+    {
+      "value": 25,
+      "take": "held-126-delay-025-00.wav",
+      "ms": 2.5,
+      "stands": 59.4,
+      "admitted": true,
+      "also_ms": [
+        7.5,
+        0.0625
+      ],
+      "also_stands": [
+        8.73,
+        5.5
+      ],
+      "roughness": 0.00395459,
+      "named_by": "file name"
+    },
+    {
+      "value": 26,
+      "take": "held-126-delay-026-00.wav",
+      "ms": 2.6042,
+      "stands": 49.37,
+      "admitted": true,
+      "also_ms": [
+        7.7917,
+        2.5208
+      ],
+      "also_stands": [
+        8.69,
+        4.79
+      ],
+      "roughness": 0.00397886,
+      "named_by": "file name"
+    },
+    {
+      "value": 27,
+      "take": "held-126-delay-027-00.wav",
+      "ms": 2.6875,
+      "stands": 60.46,
+      "admitted": true,
+      "also_ms": [
+        8.0625,
+        0.0625
+      ],
+      "also_stands": [
+        8.97,
+        4.59
+      ],
+      "roughness": 0.0039806,
+      "named_by": "file name"
+    },
+    {
+      "value": 28,
+      "take": "held-126-delay-028-00.wav",
+      "ms": 2.7708,
+      "stands": 50.01,
+      "admitted": true,
+      "also_ms": [
+        8.3542,
+        2.7083
+      ],
+      "also_stands": [
+        7.83,
+        5.15
+      ],
+      "roughness": 0.00395966,
+      "named_by": "file name"
+    },
+    {
+      "value": 29,
+      "take": "held-126-delay-029-00.wav",
+      "ms": 2.875,
+      "stands": 59.34,
+      "admitted": true,
+      "also_ms": [
+        8.625,
+        3.0
+      ],
+      "also_stands": [
+        9.45,
+        4.92
+      ],
+      "roughness": 0.00397212,
+      "named_by": "file name"
+    },
+    {
+      "value": 30,
+      "take": "held-126-delay-030-00.wav",
+      "ms": 3.0,
+      "stands": 60.65,
+      "admitted": true,
+      "also_ms": [
+        9.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.1,
+        4.52
+      ],
+      "roughness": 0.00401025,
+      "named_by": "file name"
+    },
+    {
+      "value": 31,
+      "take": "held-126-delay-031-00.wav",
+      "ms": 3.0833,
+      "stands": 49.89,
+      "admitted": true,
+      "also_ms": [
+        9.2708,
+        0.0625
+      ],
+      "also_stands": [
+        8.04,
+        4.93
+      ],
+      "roughness": 0.00393962,
+      "named_by": "file name"
+    },
+    {
+      "value": 32,
+      "take": "held-126-delay-032-00.wav",
+      "ms": 3.1875,
+      "stands": 59.84,
+      "admitted": true,
+      "also_ms": [
+        9.5625,
+        0.0625
+      ],
+      "also_stands": [
+        8.74,
+        5.01
+      ],
+      "roughness": 0.00393001,
+      "named_by": "file name"
+    },
+    {
+      "value": 33,
+      "take": "held-126-delay-033-00.wav",
+      "ms": 3.2917,
+      "stands": 50.37,
+      "admitted": true,
+      "also_ms": [
+        9.8333,
+        3.2083
+      ],
+      "also_stands": [
+        8.27,
+        5.83
+      ],
+      "roughness": 0.00399305,
+      "named_by": "file name"
+    },
+    {
+      "value": 34,
+      "take": "held-126-delay-034-00.wav",
+      "ms": 3.375,
+      "stands": 60.22,
+      "admitted": true,
+      "also_ms": [
+        10.125,
+        0.0625
+      ],
+      "also_stands": [
+        8.83,
+        4.55
+      ],
+      "roughness": 0.00399111,
+      "named_by": "file name"
+    },
+    {
+      "value": 35,
+      "take": "held-126-delay-035-00.wav",
+      "ms": 3.5,
+      "stands": 60.27,
+      "admitted": true,
+      "also_ms": [
+        10.5,
+        0.0625
+      ],
+      "also_stands": [
+        10.1,
+        4.23
+      ],
+      "roughness": 0.00393688,
+      "named_by": "file name"
+    },
+    {
+      "value": 36,
+      "take": "held-126-delay-036-00.wav",
+      "ms": 3.5833,
+      "stands": 49.27,
+      "admitted": true,
+      "also_ms": [
+        10.7917,
+        3.6667
+      ],
+      "also_stands": [
+        8.65,
+        5.62
+      ],
+      "roughness": 0.00403352,
+      "named_by": "file name"
+    },
+    {
+      "value": 37,
+      "take": "held-126-delay-037-00.wav",
+      "ms": 3.6875,
+      "stands": 60.07,
+      "admitted": true,
+      "also_ms": [
+        11.0625,
+        0.0625
+      ],
+      "also_stands": [
+        9.76,
+        4.53
+      ],
+      "roughness": 0.00394102,
+      "named_by": "file name"
+    },
+    {
+      "value": 38,
+      "take": "held-126-delay-038-00.wav",
+      "ms": 3.7708,
+      "stands": 49.12,
+      "admitted": true,
+      "also_ms": [
+        11.3333,
+        0.0625
+      ],
+      "also_stands": [
+        8.38,
+        4.45
+      ],
+      "roughness": 0.00393746,
+      "named_by": "file name"
+    },
+    {
+      "value": 39,
+      "take": "held-126-delay-039-00.wav",
+      "ms": 3.875,
+      "stands": 60.13,
+      "admitted": true,
+      "also_ms": [
+        11.625,
+        0.0625
+      ],
+      "also_stands": [
+        9.29,
+        4.95
+      ],
+      "roughness": 0.00397249,
+      "named_by": "file name"
+    },
+    {
+      "value": 40,
+      "take": "held-126-delay-040-00.wav",
+      "ms": 4.0,
+      "stands": 59.82,
+      "admitted": true,
+      "also_ms": [
+        12.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.13,
+        4.75
+      ],
+      "roughness": 0.00398481,
+      "named_by": "file name"
+    },
+    {
+      "value": 41,
+      "take": "held-126-delay-041-00.wav",
+      "ms": 4.1042,
+      "stands": 49.34,
+      "admitted": true,
+      "also_ms": [
+        12.2708,
+        0.0625
+      ],
+      "also_stands": [
+        7.68,
+        5.29
+      ],
+      "roughness": 0.00401439,
+      "named_by": "file name"
+    },
+    {
+      "value": 42,
+      "take": "held-126-delay-042-00.wav",
+      "ms": 4.1875,
+      "stands": 60.15,
+      "admitted": true,
+      "also_ms": [
+        12.5625,
+        0.0625
+      ],
+      "also_stands": [
+        8.46,
+        4.87
+      ],
+      "roughness": 0.00398713,
+      "named_by": "file name"
+    },
+    {
+      "value": 43,
+      "take": "held-126-delay-043-00.wav",
+      "ms": 4.2708,
+      "stands": 49.43,
+      "admitted": true,
+      "also_ms": [
+        12.8333,
+        4.3542
+      ],
+      "also_stands": [
+        7.58,
+        5.37
+      ],
+      "roughness": 0.00400253,
+      "named_by": "file name"
+    },
+    {
+      "value": 44,
+      "take": "held-126-delay-044-00.wav",
+      "ms": 4.375,
+      "stands": 58.96,
+      "admitted": true,
+      "also_ms": [
+        13.125,
+        0.0625
+      ],
+      "also_stands": [
+        9.18,
+        5.03
+      ],
+      "roughness": 0.00393307,
+      "named_by": "file name"
+    },
+    {
+      "value": 45,
+      "take": "held-126-delay-045-00.wav",
+      "ms": 4.5,
+      "stands": 60.1,
+      "admitted": true,
+      "also_ms": [
+        13.5,
+        0.0625
+      ],
+      "also_stands": [
+        9.44,
+        4.67
+      ],
+      "roughness": 0.00399198,
+      "named_by": "file name"
+    },
+    {
+      "value": 46,
+      "take": "held-126-delay-046-00.wav",
+      "ms": 4.5833,
+      "stands": 49.51,
+      "admitted": true,
+      "also_ms": [
+        13.7708,
+        0.0625
+      ],
+      "also_stands": [
+        7.83,
+        5.26
+      ],
+      "roughness": 0.003972,
+      "named_by": "file name"
+    },
+    {
+      "value": 47,
+      "take": "held-126-delay-047-00.wav",
+      "ms": 4.6875,
+      "stands": 60.03,
+      "admitted": true,
+      "also_ms": [
+        14.0625,
+        0.0625
+      ],
+      "also_stands": [
+        9.12,
+        4.84
+      ],
+      "roughness": 0.0039771,
+      "named_by": "file name"
+    },
+    {
+      "value": 48,
+      "take": "held-126-delay-048-00.wav",
+      "ms": 4.7917,
+      "stands": 49.52,
+      "admitted": true,
+      "also_ms": [
+        14.3333,
+        4.7083
+      ],
+      "also_stands": [
+        8.1,
+        5.4
+      ],
+      "roughness": 0.00398692,
+      "named_by": "file name"
+    },
+    {
+      "value": 49,
+      "take": "held-126-delay-049-00.wav",
+      "ms": 4.875,
+      "stands": 59.95,
+      "admitted": true,
+      "also_ms": [
+        14.625,
+        0.0625
+      ],
+      "also_stands": [
+        9.71,
+        3.98
+      ],
+      "roughness": 0.00397266,
+      "named_by": "file name"
+    },
+    {
+      "value": 50,
+      "take": "held-126-delay-050-00.wav",
+      "ms": 5.0,
+      "stands": 60.16,
+      "admitted": true,
+      "also_ms": [
+        15.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.93,
+        4.41
+      ],
+      "roughness": 0.00398281,
+      "named_by": "file name"
+    },
+    {
+      "value": 51,
+      "take": "held-126-delay-051-00.wav",
+      "ms": 5.5,
+      "stands": 59.78,
+      "admitted": true,
+      "also_ms": [
+        16.5,
+        0.0625
+      ],
+      "also_stands": [
+        8.77,
+        4.49
+      ],
+      "roughness": 0.00396526,
+      "named_by": "file name"
+    },
+    {
+      "value": 52,
+      "take": "held-126-delay-052-00.wav",
+      "ms": 6.0,
+      "stands": 60.33,
+      "admitted": true,
+      "also_ms": [
+        18.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.51,
+        4.74
+      ],
+      "roughness": 0.00397247,
+      "named_by": "file name"
+    },
+    {
+      "value": 53,
+      "take": "held-126-delay-053-00.wav",
+      "ms": 6.5,
+      "stands": 59.65,
+      "admitted": true,
+      "also_ms": [
+        19.5,
+        6.375
+      ],
+      "also_stands": [
+        9.21,
+        4.47
+      ],
+      "roughness": 0.00401898,
+      "named_by": "file name"
+    },
+    {
+      "value": 54,
+      "take": "held-126-delay-054-00.wav",
+      "ms": 7.0,
+      "stands": 59.43,
+      "admitted": true,
+      "also_ms": [
+        21.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.69,
+        4.96
+      ],
+      "roughness": 0.00392183,
+      "named_by": "file name"
+    },
+    {
+      "value": 55,
+      "take": "held-126-delay-055-00.wav",
+      "ms": 7.5,
+      "stands": 60.23,
+      "admitted": true,
+      "also_ms": [
+        22.5,
+        0.0625
+      ],
+      "also_stands": [
+        9.0,
+        5.85
+      ],
+      "roughness": 0.00394108,
+      "named_by": "file name"
+    },
+    {
+      "value": 56,
+      "take": "held-126-delay-056-00.wav",
+      "ms": 8.0,
+      "stands": 60.08,
+      "admitted": true,
+      "also_ms": [
+        24.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.95,
+        4.76
+      ],
+      "roughness": 0.00396243,
+      "named_by": "file name"
+    },
+    {
+      "value": 57,
+      "take": "held-126-delay-057-00.wav",
+      "ms": 8.5,
+      "stands": 59.87,
+      "admitted": true,
+      "also_ms": [
+        25.5,
+        0.0625
+      ],
+      "also_stands": [
+        9.99,
+        4.46
+      ],
+      "roughness": 0.00398209,
+      "named_by": "file name"
+    },
+    {
+      "value": 58,
+      "take": "held-126-delay-058-00.wav",
+      "ms": 9.0,
+      "stands": 60.03,
+      "admitted": true,
+      "also_ms": [
+        27.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.48,
+        4.74
+      ],
+      "roughness": 0.0039771,
+      "named_by": "file name"
+    },
+    {
+      "value": 59,
+      "take": "held-126-delay-059-00.wav",
+      "ms": 9.5,
+      "stands": 60.21,
+      "admitted": true,
+      "also_ms": [
+        28.5,
+        0.0625
+      ],
+      "also_stands": [
+        9.22,
+        4.2
+      ],
+      "roughness": 0.00395388,
+      "named_by": "file name"
+    },
+    {
+      "value": 60,
+      "take": "held-126-delay-060-00.wav",
+      "ms": 10.0,
+      "stands": 59.9,
+      "admitted": true,
+      "also_ms": [
+        30.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.95,
+        4.97
+      ],
+      "roughness": 0.00395071,
+      "named_by": "file name"
+    },
+    {
+      "value": 61,
+      "take": "held-126-delay-061-00.wav",
+      "ms": 11.0,
+      "stands": 60.35,
+      "admitted": true,
+      "also_ms": [
+        33.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.22,
+        4.93
+      ],
+      "roughness": 0.00397484,
+      "named_by": "file name"
+    },
+    {
+      "value": 62,
+      "take": "held-126-delay-062-00.wav",
+      "ms": 12.0,
+      "stands": 60.13,
+      "admitted": true,
+      "also_ms": [
+        36.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.41,
+        4.73
+      ],
+      "roughness": 0.0039648,
+      "named_by": "file name"
+    },
+    {
+      "value": 63,
+      "take": "held-126-delay-063-00.wav",
+      "ms": 13.0,
+      "stands": 60.38,
+      "admitted": true,
+      "also_ms": [
+        39.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.04,
+        4.96
+      ],
+      "roughness": 0.00393235,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-126-again-064-0-00.wav",
+      "ms": 14.0,
+      "stands": 60.29,
+      "admitted": true,
+      "also_ms": [
+        42.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.91,
+        4.73
+      ],
+      "roughness": 0.00394848,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-126-again-064-1-00.wav",
+      "ms": 14.0,
+      "stands": 59.8,
+      "admitted": true,
+      "also_ms": [
+        42.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.72,
+        4.79
+      ],
+      "roughness": 0.00397098,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-126-again-064-2-00.wav",
+      "ms": 14.0,
+      "stands": 59.96,
+      "admitted": true,
+      "also_ms": [
+        42.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.41,
+        4.63
+      ],
+      "roughness": 0.00395255,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-126-delay-064-00.wav",
+      "ms": 14.0,
+      "stands": 60.42,
+      "admitted": true,
+      "also_ms": [
+        42.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.95,
+        5.29
+      ],
+      "roughness": 0.00393866,
+      "named_by": "file name"
+    },
+    {
+      "value": 65,
+      "take": "held-126-delay-065-00.wav",
+      "ms": 15.0,
+      "stands": 60.29,
+      "admitted": true,
+      "also_ms": [
+        45.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.24,
+        4.48
+      ],
+      "roughness": 0.00393404,
+      "named_by": "file name"
+    },
+    {
+      "value": 66,
+      "take": "held-126-delay-066-00.wav",
+      "ms": 16.0,
+      "stands": 59.73,
+      "admitted": true,
+      "also_ms": [
+        48.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.12,
+        4.76
+      ],
+      "roughness": 0.00397218,
+      "named_by": "file name"
+    },
+    {
+      "value": 67,
+      "take": "held-126-delay-067-00.wav",
+      "ms": 17.0,
+      "stands": 60.3,
+      "admitted": true,
+      "also_ms": [
+        51.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.43,
+        4.8
+      ],
+      "roughness": 0.00392344,
+      "named_by": "file name"
+    },
+    {
+      "value": 68,
+      "take": "held-126-delay-068-00.wav",
+      "ms": 18.0,
+      "stands": 60.08,
+      "admitted": true,
+      "also_ms": [
+        54.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.5,
+        4.81
+      ],
+      "roughness": 0.0039526,
+      "named_by": "file name"
+    },
+    {
+      "value": 69,
+      "take": "held-126-delay-069-00.wav",
+      "ms": 19.0,
+      "stands": 60.13,
+      "admitted": true,
+      "also_ms": [
+        57.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.94,
+        4.85
+      ],
+      "roughness": 0.00394991,
+      "named_by": "file name"
+    },
+    {
+      "value": 70,
+      "take": "held-126-delay-070-00.wav",
+      "ms": 20.0,
+      "stands": 60.15,
+      "admitted": true,
+      "also_ms": [
+        60.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.87,
+        4.65
+      ],
+      "roughness": 0.00393715,
+      "named_by": "file name"
+    },
+    {
+      "value": 71,
+      "take": "held-126-delay-071-00.wav",
+      "ms": 21.0,
+      "stands": 60.21,
+      "admitted": true,
+      "also_ms": [
+        63.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.02,
+        4.64
+      ],
+      "roughness": 0.00391666,
+      "named_by": "file name"
+    },
+    {
+      "value": 72,
+      "take": "held-126-delay-072-00.wav",
+      "ms": 22.0,
+      "stands": 59.81,
+      "admitted": true,
+      "also_ms": [
+        66.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.83,
+        5.2
+      ],
+      "roughness": 0.00398261,
+      "named_by": "file name"
+    },
+    {
+      "value": 73,
+      "take": "held-126-delay-073-00.wav",
+      "ms": 23.0,
+      "stands": 59.78,
+      "admitted": true,
+      "also_ms": [
+        69.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.63,
+        4.51
+      ],
+      "roughness": 0.00397338,
+      "named_by": "file name"
+    },
+    {
+      "value": 74,
+      "take": "held-126-delay-074-00.wav",
+      "ms": 24.0,
+      "stands": 60.27,
+      "admitted": true,
+      "also_ms": [
+        72.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.3,
+        5.23
+      ],
+      "roughness": 0.00392601,
+      "named_by": "file name"
+    },
+    {
+      "value": 75,
+      "take": "held-126-delay-075-00.wav",
+      "ms": 25.0,
+      "stands": 60.12,
+      "admitted": true,
+      "also_ms": [
+        75.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.97,
+        4.84
+      ],
+      "roughness": 0.00393162,
+      "named_by": "file name"
+    },
+    {
+      "value": 76,
+      "take": "held-126-delay-076-00.wav",
+      "ms": 26.0,
+      "stands": 60.21,
+      "admitted": true,
+      "also_ms": [
+        78.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.07,
+        4.71
+      ],
+      "roughness": 0.00392389,
+      "named_by": "file name"
+    },
+    {
+      "value": 77,
+      "take": "held-126-delay-077-00.wav",
+      "ms": 27.0,
+      "stands": 60.04,
+      "admitted": true,
+      "also_ms": [
+        81.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.88,
+        4.91
+      ],
+      "roughness": 0.00395094,
+      "named_by": "file name"
+    },
+    {
+      "value": 78,
+      "take": "held-126-delay-078-00.wav",
+      "ms": 28.0,
+      "stands": 59.71,
+      "admitted": true,
+      "also_ms": [
+        84.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.75,
+        4.54
+      ],
+      "roughness": 0.00393589,
+      "named_by": "file name"
+    },
+    {
+      "value": 79,
+      "take": "held-126-delay-079-00.wav",
+      "ms": 29.0,
+      "stands": 60.12,
+      "admitted": true,
+      "also_ms": [
+        87.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.66,
+        5.21
+      ],
+      "roughness": 0.00392856,
+      "named_by": "file name"
+    },
+    {
+      "value": 80,
+      "take": "held-126-delay-080-00.wav",
+      "ms": 30.0,
+      "stands": 60.29,
+      "admitted": true,
+      "also_ms": [
+        90.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.21,
+        4.48
+      ],
+      "roughness": 0.0039445,
+      "named_by": "file name"
+    },
+    {
+      "value": 81,
+      "take": "held-126-delay-081-00.wav",
+      "ms": 31.0,
+      "stands": 60.44,
+      "admitted": true,
+      "also_ms": [
+        93.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.78,
+        5.01
+      ],
+      "roughness": 0.0038966,
+      "named_by": "file name"
+    },
+    {
+      "value": 82,
+      "take": "held-126-delay-082-00.wav",
+      "ms": 32.0,
+      "stands": 60.24,
+      "admitted": true,
+      "also_ms": [
+        96.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.03,
+        4.96
+      ],
+      "roughness": 0.0039312,
+      "named_by": "file name"
+    },
+    {
+      "value": 83,
+      "take": "held-126-delay-083-00.wav",
+      "ms": 33.0,
+      "stands": 60.02,
+      "admitted": true,
+      "also_ms": [
+        99.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.32,
+        4.6
+      ],
+      "roughness": 0.00388286,
+      "named_by": "file name"
+    },
+    {
+      "value": 84,
+      "take": "held-126-delay-084-00.wav",
+      "ms": 34.0,
+      "stands": 60.51,
+      "admitted": true,
+      "also_ms": [
+        102.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.67,
+        5.21
+      ],
+      "roughness": 0.00392157,
+      "named_by": "file name"
+    },
+    {
+      "value": 85,
+      "take": "held-126-delay-085-00.wav",
+      "ms": 35.0,
+      "stands": 60.15,
+      "admitted": true,
+      "also_ms": [
+        105.0,
+        34.875
+      ],
+      "also_stands": [
+        8.91,
+        4.31
+      ],
+      "roughness": 0.00390681,
+      "named_by": "file name"
+    },
+    {
+      "value": 86,
+      "take": "held-126-delay-086-00.wav",
+      "ms": 36.0,
+      "stands": 60.46,
+      "admitted": true,
+      "also_ms": [
+        108.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.05,
+        4.6
+      ],
+      "roughness": 0.00389878,
+      "named_by": "file name"
+    },
+    {
+      "value": 87,
+      "take": "held-126-delay-087-00.wav",
+      "ms": 37.0,
+      "stands": 59.67,
+      "admitted": true,
+      "also_ms": [
+        111.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.29,
+        5.0
+      ],
+      "roughness": 0.00391515,
+      "named_by": "file name"
+    },
+    {
+      "value": 88,
+      "take": "held-126-delay-088-00.wav",
+      "ms": 38.0,
+      "stands": 60.37,
+      "admitted": true,
+      "also_ms": [
+        114.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.7,
+        4.7
+      ],
+      "roughness": 0.00387484,
+      "named_by": "file name"
+    },
+    {
+      "value": 89,
+      "take": "held-126-delay-089-00.wav",
+      "ms": 39.0,
+      "stands": 60.2,
+      "admitted": true,
+      "also_ms": [
+        117.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.98,
+        5.14
+      ],
+      "roughness": 0.00384991,
+      "named_by": "file name"
+    },
+    {
+      "value": 90,
+      "take": "held-126-delay-090-00.wav",
+      "ms": 40.0,
+      "stands": 60.61,
+      "admitted": true,
+      "also_ms": [
+        120.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.56,
+        4.89
+      ],
+      "roughness": 0.00384154,
+      "named_by": "file name"
+    },
+    {
+      "value": 91,
+      "take": "held-126-delay-091-00.wav",
+      "ms": 41.0,
+      "stands": 60.62,
+      "admitted": true,
+      "also_ms": [
+        123.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.05,
+        5.19
+      ],
+      "roughness": 0.00384403,
+      "named_by": "file name"
+    },
+    {
+      "value": 92,
+      "take": "held-126-delay-092-00.wav",
+      "ms": 42.0,
+      "stands": 60.31,
+      "admitted": true,
+      "also_ms": [
+        126.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.87,
+        4.81
+      ],
+      "roughness": 0.00389317,
+      "named_by": "file name"
+    },
+    {
+      "value": 93,
+      "take": "held-126-delay-093-00.wav",
+      "ms": 43.0,
+      "stands": 60.25,
+      "admitted": true,
+      "also_ms": [
+        129.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.96,
+        4.46
+      ],
+      "roughness": 0.00386696,
+      "named_by": "file name"
+    },
+    {
+      "value": 94,
+      "take": "held-126-delay-094-00.wav",
+      "ms": 44.0,
+      "stands": 60.39,
+      "admitted": true,
+      "also_ms": [
+        132.0,
+        0.0625
+      ],
+      "also_stands": [
+        9.24,
+        5.03
+      ],
+      "roughness": 0.00387377,
+      "named_by": "file name"
+    },
+    {
+      "value": 95,
+      "take": "held-126-delay-095-00.wav",
+      "ms": 45.0,
+      "stands": 60.62,
+      "admitted": true,
+      "also_ms": [
+        135.0,
+        0.0833
+      ],
+      "also_stands": [
+        9.04,
+        4.7
+      ],
+      "roughness": 0.00386192,
+      "named_by": "file name"
+    },
+    {
+      "value": 96,
+      "take": "held-126-delay-096-00.wav",
+      "ms": 46.0,
+      "stands": 60.53,
+      "admitted": true,
+      "also_ms": [
+        138.0,
+        0.0625
+      ],
+      "also_stands": [
+        8.82,
+        4.53
+      ],
+      "roughness": 0.0038487,
+      "named_by": "file name"
+    },
+    {
+      "value": 97,
+      "take": "held-126-delay-097-00.wav",
+      "ms": 47.0,
+      "stands": 61.32,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        46.875
+      ],
+      "also_stands": [
+        4.95,
+        3.88
+      ],
+      "roughness": 0.00385035,
+      "named_by": "file name"
+    },
+    {
+      "value": 98,
+      "take": "held-126-delay-098-00.wav",
+      "ms": 48.0,
+      "stands": 60.83,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        47.875
+      ],
+      "also_stands": [
+        5.01,
+        3.86
+      ],
+      "roughness": 0.00381169,
+      "named_by": "file name"
+    },
+    {
+      "value": 99,
+      "take": "held-126-delay-099-00.wav",
+      "ms": 49.0,
+      "stands": 60.77,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        48.875
+      ],
+      "also_stands": [
+        5.03,
+        3.7
+      ],
+      "roughness": 0.00382242,
+      "named_by": "file name"
+    },
+    {
+      "value": 100,
+      "take": "held-126-delay-100-00.wav",
+      "ms": 50.0,
+      "stands": 60.48,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        49.875
+      ],
+      "also_stands": [
+        5.31,
+        3.61
+      ],
+      "roughness": 0.00379726,
+      "named_by": "file name"
+    },
+    {
+      "value": 101,
+      "take": "held-126-delay-101-00.wav",
+      "ms": 52.0,
+      "stands": 60.97,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        51.875
+      ],
+      "also_stands": [
+        5.2,
+        4.05
+      ],
+      "roughness": 0.00379001,
+      "named_by": "file name"
+    },
+    {
+      "value": 102,
+      "take": "held-126-delay-102-00.wav",
+      "ms": 54.0,
+      "stands": 61.11,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        53.875
+      ],
+      "also_stands": [
+        4.54,
+        3.9
+      ],
+      "roughness": 0.00380073,
+      "named_by": "file name"
+    },
+    {
+      "value": 103,
+      "take": "held-126-delay-103-00.wav",
+      "ms": 56.0,
+      "stands": 60.92,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        55.875
+      ],
+      "also_stands": [
+        5.12,
+        4.37
+      ],
+      "roughness": 0.00381501,
+      "named_by": "file name"
+    },
+    {
+      "value": 104,
+      "take": "held-126-delay-104-00.wav",
+      "ms": 58.0,
+      "stands": 60.41,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        57.875
+      ],
+      "also_stands": [
+        4.76,
+        4.12
+      ],
+      "roughness": 0.00377884,
+      "named_by": "file name"
+    },
+    {
+      "value": 105,
+      "take": "held-126-delay-105-00.wav",
+      "ms": 60.0,
+      "stands": 60.61,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        59.875
+      ],
+      "also_stands": [
+        5.17,
+        4.12
+      ],
+      "roughness": 0.0037761,
+      "named_by": "file name"
+    },
+    {
+      "value": 106,
+      "take": "held-126-delay-106-00.wav",
+      "ms": 62.0,
+      "stands": 61.27,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        61.875
+      ],
+      "also_stands": [
+        4.94,
+        4.62
+      ],
+      "roughness": 0.00375525,
+      "named_by": "file name"
+    },
+    {
+      "value": 107,
+      "take": "held-126-delay-107-00.wav",
+      "ms": 64.0,
+      "stands": 60.77,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        63.875
+      ],
+      "also_stands": [
+        4.82,
+        3.81
+      ],
+      "roughness": 0.00371453,
+      "named_by": "file name"
+    },
+    {
+      "value": 108,
+      "take": "held-126-delay-108-00.wav",
+      "ms": 66.0,
+      "stands": 60.67,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        65.875
+      ],
+      "also_stands": [
+        5.16,
+        3.89
+      ],
+      "roughness": 0.00373634,
+      "named_by": "file name"
+    },
+    {
+      "value": 109,
+      "take": "held-126-delay-109-00.wav",
+      "ms": 68.0,
+      "stands": 61.27,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        67.875
+      ],
+      "also_stands": [
+        5.3,
+        3.34
+      ],
+      "roughness": 0.00370109,
+      "named_by": "file name"
+    },
+    {
+      "value": 110,
+      "take": "held-126-delay-110-00.wav",
+      "ms": 70.0,
+      "stands": 61.32,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        70.125
+      ],
+      "also_stands": [
+        5.31,
+        3.8
+      ],
+      "roughness": 0.00370091,
+      "named_by": "file name"
+    },
+    {
+      "value": 111,
+      "take": "held-126-delay-111-00.wav",
+      "ms": 72.0,
+      "stands": 63.56,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        71.875
+      ],
+      "also_stands": [
+        5.26,
+        4.28
+      ],
+      "roughness": 0.00359394,
+      "named_by": "file name"
+    },
+    {
+      "value": 112,
+      "take": "held-126-delay-112-00.wav",
+      "ms": 74.0,
+      "stands": 63.67,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        73.875
+      ],
+      "also_stands": [
+        4.95,
+        4.29
+      ],
+      "roughness": 0.00352264,
+      "named_by": "file name"
+    },
+    {
+      "value": 113,
+      "take": "held-126-delay-113-00.wav",
+      "ms": 76.0,
+      "stands": 63.48,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        76.125
+      ],
+      "also_stands": [
+        5.72,
+        3.96
+      ],
+      "roughness": 0.0035421,
+      "named_by": "file name"
+    },
+    {
+      "value": 114,
+      "take": "held-126-delay-114-00.wav",
+      "ms": 78.0,
+      "stands": 64.16,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        77.875
+      ],
+      "also_stands": [
+        5.13,
+        3.63
+      ],
+      "roughness": 0.00351987,
+      "named_by": "file name"
+    },
+    {
+      "value": 115,
+      "take": "held-126-delay-115-00.wav",
+      "ms": 80.0,
+      "stands": 63.31,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        79.875
+      ],
+      "also_stands": [
+        4.58,
+        4.04
+      ],
+      "roughness": 0.00349412,
+      "named_by": "file name"
+    },
+    {
+      "value": 116,
+      "take": "held-126-delay-116-00.wav",
+      "ms": 82.0,
+      "stands": 63.53,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        81.875
+      ],
+      "also_stands": [
+        5.08,
+        4.13
+      ],
+      "roughness": 0.00352696,
+      "named_by": "file name"
+    },
+    {
+      "value": 117,
+      "take": "held-126-delay-117-00.wav",
+      "ms": 84.0,
+      "stands": 62.94,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        83.875
+      ],
+      "also_stands": [
+        5.27,
+        4.71
+      ],
+      "roughness": 0.00352571,
+      "named_by": "file name"
+    },
+    {
+      "value": 118,
+      "take": "held-126-delay-118-00.wav",
+      "ms": 86.0,
+      "stands": 63.21,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        85.875
+      ],
+      "also_stands": [
+        5.56,
+        4.1
+      ],
+      "roughness": 0.00349587,
+      "named_by": "file name"
+    },
+    {
+      "value": 119,
+      "take": "held-126-delay-119-00.wav",
+      "ms": 88.0,
+      "stands": 63.47,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        87.875
+      ],
+      "also_stands": [
+        4.98,
+        4.11
+      ],
+      "roughness": 0.00343756,
+      "named_by": "file name"
+    },
+    {
+      "value": 120,
+      "take": "held-126-delay-120-00.wav",
+      "ms": 90.0,
+      "stands": 63.11,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        89.875
+      ],
+      "also_stands": [
+        5.15,
+        4.52
+      ],
+      "roughness": 0.00347196,
+      "named_by": "file name"
+    },
+    {
+      "value": 121,
+      "take": "held-126-delay-121-00.wav",
+      "ms": 92.0,
+      "stands": 63.34,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        91.875
+      ],
+      "also_stands": [
+        5.09,
+        4.55
+      ],
+      "roughness": 0.00346184,
+      "named_by": "file name"
+    },
+    {
+      "value": 122,
+      "take": "held-126-delay-122-00.wav",
+      "ms": 94.0,
+      "stands": 63.67,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        93.875
+      ],
+      "also_stands": [
+        5.65,
+        4.26
+      ],
+      "roughness": 0.00344536,
+      "named_by": "file name"
+    },
+    {
+      "value": 123,
+      "take": "held-126-delay-123-00.wav",
+      "ms": 96.0,
+      "stands": 63.0,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        95.9375
+      ],
+      "also_stands": [
+        5.18,
+        4.12
+      ],
+      "roughness": 0.00342288,
+      "named_by": "file name"
+    },
+    {
+      "value": 124,
+      "take": "held-126-delay-124-00.wav",
+      "ms": 98.0,
+      "stands": 63.52,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        97.875
+      ],
+      "also_stands": [
+        4.91,
+        3.95
+      ],
+      "roughness": 0.00343897,
+      "named_by": "file name"
+    },
+    {
+      "value": 125,
+      "take": "held-126-delay-125-00.wav",
+      "ms": 100.0,
+      "stands": 63.09,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        99.875
+      ],
+      "also_stands": [
+        5.54,
+        4.27
+      ],
+      "roughness": 0.00343356,
+      "named_by": "file name"
+    },
+    {
+      "value": 126,
+      "take": "held-126-delay-126-00.wav",
+      "ms": 100.0,
+      "stands": 62.83,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        99.875
+      ],
+      "also_stands": [
+        5.74,
+        4.15
+      ],
+      "roughness": 0.00340425,
+      "named_by": "file name"
+    },
+    {
+      "value": 127,
+      "take": "held-126-delay-127-00.wav",
+      "ms": 100.0,
+      "stands": 62.64,
+      "admitted": true,
+      "also_ms": [
+        0.0625,
+        99.875
+      ],
+      "also_stands": [
+        5.53,
+        3.49
+      ],
+      "roughness": 0.00342045,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 0,
+    "settings": [],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  },
+  "stimulus": "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0"
+}
