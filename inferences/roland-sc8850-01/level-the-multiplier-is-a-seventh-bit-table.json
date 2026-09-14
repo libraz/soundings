@@ -4,12 +4,13 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T00:33:50.409897+00:00",
-    "made_by": "backup/run-level-reproduce.py, backup/write-level-inference.py, backup/run-level-second-type.py, backup/fold-in-the-second-type.py",
-    "rounds": 2,
+    "made_by": "backup/run-level-reproduce.py, backup/write-level-inference.py, backup/run-level-second-type.py, backup/fold-in-the-second-type.py, backup/ask-for-a-third-type.py, backup/how-hot-is-the-distortion.py, backup/the-level-on-a-third-type.py, backup/run-level-third-type.py, backup/fold-in-the-third-type.py",
+    "rounds": 3,
     "about": {
       "scope": "unit",
       "types": [
         "01 00",
+        "01 11",
         "01 40"
       ],
       "addresses": [
@@ -210,6 +211,38 @@
           -110.6
         ],
         "why": "The same address on a type built round a modulator and a delay line rather than round four filter sections, with the modulator's depth parked and the balance fully across to the effect. Fifteen settings weighted towards the bottom of the byte, which is the only stretch where the stored curve and the laws part company by more than the reading resolves."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json",
+        "keys": [
+          "readings[value=8].heard_db",
+          "readings[value=32].heard_db",
+          "readings[value=127].heard_db",
+          "silence.heard_db"
+        ],
+        "values": [
+          -72.57,
+          -60.53,
+          -46.06,
+          -110.5
+        ],
+        "why": "The same address on a type whose output stops being proportional to its input, with the amp simulator switched out so the drive is the type's own nonlinearity and nothing else, and the drive at three quarters. The type prints no balance, so none of the signal goes past the row being read."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d00.json",
+        "keys": [
+          "readings[value=8].heard_db",
+          "readings[value=32].heard_db",
+          "readings[value=127].heard_db",
+          "silence.heard_db"
+        ],
+        "values": [
+          -81.26,
+          -69.19,
+          -54.76,
+          -110.5
+        ],
+        "why": "The same sweep on the same type with the drive at nothing. Held against the one above it says whether the byte is applied after the saturating stage or inside it, which a single sweep of any type cannot say. It is also the reading in this class that stands furthest over its own floor, so it reaches further down the byte than either type before it."
       }
     ],
     "document_rows": [
@@ -282,7 +315,7 @@
     "entries": [
       0,
       1,
-      2,
+      1,
       2,
       3,
       4,
@@ -411,11 +444,9 @@
     ],
     "read_as": "The multipliers the sweep returned, rounded to whole numbers over 127. A readout and not a law: it is the measurement in the units the quantum gives it, published because that is the form anything downstream needs, and it is kept out of the candidate ranking for the same reason. Rounding every measured multiplier onto the grid costs a median 0.0059 dB and at worst 0.0355, against a floor of 0.1655 -- which says the rounding loses nothing, not that the grid is right. The scan says that.",
     "entries_not_read": [
-      0,
-      1,
-      2
+      0
     ],
-    "why": "Settings 0, 1 and 2, whose takes sit 1.1, 15.3 and 15.3 decibels above what the same chain recorded with nothing played. A level read that close to the floor is the room's, and at fifteen decibels above it the figure is high by 0.14 dB, which is two entries where the entries are this far apart. They are filled with the straight line the byte gives and named rather than left as holes.",
+    "why": "Setting 0, whose take sits 1.1 decibels above what the same chain recorded with nothing played on every record that asked it. A level read that close to the floor is the room's. It is filled with the straight line the byte gives and named rather than left as a hole.",
     "the_shape_of_it": "Monotone, 127 at the top, and eleven settings where it does not move beside eleven where it moves by two. Three quarters of the byte from setting 4 to setting 32, to the entry -- 3, 6, 12 and 24 -- and then a ratio that climbs to one at the top. Six decibels per doubling of the byte over the bottom three octaves of it, which is what a multiplier proportional to the byte does, at three quarters the size.",
     "held_out": {
       "what": "The same entries, read off the first type's sweep, held against the second type's. On the record they were read from they are the measurement agreeing with itself and mean nothing. On this one they were not fitted to anything: eleven settings, a type they have never seen.",
@@ -424,6 +455,19 @@
       "floor_db": 0.166,
       "leans": false,
       "read_as": "A median 0.011 dB and a worst 0.042, against a floor of 0.166 -- under the floor at every setting, and not leaning. That is a prediction and not a fit, and it is the only figure in this file the readout has earned. It is still not in the ranking: what it would be ranked against is the record it was made from."
+    },
+    "two_entries_that_were_not_readings": {
+      "what_changed": "Settings 1 and 2 were placeholders and are readings. On the first type they stood 15.3 dB over the same chain's silence, which is under this class's own rule of twenty, and they were filled with the straight line the byte gives -- 1 and 2. The third type's driven sweep stands far enough above the same floor to read them: 1 at 22.4 dB over the silence, 2 at 22.4 dB over the silence.",
+      "entries": {
+        "1": 1,
+        "2": 1
+      },
+      "read_on": [
+        "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json"
+      ],
+      "what_it_costs_the_readout": "Those two settings are the measurement agreeing with itself on the record that supplied them, so they are left out of every figure scored against it -- and the entry that moved is why the figure matters. Scored with them in, the readout carrying the old placeholder is out by 6.0 dB at setting 2 against a floor of 0.166, which is the placeholder being wrong and not the reading being poor.",
+      "why_one_moved_and_one_did_not": "The straight line put 1 at setting 1 and 2 at setting 2, and the readings put 1 at both. So the fill was right once by arithmetic and wrong once, which is what a fill is -- and the table now has a pair of settings returning one multiplier at the bottom, where before it had a step. Eleven other settings of the hundred and twenty-eight return the multiplier of the setting before them, so a repeat there is the shape the rest of the table already has rather than a new thing to explain.",
+      "not_folded_into_the_quantum": "The denominator scan is the first record's, over the hundred and twenty-five settings it admitted, and it is not re-run here. Two entries added to a hundred and twenty-five would not move a winner that stands at 0.0225 of a step against a runner-up at 0.2185, and a scan re-run to fold in the two settings that moved would be a scan re-run after seeing which way they went."
     }
   },
   "alternatives": [
@@ -451,6 +495,62 @@
         "run": null,
         "why_not_separable": "A law that returns these hundred and twenty-eight numbers and a table holding them differ in where the numbers come from and in nothing that comes out, so no reading of this unit's output can tell them apart. The class does not rest on the difference: what is claimed is the multiplier and its quantum, and both readings give the same multiplier. What argues for the table is the era and not a measurement -- 128 entries cost 128 bytes -- and a prior may carry a claim and may not close one, so this stays open and says why."
       }
+    },
+    {
+      "reading": "The curve is what a type carries whose output is proportional to its input. Both types it has been read on are that: four filter sections, and a modulator with a delay line. A stage that saturates has a reason to scale its own output that neither of those has, and the byte is printed as that stage's output level.",
+      "candidate": null,
+      "standing": false,
+      "equivalent_under_this_test": false,
+      "separated_by": {
+        "observable": "Whether the same address on a type with a drive stage returns the same hundred and twenty-eight multipliers, and whether what it returns moves when the drive does.",
+        "predicts": {
+          "the stored table, applied after the stage": "The multipliers the two linear types returned, and the same curve at both drives. A gain applied after a stage cannot know how hard the stage was being driven.",
+          "a scaling the drive stage does itself": "A curve that leaves the linear types' somewhere, and leaves itself between the two drives -- a level folded into a saturating stage is a level whose effect depends on what is arriving at it."
+        },
+        "sensitivity_here": "0.166 dB, the spread of one setting's own repeats on the second type. What has to clear it is one entry of the table, and how large that is depends on where in the byte it is read: 0.07 dB at the top of the range, 0.27 at setting 32 and 1.16 at setting 8. So the settings are weighted to the bottom, and the figure the margin is taken at is the coarsest of them that is still a reading.",
+        "margin": 1.6,
+        "run": {
+          "stage": "efx-bands",
+          "type": "01 11",
+          "address": "40 03 16",
+          "settings": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            6,
+            8,
+            12,
+            16,
+            24,
+            32,
+            48,
+            64,
+            80,
+            96,
+            112,
+            127
+          ],
+          "held": {
+            "40 03 04": 0,
+            "40 03 05": 0,
+            "40 03 13": 64,
+            "40 03 14": 64,
+            "40 03 15": 64
+          },
+          "swept_again_at": {
+            "40 03 03": [
+              0,
+              96
+            ]
+          },
+          "why_this_type": "It is the only family on this unit with a nonlinearity, and it is also the loudest thing the class can be read through -- which decides how far down the byte the reading reaches, because the stored curve and every law in the catalogue part company at the bottom and a setting is admitted only where it stands over the same chain's floor. The first type read reached setting 3 and the second only 8. Which type is loudest was measured rather than assumed: every candidate went through one short take of its own, and this one came back 5.7 dB over the first type at drive 0 and 2.9 at drive 96, against the second type by 12.0 and 9.2, and against the delay that looked like the obvious third type by 7.6 and 4.8 -- that delay being 1.9 dB quieter than the first type and so the worst of the candidates for this reading. Those are differences between types in one reading and not levels over the admission rule's floor, which is a different reading and a different number; what transfers between the two is the ordering and not the size. It also prints no balance, so nothing of the signal goes past the row being read.",
+          "why_two_drives": "A curve measured once is a curve, and nothing in it says where in the chain it was applied. Two drives of the one stage that makes this type different say whether the byte is applied after that stage or inside it, which is the half of the question a third type alone cannot reach.",
+          "minutes": 12
+        }
+      },
+      "ruled_out_by": "The run it asked for was made, twice over, and the curve did not move. At the settings both drives admit the two agree to a worst 0.05 dB where one of these readings resolves 0.166, and each agrees with the first type to a worst 0.04 and 0.04 dB. A level the drive stage applied itself would have to move when the drive does; this one does not move at all, so the byte is applied after the stage and what it holds is the class's curve and not the stage's."
     }
   ],
   "refuted_by": "A setting whose multiplier sits a third of a step or more from the 1/127 grid while its take is well clear of the chain's silence, which no admitted setting does -- the worst is 0.24 of a step at setting 122, where one step is 0.068 decibels and the run resolves 0.01. Or another denominator scanned over the same settings coming closer, which none of the sixty-one does by a factor of ten. Or a level byte on another type returning multipliers that sit on no grid at all, which would make this a property of one effect rather than of how a gain is stored.",
@@ -1574,13 +1674,17 @@
       "what_would": "A chain whose unity gain is established -- the same stimulus recorded with the effect block switched out at the mixer rather than bypassed inside it. That is a calibration of the rig and not a sweep of the unit, and it would settle the same question for every level byte at once."
     },
     {
-      "what": "The other sixty-four types' level bytes.",
+      "what": "The other sixty-two types' level bytes.",
       "why": "All sixty-five are printed 0 - 127 against the last parameter of their list and none but this one has been swept. A table is pointed at, so the same printed range need not be the same table.",
-      "what_would": "One sweep of a second type's level byte at eleven settings, which is the third alternative above."
+      "what_would": "One sweep of a third type's level byte, on a type with a stage that saturates, which is the alternative this claim now carries."
     },
     {
-      "what": "The three lowest settings. 0, 1 and 2 sit under the admission rule on the first type, and on the second type 0 and 2 do as well -- 0 comes back 1.1 dB over the silence, which is not a reading of anything.",
-      "bounded_by": "Both types put setting 2 about 41 dB under the loudest one, which makes its multiplier 1 rather than the 2 the entry list carries there. The entry list says those three were not read, and this does not change it: two readings that agree with each other 8 dB over a floor are still two readings 8 dB over a floor."
+      "what": "The lowest setting. 0 sits 1.1 dB over the same chain's silence on every record that has asked it, which is not a reading of anything.",
+      "bounded_by": "Its entry is the straight line's 0 and the table names it as not read. What would read it is a chain louder than any this class has been measured through, and the byte's own neighbours bound it: settings 1 and 2 both return a multiplier of 1, so whatever 0 returns is at most that and is either silence or one step of the grid."
+    },
+    {
+      "what": "Where between the stage and the output the byte sits. After the saturating stage is measured; whether it is before or after the two tone gains and the pan of the same trailing block is not.",
+      "bounded_by": "Those three were held at the centre of their own ranges through every reading in this class, so nothing in these records depends on the order. What would separate it is the same sweep with one of them away from its centre, which is a run this claim does not need and does not queue."
     }
   ],
   "what_it_would_change": [
@@ -1627,5 +1731,108 @@
       }
     },
     "why_that_matters": "Every law in the catalogue was rejected on the first type and every one is rejected again here, on a different type, at settings chosen for where they differ. The nearest of them, the-byte-is-the-multiplier, is out by a median 1.999 dB against a floor of 0.136 and it leans. A second record is not a second opinion about the same takes -- it is the rejection holding where it had no reason to unless it is right."
+  },
+  "a_third_type": {
+    "what_was_asked": "The same address, 40 03 16, on 01 11 -- the first type this class has been read on with a stage whose output is not proportional to its input -- and asked twice, at two drives of that stage. Two types had already settled that the curve is not computed per type. What they could not settle is where in the chain it is applied, because neither of them has anything that a gain applied before it and a gain applied after it would differ on.",
+    "records": [
+      "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d00.json",
+      "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json"
+    ],
+    "per_drive": {
+      "d00": {
+        "drive": 0,
+        "settings_admitted": 13,
+        "settings_left_out": 4,
+        "lowest_setting_read": 4,
+        "over_db": 32.5,
+        "against_the_first_type_db": {
+          "median": 0.01,
+          "worst": 0.04,
+          "settings": 13
+        },
+        "floor_db": 0.166
+      },
+      "d96": {
+        "drive": 96,
+        "settings_admitted": 16,
+        "settings_left_out": 1,
+        "lowest_setting_read": 1,
+        "over_db": 42.1,
+        "against_the_first_type_db": {
+          "median": 0.01,
+          "worst": 0.04,
+          "settings": 14
+        },
+        "floor_db": 0.166
+      }
+    },
+    "the_two_drives_apart_db": {
+      "median": 0.02,
+      "worst": 0.05,
+      "settings": 13
+    },
+    "what_it_settles": "The byte is applied after the stage, and the curve is the class's. The two drives put the same multiplier at every setting both admit -- median 0.02 dB and worst 0.05 over 13 settings, against a floor of 0.166 -- and a gain folded into a saturating stage could not do that, because what it did would depend on what was arriving. Against the first type the worst disagreement is 0.04 dB at drive 0 and 0.04 dB at drive 96. So a third type agrees with the two linear ones, and it agrees through a stage of a kind neither of them has.",
+    "what_it_does_not_settle": "Whether the numbers are stored or computed, which no reading of this unit's output can reach and which this claim already says so under its own alternative.",
+    "and_the_laws_again": {
+      "d00": {
+        "the-byte-is-the-multiplier": {
+          "median_db": 2.457,
+          "worst_db": 3.497,
+          "leans": true
+        },
+        "the-byte-over-a-power-of-two": {
+          "median_db": 2.457,
+          "worst_db": 3.497,
+          "leans": true
+        },
+        "the-byte-squared": {
+          "median_db": 9.516,
+          "worst_db": 27.57,
+          "leans": true
+        },
+        "decibels-linear-in-the-byte": {
+          "median_db": 10.98,
+          "worst_db": 15.491,
+          "leans": true
+        }
+      },
+      "d96": {
+        "the-byte-is-the-multiplier": {
+          "median_db": 2.496,
+          "worst_db": 3.537,
+          "leans": true
+        },
+        "the-byte-over-a-power-of-two": {
+          "median_db": 2.496,
+          "worst_db": 3.537,
+          "leans": true
+        },
+        "decibels-linear-in-the-byte": {
+          "median_db": 10.297,
+          "worst_db": 15.471,
+          "leans": true
+        },
+        "the-byte-squared": {
+          "median_db": 10.725,
+          "worst_db": 29.017,
+          "leans": true
+        }
+      }
+    },
+    "the_readout_held_out_again": {
+      "d00": {
+        "median_db": 0.021,
+        "worst_db": 0.042,
+        "floor_db": 0.166,
+        "leans": false
+      },
+      "d96": {
+        "median_db": 0.006,
+        "worst_db": 0.02,
+        "floor_db": 0.166,
+        "leans": false
+      }
+    },
+    "why_that_matters": "The entries were read off the first type's sweep, so on that record they are the measurement agreeing with itself and are kept out of the ranking. Here they were fitted to nothing: two sweeps, a type they have never seen, and a stage of a kind no reading behind them had. A readout that survives that is a prediction, and it is the second time it has been one. The two settings whose entries this record itself supplied are left out of every score above, the rivals' as well as the readout's, so that what is compared is the same set of readings for all of them."
   }
 }

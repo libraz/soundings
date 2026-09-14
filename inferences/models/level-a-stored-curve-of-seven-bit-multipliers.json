@@ -16,7 +16,7 @@
       "entries": [
         0,
         1,
-        2,
+        1,
         2,
         3,
         4,
@@ -146,20 +146,29 @@
       "out_of_range": 127
     }
   },
-  "what_it_says": "A table of 128 whole numbers over 127, read out of the sweep. This is the one candidate here whose values are the measurement, so its residual is not evidence for it and is reported only to say how much of the curve the reading resolved. What it claims is the storage, and that claim is tested by the denominator scan.",
+  "what_it_says": "A table of 128 whole numbers over 127, read out of the sweeps. This is the one candidate here whose values are the measurement, so its residual is not evidence for it and is reported only to say how much of the curve the reading resolved. What it claims is the storage, and that claim is tested by the denominator scan.",
   "entries_not_read": [
     {
       "value": 0,
       "why": "1.1 dB above the chain's silence"
-    },
+    }
+  ],
+  "why_entries_not_read": "Settings whose take was not far enough above the same chain's silence to be read as a level on any record that asked. Filled with the straight line the byte gives, so that the table has an entry everywhere and the entries that are not readings are named.",
+  "entries_read_on_another_record": [
     {
       "value": 1,
-      "why": "15.3 dB above the chain's silence"
+      "entry": 1,
+      "from": "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json",
+      "above_the_silence_db": 22.4,
+      "why_not_the_first_record": "15.3 dB above the same chain's silence there, which is under the rule"
     },
     {
       "value": 2,
-      "why": "15.3 dB above the chain's silence"
+      "entry": 1,
+      "from": "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json",
+      "above_the_silence_db": 22.4,
+      "why_not_the_first_record": "15.3 dB above the same chain's silence there, which is under the rule"
     }
   ],
-  "why_entries_not_read": "Settings whose take was not far enough above the same chain's silence to be read as a level. Filled with the straight line the byte gives, so that the table has an entry everywhere and the entries that are not readings are named."
+  "why_entries_read_on_another_record": "Settings the first record could not read and a later one could, because its type's output stands further above the same floor. Named one by one rather than folded in silently, for two reasons: a reader holding this table against one of those records is holding it against its own source at those settings, and whether an entry read on one type is an entry of this table is the claim the records are cited under rather than something this file may assume."
 }
