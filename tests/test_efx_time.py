@@ -207,10 +207,15 @@ def test_the_chain_with_the_effect_out_is_published_and_not_only_subtracted(
     whether the chain puts a peak of its own anywhere -- because one that does could
     hand a setting a delay the effect never made, and nothing in that row would say
     so.
+
+    Whether it would be read as a delay is decided on this curve after the same
+    subtraction every setting gets, not before it. Before it, the source's own shape
+    sits at the bottom of the search whatever is in the path, so a verdict taken
+    there is true of every run and says nothing about any of them.
     """
     out = read(swept)["with_the_effect_out"]
     assert len(out["takes"]) == 2
-    assert "would_be_read_as_a_delay" in out
+    assert out["would_be_read_as_a_delay"] == out["with_nothing_in_its_path"]["admitted"]
     assert out["why"]
 
 
@@ -257,3 +262,95 @@ def test_takes_matching_nothing_are_counted_rather_than_dropped(swept) -> None:
     """A pattern that matches nothing and a directory that holds nothing differ."""
     found = read(swept, setting=r"delay-(?P<value>0+)$")
     assert found["takes_not_matching"]["count"] > 0
+
+
+# ---- what the reading does at its own bottom
+
+
+def test_a_delay_under_the_bottom_of_the_search_shows_as_one_in_its_neighbours(
+    swept,
+) -> None:
+    """It comes back at three times itself, and the only thing that says so is the gap.
+
+    The fundamental is outside the search while its odd rahmonics are inside, so the
+    strongest peak sits at `3D` and stands where a delay stands. A true delay has
+    nothing between itself and three times itself; this row has `5D/3` and `7D/3`
+    sitting there, which is one and two thirds and two and a third of where it was
+    read. Both are nearer the peak than a delay's first rahmonic, so a window set in
+    milliseconds rather than in quefrencies closes over them and the row becomes
+    indistinguishable from a real one.
+    """
+    under = {"searched_ms": (5.0, 80.0)}   # above the delay, below three times it
+    row = at(read(swept, **under), 16)
+    assert row["ms"] == pytest.approx(3 * DELAYS[16], abs=0.05)
+    ratios = sorted(q / row["ms"] for q in row["also_ms"])
+    assert ratios == pytest.approx([5 / 3, 7 / 3], abs=0.05)
+
+    # The same row with the window set as a time instead. It reaches past `5D` and
+    # `7D` without reaching `9D`, so the nearest thing left beside the peak is the
+    # ninth rahmonic at three times it -- which is where a real delay's first
+    # neighbour sits. Nothing in the row is then wrong on its face.
+    hidden = at(read(swept, **under, apart_ms=5 * DELAYS[16]), 16)
+    assert hidden["ms"] == row["ms"]
+    assert min(q / hidden["ms"] for q in hidden["also_ms"]) == pytest.approx(3.0, abs=0.05)
+
+
+def test_the_search_and_the_peak_window_default_to_what_the_transform_resolves(
+    swept,
+) -> None:
+    """Neither is a time chosen for the reading, and a record says which was used.
+
+    A bottom set above what the run could resolve is the whole of the failure above,
+    so the default cannot be a round number of milliseconds: on a byte covering three
+    orders of magnitude it would be under the first setting and over the last.
+    """
+    found = efxtime.read_directory(
+        swept,
+        type_id="01 50",
+        address="40 03 03",
+        setting=r"(?:delay|again)-(?P<value>\d+)",
+        control="out-",
+        frame=16384,
+        hop=4096,
+        channel=0,
+        lead_s=LEAD,
+        hold_s=HOLD,
+    )
+    resolved = efxtime.APART_STEPS * 1000.0 / SR
+    assert found["quefrency_step_ms"] == pytest.approx(1000.0 / SR, rel=1e-4)
+    assert found["searched_ms"][0] == pytest.approx(resolved, rel=1e-4)
+    assert found["peaks_apart_ms"] == pytest.approx(resolved, rel=1e-4)
+
+
+def test_a_take_with_nothing_in_its_path_is_read_and_not_only_subtracted(swept) -> None:
+    """The sensitivity a refused setting rests on, measured on the run's own stimulus.
+
+    A bottom setting returning nothing says nothing unless a take that certainly
+    holds no copy also returns nothing under the same reading. Read against the
+    average it would be read against itself, so it is read against the other take.
+    """
+    null = read(swept)["with_the_effect_out"]["with_nothing_in_its_path"]
+    assert null["take"] != null["against"]
+    assert not null["admitted"]
+    assert null["stands"] < efxtime.STANDS_OUT
+
+
+def test_a_run_with_one_take_of_the_effect_out_says_it_measured_no_null(
+    swept, tmp_path
+) -> None:
+    """One take has nothing to be read against, and an invented null is worse than none."""
+    store = takes.Store.open(tmp_path / "lonely")
+    store.keep(
+        FakeRecording(stereo(carrier(300))), stimulus="held", setting="out-00", take=0
+    )
+    store.keep(
+        FakeRecording(stereo(with_a_copy(carrier(2), 12.0))),
+        stimulus="held",
+        setting="delay-064",
+        take=0,
+    )
+    store.close(question="a run with one control take")
+    out = read(tmp_path / "lonely")["with_the_effect_out"]
+    assert out["with_nothing_in_its_path"] is None
+    assert out["would_be_read_as_a_delay"] is None
+    assert out["why_nothing_in_its_path"]

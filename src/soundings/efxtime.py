@@ -22,6 +22,18 @@ two-path comb; one that finds them at two and three times has found something
 else, and the record publishes them so the difference can be seen rather than
 taken on trust.
 
+**A delay under the bottom of the search comes back as its own third rahmonic,
+and only the neighbours say so.** The fundamental is outside the reading while
+`3D` and `5D` are still inside it, so the strongest peak lands at `3D` and stands
+as high as a delay stands. What separates the two is that a real `D` has nothing
+between itself and `3D`, where a `D/3` read as `D` has `5D/3` and `7D/3` sitting
+in that gap. Those are nearer the peak than a delay's own first rahmonic is, so
+the window that keeps one broad peak from being counted three times is what
+decides whether the difference can be seen -- and a window set in milliseconds
+closes over it at the short end of a byte covering three orders of magnitude. The
+window is set in quefrencies for that reason, and so is the bottom of the search:
+both are the resolution the reading actually has rather than a time chosen for it.
+
 **What the reading cannot do.** It returns where a copy is, not how loud it is,
 and it returns each copy separately -- so a feedback path appears as further peaks
 at multiples of the delay and is not distinguished here from the rahmonics of a
@@ -109,7 +121,23 @@ WHY_EFFECT_OUT = (
     "log spectrum is taken out of each reading rather than being read as a copy. And "
     "its own strongest peak is published, because a chain that puts a peak of its own "
     "somewhere is a chain that could hand a reading a delay the effect never made -- "
-    "so a reader can see whether any setting landed near it."
+    "so a reader can see whether any setting landed near it. "
+    "That peak is this curve before anything is taken off it, and near the bottom of "
+    "the search it is the shape of the source itself, which sits there whatever is in "
+    "the path. So it is not what says whether the chain would be read as a delay; the "
+    "reading below is, because that is this curve put through the same subtraction "
+    "every setting gets."
+)
+
+WHY_NOTHING_IN_ITS_PATH = (
+    "One take with the effect out, read as though it were a setting, against another "
+    "take with the effect out as its control. That is the whole reading with the "
+    "delay taken out of it, so what it returns is what a row has to stand over to be "
+    "a delay rather than the chain, measured on this run's own stimulus instead of "
+    "assumed from the bar. It is the sensitivity a negative needs: a bottom setting "
+    "that returned nothing means nothing unless a take that certainly holds no copy "
+    "also returns nothing here. Null where the run made only one such take, in which "
+    "case there is no second one to read it against and the run measured no null."
 )
 
 WHY_ADMITTED = (
@@ -155,6 +183,19 @@ stimuli: every injected comb that came back within a twentieth of a millisecond
 stood at or above this, and the best peak of every carrier with nothing in its
 path stood below it. A bar set from the numbers this run produced would be the
 gate tuned after the result, which is the one thing it may not be.
+"""
+
+APART_STEPS = 3
+"""How many quefrencies either side of a peak belong to the same peak.
+
+A ripple in the log spectrum lands on one quefrency and the transform spreads it
+over its neighbours, so a peak is a few steps wide and a window this size is wider
+than any of them. It is not wider than the gap between a delay and its first
+rahmonic, which is twice the delay and so at least twice this window for anything
+the search can reach -- which is what the window has to stay under if a reading
+sitting on a rahmonic is to show as one. The same figure is the bottom of the
+search, because a delay shorter than one peak's own width cannot be told from the
+quefrency the whole spectrum sits at.
 """
 
 
@@ -242,8 +283,8 @@ def read_directory(
     channel: int | None = None,
     frame: int = 65536,
     hop: int = 16384,
-    searched_ms: tuple[float, float] = (0.4, 620.0),
-    apart_ms: float = 1.0,
+    searched_ms: tuple[float | None, float] = (None, 620.0),
+    apart_ms: float | None = None,
     lead_s: float = 0.6,
     trim_s: float = 0.5,
     hold_s: float | None = None,
@@ -261,6 +302,11 @@ def read_directory(
     A take neither pattern names is counted rather than dropped: a pattern that
     matches nothing and a directory that holds nothing produce the same empty
     record otherwise, and they are different mistakes.
+
+    The bottom of `searched_ms` and `apart_ms` both default to the transform's own
+    resolution, which is not known until a take has been opened and its rate read.
+    Given explicitly they are used as given, and either way the record carries the
+    figure that was used rather than the one that was asked for.
     """
     where = Path(where)
     listed, files = takes.listing(where)
@@ -277,21 +323,49 @@ def read_directory(
     used = reached if channel is None else int(channel)
     elsewhere: list[str] = []
 
+    # The resolution both unset parameters come from, read off the first take rather
+    # than assumed: one quefrency is one sample of whatever rate the run captured at.
+    _, first_rate = takes.read(where / outs[0][0])
+    resolution_ms = APART_STEPS * 1000.0 / first_rate
+    apart_ms = resolution_ms if apart_ms is None else float(apart_ms)
+    searched = (
+        resolution_ms if searched_ms[0] is None else float(searched_ms[0]),
+        float(searched_ms[1]),
+    )
+
     def curve_of(name: str) -> tuple[np.ndarray, np.ndarray, int]:
         samples, rate = takes.read(where / name)
         own = int(np.argmax(takes.channel_levels(samples)))
         if own != used and name not in elsewhere:
             elsewhere.append(name)
         body = _body(samples, rate, index=used, lead_s=lead_s, trim_s=trim_s, hold_s=hold_s)
-        return _cepstrum(body, rate, frame=frame, hop=hop, searched_ms=searched_ms)
+        return _cepstrum(body, rate, frame=frame, hop=hop, searched_ms=searched)
 
-    stacked, quefrency_ms, frames = None, None, 0
+    out_curves: list[np.ndarray] = []
+    quefrency_ms, frames = None, 0
     for name, _, _ in outs:
         got, quefrency_ms, frames = curve_of(name)
-        stacked = got if stacked is None else stacked + got
-    floor_curve = stacked / len(outs)
+        out_curves.append(got)
+    floor_curve = sum(out_curves) / len(out_curves)
     out_peaks, _ = _peaks(floor_curve, quefrency_ms, how_many=1, apart_ms=apart_ms)
     out_at, out_stands = out_peaks[0]
+
+    # What the reading returns for a take that certainly holds no copy, which is the
+    # sensitivity every refused setting rests on. Read against another such take and
+    # not against the average, because the average has this one inside it.
+    nothing_in_its_path = None
+    if len(out_curves) > 1:
+        null_peaks, _ = _peaks(
+            out_curves[0] - out_curves[1], quefrency_ms, how_many=1, apart_ms=apart_ms
+        )
+        null_at, null_stands = null_peaks[0]
+        nothing_in_its_path = {
+            "take": outs[0][0],
+            "against": outs[1][0],
+            "ms": round(null_at, 4),
+            "stands": round(null_stands, 2),
+            "admitted": bool(null_stands >= STANDS_OUT),
+        }
 
     claimed = {name for name, _, _ in outs}
     readings: list[dict] = []
@@ -336,12 +410,12 @@ def read_directory(
         "method": METHOD,
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
-        "searched_ms": [round(v, 4) for v in searched_ms],
+        "searched_ms": [round(v, 4) for v in searched],
         "frame": frame,
         "hop": hop,
         "frames_averaged": frames,
         "quefrency_step_ms": round(step_ms, 6),
-        "peaks_apart_ms": apart_ms,
+        "peaks_apart_ms": round(apart_ms, 6),
         "stands_out": STANDS_OUT,
         "why_admitted": WHY_ADMITTED,
         "floor_ms": floor_ms,
@@ -361,8 +435,12 @@ def read_directory(
             "takes": sorted(name for name, _, _ in outs),
             "ms": round(out_at, 4),
             "stands": round(out_stands, 2),
-            "would_be_read_as_a_delay": bool(out_stands >= STANDS_OUT),
+            "would_be_read_as_a_delay": (
+                None if nothing_in_its_path is None else nothing_in_its_path["admitted"]
+            ),
             "why": WHY_EFFECT_OUT,
+            "with_nothing_in_its_path": nothing_in_its_path,
+            "why_nothing_in_its_path": WHY_NOTHING_IN_ITS_PATH,
         },
         "held": held or [],
         "why_held": WHY_HELD,
@@ -382,6 +460,7 @@ def read_directory(
 
 
 __all__ = [
+    "APART_STEPS",
     "LIMITS",
     "METHOD",
     "NOT_HERE",
