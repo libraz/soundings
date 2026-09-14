@@ -1,0 +1,64 @@
+{
+ "class": "delay-time",
+ "what_the_class_is": "Not an effect but one parameter of many of them: the byte that sets how far behind its source a copy comes back. Sixty-seven addresses across forty-two types take one, and the question is the same at every one of them -- what quantity does the byte stand for. The type the byte sits in does not enter: what is being identified is the map, not the echo.",
+ "era": {
+  "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it, reading and writing one buffer of samples.",
+  "what_that_implies": [
+   "The byte indexes a table. A hundred and twenty-eight entries cost a few hundred bytes, and a range covering three orders of magnitude cannot be reached by scaling a byte at all: a straight line over half a second puts nothing under four milliseconds, and a byte is where the short settings have to come from.",
+   "The entries are round decimal milliseconds, because a manual prints the ends of the range in them and the list was laid out by hand for a person to read.",
+   "The step coarsens as the range grows rather than staying uniform. A tenth of a millisecond over half a second would need five thousand entries, so the ladder changes step where the numbers get large -- which is what a person laying out a list does and what a formula does not.",
+   "The entry is then a count of samples and not a time. A delay is a read pointer some distance behind a write pointer, and that distance is an integer; reaching a printed millisecond exactly would cost an interpolation on every sample to make a number on a page true.",
+   "The clock the count is in is the part's own and not the converter's. Whatever rate the DSP runs at is the grid every delay in every type lands on."
+  ],
+  "would_be_wrong_if": "The readings turned out to lie on a smooth curve with no repeated step anywhere, or the step between neighbouring settings turned out not to be a round fraction of a millisecond, or the times landed on round milliseconds at the settings where a round millisecond and a whole sample disagree."
+ },
+ "candidates": [
+  {
+   "id": "a-ladder-cut-to-whole-samples",
+   "what": "A ladder of round decimal milliseconds whose step changes five times over the byte -- a tenth to setting fifty, then a half, then one, then ten, then twenty -- with every entry cut back to a whole step of the clock the delay counts in.",
+   "predicts": {
+    "neighbouring_settings": "Differ by one step of the ladder, less whatever the cut to a whole sample takes off each of them, so neighbours in the coarse part differ exactly and neighbours in the fine part differ by a little more or less than the printed step.",
+    "where_a_round_millisecond_and_a_whole_sample_disagree": "The unit returns the sample and not the millisecond, and the reading brings back a peak that stands lower there because the delay falls between two quefrencies.",
+    "top_of_the_range": "Reached before the byte runs out, so the last settings repeat one figure."
+   }
+  },
+  {
+   "id": "a-ladder-of-round-milliseconds",
+   "what": "The same ladder, reaching each printed millisecond exactly.",
+   "predicts": {
+    "neighbouring_settings": "Differ by exactly one step of the ladder everywhere.",
+    "where_a_round_millisecond_and_a_whole_sample_disagree": "There is no such setting: the unit returns the millisecond, and the peak heights have nothing to split them.",
+    "top_of_the_range": "Reached before the byte runs out, so the last settings repeat one figure."
+   }
+  },
+  {
+   "id": "a-straight-line-between-the-printed-ends",
+   "what": "The printed pair read as the ends of an evenly divided line: the first setting is the printed bottom, the last the printed top, and the settings between them are spaced equally in milliseconds.",
+   "predicts": {
+    "neighbouring_settings": "Differ by one hundred and twenty-seventh of the printed range everywhere, which is about four milliseconds.",
+    "where_a_round_millisecond_and_a_whole_sample_disagree": "Nowhere in particular, because no entry is round.",
+    "top_of_the_range": "Reached at the last setting exactly and not before."
+   }
+  },
+  {
+   "id": "a-geometric-run-between-the-printed-ends",
+   "what": "The same two ends divided into equal ratios rather than equal differences, which is how a byte covering three orders of magnitude would be spent if it were spent evenly.",
+   "predicts": {
+    "neighbouring_settings": "Differ by a constant ratio everywhere, so the step in milliseconds grows smoothly and lands on no round number.",
+    "where_a_round_millisecond_and_a_whole_sample_disagree": "Nowhere in particular, because no entry is round.",
+    "top_of_the_range": "Reached at the last setting exactly and not before."
+   }
+  },
+  {
+   "id": "one-entry-per-setting",
+   "what": "One entry per setting, taken from the reading itself. A readout and not a candidate: it reproduces the record because it is the record, and it is written so that a ranking has to beat it rather than quietly not contain it.",
+   "predicts": {
+    "neighbouring_settings": "Whatever they were measured to differ by.",
+    "where_a_round_millisecond_and_a_whole_sample_disagree": "Whatever was measured, which is not a prediction.",
+    "top_of_the_range": "Whatever was measured."
+   }
+  }
+ ],
+ "what_no_candidate_here_predicts": "How loud the copy comes back, which a cepstral peak places and does not weigh. How many copies come back, which is the feedback byte's question and not this one. Whether the ladder is the same on the types this class has rows on but no reading of -- the printed range is shared by several and nothing here says a shorter printed range is this ladder stopped early rather than a ladder of its own.",
+ "note": "The candidates are the shapes a byte could stand for, written before any of them was scored. Nothing here is a measurement."
+}
