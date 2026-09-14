@@ -129,6 +129,15 @@ WHY_EFFECT_OUT = (
     "every setting gets."
 )
 
+WHY_SEARCHED = (
+    "What was searched, beside what was asked for. The frame reaches half of itself "
+    "and no further, so a search asked past that is narrowed to it. The two are "
+    "published separately because a record carrying only the wider figure would be "
+    "claiming a range it never looked at -- and the one finding that would hide "
+    "behind such a claim is a byte running past its printed end, which would come "
+    "back sitting on the end and read as the page being right."
+)
+
 WHY_READ_AT = (
     "The rate the takes were captured at, which is the grid every time below is "
     "quantised to: one quefrency is one sample of it. Stated rather than left to be "
@@ -354,6 +363,12 @@ def read_directory(
     for name, _, _ in outs:
         got, quefrency_ms, frames = curve_of(name)
         out_curves.append(got)
+    # What was searched, taken from the band rather than from what was asked for.
+    # A frame reaches half of itself and no further, so a search asked past that is
+    # quietly narrowed -- and a record publishing the wider figure would be claiming a
+    # range it never looked at, which is the one way a byte running past its printed
+    # end could be missed and reported as agreeing with the page.
+    searched = (float(quefrency_ms[0]), float(quefrency_ms[-1]))
     floor_curve = sum(out_curves) / len(out_curves)
     out_peaks, _ = _peaks(floor_curve, quefrency_ms, how_many=1, apart_ms=apart_ms)
     out_at, out_stands = out_peaks[0]
@@ -419,6 +434,11 @@ def read_directory(
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
         "searched_ms": [round(v, 4) for v in searched],
+        "searched_asked_for_ms": [
+            round(resolution_ms if searched_ms[0] is None else float(searched_ms[0]), 4),
+            round(float(searched_ms[1]), 4),
+        ],
+        "why_searched": WHY_SEARCHED,
         "frame": frame,
         "hop": hop,
         "frames_averaged": frames,

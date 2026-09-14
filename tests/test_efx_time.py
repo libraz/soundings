@@ -229,7 +229,11 @@ def test_a_delay_past_the_search_is_absent_rather_than_pinned_to_the_edge(
     it, which is the answer the page already gave and looks like agreement.
     """
     found = read(swept, searched_ms=(0.4, 20.0))
-    assert found["searched_ms"] == [0.4, 20.0]
+    assert found["searched_asked_for_ms"] == [0.4, 20.0]
+    # What was searched is the band's own ends, which land on the grid rather than
+    # on the numbers asked for.
+    assert found["searched_ms"][0] == pytest.approx(0.4, abs=found["quefrency_step_ms"])
+    assert found["searched_ms"][1] == pytest.approx(20.0, abs=found["quefrency_step_ms"])
     assert at(found, 127)["ms"] != pytest.approx(40.0, abs=0.05)
     assert at(found, 127)["ms"] <= 20.0
 
@@ -355,3 +359,20 @@ def test_a_run_with_one_take_of_the_effect_out_says_it_measured_no_null(
     assert out["with_nothing_in_its_path"] is None
     assert out["would_be_read_as_a_delay"] is None
     assert out["why_nothing_in_its_path"]
+
+
+def test_a_search_asked_past_the_frame_says_how_far_it_actually_looked(swept) -> None:
+    """A frame reaches half of itself, and a record has to publish which range it read.
+
+    Asked for more, the band is narrowed and nothing raises. A record carrying the
+    figure that was asked for would then claim a range it never looked at -- and the
+    finding that hides behind such a claim is a byte running past its printed end,
+    which comes back sitting on the end and reads as the page being right.
+    """
+    frame, hop = 16384, 4096
+    reaches = frame / 2 / SR * 1000.0
+    found = read(swept, frame=frame, hop=hop, searched_ms=(0.4, 10 * reaches))
+    assert found["searched_asked_for_ms"] == [0.4, round(10 * reaches, 4)]
+    assert found["searched_ms"][1] == pytest.approx(reaches, rel=1e-3)
+    assert found["searched_ms"][1] < found["searched_asked_for_ms"][1]
+    assert found["why_searched"]
