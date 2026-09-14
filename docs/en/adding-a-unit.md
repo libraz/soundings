@@ -37,6 +37,11 @@ Nothing is named after what it found. A file called after a verdict has to be
 believed before it can be opened, it spells the finding differently on the next
 unit, and it stops being true if the record is ever reissued.
 
+Nothing under the unit's directory derives anything, so a reading made of its
+records is filed outside it, under `inferences/<unit-id>/`. That directory is
+created when the first reading is made and not before; a unit with none is not
+incomplete.
+
 ## Before power-on
 
 **Read the rear-panel rating plate and record it verbatim.** Model suffixes and

@@ -88,6 +88,12 @@ can be identified from rather than a summary of it:
   that pass the same energy in every band and answer a step differently are one
   measurement under the first and two under the second
 
+The stages that produce that material are `efx-rate`, `efx-bands` and `efx-time`,
+and for a byte that moves the stereo pair, `balance`, `balance-bands` and
+`arrival`. Each reads takes already saved, so none of them holds the hardware.
+What is then read *out* of them is no part of the unit's directory: it goes to
+`inferences/`, which cites these records and is cited by none of them.
+
 ## What completion does not require
 
 - **Every byte explained.** An address that answers, accepts a range and is
@@ -101,8 +107,10 @@ can be identified from rather than a summary of it:
   every question before it is finished is a unit that is never finished, and the
   questions are not all known yet.
 - **A model of anything.** No algorithm is named, no topology fitted, no
-  coefficient estimated. A unit is complete when it can be derived from, not
-  when it has been.
+  coefficient estimated — not in a complete directory and not in any directory
+  under `data/`. A unit is complete when it can be derived from, not when it has
+  been, and what has been derived from it lives in `inferences/` where deleting
+  it leaves the unit's records untouched.
 - **Agreement with any other unit.** A result that differs from another unit's
   is a result.
 

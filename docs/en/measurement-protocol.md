@@ -323,9 +323,18 @@ separates a parameter the unit stores from one it is heard through. A parameter
 can be stored and not audible; the address-space stages cannot tell those apart
 and this one can.
 
-`transfer`, `motion`, `decay` and `phase` measure an analogue path, a time-varying
-effect, an effect's tail and the angle an effect turns each band by. All but
-`transfer` read takes and need no unit attached.
+`transfer`, `motion`, `decay`, `phase` and `vibrato` measure an analogue path, a
+time-varying effect, an effect's tail, the angle an effect turns each band by,
+and whether a take's pitch was modulated at all. `balance`, `balance-bands` and
+`arrival` read the stereo pair instead of one channel of it: what a parameter did
+to the level between the two, to their separation band by band, and to what a
+take holds early against what it holds late. All but `transfer` read takes and
+need no unit attached.
+
+A comparison made in one channel cannot see a parameter that moved the other, and
+one made on broadband level cannot see a parameter that changed one channel's
+shape while leaving its level alone. Which of the three was asked is therefore
+part of what a null from this stage means.
 
 `phase` carries a control the others do not need. It measures between two takes of
 one note, which works only where the two takes are the same waveform, so every
@@ -367,6 +376,111 @@ stimulus is on. Where both values of the pair move the part away from the note
 being played, both settings are silent and the run refuses to measure -- which
 reads as a failed capture rather than as a badly chosen pair. Such an address is
 asked at the part's own channel against off.
+
+### 15. An effect type's own parameters
+
+```sh
+rye run soundings efx-sort <contrast records> \
+  --types-from data/units/<unit-id>/efx-map/types.json \
+  --tracked data/units/<unit-id>/efx-motion/<record>.json \
+  --out data/units/<unit-id>/efx-sort/<name>.json
+rye run soundings efx-params <contrast records> --type 01 00 \
+  --types-from data/units/<unit-id>/efx-map/types.json \
+  --control <the routed-against-bypassed record from the same run> \
+  --slots "40 03 03" "40 03 04" ... \
+  --out data/units/<unit-id>/efx-params/01-00.json
+```
+
+Asks of one insertion effect type's parameters what stage 14 asks of a block.
+**The gate is asked at the parameter, not at the type.** A gate is worth what it
+turns away, and one asked of a whole type can pass every type a unit has, leaving
+the number of parameters still to sweep exactly where it started.
+
+**The route is established before any of it**: whether a signal presented to the
+unit's analogue input reaches its effects, measured with a control proving the
+raised state does something. Where it does not, sweeping a known signal through
+an effect is unavailable on that unit, and the stage is bounded by what the
+unit's own voices can support.
+
+**The slots are given rather than derived.** Which address is which slot is a
+fact about the unit. Left to the sorted file names, an address the run could not
+measure renumbers every parameter after it, pairs each with the default of the
+slot before, and the count then reports the type as having one parameter fewer
+than it has.
+
+**A pair that left one setting silent compared sound with silence.** Such an
+address is withdrawn by name, and the record that replaced it travels with the
+row rather than with whoever remembers the directory. The prepared state the run
+was taken in is recorded with it too, since the verdict holds in that state and
+not generally.
+
+Two routes answer whether a type stands still: `efx-motion` reads the takes,
+`efx-sort` reads what each type did to the unit's own repeatability. They rest on
+different properties, so a type they disagree about is reported as a disagreement
+rather than reconciled. Both take the type map, so a type with no record reads as
+unsurveyed rather than as absent.
+
+### 16. What a parameter's byte stands for
+
+Only for a parameter an audible verdict admitted, and only when a named
+downstream question needs the curve. Screening ends; sweeping does not.
+
+```sh
+rye run soundings efx-rate <takes> --type 01 20 --slot "40 03 04" \
+  --setting '<pattern with a value group>' --held "40 03 07=00" \
+  --out data/units/<unit-id>/efx-rate/01-20-04-<what-was-asked>.json
+rye run soundings efx-bands <takes> --type 01 00 --slot "40 03 07" \
+  --setting '...' --reference '...' --control '...' --silence '...' \
+  --out data/units/<unit-id>/efx-bands/01-00-07-<what-was-asked>.json
+rye run soundings efx-time <takes> --type 01 40 --slot "40 03 03" \
+  --setting '...' --control '...' \
+  --out data/units/<unit-id>/efx-time/01-40-03-<what-was-asked>.json
+```
+
+Each reads a directory of takes a `--save` run left, so none of them needs the
+unit attached and all of them run while the hardware is busy with something else.
+`balance`, `balance-bands` and `arrival` read the same directories for what the
+byte did to the stereo pair.
+
+**A sweep says what changed with the byte and cannot say what was already
+there.** Each reader therefore takes the state it reports against from the same
+session, and as takes rather than as fields: the type loaded with nothing written
+(`--untouched`), the setting the run held flat (`--reference`), the part routed
+past the effect (`--control`), and the chain with nothing played (`--silence`).
+Without the last, a setting that turns the output far enough down publishes the
+floor's own shape as a profile.
+
+**What else was held is part of the reading.** A type with two modulators returns
+whichever dominates, and a band profile is the whole chain's, so a byte read with
+another of the type's stages moved is a reading of something else and nothing in
+the numbers says so. `--held` is what makes it nameable.
+
+**A record has to be rebuildable from the invocation it carries, and one stage's
+were not.** Their stored commands were missing the `--held` flags, so a replay
+came back with the held block empty — a record saying nothing else in the chain
+was moved, which is the one thing that decides what a band profile is a profile
+of. Nothing failed and the bands were identical. Before republishing a stage from
+its own stored command, replay one record and diff every key against what was
+committed, both ways round: a key that vanished is as much a change as one that
+moved.
+
+**How a setting is read back out of a take's name belongs in the invocation.** A
+run names its takes however its own question needed, so the pattern lands in the
+record where a reader can check it rather than trust it.
+
+**The resolution costs something in both directions.** A band wider than the
+deviation in it reports that deviation shallower than it was, and a deviation
+still growing where the band set ends is reported as though it had stopped there.
+A finer set is not automatically better: on one unit, re-reading the same takes
+four times finer scattered a peak instead of sharpening it, and the flat repeats'
+own spread worsened with it. Read at the coarser of what the run resolved and
+what the question needs, and say in the record which that was.
+
+**A delay is read against its own resolution.** No peak is taken below the
+transform's resolution, since a delay shorter than that comes back as its third
+rahmonic, which stands as high as a delay and is not one. The search runs past
+the printed end of the range, so a byte that runs further than the page says
+shows as a reading rather than as the search's own edge.
 
 ## Reading an audible verdict
 
@@ -418,6 +532,34 @@ something. Each record therefore states the controls the run carried:
 - **What was restored**, and what was skipped. What a run stopped covering is
   the caveat on everything it says.
 
+## Reading a record is not one of the stages
+
+No stage above says what a reading means. Naming a structure, fitting a topology,
+deciding which of several readings the evidence leaves standing — all of it
+happens in `inferences/`, outside `data/`, and in that one directory. References
+run one way: an inference cites a record, and no record cites an inference.
+
+It bears on the protocol in one place, and that place is what to run next.
+
+```sh
+rye run soundings inferences open
+```
+
+**What is worth measuring next is derived rather than kept in a list.** Each
+entry is the observable that would separate a reading still standing from the
+claim, with the margin over what this rig resolves there. **An entry whose margin
+is below one must not be queued**: a finer band grid was such an entry on one
+unit, and the run would have come back with a worse number than the one it was
+meant to improve. An alternative nothing here can separate says so and stays open
+with the reason, rather than becoming a run that could not have answered it.
+
+**A record is admitted or refused before any reading sees it, and the rule is the
+record's own.** A rate reading fewer than half of the take's partials found, or
+taken at the slowest rate the take could carry, is left out by name; so is a slot
+on a type the page prints more than one rate for, because a take returns whichever
+modulator dominates it. Each refusal becomes a queue entry rather than a silent
+drop.
+
 ## Running a stage that takes hours
 
 The stages that sweep a whole block run for hours and are driven from
@@ -427,8 +569,18 @@ unit measured by a script nobody else has is not measured the same way.
 
 ```sh
 ./procedures/part-block.sh "40 11" 0        # block, and the channel it listens on
+./procedures/part-takes.sh <plan> plain     # one pass over a planned block
 ./procedures/stop-sweep.sh                  # stop it, and prove it stopped
+./procedures/publish-efx-bands.py --takes <dir> --out data/units/<unit-id>/efx-bands
 ```
+
+**A publisher enumerates runs; it does not read them.** The ones in
+`procedures/` go through the same stage the command line exposes rather than
+carrying a second implementation of the reading, so a record can be rebuilt from
+the audio after the reader improves, and a fix lands in one place. A slot a run
+swept and the publisher does not name produces no record and is listed at the
+end — a publisher that quietly covers the runs it recognises leaves the rest
+looking like runs that were never made.
 
 **One address at a time as a fresh process, which is not an implementation
 detail.** The two failures a long unattended run hits both cost the whole
