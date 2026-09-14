@@ -1067,3 +1067,65 @@ def test_a_candidate_that_bends_one_entry_early_leans_and_is_caught():
     )
     assert scored_here["structured"]
     assert not reproduce.gates([scored_here], ranking=ranking(3, 0))["breakdown"]["passed"]
+
+
+def test_a_setting_a_candidate_puts_no_time_on_is_named_and_not_passed_over() -> None:
+    """A residual is a ratio and neither side of it can be nothing.
+
+    The printed range of a delay begins at zero, so a candidate that follows the
+    page says the bottom setting is no delay at all. There is no octave to be wrong
+    by there, and the row has to leave the comparison -- but leaving it silently is
+    a shorter sweep published as a whole one, which is the shape of drop this
+    archive refuses everywhere else.
+    """
+    at_zero = {
+        "tables": {"0 - 500m": {"kind": "points", "log": False, "points": [[0, 0.0], [127, 500.0]]}}
+    }
+    got = reproduce.score_against_times(
+        at_zero, time_record([(0, 0.1042), (64, 252.0), (127, 500.0)]), printed_range="0 - 500m"
+    )
+    named = [row["value"] for row in got["readings_not_comparable"]]
+    assert named == [0]
+    assert got["readings_not_comparable"][0]["why"]
+    assert 0 not in [row["value"] for row in got["rows"]]
+
+
+def test_a_setting_is_judged_against_its_own_resolution_and_not_the_run_s_median() -> None:
+    """One floor cannot be the floor of a byte covering three orders of magnitude.
+
+    Half a quefrency is most of an octave at a tenth of a millisecond and nothing at
+    half a second, so which floor a setting has is a property of that setting. A
+    candidate out by a tenth of an octave at the long end is plainly out; the same
+    tenth at the shortest setting is inside what the grid could have returned. Judged
+    against one number over the whole byte both are called the same way, and one of
+    those calls is wrong whichever way the number falls.
+    """
+    ends = {
+        "tables": {
+            "0 - 500m": {"kind": "points", "log": True, "points": [[0, 0.1], [127, 500.0]]}
+        }
+    }
+    asked = [0, 40, 80, 127]
+    said = {v: reproduce.time_of(ends, "0 - 500m", v) for v in asked}
+
+    def moved(at: int) -> list[tuple[int, float]]:
+        # A tenth of an octave: under half a quefrency at a tenth of a millisecond,
+        # and a hundred quefrencies at half a second.
+        return [(v, said[v] * (2**-0.13 if v == at else 1.0)) for v in asked]
+
+    exact = reproduce.score_against_times(
+        ends, time_record([(v, said[v]) for v in asked]), printed_range="0 - 500m"
+    )
+    assert exact["over_their_own_floor"] == []
+
+    short = reproduce.score_against_times(
+        ends, time_record(moved(0)), printed_range="0 - 500m"
+    )
+    long = reproduce.score_against_times(
+        ends, time_record(moved(127)), printed_range="0 - 500m"
+    )
+    assert short["over_their_own_floor"] == []
+    assert [row["value"] for row in long["over_their_own_floor"]] == [127]
+    # Both were moved by the same number of octaves, and the one number the run
+    # would otherwise be judged by does not tell them apart.
+    assert short["worst_abs"] == pytest.approx(long["worst_abs"], abs=1e-4)

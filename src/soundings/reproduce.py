@@ -1064,6 +1064,19 @@ def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dic
 
 # ---- a byte as a multiplier
 
+WHY_OWN_FLOOR = (
+    "How many settings are further out than that setting alone could be, and by how "
+    "much. The floors above are each one number over the whole byte, and this byte "
+    "covers three orders of magnitude: half a quefrency is a fifth of an octave at "
+    "its shortest setting and a ten-thousandth of one at its longest. A single floor "
+    "is therefore far over the reading at one end and far under it at the other, so a "
+    "candidate wrong where the reading is coarse passes it and a candidate right "
+    "everywhere can fail it. This counts each setting against its own. It is reported "
+    "beside the swing and does not replace it: the swing asks whether the residual "
+    "leans, which is a different question from whether any one reading disagrees."
+)
+
+
 def time_of(model: dict, printed_range: str, byte_value: int) -> float:
     """What one candidate says the delay is, in milliseconds, at one setting.
 
@@ -1183,8 +1196,33 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
             steps.append(float(np.log2(after / before)))
     model_floor = float(np.median(steps)) if steps else 0.0
     floor = max(run_floor, grid_floor, model_floor)
+    step_ms = float(record.get("quefrency_step_ms") or 0.0)
+
+    def floor_here(value: int, answered: float) -> float:
+        """What this one setting could differ by, rather than what the run could.
+
+        The three floors above are one number each, and one number cannot be the
+        floor of a byte covering three orders of magnitude. Half a quefrency is a
+        fifth of an octave at the shortest setting this slot has and a ten-thousandth
+        of one at the longest, so a median of the two is far over the floor at one
+        end and far under it at the other -- and a lean judged by it is found where
+        the reading is coarse and missed where the candidates actually differ.
+        """
+        grid = 0.0
+        if answered > 0 and step_ms > 0:
+            below = answered - step_ms / 2.0
+            grid = float(np.log2(answered / below)) if below > 0 else float("inf")
+        before = time_of(model, printed_range, value - 1) if value else 0.0
+        said = time_of(model, printed_range, value)
+        entry = float(np.log2(said / before)) if said > before > 0 else 0.0
+        return max(run_floor, grid, entry)
 
     rows = []
+    # Settings the comparison cannot be made at, named rather than passed over. A
+    # residual is a ratio and neither side of it can be nothing, so a candidate that
+    # says a setting is no delay at all has no octave to be wrong by there -- which
+    # is a thing the candidate said, not a row that was not read.
+    not_comparable = []
     shortest_value = min((int(r["value"]) for r in kept), default=0)
     base_unit = next(
         (float(r["ms"]) for r in kept if int(r["value"]) == shortest_value), 1.0
@@ -1195,6 +1233,19 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
         said = time_of(model, printed_range, value)
         answered = float(reading["ms"])
         if said <= 0 or answered <= 0:
+            not_comparable.append(
+                {
+                    "value": value,
+                    "unit_ms": round(answered, 4),
+                    "model_ms": round(said, 4),
+                    "why": (
+                        "a residual here is a ratio of two times, and this candidate "
+                        "puts no time on one side of it"
+                        if said <= 0
+                        else "the record put no time on this setting"
+                    ),
+                }
+            )
             continue
         rows.append(
             {
@@ -1208,9 +1259,15 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
                 "unit_largest": round(float(np.log2(answered / base_unit)), 5),
                 "model_ms": round(said, 4),
                 "unit_ms": round(answered, 4),
+                "floor_here": round(floor_here(value, answered), 5),
             }
         )
 
+    over_own = [
+        {"value": row["value"], "by": round(abs(row["residual"][0]) - row["floor_here"], 5)}
+        for row in rows
+        if abs(row["residual"][0]) > row["floor_here"]
+    ]
     flat = np.array([abs(row["residual"][0]) for row in rows], dtype=float)
     every = [row["unit_reading"][0] for row in rows]
     span = float(max(every) - min(every)) if every else 0.0
@@ -1244,6 +1301,9 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
         "sign_property": "longer or shorter than the shortest setting the record admits",
         "above": "longer",
         "below": "shorter",
+        "readings_not_comparable": not_comparable,
+        "over_their_own_floor": over_own,
+        "why_over_their_own_floor": WHY_OWN_FLOOR,
         "model_largest": round(model_largest, 4),
         "model_stays_inside_the_floor": bool(model_largest <= floor),
         "median_abs": round(float(np.median(flat)), 5) if flat.size else 0.0,
