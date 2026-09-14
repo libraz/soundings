@@ -1,0 +1,359 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-14T09:02:32.216046+00:00",
+    "made_by": "backup/write-time-candidates.py, backup/write-time-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "slot",
+      "types": [
+        "01 50"
+      ],
+      "addresses": [
+        "40 03 03"
+      ]
+    }
+  },
+  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes five times over the byte -- a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to the printed end, where the last two settings return the same time. Every entry is then cut back to a whole step of a clock running at 32000 Hz, which is what a delay addressed as a sample count does to a time written in milliseconds. The cut is not a detail of the ladder: it is what the twenty-one settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for.",
+  "named": null,
+  "why_not_named": "The ladder is the claim and it is written out. A name for it would be a name for a table somebody laid out by hand, and there is nothing to call it but the numbers.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-50-03-every-step-of-a-delay-time.json",
+        "keys": [
+          "settings_admitted",
+          "floor_ms",
+          "settings_taken_twice",
+          "read_at_hz",
+          "quefrency_step_ms",
+          "with_the_effect_out.with_nothing_in_its_path.stands",
+          "stands_out"
+        ],
+        "values": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127
+          ],
+          0.0,
+          [
+            64
+          ],
+          48000,
+          0.020833,
+          4.67,
+          6.0
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "Stereo Delay, parameter 1, Dly Tm L (Delay time left), 0 - 500m"
+        ],
+        "read_as": "The printed range is taken to say what the byte reaches at its ends and nothing about what it does between them. It picks the table for this address the way it picks a rate's, which is read off a page rather than fitted and which every candidate here gets equally."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A delay line is addressed as a count of samples, so the times a byte selects are whole samples of whatever the part clocks at and not the round milliseconds a page prints.",
+        "why": "A delay is a read pointer some distance behind a write pointer in a buffer, and that distance is an integer. Nothing in the era interpolates between two samples of a delay line to reach a printed millisecond; it would cost a multiply per sample to make a number on a page true.",
+        "would_be_wrong_if": "The times had come back on round milliseconds at the settings where a whole sample and a round millisecond disagree. Twenty-one of the hundred and twenty-eight settings are such settings, and all twenty-one came back on the sample."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The record says where the copy came back at each of the byte's hundred and twenty-eight settings, and how far each peak stood over the take's own roughness. What is read out of it here is that the times lie on a ladder of round steps, that the ladder is cut to a sample grid, and which grid. The last of those does not come from the times at all: it comes from the peak heights, which no table of times can arrange.",
+  "alternatives": [
+    {
+      "reading": "The ladder is in round milliseconds and the unit reaches them, so the twenty-one settings that came back short are the reading being short rather than the unit.",
+      "candidate": "a-ladder-of-round-milliseconds",
+      "standing": false,
+      "equivalent_under_this_test": false,
+      "ruled_out_by": "The heights of the peaks. They split the hundred and twenty-eight settings in two, and which side a setting falls on is predicted with nothing fitted by whether its time is a whole step of a clock at 32000 Hz. This candidate has no account of the split at all, and its own residual is further out than one setting's resolution at the shortest delay the slot makes.",
+      "separated_by": {
+        "observable": "The time at the settings where a whole sample and a round millisecond disagree, and the height of the peak there.",
+        "predicts": {
+          "a-ladder-cut-to-whole-samples": "0 of 130 settings further out than that setting alone could be",
+          "a-ladder-of-round-milliseconds": "1 of 130, and the heights say nothing"
+        },
+        "sensitivity_here": "The settings a rate puts on the capture's own grid stand 2.522 spreads of the heights over the settings it does not, at 32000 Hz, against 1.608 for the next rate that predicts anything at all. A setting taken again moved 0.78 where the spread is 8.512.",
+        "margin": 1.0,
+        "run": null
+      }
+    },
+    {
+      "reading": "The byte scales a time rather than indexing one -- a straight line or a run of equal ratios between the printed ends.",
+      "candidate": "a-straight-line-between-the-printed-ends",
+      "standing": false,
+      "equivalent_under_this_test": false,
+      "ruled_out_by": "The readings themselves, by whole octaves. A straight line puts nothing under four milliseconds and the slot reaches a twelfth of one; a run of equal ratios reaches both ends and is wrong by more than an octave over most of what lies between.",
+      "separated_by": {
+        "observable": "The time at every setting between the two ends.",
+        "predicts": {
+          "a-straight-line-between-the-printed-ends": "median 4.17003 octaves out",
+          "a-geometric-run-between-the-printed-ends": "median 0.8711 octaves out",
+          "a-ladder-cut-to-whole-samples": "median 0.0"
+        },
+        "sensitivity_here": "The run resolved a setting taken four times onto one quefrency, and both of these are wrong by whole octaves over most of the byte.",
+        "margin": 1.0,
+        "run": null
+      }
+    }
+  ],
+  "refuted_by": "A reading at any setting of this slot that is not the ladder's entry for it, by more than that setting's own resolution. Or a slot on another type the same range is printed against whose ladder has different steps, which would make the printed range the wrong thing to index by. Or the same sweep on a unit whose delay is not clocked at 32000 Hz coming back with the heights split the same way, which would mean the split is not the grid.",
+  "reproduces": {
+    "model": "inferences/models/time-a-ladder-cut-to-whole-samples.json",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-time/01-50-03-every-step-of-a-delay-time.json"
+      ],
+      "generated_from": "The one record this class has. It is one slot of one type, read at every setting the byte has.",
+      "excluded": [],
+      "why_not_a_filter": "There is nothing to filter. The claim is about this address and the record is of this address."
+    },
+    "domain": {
+      "settings": {
+        "01 50 40 03 03": "all 128, and one of them four times"
+      },
+      "stimulus": [
+        "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0"
+      ],
+      "outside": "How much of the output the returned copy is, which a cepstral peak does not weigh. What the other delay byte of this type does, which was parked for the whole run and not swept. Whether the ladder is the same on the forty-one other types this class has rows on -- the printed range is the same on eight of them and this says nothing about the rest."
+    },
+    "residual": {
+      "median": 0.0,
+      "worst": 0.1705,
+      "unit": "octaves",
+      "worst_at": {
+        "value": 1,
+        "ms": 0.0833
+      },
+      "structured": true,
+      "why": "The median is zero: the ladder returns the reading's own value at a hundred and seven of the hundred and twenty-eight settings, and the rest are inside half a quefrency. The worst is at setting one, which is the shortest delay the slot makes and the one the reading resolves worst -- half a quefrency is a fifth of an octave there. It is inside that setting's own floor. The swing above is reported against a single floor over the whole byte and it is the wrong yardstick here for the same reason: a byte covering three orders of magnitude has no one floor, which is why every setting is also counted against its own."
+    },
+    "gates": {
+      "measured_in": "octaves",
+      "gross": {
+        "passed": true,
+        "residual_over_span": 0.0,
+        "span": 12.5513,
+        "ceiling": 0.2,
+        "why": "The median residual over the span the byte commands. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+      },
+      "qualitative": {
+        "passed": true,
+        "property": "longer or shorter than the shortest setting the record admits",
+        "checked": 130,
+        "disagreed": 0,
+        "why": "Every setting above the shortest the record admits is longer than it, in the unit and in the model alike. The byte is monotonic and so is the ladder."
+      },
+      "power": {
+        "passed": true,
+        "beaten": "a-ladder-of-round-milliseconds",
+        "how": "contradicted",
+        "why": "The strongest competing candidate is the same ladder without the cut, and it is not beaten on the residual alone -- it is contradicted by a reading it cannot produce. The heights of the peaks split the settings in two, and which side a setting falls on is predicted with nothing fitted by whether its time is a whole step of the clock. A table of times has no way to reach the height of a cepstral peak.",
+        "in_spreads_of_the_heights": [
+          {
+            "hz": 32000,
+            "apart": 2.522
+          },
+          {
+            "hz": 18000,
+            "apart": 1.608
+          },
+          {
+            "hz": 40000,
+            "apart": 1.597
+          },
+          {
+            "hz": 56000,
+            "apart": 1.597
+          }
+        ]
+      },
+      "breakdown": {
+        "passed": true,
+        "settings_over_their_own_floor": [],
+        "of": 130,
+        "why": "How many settings are further out than that setting alone could be, and by how much. The floors above are each one number over the whole byte, and this byte covers three orders of magnitude: half a quefrency is a fifth of an octave at its shortest setting and a ten-thousandth of one at its longest. A single floor is therefore far over the reading at one end and far under it at the other, so a candidate wrong where the reading is coarse passes it and a candidate right everywhere can fail it. This counts each setting against its own. It is reported beside the swing and does not replace it: the swing asks whether the residual leans, which is a different question from whether any one reading disagrees."
+      }
+    },
+    "verdict": "reproduces",
+    "ranking": [
+      {
+        "candidate": "a-ladder-cut-to-whole-samples",
+        "settings_over_their_own_floor": 0,
+        "worst_octaves": 0.1705,
+        "median_octaves": 0.0
+      },
+      {
+        "candidate": "a-ladder-of-round-milliseconds",
+        "settings_over_their_own_floor": 1,
+        "worst_octaves": 0.26361,
+        "median_octaves": 0.0
+      },
+      {
+        "candidate": "a-geometric-run-between-the-printed-ends",
+        "settings_over_their_own_floor": 125,
+        "worst_octaves": 2.45559,
+        "median_octaves": 0.8711
+      },
+      {
+        "candidate": "a-straight-line-between-the-printed-ends",
+        "settings_over_their_own_floor": 128,
+        "worst_octaves": 5.59854,
+        "median_octaves": 4.17003
+      }
+    ],
+    "decoy": "one-entry-per-setting",
+    "why_the_decoy_is_not_ranked": "Its entries are the readings. It reproduces the record because it is the record, its residual is the reading's own rounding, and it could not have come out wrong. It is written and named so that the ranking has to beat it rather than quietly not contain it."
+  },
+  "what_this_does_not_close": [
+    {
+      "what": "The other forty-one types this class has a time row on.",
+      "why": "One slot of one type was read. Eight types carry the same printed range and thirty-three carry one of five others, and nothing here says a shorter printed range is the same ladder stopped early rather than a ladder of its own.",
+      "what_would_close_it": "The same sweep on one slot of each printed range, at every setting. Five more runs of about half an hour each."
+    },
+    {
+      "what": "Setting zero.",
+      "why": "The printed range begins at zero and the ladder says no delay at all, so there is no ratio to be wrong by and the comparison cannot be made there. The reading admitted a peak at a tenth of a millisecond, but its neighbours do not sit at three and five times it the way a copy's do, so what it found is most likely the shape of the source and not a delay.",
+      "what_would_close_it": "A stimulus whose own log spectrum is flatter at the bottom of the search, or a longer frame, so that the residue the subtraction leaves there falls under the bar."
+    },
+    {
+      "what": "Whether the clock is the whole unit's or this effect's.",
+      "why": "The heights say the delay counts in steps of a clock at 32000 Hz. They say nothing about what else runs on it.",
+      "what_would_close_it": "The same reading on a type whose stage is not a delay line -- a rate, a band edge -- landing on the same grid."
+    }
+  ],
+  "a_note_on_what_was_left_out": "Nothing was left out by the record's own controls: all hundred and twenty-eight settings stood over the bar. One setting is left out of the comparison and not of the record, because a residual is a ratio and the winning candidate puts no time on one side of it there. The run's own null -- one take with the effect out read against another, which is this reading with the delay taken out of it -- came back under the bar, so the settings that did stand over it could have failed to."
+}
