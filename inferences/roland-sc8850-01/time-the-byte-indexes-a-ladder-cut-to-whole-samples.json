@@ -3,13 +3,14 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-14T09:02:32.216046+00:00",
+    "made_at": "2026-09-14T15:33:23.039755+00:00",
     "made_by": "backup/write-time-candidates.py, backup/write-time-inference.py",
     "rounds": 1,
     "about": {
       "scope": "slot",
       "types": [
-        "01 50"
+        "01 50",
+        "01 51"
       ],
       "addresses": [
         "40 03 03"
@@ -180,7 +181,7 @@
         "rows": [
           "Stereo Delay, parameter 1, Dly Tm L (Delay time left), 0 - 500m"
         ],
-        "read_as": "The printed range is taken to say what the byte reaches at its ends and nothing about what it does between them. It picks the table for this address the way it picks a rate's, which is read off a page rather than fitted and which every candidate here gets equally."
+        "read_as": "The printed range is taken to say what the byte reaches at its ends and nothing about what it does between them. That it picks the table is no longer only an arrangement carried from a neighbouring class: the two types this range is printed against return the same quefrency at every setting asked of both, including the two where a whole sample and a round millisecond disagree -- and there both return the same lowered peak, which is the grid showing rather than the times agreeing."
       }
     ],
     "era_priors": [
@@ -203,8 +204,8 @@
       "separated_by": {
         "observable": "The time at the settings where a whole sample and a round millisecond disagree, and the height of the peak there.",
         "predicts": {
-          "a-ladder-cut-to-whole-samples": "0 of 130 settings further out than that setting alone could be",
-          "a-ladder-of-round-milliseconds": "1 of 130, and the heights say nothing"
+          "a-ladder-cut-to-whole-samples": "no setting further out than that setting alone could be, on either record",
+          "a-ladder-of-round-milliseconds": "one setting on each record further out than it could be, and no account of the heights at all"
         },
         "sensitivity_here": "The settings a rate puts on the capture's own grid stand 2.522 spreads of the heights over the settings it does not, at 32000 Hz, against 1.608 for the next rate that predicts anything at all. A setting taken again moved 0.78 where the spread is 8.512.",
         "margin": 1.0,
@@ -222,7 +223,7 @@
         "predicts": {
           "a-straight-line-between-the-printed-ends": "median 4.17003 octaves out",
           "a-geometric-run-between-the-printed-ends": "median 0.8711 octaves out",
-          "a-ladder-cut-to-whole-samples": "median 0.0"
+          "a-ladder-cut-to-whole-samples": "median 0.0 octaves out"
         },
         "sensitivity_here": "The run resolved a setting taken four times onto one quefrency, and both of these are wrong by whole octaves over most of the byte.",
         "margin": 1.0,
@@ -235,15 +236,17 @@
     "model": "inferences/models/time-a-ladder-cut-to-whole-samples.json",
     "compared_against": {
       "records": [
-        "data/units/roland-sc8850-01/efx-time/01-50-03-every-step-of-a-delay-time.json"
+        "data/units/roland-sc8850-01/efx-time/01-50-03-every-step-of-a-delay-time.json",
+        "data/units/roland-sc8850-01/efx-time/01-51-03-does-the-range-pick-the-table.json"
       ],
-      "generated_from": "The one record this class has. It is one slot of one type, read at every setting the byte has.",
+      "generated_from": "Every record this class has on this printed range. Both are the parameter the page numbers one, on the two types it prints this range against; the first is read at every setting the byte has and the second at seven spanning three orders of magnitude.",
       "excluded": [],
-      "why_not_a_filter": "There is nothing to filter. The claim is about this address and the record is of this address."
+      "why_not_a_filter": "There is nothing to filter. The set is every record of this range, and the range is what the claim is about."
     },
     "domain": {
       "settings": {
-        "01 50 40 03 03": "all 128, and one of them four times"
+        "01 50 40 03 03": "all 128, and one of them four times",
+        "01 51 40 03 03": "seven, and one of them four times"
       },
       "stimulus": [
         "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0"
@@ -273,7 +276,7 @@
       "qualitative": {
         "passed": true,
         "property": "longer or shorter than the shortest setting the record admits",
-        "checked": 130,
+        "checked": 139,
         "disagreed": 0,
         "why": "Every setting above the shortest the record admits is longer than it, in the unit and in the model alike. The byte is monotonic and so is the ladder."
       },
@@ -303,8 +306,11 @@
       },
       "breakdown": {
         "passed": true,
-        "settings_over_their_own_floor": [],
-        "of": 130,
+        "settings_over_their_own_floor": {
+          "01 50 40 03 03": [],
+          "01 51 40 03 03": []
+        },
+        "of": 139,
         "why": "How many settings are further out than that setting alone could be, and by how much. The floors above are each one number over the whole byte, and this byte covers three orders of magnitude: half a quefrency is a fifth of an octave at its shortest setting and a ten-thousandth of one at its longest. A single floor is therefore far over the reading at one end and far under it at the other, so a candidate wrong where the reading is coarse passes it and a candidate right everywhere can fail it. This counts each setting against its own. It is reported beside the swing and does not replace it: the swing asks whether the residual leans, which is a different question from whether any one reading disagrees."
       }
     },
@@ -313,26 +319,34 @@
       {
         "candidate": "a-ladder-cut-to-whole-samples",
         "settings_over_their_own_floor": 0,
+        "of": 139,
         "worst_octaves": 0.1705,
-        "median_octaves": 0.0
+        "median_octaves": 0.0,
+        "worst_on": "01 50 40 03 03"
       },
       {
         "candidate": "a-ladder-of-round-milliseconds",
-        "settings_over_their_own_floor": 1,
+        "settings_over_their_own_floor": 2,
+        "of": 139,
         "worst_octaves": 0.26361,
-        "median_octaves": 0.0
+        "median_octaves": 0.0,
+        "worst_on": "01 50 40 03 03"
       },
       {
         "candidate": "a-geometric-run-between-the-printed-ends",
-        "settings_over_their_own_floor": 125,
+        "settings_over_their_own_floor": 133,
+        "of": 141,
         "worst_octaves": 2.45559,
-        "median_octaves": 0.8711
+        "median_octaves": 0.93705,
+        "worst_on": "01 50 40 03 03"
       },
       {
         "candidate": "a-straight-line-between-the-printed-ends",
-        "settings_over_their_own_floor": 128,
+        "settings_over_their_own_floor": 136,
+        "of": 141,
         "worst_octaves": 5.59854,
-        "median_octaves": 4.17003
+        "median_octaves": 4.17003,
+        "worst_on": "01 50 40 03 03"
       }
     ],
     "decoy": "one-entry-per-setting",

@@ -1082,11 +1082,19 @@ def time_of(model: dict, printed_range: str, byte_value: int) -> float:
 
     The printed range picks the table for the same reason it picks a rate's: it is
     the only thing outside the unit that tells one time slot from another, it is
-    read off a page rather than fitted, and every candidate gets it. The frequency
-    class has since measured that the printed range does pick the table, on three
-    ranges and three types, which is an argument from a neighbouring class and not
-    a measurement of this one -- so it carries the arrangement here and does not
-    close anything about it.
+    read off a page rather than fitted, and every candidate gets it. This class has
+    since measured that it does pick the table rather than merely being allowed to:
+    two types printing the same range against the same parameter number return the
+    same quefrency at every setting asked of both, including the settings where a
+    whole sample and a round millisecond disagree -- and there both return the same
+    lowered peak, which is the grid showing rather than the times agreeing.
+
+    What that does not say is that a shorter printed range is this table stopped
+    early rather than a table of its own, which is a different question and is asked
+    by reading a slot on each range. The frequency class has the same arrangement
+    measured on three ranges and three types, which is an argument from a
+    neighbouring class: it makes the shorter ranges worth reading, and it does not
+    stand in for reading them.
 
     Expressed in the same vocabulary the other table classes use, so a candidate
     here needs no rule this renderer did not already hold.
