@@ -608,6 +608,32 @@ def test_the_record_says_where_it_was_read_from_and_what_was_held(directory) -> 
     assert found["manifest"]["files_present"] >= 8
 
 
+def test_the_reference_says_what_it_was_taken_under(directory) -> None:
+    """The reference is a state, and on some runs it is a state of the swept byte.
+
+    A printed range whose last position is the stage switched out gives the null as
+    one value of the byte being read, so the block that says what was held while
+    sweeping cannot carry it -- that value is not what the readings were taken at.
+    Without somewhere of its own, every profile in such a record is reported
+    against something the record cannot name.
+    """
+    found = read(
+        directory,
+        held=[{"address": "40 03 06", "bytes": "40"}],
+        reference_held=[{"address": "40 03 04", "bytes": "7F"}],
+    )
+    assert found["reference"]["held"] == [{"address": "40 03 04", "bytes": "7F"}]
+    assert found["held"] == [{"address": "40 03 06", "bytes": "40"}]
+
+
+def test_a_reference_taken_under_the_sweeps_own_state_says_so_by_being_empty(
+    directory,
+) -> None:
+    found = read(directory)
+    assert found["reference"]["held"] == []
+    assert found["reference"]["why_held"]
+
+
 @pytest.fixture
 def crossed(tmp_path):
     """A run on an interface whose second input carries something the unit is not.

@@ -220,6 +220,18 @@ def register(sub) -> None:
         "stages moved is a reading of something else and nothing in the numbers says so",
     )
     p.add_argument(
+        "--reference-held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the reference takes were made under, where that differs from "
+        "the sweep. The reference is a state and not one of the readings, and on a "
+        "printed range whose last position is the stage switched out it is a value of "
+        "the byte being swept -- so without this the record reports every profile "
+        "against something it cannot name",
+    )
+    p.add_argument(
         "--band",
         type=float,
         action="append",
@@ -560,6 +572,10 @@ def cmd_efx_bands(args) -> int:
         stimulus=args.stimulus,
         held=[
             {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
+        ],
+        reference_held=[
+            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)}
+            for a, v in args.reference_held
         ],
         bands_hz=args.band or named[0],
         band_width_octaves=1 / 3 if args.band else named[1],

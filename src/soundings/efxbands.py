@@ -199,6 +199,17 @@ WHY_REFERENCE = (
     "every band by the same small amount sits inside every band's floor."
 )
 
+WHY_REFERENCE_HELD = (
+    "What the reference takes had written, where that differs from what the readings "
+    "did. The block above this one says what was held while the byte was swept, and "
+    "the reference is not one of those readings -- it is a separate state, and on some "
+    "runs it is a state of the swept byte itself. A printed range whose last position "
+    "is the stage switched out gives the null as one value of the byte being read, so "
+    "a record that could not say which value would leave every profile in it reported "
+    "against something unnamed. Empty where the reference was the same state as the "
+    "sweep, which is a thing to read rather than an omission."
+)
+
 WHY_CONTROL = (
     "The same profile with the part routed past the effect instead of through it. A "
     "deviation from the flat setting only reads as what the byte did if the flat "
@@ -649,6 +660,7 @@ def read_directory(
     silence: str | None = None,
     stimulus: str | None = None,
     held: list[dict] | None = None,
+    reference_held: list[dict] | None = None,
     bands_hz=THIRD_OCTAVES,
     band_width_octaves: float = 1 / 3,
     channel: int | None = None,
@@ -849,6 +861,8 @@ def read_directory(
             "heard_db": flat_heard,
             "heard_floor_db": heard_floor,
             "above_the_silence_db": above(flat_heard),
+            "held": reference_held or [],
+            "why_held": WHY_REFERENCE_HELD,
             "why": WHY_REFERENCE,
         },
         "control": {
