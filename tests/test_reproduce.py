@@ -9,6 +9,8 @@ a strawman decoy, and a residual that leans.
 
 from __future__ import annotations
 
+import inspect
+
 import numpy as np
 import pytest
 
@@ -1129,3 +1131,78 @@ def test_a_setting_is_judged_against_its_own_resolution_and_not_the_run_s_median
     # Both were moved by the same number of octaves, and the one number the run
     # would otherwise be judged by does not tell them apart.
     assert short["worst_abs"] == pytest.approx(long["worst_abs"], abs=1e-4)
+
+
+def test_a_long_delay_is_judged_against_two_clocks_and_a_short_one_is_not() -> None:
+    """The one term in the floor that is a scale error rather than a quantisation.
+
+    A delay is counted in the unit's clock and read in the one the take was captured
+    on, so every reading is scaled by whatever those two sit apart. That is nothing
+    where the delay is short and more than a quefrency where it is a second, and a
+    floor built only from the grid and the ladder's own entries is therefore tighter
+    than the rig at the long end -- which shows up as the top of a saturated range
+    disagreeing by a fraction of one quefrency.
+
+    It must not become a floor that forgives anything. A candidate wrong by far more
+    than the two clocks could account for still fails with the term in.
+    """
+    flat_top = {
+        "tables": {
+            "0 - 500m": {
+                "kind": "points",
+                "log": False,
+                "points": [[0, 0.0], [120, 1000.0], [127, 1000.0]],
+            }
+        }
+    }
+    # The unit reads the plateau 20 ppm long, which is inside the rig and outside
+    # half a quefrency at that time.
+    plateau = [(v, 1000.0 * (1 + 20e-6)) for v in range(121, 128)]
+    # A short setting the candidate is exactly right at, so the run has something
+    # in it the clock cannot reach and the floor is not read off the plateau alone.
+    record = time_record([(8, reproduce.time_of(flat_top, "0 - 500m", 8)), *plateau])
+
+    tight = reproduce.score_against_times(flat_top, record, printed_range="0 - 500m")
+    assert [r["value"] for r in tight["over_their_own_floor"]] == list(range(121, 128))
+
+    allowed = reproduce.score_against_times(
+        flat_top, record, printed_range="0 - 500m", clock_ppm=57.0
+    )
+    assert allowed["over_their_own_floor"] == []
+    assert allowed["clock_ppm_allowed_for"] == 57.0
+
+    # The same term, against a candidate wrong by a whole step rather than by ppm.
+    bent = {
+        "tables": {
+            "0 - 500m": {
+                "kind": "points",
+                "log": False,
+                "points": [[0, 0.0], [120, 800.0], [127, 800.0]],
+            }
+        }
+    }
+    still_fails = reproduce.score_against_times(
+        bent, record, printed_range="0 - 500m", clock_ppm=57.0
+    )
+    over = {r["value"] for r in still_fails["over_their_own_floor"]}
+    assert set(range(121, 128)) <= over, (
+        "the clock term must not forgive a candidate wrong by a whole step"
+    )
+
+
+def test_the_clock_term_is_not_a_constant_beside_the_code() -> None:
+    """A figure measured on one unit is not another unit's default.
+
+    The drift is a property of one machine against one interface. Asked for without
+    one, the scorer allows nothing for it and says so, so a caller that forgot is
+    tighter than the rig rather than quietly carrying somebody else's number.
+    """
+    record = time_record([(8, 32.0), (64, 256.0)])
+    got = reproduce.score_against_times(DOUBLING, record, printed_range="0 - 500m")
+    assert got["clock_ppm_allowed_for"] is None
+
+    asked_for = inspect.signature(reproduce.score_against_times).parameters["clock_ppm"]
+    assert asked_for.default is None, (
+        "a default here would be one unit's measurement arriving as another's "
+        "assumption, which is the one thing no stage in this repo may do"
+    )

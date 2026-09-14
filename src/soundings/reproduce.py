@@ -1073,7 +1073,13 @@ WHY_OWN_FLOOR = (
     "candidate wrong where the reading is coarse passes it and a candidate right "
     "everywhere can fail it. This counts each setting against its own. It is reported "
     "beside the swing and does not replace it: the swing asks whether the residual "
-    "leans, which is a different question from whether any one reading disagrees."
+    "leans, which is a different question from whether any one reading disagrees. "
+    "One of the terms in it is not a quantisation at all: a delay is counted in the "
+    "unit's clock and read in the one the take was captured on, so the whole reading "
+    "is scaled by whatever those two sit apart, which is nothing at a tenth of a "
+    "millisecond and more than a quefrency at a second. It is the same number of "
+    "octaves everywhere and it is taken from the unit's own records, so a floor that "
+    "left it out would be tighter than the rig at the long end and nowhere else."
 )
 
 
@@ -1172,7 +1178,13 @@ def _time_floors(record: dict, kept: list[dict]) -> tuple[float, float]:
     return run_floor, (float(np.median(grid)) if grid else 0.0)
 
 
-def score_against_times(model: dict, record: dict, *, printed_range: str) -> dict:
+def score_against_times(
+    model: dict,
+    record: dict,
+    *,
+    printed_range: str,
+    clock_ppm: float | None = None,
+) -> dict:
     """One published delay curve, answered by a table.
 
     In octaves throughout, for the reason a rate is. This byte covers three orders
@@ -1180,6 +1192,14 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
     so a comparison in milliseconds would pass a table that is right where the
     numbers are large and wrong where they are small, which is the half a player
     hears as the short setting.
+
+    `clock_ppm` is how far the unit's own clock and the one the take was captured on
+    may sit apart, in parts per million. A delay is counted in the unit's clock and
+    read in the interface's, so the whole reading is scaled by whatever those two
+    differ by -- nothing at a tenth of a millisecond and more than a quefrency at a
+    second. It is not defaulted and no figure for it lives beside this code: it is a
+    measurement of one unit, and the caller passes that unit's own. Left out, it is
+    left out of the floor and the comparison is tighter than the rig.
     """
     kept, left_out = admitted_times(record)
     run_floor, grid_floor = _time_floors(record, kept)
@@ -1205,6 +1225,11 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
     model_floor = float(np.median(steps)) if steps else 0.0
     floor = max(run_floor, grid_floor, model_floor)
     step_ms = float(record.get("quefrency_step_ms") or 0.0)
+    # A scale error and not a quantisation, so unlike the others it is the same
+    # number of octaves at every setting -- which is why it can be worked out once
+    # here rather than per setting. It is the smallest of the terms at the short end
+    # and the largest at the long end.
+    drift = abs(float(np.log2(1.0 + (clock_ppm or 0.0) / 1e6)))
 
     def floor_here(value: int, answered: float) -> float:
         """What this one setting could differ by, rather than what the run could.
@@ -1223,7 +1248,7 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
         before = time_of(model, printed_range, value - 1) if value else 0.0
         said = time_of(model, printed_range, value)
         entry = float(np.log2(said / before)) if said > before > 0 else 0.0
-        return max(run_floor, grid, entry)
+        return max(run_floor, grid, entry, drift)
 
     rows = []
     # Settings the comparison cannot be made at, named rather than passed over. A
@@ -1312,6 +1337,7 @@ def score_against_times(model: dict, record: dict, *, printed_range: str) -> dic
         "readings_not_comparable": not_comparable,
         "over_their_own_floor": over_own,
         "why_over_their_own_floor": WHY_OWN_FLOOR,
+        "clock_ppm_allowed_for": clock_ppm,
         "model_largest": round(model_largest, 4),
         "model_stays_inside_the_floor": bool(model_largest <= floor),
         "median_abs": round(float(np.median(flat)), 5) if flat.size else 0.0,
