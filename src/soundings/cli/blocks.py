@@ -272,6 +272,109 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_bands)
 
     p = sub.add_parser(
+        "efx-time",
+        help="read where one insertion effect's delay slot put the copy it returns, "
+        "setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    p.add_argument(
+        "--type", required=True, metavar="MSB LSB", help="the type the takes were made under"
+    )
+    p.add_argument("--slot", required=True, metavar="ADDR", help="the address that was swept")
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. Two takes matching one value is how this stage gets "
+        "its floor, so a run that repeated a setting needs no separate pattern for it",
+    )
+    p.add_argument(
+        "--control",
+        required=True,
+        metavar="REGEX",
+        help="a pattern naming the takes made with the part routed past the effect. "
+        "Required rather than optional here: their cepstrum is subtracted from every "
+        "reading, so without them each row would carry whatever the stimulus and the "
+        "converters put into a log spectrum and report it as a copy",
+    )
+    p.add_argument(
+        "--stimulus",
+        help="what was sounded through the effect. The reading wants a source whose own "
+        "log spectrum is smooth, and a held note's is a comb of its own, so which "
+        "stimulus carried the take bounds the record rather than decorating it",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. A time "
+        "read out of a cepstrum is a time through the whole chain, so a feedback path "
+        "left open returns further copies and a balance carrying only the return leaves "
+        "nothing for the copy to beat against and no peak at all",
+    )
+    p.add_argument(
+        "--frame",
+        type=int,
+        default=65536,
+        help="samples per cepstral frame. It bounds the reading at both ends -- half of "
+        "it is the longest delay that can be placed, and a delay that moves inside one "
+        "smears until nothing stands out -- so a longer printed range needs a longer "
+        "frame and buys it with fewer frames to average",
+    )
+    p.add_argument(
+        "--hop", type=int, default=16384, help="samples between frames"
+    )
+    p.add_argument(
+        "--shortest",
+        type=float,
+        default=0.4,
+        help="milliseconds below which no peak is read. Under it the cepstrum carries "
+        "the shape of the source rather than anything in the path",
+    )
+    p.add_argument(
+        "--longest",
+        type=float,
+        default=620.0,
+        help="milliseconds above which no peak is read. Set past the printed end of the "
+        "range, so a byte that runs further than the page says shows as a reading rather "
+        "than as the search's own edge",
+    )
+    p.add_argument(
+        "--peaks-apart",
+        type=float,
+        default=1.0,
+        help="milliseconds set aside either side of a peak before the next is taken. The "
+        "top of a broad peak is several quefrencies wide, and without this the same peak "
+        "is returned three times",
+    )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever is "
+        "loudest in the takes with the effect out, chosen once for the run: an input the "
+        "unit is not on is not silent, and a take read from one returns a full plausible "
+        "cepstrum of something else",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        help="seconds the stimulus was held, where the manifest's own take length is not "
+        "one second longer than it",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_time)
+
+    p = sub.add_parser(
         "efx-params",
         help="read a directory of per-address records into one verdict per parameter of "
         "one insertion effect type, with no machine attached",
@@ -609,6 +712,86 @@ def cmd_efx_bands(args) -> int:
         print("  (no --control: the record cannot say whether the flat setting was unity)")
     if not found["silence"]["takes"]:
         print("  (no --silence: a setting that turns the output off reads as a profile)")
+    if (missed := found["takes_not_matching"]["count"]):
+        print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if (astray := picked["loudest_elsewhere"]):
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_time(args) -> int:
+    """Where a delay slot put its copy, read from takes already saved."""
+    from .. import efxtime
+
+    def said(reading) -> None:
+        also = "  ".join(
+            f"{q:.1f}x{s:.0f}"
+            for q, s in zip(reading["also_ms"], reading["also_stands"], strict=True)
+        )
+        print(
+            f"  {reading['value']:5d} -> "
+            + (
+                f"{reading['ms']:9.3f} ms  x{reading['stands']:6.1f}"
+                if reading["admitted"]
+                else f"{'under the roughness':>19s}  x{reading['stands']:6.1f}"
+            )
+            + f"   also {also}"
+        )
+
+    found = efxtime.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        control=args.control,
+        stimulus=args.stimulus,
+        held=[
+            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
+        ],
+        channel=args.channel,
+        frame=args.frame,
+        hop=args.hop,
+        searched_ms=(args.shortest, args.longest),
+        apart_ms=args.peaks_apart,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        progress=said,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of "
+        f"{len(picked['reference_db'])} ({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reference_db"])
+        + " dBFS"
+    )
+    if not found["readings"]:
+        print(
+            f"no take under {args.takes} has a setting matching {args.setting!r}; "
+            f"{found['takes_not_matching']['count']} were looked at"
+        )
+        return 1
+    out = found["with_the_effect_out"]
+    print(
+        f"  with the effect out the chain's own best peak is {out['ms']:.3f} ms at "
+        f"x{out['stands']:.1f}"
+        + ("  <- which would be read as a delay" if out["would_be_read_as_a_delay"] else "")
+    )
+    left = len(found["settings_asked"]) - len(found["settings_admitted"])
+    print(
+        f"  {len(found['settings_admitted'])} settings admitted, {left} under the "
+        f"roughness, over {found['frames_averaged']} frames a take"
+    )
+    if found["floor_ms"] is None:
+        print("  (no setting was taken twice: this run measured no floor)")
+    else:
+        print(
+            f"  the same setting twice lands {found['floor_ms']:.3f} ms apart, on a "
+            f"grid of {found['quefrency_step_ms']:.4f} ms"
+        )
     if (missed := found["takes_not_matching"]["count"]):
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     if (astray := picked["loudest_elsewhere"]):
