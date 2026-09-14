@@ -920,3 +920,150 @@ def test_a_run_the_stage_could_not_measure_yields_no_readings_and_says_why():
 
     assert kept == []
     assert left_out == [{"value": "01-01", "why": "only one channel"}]
+
+
+# ---- a byte as a time
+
+
+def time_record(pairs, *, step=0.0208333, stands=40.0, admitted=True):
+    """A delay record shaped as the stage publishes one.
+
+    `pairs` may name a value twice, which is how a run gives itself a floor, and
+    the readings carry their own admission verdict because the stage decides it
+    from a bar measured on injected combs rather than from anything a model says.
+    """
+    return {
+        "address": "40 03 03",
+        "quefrency_step_ms": step,
+        "stands_out": 6.0,
+        "readings": [
+            {
+                "value": v,
+                "take": f"t-{i:02d}",
+                "ms": ms,
+                "stands": stands,
+                "admitted": admitted,
+            }
+            for i, (v, ms) in enumerate(pairs)
+        ],
+    }
+
+
+DOUBLING = {
+    "tables": {
+        "0 - 500m": {
+            "kind": "points",
+            "log": True,
+            "points": [[8, 1.0], [127, 512.0]],
+        }
+    }
+}
+"""A byte that doubles the delay every seventeen steps, as a geometric candidate
+between two of its own settings. Exact at 8, 25, 42 and so on by construction, so
+a test can put a known error in and know it is the only one."""
+
+
+def test_a_delay_curve_is_compared_in_octaves_and_not_in_milliseconds():
+    """Where a byte covers three orders of magnitude, milliseconds hide the bottom.
+
+    A candidate wrong by a factor of three at the short end and right at the long
+    one is wrong about the half a player hears as the short setting. In octaves its
+    worst error is one and a half and it is rejected; in milliseconds its worst
+    error is two against a span of five hundred, and it passes everything.
+    """
+    unit = [(v, reproduce.time_of(DOUBLING, "0 - 500m", v)) for v in (8, 25, 42, 76, 127)]
+    good = reproduce.score_against_times(DOUBLING, time_record(unit), printed_range="0 - 500m")
+    bent = {
+        "tables": {
+            "0 - 500m": dict(DOUBLING["tables"]["0 - 500m"], points=[[8, 3.0], [127, 512.0]])
+        }
+    }
+    bad = reproduce.score_against_times(bent, time_record(unit), printed_range="0 - 500m")
+    assert good["measured_in"] == "octaves"
+    assert good["worst_abs"] < 0.01
+    assert bad["worst_abs"] > 1.0
+    assert reproduce.gates([bad], ranking=ranking(0, 0))["breakdown"]["passed"] is False
+
+
+def test_a_setting_whose_peak_was_the_roughness_is_left_out_with_the_reason():
+    """The verdict is the record's, and a model never gets to make it.
+
+    A cepstrum always has a strongest peak, so a setting with no copy in its output
+    returns a short, plausible, repeatable time. Scored as a delay it says the byte
+    does something at the bottom of its range, which is a claim about the unit made
+    out of the roughness of a stimulus.
+    """
+    record = time_record([(0, 0.46), (64, 14.0)])
+    record["readings"][0]["admitted"] = False
+    record["readings"][0]["stands"] = 2.4
+    kept, left_out = reproduce.admitted_times(record)
+    assert [r["value"] for r in kept] == [64]
+    assert "2.4 times the carrier's own roughness" in left_out[0]["why"]
+
+
+def test_the_grid_floors_a_run_whose_repeats_came_back_identical():
+    """Two takes landing in one cell is the grid, and not the reading being exact.
+
+    The answer is quantised to one quefrency of the transform it was read through,
+    so repeats can agree to the last digit however rough the takes were. A floor
+    drawn from those repeats alone is zero, and against zero every candidate leans.
+    """
+    same = [(64, 14.0), (64, 14.0), (8, 1.0), (127, 512.0)]
+    run_floor, grid_floor = reproduce._time_floors(
+        time_record(same), time_record(same)["readings"]
+    )
+    assert run_floor == 0.0
+    assert grid_floor > 0.0
+
+    scored_here = reproduce.score_against_times(
+        DOUBLING, time_record(same), printed_range="0 - 500m"
+    )
+    assert scored_here["floor_the_run_resolved"] == 0.0
+    assert scored_here["floor"] >= scored_here["floor_of_the_grid"] > 0.0
+
+
+def test_the_grid_is_most_of_a_short_delay_and_nothing_of_a_long_one():
+    """Which is why the floor is taken in octaves rather than in milliseconds.
+
+    One quefrency is a fiftieth of a millisecond. Against a copy at one millisecond
+    that is a real part of the answer; against one at half a second it is nothing,
+    and a floor stated in milliseconds would be the same number for both.
+    """
+    short = time_record([(1, 0.5), (2, 0.6)])
+    long_one = time_record([(120, 400.0), (127, 500.0)])
+    assert reproduce._time_floors(short, short["readings"])[1] > 0.02
+    assert reproduce._time_floors(long_one, long_one["readings"])[1] < 0.001
+
+
+def test_a_candidate_that_bends_one_entry_early_leans_and_is_caught():
+    """The one thing only a sweep of every setting can settle.
+
+    A handful of settings can say a table bends; they cannot say where. A candidate
+    bending early agrees everywhere except across the bend, which is a residual
+    that leans -- and the floor of one entry is only admissible as a floor because
+    the slot behind this class was asked at all of its settings.
+    """
+    kinked = {
+        "tables": {
+            "0 - 500m": {
+                "kind": "points",
+                "log": True,
+                "points": [[8, 1.0], [64, 16.0], [127, 512.0]],
+            }
+        }
+    }
+    early = {
+        "tables": {
+            "0 - 500m": {
+                "kind": "points",
+                "log": True,
+                "points": [[8, 1.0], [48, 16.0], [127, 512.0]],
+            }
+        }
+    }
+    unit = [(v, reproduce.time_of(kinked, "0 - 500m", v)) for v in range(8, 128, 4)]
+    scored_here = reproduce.score_against_times(
+        early, time_record(unit), printed_range="0 - 500m"
+    )
+    assert scored_here["structured"]
+    assert not reproduce.gates([scored_here], ranking=ranking(3, 0))["breakdown"]["passed"]

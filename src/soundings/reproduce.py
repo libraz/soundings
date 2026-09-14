@@ -29,11 +29,19 @@ than at a tenth of one. The gates do not know which they are looking at: every
 one of them is a residual against the span the effect commands, and the unit that
 span is measured in travels with the record.
 
-**What this renderer cannot do yet.** A modulated or saturating type whose
-*waveform* has to be produced needs a time-domain renderer, and the honest state
-of that is that it is not written. That is why a rate is identified from the
-frequency the archive published rather than from a rendered chorus. A model whose
-`kind` is neither `lti` nor `table` is refused rather than approximated.
+**What this renderer cannot do yet.** A model that claims a structure whose
+*waveform* has to be produced -- the network a reverb is, the curve a saturating
+stage bends by -- needs a time-domain renderer, and the honest state of that is
+that it is not written. A model whose `kind` is neither `lti` nor `table` is
+refused rather than approximated.
+
+**That is a narrower gap than it sounds, and reading it as a wide one held work
+up.** What a byte selects is a quantity, and a quantity is answered by a table
+against a curve the archive published -- whatever the stage holding it does to a
+waveform. A rate was identified on twenty-one types without a chorus being
+rendered, and a delay time is a time whether or not the delay modulates. So a
+class with no reading is waiting on a stage that publishes its quantity, which is
+a measurement; only a class whose claim is the structure itself is waiting on this.
 """
 
 from __future__ import annotations
@@ -1056,6 +1064,200 @@ def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dic
 
 # ---- a byte as a multiplier
 
+def time_of(model: dict, printed_range: str, byte_value: int) -> float:
+    """What one candidate says the delay is, in milliseconds, at one setting.
+
+    The printed range picks the table for the same reason it picks a rate's: it is
+    the only thing outside the unit that tells one time slot from another, it is
+    read off a page rather than fitted, and every candidate gets it. The frequency
+    class has since measured that the printed range does pick the table, on three
+    ranges and three types, which is an argument from a neighbouring class and not
+    a measurement of this one -- so it carries the arrangement here and does not
+    close anything about it.
+
+    Expressed in the same vocabulary the other table classes use, so a candidate
+    here needs no rule this renderer did not already hold.
+    """
+    return _from_map(model["tables"][printed_range], int(byte_value))
+
+
+def admitted_times(record: dict) -> tuple[list[dict], list[dict]]:
+    """The readings of a time record the record's own controls stand behind.
+
+    One exclusion and the record states it itself. A cepstrum always has a
+    strongest peak, so a setting with no copy in its output still returns a time --
+    a short one, a plausible one, and a repeatable one, because the roughness of a
+    stimulus is a property of the stimulus. What separates the two is how far the
+    peak stood over that roughness, and the record carries the verdict rather than
+    this function recomputing it: the bar was set from injected combs, and a bar
+    applied here would be one this side of the comparison chose.
+
+    A setting the chain itself puts a peak near is not excluded. It is a reading of
+    the effect wherever the effect is louder there, and the record names where the
+    chain's own peak sits so a row landing on it can be seen. Dropping those would
+    be this side deciding which of the unit's answers count.
+    """
+    kept, left_out = [], []
+    for reading in record["readings"]:
+        if reading.get("admitted"):
+            kept.append(reading)
+            continue
+        left_out.append(
+            {
+                "value": reading["value"],
+                "why": (
+                    f"the strongest peak stood {reading['stands']:g} times the "
+                    f"carrier's own roughness, under the {record['stands_out']:g} an "
+                    "injected comb was measured to need, so what it returns is the "
+                    "roughness"
+                ),
+            }
+        )
+    return kept, left_out
+
+
+def _time_floors(record: dict, kept: list[dict]) -> tuple[float, float]:
+    """The two floors a time record carries, both in octaves.
+
+    The first is what the run resolved: a setting taken more than once, and how far
+    apart the reading put it. The second is the grid -- one quefrency of the
+    transform the reading was made through, which is the finest difference it could
+    have shown whatever the takes were like.
+
+    They are different claims and both are needed. The repeats can come back
+    identical, because the answer is quantised to that grid and two takes can land
+    in one cell; reporting that as the reading being exact is a limit of the
+    measurement published as a property of the unit. The grid cannot stand in for
+    the repeats either: it says what the transform could resolve and nothing about
+    whether the unit, the room and the converters put the same answer back twice.
+
+    Each is in octaves because that is what the residual is in, and one quefrency
+    is most of a short delay and nothing of a long one.
+    """
+    seen: dict[int, list[float]] = {}
+    for reading in kept:
+        seen.setdefault(int(reading["value"]), []).append(float(reading["ms"]))
+    spreads = [
+        float(np.log2(max(v) / min(v))) for v in seen.values() if len(v) > 1 and min(v) > 0
+    ]
+    run_floor = float(np.median(spreads)) if spreads else 0.0
+
+    step = float(record.get("quefrency_step_ms") or 0.0)
+    grid = [
+        float(np.log2((r["ms"] + step) / r["ms"]))
+        for r in kept
+        if float(r["ms"]) > 0
+    ]
+    return run_floor, (float(np.median(grid)) if grid else 0.0)
+
+
+def score_against_times(model: dict, record: dict, *, printed_range: str) -> dict:
+    """One published delay curve, answered by a table.
+
+    In octaves throughout, for the reason a rate is. This byte covers three orders
+    of magnitude -- the printed range begins at nothing and ends at half a second --
+    so a comparison in milliseconds would pass a table that is right where the
+    numbers are large and wrong where they are small, which is the half a player
+    hears as the short setting.
+    """
+    kept, left_out = admitted_times(record)
+    run_floor, grid_floor = _time_floors(record, kept)
+    # What one entry of this table is worth, at the settings this slot was read at.
+    # The lean is judged against the coarsest of the floors, because a residual
+    # smaller than one entry is a residual no candidate in this class can differ
+    # over: entries are what they are all made of.
+    #
+    # This is only safe because the step is measured rather than assumed. The slot
+    # this class was read on was asked at every one of its 128 settings, so there is
+    # no room between them for entries a coarser sweep would have missed. Where that
+    # is not true of a record, this floor would hide a finer table and must not be
+    # used.
+    steps = []
+    for reading in kept:
+        value = int(reading["value"])
+        if value == 0:
+            continue
+        before = time_of(model, printed_range, value - 1)
+        after = time_of(model, printed_range, value)
+        if after > before > 0:
+            steps.append(float(np.log2(after / before)))
+    model_floor = float(np.median(steps)) if steps else 0.0
+    floor = max(run_floor, grid_floor, model_floor)
+
+    rows = []
+    shortest_value = min((int(r["value"]) for r in kept), default=0)
+    base_unit = next(
+        (float(r["ms"]) for r in kept if int(r["value"]) == shortest_value), 1.0
+    )
+    base_model = time_of(model, printed_range, shortest_value)
+    for reading in sorted(kept, key=lambda r: (int(r["value"]), r.get("take", ""))):
+        value = int(reading["value"])
+        said = time_of(model, printed_range, value)
+        answered = float(reading["ms"])
+        if said <= 0 or answered <= 0:
+            continue
+        rows.append(
+            {
+                "value": value,
+                "model_reading": [round(float(np.log2(said)), 5)],
+                "unit_reading": [round(float(np.log2(answered)), 5)],
+                "residual": [round(float(np.log2(said / answered)), 5)],
+                "model_largest": round(float(np.log2(said / base_model)), 5)
+                if base_model > 0
+                else 0.0,
+                "unit_largest": round(float(np.log2(answered / base_unit)), 5),
+                "model_ms": round(said, 4),
+                "unit_ms": round(answered, 4),
+            }
+        )
+
+    flat = np.array([abs(row["residual"][0]) for row in rows], dtype=float)
+    every = [row["unit_reading"][0] for row in rows]
+    span = float(max(every) - min(every)) if every else 0.0
+    worst = float(flat.max()) if flat.size else 0.0
+    worst_where = next(
+        (
+            {"value": row["value"], "ms": row["unit_ms"]}
+            for row in rows
+            if abs(row["residual"][0]) == worst
+        ),
+        None,
+    )
+    leans, why_leans = _structured(rows, floor, "octaves")
+    model_largest = max((abs(row["model_largest"]) for row in rows), default=0.0)
+    return {
+        "record": None,
+        "address": record.get("address"),
+        "measured_in": "octaves",
+        "printed_range": printed_range,
+        "span": round(span, 4),
+        "floor": round(floor, 5),
+        "floor_the_run_resolved": round(run_floor, 6),
+        "floor_of_the_grid": round(grid_floor, 6),
+        "floor_of_one_entry": round(model_floor, 6),
+        "is_null_record": span <= 2.0 * floor,
+        "settled_by": 0.0,
+        # No escape hatch on this path, for the reason the rate path has none: a
+        # record here publishes no figure saying its answer was a bound, and
+        # inventing one would turn every lean into the measurement's own limit.
+        "reading_is_a_value_not_a_bound": True,
+        "sign_property": "longer or shorter than the shortest setting the record admits",
+        "above": "longer",
+        "below": "shorter",
+        "model_largest": round(model_largest, 4),
+        "model_stays_inside_the_floor": bool(model_largest <= floor),
+        "median_abs": round(float(np.median(flat)), 5) if flat.size else 0.0,
+        "worst_abs": round(worst, 5),
+        "worst_at": worst_where,
+        "structured": leans,
+        "why_structured": why_leans,
+        "readings_left_out": left_out,
+        "rows": rows,
+    }
+
+
+# ---- a byte as a multiplier
+
 ABOVE_THE_SILENCE_DB = 20.0
 """How far a take has to be above the same chain's silence to be read as a level.
 
@@ -1665,9 +1867,21 @@ RENDERED = ("lti", "table", "pan")
 """The kinds of model this module can hold against the archive.
 
 Named rather than open so that a class nobody has written a renderer for cannot
-be scored by accident. A saturating type would need its harmonics produced and a
-modulated one its waveform, and neither is written; a model claiming to be either
-is refused at the door instead of being fitted with the wrong instrument.
+be scored by accident. A model that claims a *structure* -- the network a reverb
+is, the curve a saturating stage bends by, the shape a modulator sweeps in --
+would need its output produced sample by sample, and that is not written; one
+claiming to be either is refused at the door instead of being fitted with the
+wrong instrument.
+
+**What that refusal does not cover is a byte.** A class that asks what quantity a
+setting selects is answered by a table against a published curve, whatever the
+stage holding that quantity does to a waveform: a delay time is a time whether the
+delay saturates, and a modulation rate was identified on twenty-one types without
+a single chorus being rendered. The classes still open are almost all of that kind,
+and reading them as blocked on a renderer was a misreading of what blocks them --
+what each needs is a stage that publishes its quantity, which is a measurement and
+not a renderer.
+
 
 A pan is here because its renderer is written and is two multipliers: nothing has
 to be produced for it, since what the archive holds is the level of each channel
