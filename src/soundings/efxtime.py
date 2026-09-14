@@ -129,6 +129,14 @@ WHY_EFFECT_OUT = (
     "every setting gets."
 )
 
+WHY_READ_AT = (
+    "The rate the takes were captured at, which is the grid every time below is "
+    "quantised to: one quefrency is one sample of it. Stated rather than left to be "
+    "divided back out of the step, which is rounded for reading and does not come "
+    "back as a whole number of hertz -- and a reader comparing these times against a "
+    "grid of their own needs the grid they are already on to be exact."
+)
+
 WHY_NOTHING_IN_ITS_PATH = (
     "One take with the effect out, read as though it were a setting, against another "
     "take with the effect out as its control. That is the whole reading with the "
@@ -414,6 +422,8 @@ def read_directory(
         "frame": frame,
         "hop": hop,
         "frames_averaged": frames,
+        "read_at_hz": int(round(first_rate)),
+        "why_read_at_hz": WHY_READ_AT,
         "quefrency_step_ms": round(step_ms, 6),
         "peaks_apart_ms": round(apart_ms, 6),
         "stands_out": STANDS_OUT,

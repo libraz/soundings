@@ -317,6 +317,7 @@ def test_the_search_and_the_peak_window_default_to_what_the_transform_resolves(
         hold_s=HOLD,
     )
     resolved = efxtime.APART_STEPS * 1000.0 / SR
+    assert found["read_at_hz"] == SR
     assert found["quefrency_step_ms"] == pytest.approx(1000.0 / SR, rel=1e-4)
     assert found["searched_ms"][0] == pytest.approx(resolved, rel=1e-4)
     assert found["peaks_apart_ms"] == pytest.approx(resolved, rel=1e-4)
