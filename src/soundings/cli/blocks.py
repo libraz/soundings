@@ -333,9 +333,10 @@ def register(sub) -> None:
     p.add_argument(
         "--shortest",
         type=float,
-        default=0.4,
-        help="milliseconds below which no peak is read. Under it the cepstrum carries "
-        "the shape of the source rather than anything in the path",
+        default=None,
+        help="milliseconds below which no peak is read. Defaults to the transform's own "
+        "resolution; set higher and a delay under it comes back as its third rahmonic, "
+        "which stands as high as a delay and is not one",
     )
     p.add_argument(
         "--longest",
@@ -348,10 +349,10 @@ def register(sub) -> None:
     p.add_argument(
         "--peaks-apart",
         type=float,
-        default=1.0,
-        help="milliseconds set aside either side of a peak before the next is taken. The "
-        "top of a broad peak is several quefrencies wide, and without this the same peak "
-        "is returned three times",
+        default=None,
+        help="milliseconds set aside either side of a peak before the next is taken. "
+        "Defaults to the transform's own resolution, which is what a peak is wide; a "
+        "window set wider closes over the peaks that say a reading sits on a rahmonic",
     )
     p.add_argument(
         "--channel",
@@ -777,9 +778,17 @@ def cmd_efx_time(args) -> int:
     out = found["with_the_effect_out"]
     print(
         f"  with the effect out the chain's own best peak is {out['ms']:.3f} ms at "
-        f"x{out['stands']:.1f}"
-        + ("  <- which would be read as a delay" if out["would_be_read_as_a_delay"] else "")
+        f"x{out['stands']:.1f}, before anything is taken off it"
     )
+    if (null := out["with_nothing_in_its_path"]) is None:
+        print("  (only one take with the effect out: this run measured no null)")
+    else:
+        print(
+            f"  put through the same subtraction it reads {null['ms']:.3f} ms at "
+            f"x{null['stands']:.1f}"
+            + ("  <- which would be read as a delay" if null["admitted"] else "")
+        )
+    print(f"  searched {found['searched_ms'][0]:.4f} - {found['searched_ms'][1]:.1f} ms")
     left = len(found["settings_asked"]) - len(found["settings_admitted"])
     print(
         f"  {len(found['settings_admitted'])} settings admitted, {left} under the "
