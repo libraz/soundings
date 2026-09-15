@@ -1,6 +1,6 @@
 {
   "record": {
-    "schema_version": 1,
+    "schema_version": 2,
     "unit_id": "roland-sc8850-01",
     "stage": "efx-params",
     "invocation": [
@@ -37,11 +37,15 @@
       "40 03 00=01 20",
       "--prepare",
       "40 42 22=01",
+      "--prepare",
+      "40 03 05=00",
       "--out",
       "data/units/roland-sc8850-01/efx-params/01-20-parked.json"
     ],
-    "measured_at": "2026-09-08T01:50:10+00:00",
-    "midi_device_id": "10"
+    "measured_at": "2026-09-15T00:33:04+00:00",
+    "elapsed_s": 0.0,
+    "midi_device_id": null,
+    "midi_model_id": null
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
   "type": "01 20",
@@ -53,6 +57,10 @@
     {
       "address": "40 42 22",
       "bytes": "01"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "00"
     }
   ],
   "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
@@ -77,10 +85,14 @@
     "slots": 20,
     "answered": 17,
     "never_asked": [
-      "40 03 05",
       "40 03 07",
       "40 03 16"
     ],
+    "held_still": [
+      "40 03 05"
+    ],
+    "why_held_still": "A parameter slot the run set to a fixed value and deliberately did not ask, because the rest of the type could not be asked while it moved. A free-running modulator puts every take of one setting at a different phase, and the yardstick a change is judged against becomes the modulator's own swing, so every other parameter answers that there was no yardstick. Asking the held slot means writing it to the top of its range, which starts the modulator again part way through the run and measures the slots after it against a yardstick that had quietly come back. It is separate from the slots with no record because only one of the two is work outstanding, and it carries no verdict: what this run says about the held parameter is nothing at all. The value it was held at is in `prepared`.",
+    "refused": [],
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
