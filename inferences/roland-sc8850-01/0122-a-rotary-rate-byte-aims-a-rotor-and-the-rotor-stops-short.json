@@ -1,0 +1,760 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-15T09:23:28.714973+00:00",
+    "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "slot",
+      "types": [
+        "01 22"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 07"
+      ]
+    }
+  },
+  "claim": "A rotary's slow rate byte indexes the same printed table every other rate byte on this unit indexes -- the wide one, picked by the `0.05 - 10.0` the page prints against it, with no constant of its own anywhere in it. What the rotary adds is that the entry is where a rotor is sent and not where it ends up. Sent down, it arrives exactly. Sent up, it stops a fixed distance short: 0.245 Hz on the low rotor and 0.062 on the high, holding to a thousandth of a hertz from the corner to the top of the byte and across both places the table's own step changes. And where the distance to the entry is narrower than that, the rotor barely sets off, so five entries of the low rotor's table return one rate and the high rotor moves a fifth of an entry across the one entry of its own. The width of that flat stretch and the size of the gap are the same number, which is what separates this from a constant subtracted after a lookup: read the gap off the top of the sweep alone and it places the corner, which neither half of the fit was shown. The two rotors' gaps stand at 3.95 to one -- two powers of two -- and the page prints an acceleration parameter per rotor, `0 - 15`, which is the width of a shift count.",
+  "named": "a first-order lag done with an arithmetic right shift, which underflows climbing and floors falling",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json",
+        "keys": [
+          "readings[value=10].rate_hz",
+          "readings[value=13].rate_hz",
+          "readings[value=15].rate_hz",
+          "readings[value=16].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.5494,
+          0.5953,
+          0.5934,
+          0.6047,
+          1.4059
+        ],
+        "why": "The corner. Sixty second takes at every setting through it, with the other rotor's Level byte at nothing. Settings 11 to 15 return one rate while the byte moves five entries, and 16 is the first that moves the rotor."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json",
+        "keys": [
+          "readings[value=15].rate_hz",
+          "readings[value=16].rate_hz",
+          "readings[value=17].rate_hz"
+        ],
+        "values": [
+          0.7992,
+          0.8125,
+          0.8373
+        ],
+        "why": "The same corner on the other rotor, two entries wide instead of six, which is what a gap four times smaller predicts."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.4068,
+          5.8566,
+          9.7548
+        ],
+        "why": "A run made earlier, on another question, that this claim's parameters were not fitted to. It reaches settings the fine record never asked and crosses both changes of the table's own step."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.5887,
+          6.0415,
+          9.9442
+        ],
+        "why": "The same for the high rotor."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-params/01-22.json",
+        "keys": [
+          "parameters[address=40 03 03].default",
+          "parameters[address=40 03 07].default",
+          "parameters[address=40 03 05].default",
+          "parameters[address=40 03 09].default"
+        ],
+        "values": [
+          6,
+          17,
+          24,
+          88
+        ],
+        "why": "What the unit powers this type up holding, measured by another stage and read here rather than assumed. The two rate defaults are what makes the records of the two fast-rate bytes a test of this claim; the two acceleration defaults are what the gap between the rotors would have to come from."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-08-silence-the-other-stage-HiFastswitchslow.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          0.8373,
+          0.8374
+        ],
+        "why": "A sweep of a byte that turned out to do nothing, with the low rotor silenced -- so every take of it is the high rotor sitting at its own default of 17, which is a setting neither sweep here asked."
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "Rotary, parameter 1, Low Slow (Low frequency slow rate), 0.05 - 10.0",
+          "Rotary, parameter 5, Hi Slow (High frequency slow rate), 0.05 - 10.0",
+          "Rotary, parameter 3, Low Accl (Low frequency acceleration), 0 - 15",
+          "Rotary, parameter 7, Hi Accl (High frequency acceleration), 0 - 15",
+          "Rotary, parameter 4, Low Level (Low frequency level), 0 - 127",
+          "Rotary, parameter 8, Hi Level (High frequency level), 0 - 127"
+        ],
+        "read_as": "Four things and no more. The printed range picks which of the two tables the byte indexes, which is the rule the closed rate claim already runs on and is applied here unchanged. The two Level rows are what let one rotor be turned off so the other can be heard, which is the whole reason these records are evidence about their own byte at all. The two acceleration rows say the part has an acceleration and say its printed width; they do not say it is a shift, they do not say what it does to the rate it arrives at, and neither does the prose printed around them."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A rotor's speed is closed towards its target by `x += (target - x) >> k`, which is a subtract, an arithmetic shift and an add, and no multiply or divide anywhere.",
+        "why": "It is the cheapest lag a control processor of this period can run, `k` is a small integer, and `0 - 15` is exactly the four bits a shift count fits in -- which is what the page prints against each rotor's acceleration.",
+        "would_be_wrong_if": "The gap were symmetric. That loop's defect is one-sided: climbing, the shift underflows to nothing while the difference is still about two to the k wide and the loop stops there; falling, an arithmetic shift of a negative number floors rather than rounding towards zero, so the last step is always taken and the target is reached. Both halves were measured. Every entry under where the rotor rests is returned exactly, on both rotors, and every entry above it is returned short."
+      },
+      {
+        "claim": "The two rotors are not one routine with one constant: a drum has more mass than a horn, so their accelerations default apart, and if the lag is a shift then apart means by a whole power of two.",
+        "why": "It is what the effect is a model of, and it is why the page prints two acceleration parameters rather than one.",
+        "would_be_wrong_if": "The two gaps had stood in a ratio that is not near a power of two. They stand at 3.952 to one."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The records say what frequency each take's partials agreed the modulator ran at, at each setting of one byte, with the other rotor's Level byte named in the held block. What is read out of them here is that the byte indexes the closed table, that the entry is a target rather than a rate, that the arrival is one-sided, and that the two rotors' gaps are a power of two apart. The records name no table, no arrival and no acceleration, and each says in its own limits that a type with more than one modulator returns whichever dominates it.",
+  "why_these_records_are_evidence_about_their_own_byte": {
+    "what_refused_them": "The rate class refuses a slot on a type the page prints more than one rate for, because a take returns whichever modulator dominates it and nothing in the numbers says which. The page prints four rates for this type, so all sixty-one of its readings were refused and became queue entries.",
+    "what_defeats_the_refusal": "The page also prints a Level byte per rotor, and five of this type's records hold the other rotor's at nothing. That is not this claim overriding the rule; it is the run the rule asked for, made before the rule was written down, and left unread.",
+    "and_the_refusal_was_right": "The eight records that did not silence the other rotor are dropped below, and what each of them read instead is named. Two of them return the low rotor at its own default of 0.35 Hz whatever the byte under test is set to, and one returns 0.771 Hz at a setting where the low rotor is at 0.605 and the high rotor at 0.838."
+  },
+  "alternatives": [
+    {
+      "reading": "The distance a rotor stops short by is set by its printed acceleration, and being a shift count it changes by whole factors of two rather than smoothly.",
+      "candidate": "stops-short",
+      "standing": true,
+      "separated_by": {
+        "observable": "The same sweep with the acceleration byte moved. Both runs left it at the unit's default -- 24 on the low rotor and 88 on the high, on a byte whose printed range is 0 to 15, so the byte is scaled down to that range by something and the two rotors sit eight printed steps apart. Their gaps stand at 3.95 to one. Sweep the byte and the gap either doubles per step of the shift or it does not, and where it steps says how the byte is scaled.",
+        "predicts": {
+          "a shift count": "the gap doubling at some regular spacing of the byte and holding flat between, with the flat stretch at the bottom of the table widening in step -- and above some setting the rotor not setting off at all, because the gap has grown past the whole range",
+          "anything else": "a gap that moves smoothly with the byte, or one that does not move at all"
+        },
+        "sensitivity_here": "The gap is 0.2447 Hz on the low rotor against readings four partials agree on to a thousandth of a hertz, and a doubling of it moves the reading at setting 127 from 9.755 Hz to 9.510.",
+        "margin": 244.0,
+        "run": {
+          "stage": "efx-rate",
+          "type": "01 22",
+          "address": "40 03 05",
+          "settings": [
+            0,
+            7,
+            8,
+            15,
+            16,
+            31,
+            32,
+            63,
+            64,
+            95,
+            96,
+            127
+          ],
+          "held": {
+            "40 03 0A": 0,
+            "40 03 06": 127,
+            "40 03 03": 127
+          },
+          "why_this_held_block": "The other rotor silenced the way the five admitted records silence it, and the rate byte at the top of its table so that the gap is read where it is largest and where an eight second take is far above its own floor. The settings are chosen to bracket every power-of-two boundary the byte could be scaled on.",
+          "minutes": 5
+        }
+      }
+    },
+    {
+      "reading": "Where a rotor rests when the type is switched on is a state it is put into, not a rate it was left at -- so a byte written twice without a reset between would be answered from wherever the first write left the rotor.",
+      "candidate": "stops-short",
+      "standing": true,
+      "separated_by": {
+        "observable": "Two writes and one take. Every take in both runs was preceded by a reset, so the rotor set off from the same place every time and this claim's resting rate is one number for the whole sweep. Write a fast setting, let it arrive, then write a slower one without resetting, and take that. Then the same pair the other way round.",
+        "predicts": {
+          "the rotor keeps its speed between writes": "the downward write arriving exactly at its entry, from far above where the rotor rests -- which is the half of the asymmetry that the sweeps could only see under one number; and the upward write from a high rate stopping short of its entry by the same gap",
+          "the type is reinitialised on every write": "both takes answering exactly as the sweeps did, with the resting rate back where it was"
+        },
+        "sensitivity_here": "A downward write from setting 127 to setting 32 is the difference between 1.65 Hz and 1.405, which is 0.245 Hz against readings repeatable to a thousandth.",
+        "margin": 245.0,
+        "run": {
+          "stage": "efx-rate",
+          "type": "01 22",
+          "address": "40 03 03",
+          "settings": [
+            32,
+            127
+          ],
+          "held": {
+            "40 03 0A": 0,
+            "40 03 06": 127
+          },
+          "why_this_held_block": "The low rotor alone, as the admitted records have it. What this run needs that the stage does not do on its own is to write the other setting first and not reset in between, so it is a script beside the stage rather than the stage.",
+          "minutes": 4
+        }
+      }
+    },
+    {
+      "reading": "The gap is a property of the take rather than of the rotor: ten seconds of settling was not enough and every reading is of a rotor still closing.",
+      "candidate": "still-closing",
+      "standing": false,
+      "ruled_out_by": "What the gap does with the distance the rotor had to travel. A lag caught mid-flight leaves a gap in proportion to the one it set out with, so the gap would grow across the sweep; it holds instead, to a thousandth of a hertz from setting 16 to 127. Scored through the class's own gates that reading is 0.07489 octaves against the winner's 0.00092 on the low rotor and it leans on every record of both rotors. The record that did not record its settled time is the one that shows what a rotor still closing looks like: its gap runs from 0.2425 Hz at setting 32 to 0.3306 at 127, where the settled run's holds."
+    },
+    {
+      "reading": "A constant number of hertz is taken off every entry, with nothing to do with where the rotor was.",
+      "candidate": "short-by-a-constant",
+      "standing": false,
+      "ruled_out_by": "The bottom of the table, which is what the sixty second takes were made to reach. The low rotor's gap is 0.2447 Hz and its first entry is 0.05, so this reading has the rotor turning backwards there; the unit returns 0.0497, and the reading is 5.64559 octaves out at its worst. It is refuted a second time by a record it was never scored against: the low rotor left at its own default of 6 reads 0.35 Hz across twenty-one takes of three other bytes, and this reading says 0.105."
+    },
+    {
+      "reading": "The rotary reads the shared table through a multiplier, so what looks like a constant taken off is a ratio.",
+      "candidate": "scaled",
+      "standing": false,
+      "ruled_out_by": "That the gap does not grow. A multiplier is a straight line through the origin and the readings are a straight line that misses it, so the best multiplier is 0.8972 and it is 0.15823 octaves out in the middle and leaning on every record of both rotors."
+    },
+    {
+      "reading": "The arrival is short by a fixed time rather than by a fixed rate -- a rotor that takes a few milliseconds longer per turn than it was asked to.",
+      "candidate": "stops-short-on-the-period",
+      "standing": false,
+      "ruled_out_by": "The top of the range, which the eight second records reach and the sixty second ones do not. A fixed time is a shrinking number of hertz as the rotor speeds up, so a period long enough to explain the gap at 1.65 Hz explains almost none of it at 10, and this reading is 1.41316 octaves out on the record it was not fitted to -- more than an octave, on readings four partials agree on to a thousandth of a hertz."
+    }
+  ],
+  "reproduces": {
+    "model": {
+      "low": "inferences/models/0122-stops-short-low.json",
+      "high": "inferences/models/0122-stops-short-high.json"
+    },
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowswitchfast.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json"
+      ],
+      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-rate record filed under type 01 22 at the two slow rate addresses, less the ones whose own held block does not silence the other rotor",
+      "filter": {
+        "index": "data/units/roland-sc8850-01/index.json",
+        "stage": "efx-rate",
+        "type": "01 22",
+        "address_in": [
+          "40 03 03",
+          "40 03 07"
+        ]
+      },
+      "then_dropped": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-rate-slot-followup.json",
+          "why": "no Level byte is held, so both rotors are running and the page prints four rates for this type. At setting 16 it reads 0.771 Hz, which is neither the low rotor's 0.605 nor the high rotor's 0.838 but between them."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-same-rotor-elsewhere.json",
+          "why": "no Level byte is held. Its three readings happen to agree with the silenced record's to within three thousandths of a hertz, which is not a reason to admit it: what makes a record evidence about its own byte is that nothing else could have produced the reading, and agreeing afterwards is not that."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-rate-table-005to100.json",
+          "why": "no Level byte is held, and its readings part from the silenced record's from setting 99 upwards -- 4.582 against 4.755, and 9.288 against 9.755 at the top."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-turns-fast-settlenotrecorded.json",
+          "why": "no Level byte is held, and the record carries no settled time, so a reading may be of a rotor still on its way. Its gap grows with the setting where the settled run's holds."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-turns-slow-settled10.json",
+          "why": "no Level byte is held. It waited ten seconds and its ten readings do hold the constant, which is why it is named here rather than left out of the total."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-turns-slow-settlenotrecorded.json",
+          "why": "no Level byte is held and no settled time is recorded. Its gap runs from 0.2425 Hz at setting 32 to 0.3306 at 127, which is the signature of a rotor still closing rather than one that has stopped."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-rate-slot-followup.json",
+          "why": "no Level byte is held, and with the low rotor's Level defaulting to 127 against the high rotor's 64 what it reads at two of its three settings is the low rotor sitting at its own default."
+        },
+        {
+          "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-which-rate-table-005to100.json",
+          "why": "no Level byte is held. Three of its four readings are 0.35 Hz -- the low rotor at its default -- whatever this byte is set to, and the fourth is found by two partials of four."
+        }
+      ],
+      "excluded": []
+    },
+    "domain": "octaves",
+    "residual": {
+      "low": {
+        "01-22-03-the-bottom-of-the-constant-low.json": {
+          "median_abs_octaves": 0.00092,
+          "worst_abs_octaves": 0.0061,
+          "worst_at": {
+            "value": 8,
+            "hz": 0.4481
+          },
+          "structured": false,
+          "span_octaves": 2.4898,
+          "floor_octaves": 0.09885
+        },
+        "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+          "median_abs_octaves": 0.00039,
+          "worst_abs_octaves": 0.00185,
+          "worst_at": {
+            "value": 32,
+            "hz": 1.4068
+          },
+          "structured": false,
+          "span_octaves": 2.7937,
+          "floor_octaves": 0.03857
+        }
+      },
+      "high": {
+        "01-22-07-the-bottom-of-the-constant-high.json": {
+          "median_abs_octaves": 0.00071,
+          "worst_abs_octaves": 0.02417,
+          "worst_at": {
+            "value": 16,
+            "hz": 0.8125
+          },
+          "structured": false,
+          "span_octaves": 5.0014,
+          "floor_octaves": 0.08746
+        },
+        "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+          "median_abs_octaves": 0.00084,
+          "worst_abs_octaves": 0.0009,
+          "worst_at": {
+            "value": 127,
+            "hz": 9.9442
+          },
+          "structured": false,
+          "span_octaves": 2.646,
+          "floor_octaves": 0.03512
+        },
+        "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+          "median_abs_octaves": 0.00081,
+          "worst_abs_octaves": 0.00099,
+          "worst_at": {
+            "value": 127,
+            "hz": 9.9448
+          },
+          "structured": false,
+          "span_octaves": 2.6461,
+          "floor_octaves": 0.03512
+        }
+      }
+    },
+    "how_the_model_is_read": "Through the rate class's own scorer, in octaves, against the coarser of what the run resolved from its partials' disagreement and what one entry of the table is worth -- which on these records is the entry, by two orders. The table is the closed claim's and is copied into every candidate unaltered, so what is being scored is what each says the rotor does with the entry and nothing else. Two parameters per rotor are fitted, on the sixty second record alone, by one fine grid with no coarse pass; the eight second records are then answered untouched.",
+    "what_the_fit_could_not_choose": {
+      "what": "Where the rotor rests is pinned by a handful of settings and by nothing else in the sweep, so the median is flat across a stretch of it and picks a point inside that stretch rather than the point.",
+      "low": {
+        "the_median_put_it_at_hz": 0.595,
+        "read_off_the_settings_that_did_not_move_hz": 0.5934,
+        "at_values": [
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "short_by_hz_from_the_settings_that_stalled": 0.2447,
+        "median_octaves_of_that_reading": 0.00102,
+        "worst_octaves_of_that_reading": 0.0061
+      },
+      "high": {
+        "the_median_put_it_at_hz": 0.799,
+        "read_off_the_settings_that_did_not_move_hz": 0.8125,
+        "at_values": [
+          16
+        ],
+        "short_by_hz_from_the_settings_that_stalled": 0.0617,
+        "median_octaves_of_that_reading": 0.00079,
+        "worst_octaves_of_that_reading": 0.01159
+      },
+      "read_as": "On the low rotor the two readings agree, because five settings sit on the flat stretch. On the high rotor one does, and the median's answer and the direct one are 0.0135 Hz apart -- which is the whole of the model's worst point on that record. Reading it off the setting the rotor was aimed above and did not move from removes that point and costs a ten-thousandth of an octave of median, so the record does not choose between them and the published figure is the median's."
+    },
+    "and_at_a_setting_neither_sweep_asked": {
+      "low": {
+        "the_byte_this_rotor_was_left_at": 6,
+        "which_the_unit_was_measured_to_power_up_holding": "data/units/roland-sc8850-01/efx-params/01-22.json",
+        "records_taken_with_it_there": [
+          "01-22-04-which-rate-table-005to100.json",
+          "01-22-04-which-way-the-rotor-turns-fast-settlenotrecorded.json",
+          "01-22-04-which-way-the-rotor-turns-slow-settlenotrecorded.json",
+          "01-22-08-which-rate-table-005to100.json"
+        ],
+        "readings": [
+          0.3487,
+          0.3489,
+          0.349,
+          0.349,
+          0.3491,
+          0.3493,
+          0.3493,
+          0.3493,
+          0.3524,
+          0.3526,
+          0.3527,
+          0.3529,
+          0.3529,
+          0.353,
+          0.3531,
+          0.3532,
+          0.3532,
+          0.3533,
+          0.3537,
+          0.3537,
+          0.3538
+        ],
+        "the_model_says_hz": 0.35,
+        "apart_octaves": 0.01109,
+        "if_the_rotor_stepped_straight_to_its_entry_hz": 0.35,
+        "that_reading_would_be_out_by_octaves": 0.0111,
+        "and_a_constant_taken_off_every_entry_would_say_hz": 0.105,
+        "which_would_be_out_by_octaves": 1.7481
+      },
+      "high": {
+        "the_byte_this_rotor_was_left_at": 17,
+        "which_the_unit_was_measured_to_power_up_holding": "data/units/roland-sc8850-01/efx-params/01-22.json",
+        "records_taken_with_it_there": [
+          "01-22-08-silence-the-other-stage-HiFastswitchfast.json",
+          "01-22-08-silence-the-other-stage-HiFastswitchslow.json"
+        ],
+        "readings": [
+          0.8373,
+          0.8373,
+          0.8373,
+          0.8373,
+          0.8374,
+          0.8374
+        ],
+        "the_model_says_hz": 0.838,
+        "apart_octaves": 0.00121,
+        "if_the_rotor_stepped_straight_to_its_entry_hz": 0.9000000000000002,
+        "that_reading_would_be_out_by_octaves": 0.1042
+      },
+      "read_as": "Two halves of the arrival, each tested where the other cannot reach. The low rotor's default entry is under where it rests, so the model and the table read plain agree there and what this refutes is the constant subtraction, which has the rotor at 0.105 Hz where twenty-one takes of three other bytes put it at 0.35. The high rotor's default entry is above where it rests, so the two part: the model says 0.838 and the table read plain says 0.900, and six takes across two records say 0.8373. Neither setting was asked by either sweep, neither record was fitted on, and what picks them out is the byte the unit was measured to power the type up holding rather than anything chosen here."
+    },
+    "gates": {
+      "measured_in": "octaves",
+      "gross": {
+        "verdict": "reproduces",
+        "why": "A median of 0.00092 and 0.00071 octaves on the two sixty second records, against spans of 2.4898 and 5.0014 octaves that these bytes command. The worst point on either is at a setting where the closed table itself is off by the same amount on both rotors -- entry 8 reads 0.4481 and 0.4482 where the table says 0.45, and another type's slot reads 0.4485 there -- so it is the table's own rounding and not the rotary's."
+      },
+      "properties": {
+        "verdict": "reproduces",
+        "why": "Three, and none of them is the residual. The arrival is one-sided: every entry under where the rotor rests is returned exactly and every entry above it short, on both rotors. The width of the flat stretch is the size of the gap: read the gap off the settings from 21 up, where nothing about the corner is visible, and read where the rotor rests off the settings to 15, where nothing has moved, and the settings between -- which neither half was shown -- come back within 0.0019 octaves on the low rotor and 0.0021 on the high apart from the one point named above. And the two gaps stand at 3.952 to one, which is a power of two on a part whose page prints a four-bit acceleration per rotor.",
+        "where_the_corner_falls": {
+          "low": {
+            "gap_read_from_21_up_hz": 0.2445,
+            "rest_read_from_15_down_hz": 0.5953,
+            "so_the_first_entry_that_should_move_the_rotor_is": 16,
+            "and_the_first_setting_the_unit_answers_short_of_is": 16,
+            "what_the_readings_do_there": "0.5934 at 15 and 0.6047 at 16, against 0.8398 and 0.6053 the two readings predict."
+          },
+          "high": {
+            "gap_read_from_21_up_hz": 0.0615,
+            "rest_read_from_15_down_hz": 0.7992,
+            "so_the_first_entry_that_should_move_the_rotor_is": 17,
+            "and_the_first_setting_the_unit_answers_short_of_is": 17,
+            "what_the_readings_do_there": "0.7992 at 15, 0.8125 at 16 and 0.8373 at 17, against 0.7992, 0.7992 and 0.8385. So setting 16 is not quite still: the rotor moved a fifth of an entry where this reading says it should not have moved at all, and setting 17 is where it starts answering short of the entry by the gap. That fifth of an entry is the model's one point of daylight and is named in the breakdown gate."
+          }
+        }
+      },
+      "power": {
+        "verdict": "separated",
+        "beaten": {
+          "steps-straight-to-it": {
+            "low": {
+              "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+                "median_abs_octaves": 0.05875,
+                "worst_abs_octaves": 0.23005,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.4068
+                },
+                "structured": true
+              },
+              "01-22-03-the-bottom-of-the-constant-low.json": {
+                "median_abs_octaves": 0.3143,
+                "worst_abs_octaves": 0.49124,
+                "worst_at": {
+                  "value": 16,
+                  "hz": 0.6047
+                },
+                "structured": true
+              }
+            },
+            "high": {
+              "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+                "median_abs_octaves": 0.0139,
+                "worst_abs_octaves": 0.05462,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+                "median_abs_octaves": 0.01393,
+                "worst_abs_octaves": 0.05462,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-the-bottom-of-the-constant-high.json": {
+                "median_abs_octaves": 0.03311,
+                "worst_abs_octaves": 0.10418,
+                "worst_at": {
+                  "value": 17,
+                  "hz": 0.8373
+                },
+                "structured": true
+              }
+            }
+          },
+          "short-by-a-constant": {
+            "low": {
+              "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+                "median_abs_octaves": 0.00039,
+                "worst_abs_octaves": 0.00185,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.4068
+                },
+                "structured": false
+              },
+              "01-22-03-the-bottom-of-the-constant-low.json": {
+                "median_abs_octaves": 0.00164,
+                "worst_abs_octaves": 5.64559,
+                "worst_at": {
+                  "value": 4,
+                  "hz": 0.2503
+                },
+                "structured": true
+              }
+            },
+            "high": {
+              "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+                "median_abs_octaves": 0.01378,
+                "worst_abs_octaves": 0.05418,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+                "median_abs_octaves": 0.01381,
+                "worst_abs_octaves": 0.05418,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-the-bottom-of-the-constant-high.json": {
+                "median_abs_octaves": 0.02918,
+                "worst_abs_octaves": 0.10338,
+                "worst_at": {
+                  "value": 17,
+                  "hz": 0.8373
+                },
+                "structured": true
+              }
+            }
+          },
+          "scaled": {
+            "low": {
+              "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+                "median_abs_octaves": 0.09775,
+                "worst_abs_octaves": 0.12068,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.7548
+                },
+                "structured": true
+              },
+              "01-22-03-the-bottom-of-the-constant-low.json": {
+                "median_abs_octaves": 0.15823,
+                "worst_abs_octaves": 0.33474,
+                "worst_at": {
+                  "value": 16,
+                  "hz": 0.6047
+                },
+                "structured": true
+              }
+            },
+            "high": {
+              "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+                "median_abs_octaves": 0.00308,
+                "worst_abs_octaves": 0.04347,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+                "median_abs_octaves": 0.00317,
+                "worst_abs_octaves": 0.04347,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              },
+              "01-22-07-the-bottom-of-the-constant-high.json": {
+                "median_abs_octaves": 0.02731,
+                "worst_abs_octaves": 0.09303,
+                "worst_at": {
+                  "value": 17,
+                  "hz": 0.8373
+                },
+                "structured": true
+              }
+            }
+          },
+          "stops-short-on-the-period": {
+            "low": {
+              "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+                "median_abs_octaves": 1.41316,
+                "worst_abs_octaves": 1.93061,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.7548
+                },
+                "structured": true
+              },
+              "01-22-03-the-bottom-of-the-constant-low.json": {
+                "median_abs_octaves": 0.03606,
+                "worst_abs_octaves": 0.33445,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.4059
+                },
+                "structured": true
+              }
+            },
+            "high": {
+              "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+                "median_abs_octaves": 0.4166,
+                "worst_abs_octaves": 0.64269,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.9442
+                },
+                "structured": true
+              },
+              "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+                "median_abs_octaves": 0.41657,
+                "worst_abs_octaves": 0.64278,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.9448
+                },
+                "structured": true
+              },
+              "01-22-07-the-bottom-of-the-constant-high.json": {
+                "median_abs_octaves": 0.00372,
+                "worst_abs_octaves": 0.07506,
+                "worst_at": {
+                  "value": 32,
+                  "hz": 1.5887
+                },
+                "structured": true
+              }
+            }
+          },
+          "still-closing": {
+            "low": {
+              "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+                "median_abs_octaves": 0.76494,
+                "worst_abs_octaves": 0.82622,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.7548
+                },
+                "structured": true
+              },
+              "01-22-03-the-bottom-of-the-constant-low.json": {
+                "median_abs_octaves": 0.07489,
+                "worst_abs_octaves": 0.53838,
+                "worst_at": {
+                  "value": 4,
+                  "hz": 0.2503
+                },
+                "structured": true
+              }
+            },
+            "high": {
+              "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+                "median_abs_octaves": 0.06645,
+                "worst_abs_octaves": 0.07545,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.9442
+                },
+                "structured": true
+              },
+              "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+                "median_abs_octaves": 0.06643,
+                "worst_abs_octaves": 0.07554,
+                "worst_at": {
+                  "value": 127,
+                  "hz": 9.9448
+                },
+                "structured": true
+              },
+              "01-22-07-the-bottom-of-the-constant-high.json": {
+                "median_abs_octaves": 0.02502,
+                "worst_abs_octaves": 0.68083,
+                "worst_at": {
+                  "value": 0,
+                  "hz": 0.0496
+                },
+                "structured": true
+              }
+            }
+          }
+        },
+        "how": "contradicted on the bottom of the table, on the top of it, and on whether the gap grows",
+        "why": "Five other readings were scored on all five records and every one of them leans on the record it was fitted to. Each fails where its own structure lives and nowhere else: the constant subtraction takes the first entries of the table past nothing, the multiplier has to make the gap grow, the lag caught mid-flight has to make it grow in proportion to the distance travelled, the arrival read on the period has to make it shrink towards the top, and the table read plain has no corner at all. The strongest of them is the table read plain, which is the closed claim's own model unaltered rather than a copy written for this comparison -- and it is out by 0.49124 octaves at the corner."
+      },
+      "breakdown": {
+        "verdict": "reproduces",
+        "why": "No record of either rotor comes back structured, and the signed median swings less than the floor of one table entry on every one of the five.",
+        "read_as": "The one point of daylight is the high rotor at setting 16, where the rotor moved 0.0135 Hz and this reading says it should not have moved at all. That is 0.0242 octaves against a floor of one entry of 0.0875 there, so it does not lean -- but it is the thing to look at, because a loop that takes shrinking steps rather than stopping dead would move a little and then stop, and the acceleration sweep in the alternatives is where that would show."
+      }
+    },
+    "verdict": "reproduces"
+  },
+  "refuted_by": "A rotor sent down to an entry arriving short of it as well, which would make the gap a property of the table rather than of the arrival. Or the flat stretch at the bottom of the byte turning out to be a different width from the gap, which would make them two numbers rather than one. Or the acceleration byte turning out not to move the gap at all, which would leave the gap unexplained and the reading a description rather than a mechanism.",
+  "what_it_would_change": [
+    "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json"
+  ],
+  "what_this_does_not_settle": [
+    "What the rotary's two fast rate bytes do. Every take of them returns whichever rotor was left at its slow rate, at both settings of the byte the page prints as the speed switch -- so the switch was not switched, and until it is those two bytes have no reading at all. Whether the address this claim's records wrote is the switch is the first thing to ask.",
+    "What sets where a rotor rests. Every take here reset the unit first, so the resting rate is one number per rotor and it is neither a table entry nor either rotor's default. The two runs that would say what it is are in the alternatives.",
+    "Whether the rate class's refusal can be lifted mechanically. The check that refuses a slot on a type with more than one printed rate does not read the record's held block, so it refuses these five records too, and they were admitted here by hand with the reason written down. Teaching it to read a Level byte at nothing would reopen this type inside the class -- and would move the tally of refusals the closed claim carries, which is why it is named rather than done.",
+    "Whether the other sixty-four types that take a rate byte have an arrival of their own. None of them prints an acceleration, and the closed rate claim's twenty-one slots answer the table with no gap anywhere, so the expectation is that they do not -- but an arrival smaller than one entry would not have shown, and nothing here bounds it."
+  ]
+}

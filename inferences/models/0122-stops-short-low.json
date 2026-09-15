@@ -1,0 +1,55 @@
+{
+  "model": {
+    "schema_version": 1,
+    "kind": "table",
+    "class": "rotor-acceleration",
+    "name": "0122-stops-short-low",
+    "candidate": "0122-stops-short-low",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 22",
+    "address": "40 03 03",
+    "of": "the byte at a rotary's slow rate, and the frequency the rotor turns at",
+    "chosen_by": "the range the page prints against that address",
+    "made_by": "backup/build-the-rotary-models.py"
+  },
+  "what": "The entry is what the rotor is aimed at. Slowing down it arrives; speeding up it stops one fixed distance short, and where the gap is narrower than that distance it does not set off at all.",
+  "note": "Generated from the candidate this file names, and read only by src/soundings/reproduce.py. The tables are the closed claim's, copied rather than refitted, so that what separates these models is what each says the rotor does with the entry and nothing else. Nothing here is a measurement.",
+  "tables": {
+    "0.05 - 10.0": {
+      "kind": "steps",
+      "first_hz": 0.05,
+      "runs": [
+        {
+          "through": 99,
+          "step_hz": 0.05
+        },
+        {
+          "through": 119,
+          "step_hz": 0.1
+        },
+        {
+          "through": 125,
+          "step_hz": 0.5
+        }
+      ],
+      "entries": 126,
+      "why_it_ends_early": "Three runs of 100, 20 and 6 come to 126 entries, so settings 126 and 127 have no entry of their own and return the last one."
+    },
+    "0.05 - 6.40": {
+      "kind": "steps",
+      "first_hz": 0.05,
+      "runs": [
+        {
+          "through": 127,
+          "step_hz": 0.05
+        }
+      ],
+      "entries": 128
+    }
+  },
+  "arrival": {
+    "kind": "stops-short",
+    "rests_at_hz": 0.595,
+    "short_by_hz": 0.245
+  }
+}
