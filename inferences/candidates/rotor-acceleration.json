@@ -1,15 +1,17 @@
 {
   "class": "rotor-acceleration",
-  "what_the_class_is": "Not what a rate byte stands for -- that is the modulation-rate class and it is closed -- but what one effect does with the entry the byte names. On every other type the two are the same thing: the byte indexes a table and the modulator runs at the entry. The rotary is the one type whose page prints an acceleration beside each of its rates, so the entry is what a rotor is sent to and where it ends up is a second question. Two addresses on one type ask it, and the class exists because the answer turned out not to be `at the entry`.",
+  "what_the_class_is": "Not what a rate byte stands for -- that is the modulation-rate class and it is closed -- but what one effect does with the entry the byte names. On every other type the two are the same thing: the byte indexes a table and the modulator runs at the entry. The rotary is the one type whose page prints an acceleration beside each of its rates, so the entry is what a rotor is sent to and where it ends up is a second question. Two addresses on one type ask it, and the class exists because the answer turned out not to be `at the entry`. Two questions rather than one, and they turned out to have different answers: where the rotor ends up, which is one fixed distance under the entry, and what sets that distance, which is the byte the page prints beside each rotor.",
   "era": {
     "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
     "what_that_implies": [
       "A rotary's rotors are the one modulator on this part that may not jump. The effect is named after a loudspeaker whose horn and drum have mass, and a speed change that arrived instantly would be the one thing a listener would hear as wrong. So there is a lag, and the page prints its parameter: Low Accl and Hi Accl, `0 - 15`, one per rotor.",
       "The cheapest lag a control processor of this period can run is `x += (target - x) >> k`: a subtract, an arithmetic shift and an add, with no multiply and no divide anywhere. A shift count is a small integer, and `0 - 15` is exactly the four bits one fits in.",
       "That lag has a defect and the defect is one-sided. Climbing, the shift underflows to nothing while the difference is still about two to the k wide, and the loop stops there and stays. Falling, an arithmetic shift of a negative number floors rather than rounding towards zero, so the step never becomes nothing and the target is reached exactly. A part that ships this does not notice: a rotor a fraction of a hertz slow than the number in the manual is not audible, and it is only a fraction of a hertz because the shift is what sets the size.",
-      "The two rotors are not one routine with one constant. A drum has more mass than a horn, so their accelerations default apart -- and if the lag is a shift, apart means by a whole power of two."
+      "Where the per-rotor amount goes into that lag is the second question, and the cheap places are few. A shift count is one, and it is the one a printed range of `0 - 15` invites. A small integer multiplying the difference before the shift is the other, and it costs a shift and an add or two rather than a multiplier. They are told apart by what the distance does across the byte: a shift count halves it at every step and a multiplier divides it by a number that grows by one.",
+      "The two rotors need not be two routines. A drum has more mass than a horn, but the cheapest way to give them different accelerations is one routine and two bytes -- and the unit's own defaults are two different bytes."
     ],
-    "would_be_wrong_if": "The gap between the entry and the rotor turned out to be symmetric -- a rotor sent down from a fast rate settling above its target the way one sent up settles below it. Or the gap scaling with the entry rather than holding, which is what a lag caught mid-flight does and what a multiplier does. Or the two rotors' gaps standing in a ratio that is not near a power of two."
+    "would_be_wrong_if": "The gap between the entry and the rotor turned out to be symmetric -- a rotor sent down from a fast rate settling above its target the way one sent up settles below it. Or the gap scaling with the entry rather than holding, which is what a lag caught mid-flight does and what a multiplier on the table does. Or the two rotors returning different gaps at one setting of their acceleration bytes, which would make them two routines.",
+    "what_was_read_into_it_and_should_not_have_been": "That two rotors whose gaps stand near four to one are two shift counts two apart. They are not: the byte is a multiplier and not a shift, and the near-four is where the unit's two default bytes happen to sit in a table that is a straight line over its first ten entries and something steeper over the rest. The prior was right that a four-bit field is the width of a shift count and wrong that this one is a shift count, and the sweep that says so is one that moved the byte rather than reading a ratio between two of its values."
   },
   "candidates": [
     {
@@ -66,13 +68,50 @@
         "the_bottom_of_the_byte": "Fast rather than slow, since the rotor is still on its way down.",
         "the_two_rotors": "Two fractions, and both would depend on how long the run waited."
       }
+    },
+    {
+      "id": "the-entry-plus-one",
+      "what": "The acceleration byte is read through its top four bits, and the entry that leaves is what the loop multiplies the difference by before shifting it -- the entry's own position plus one. The distance is one constant over that.",
+      "predicts": {
+        "the_gap": "One constant divided by a number that grows by one per entry, so the distance falls fast at the bottom of the byte and slowly at the top.",
+        "within_one_entry": "Eight byte values returning one distance, because the low three bits are not read.",
+        "the_two_rotors": "The same table on both, so the same byte gives the same distance whichever rotor it is set on."
+      }
+    },
+    {
+      "id": "a-shift-per-entry",
+      "what": "The entry is the shift count itself, so the distance halves at every step of the byte's top four bits.",
+      "predicts": {
+        "the_gap": "Halving per entry -- a factor of thirty-two thousand across the byte.",
+        "within_one_entry": "The same eight values returning one distance.",
+        "the_two_rotors": "The same table on both."
+      }
+    },
+    {
+      "id": "the-whole-byte-and-not-four-bits",
+      "what": "The same multiplier taken from the whole byte rather than from its top four bits, so every setting has its own distance.",
+      "predicts": {
+        "the_gap": "The same shape at the entry boundaries and a different one between them.",
+        "within_one_entry": "Eight different distances, between eight and seven hundred per cent apart depending on where in the byte the run of eight is.",
+        "the_two_rotors": "Nothing in particular."
+      }
+    },
+    {
+      "id": "one-distance-whatever-the-byte",
+      "what": "The byte does not set the distance at all, which is what the two records that closed the rate claim had to assume, because both left it at the unit's default.",
+      "predicts": {
+        "the_gap": "One number across the whole byte.",
+        "within_one_entry": "One distance, trivially.",
+        "the_two_rotors": "Two numbers, one per rotor, and no way to move either."
+      }
     }
   ],
   "what_no_candidate_here_predicts": [
     "Which entry the byte names. That is the modulation-rate class's and it is closed; every candidate here is handed the same table and none may alter it.",
     "How long the rotor takes to get where it gets. Every record this class has to work with waited ten seconds and then held a note for eight or sixty, so what is measured is where the rotor ended and not the path. A take begun before the write would say something about the path and none was made.",
     "What the rotor does to the signal -- whether the modulation is of amplitude, of frequency, or of both, and in what proportion between the two outputs.",
-    "Why a rotor rests where it rests. Every take here was preceded by a reset, so the resting rate is the same for every setting and is a property of the type being switched on rather than of the byte; what sets it is not in these readings."
+    "Why a rotor rests where it rests. Every take here was preceded by a reset, so the resting rate is the same for every setting and is a property of the type being switched on rather than of the byte; what sets it is not in these readings.",
+    "What a rotor does between the two writes. Every record this class has to work with waited and then took a note, so the path is not in any of them -- which matters more here than it looks, because at the bottom of the acceleration byte the rotor has not finished climbing after forty-five seconds and those readings are of the wait rather than of the byte."
   ],
   "note": "This class is one type wide on purpose. Sixty-four other types take a rate byte and none of them prints an acceleration, so carrying an arrival across to them would be the prior this archive keeps warning about -- a finding about one machine's one effect arriving silently as an assumption about the rest."
 }

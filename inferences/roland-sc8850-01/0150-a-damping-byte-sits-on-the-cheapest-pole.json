@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T08:25:22.041358+00:00",
-    "made_by": "backup/is-the-damping-the-same-section.py, backup/which-way-is-the-pre-filter-pole-written.py, backup/write-the-damping-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-15T11:22:22.843351+00:00",
+    "made_by": "backup/is-the-damping-the-same-section.py, backup/which-way-is-the-pre-filter-pole-written.py, backup/write-the-damping-inference.py, backup/does-the-damping-compound.py, backup/which-side-of-the-loop-the-damping-is.py, backup/fold-in-which-side-of-the-loop.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -16,7 +16,7 @@
       ]
     }
   },
-  "claim": "A delay's damping byte is one pole, and it is the pole written the cheapest way there is: a running average, one multiply and one state, with no zero at half the rate. That is not the section the same part's chorus filter byte sits on. A pole put through the bilinear transform keeps a zero at half the rate and its skirt bends steeper as it climbs towards it; this one has no zero, so its skirt stops cutting and levels off -- and the profile does level off, on every one of the ten settings the run asked, at a different depth each time. Where a profile levels off names the pole outright with nothing fitted, because the depth is one minus the coefficient over one plus it. Scored through the same takes the cheap pole is sixteen times the bilinear one's median and is the only candidate of eight whose residual does not lean. And it names the clock a fourth time, by a route none of the first three used: the coefficient that puts the corner where the page prints it depends on the rate, so a corner fitted freely from each setting's own skirt lands on the printed third octaves to a five-hundredth of an octave at thirty-two kilohertz and a twentieth at forty-four -- high at every setting, which is a lean and not a scatter.",
+  "claim": "A delay's damping byte is one pole inside the delay's own feedback loop, and it is the pole written the cheapest way there is: a running average, one multiply and one state, with no zero at half the rate. Inside rather than once on the way out, which is read off how a held note builds: with the byte at the position the page prints as the filter out the build is 18.3 dB and it is the same in every band, and with the filter in it falls away above a frequency that moves more than four octaves across the byte. A filter outside the loop is the same shape in both windows and cancels between them. That is not the section the same part's chorus filter byte sits on. A pole put through the bilinear transform keeps a zero at half the rate and its skirt bends steeper as it climbs towards it; this one has no zero, so its skirt stops cutting and levels off -- and the profile does level off, on every one of the ten settings the run asked, at a different depth each time. Where a profile levels off names the pole outright with nothing fitted, because the depth is one minus the coefficient over one plus it. Scored through the same takes the cheap pole is sixteen times the bilinear one's median and is the only candidate of eight whose residual does not lean. And it names the clock a fourth time, by a route none of the first three used: the coefficient that puts the corner where the page prints it depends on the rate, so a corner fitted freely from each setting's own skirt lands on the printed third octaves to a five-hundredth of an octave at thirty-two kilohertz and a twentieth at forty-four -- high at every setting, which is a lean and not a scatter.",
   "named": "a one-multiply pole, the running average a fixed-point part damps a delay's repeats with",
   "rests_on": {
     "measurements": [
@@ -36,6 +36,42 @@
           -2.27,
           57.2
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-early-window.json",
+        "keys": [
+          "reference.above_the_silence_db",
+          "readings[value=0].largest_db",
+          "readings[value=0].above_the_silence_db",
+          "readings[value=96].largest_db",
+          "readings[value=96].above_the_silence_db"
+        ],
+        "values": [
+          64.5,
+          -28.85,
+          45.6,
+          -7.17,
+          61.2
+        ],
+        "why": "The first part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-late-window.json",
+        "keys": [
+          "reference.above_the_silence_db",
+          "readings[value=0].largest_db",
+          "readings[value=0].above_the_silence_db",
+          "readings[value=96].largest_db",
+          "readings[value=96].above_the_silence_db"
+        ],
+        "values": [
+          64.5,
+          -38.78,
+          45.6,
+          -15.21,
+          61.2
+        ],
+        "why": "The last part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
       }
     ],
     "document_rows": [
@@ -157,41 +193,10 @@
       "ruled_out_by": "The skirt, which the reading resolves several times over. Two poles run at twelve decibels an octave where the record's own steepest figures are between two and six, and scored through the same takes the pair is 0.445 against the winner's 0.03 and leans."
     },
     {
-      "reading": "The damping sits inside the delay's own feedback loop rather than once on the way out of it.",
+      "reading": "The damping sits once on the way out of the delay's feedback loop rather than inside it. Queued the other way round, because the record that closed the section could not tell them apart and either was the thing to ask.",
       "candidate": "one-multiply-pole-at-32k",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same sweep with the feedback byte away from its centre. The run held feedback at the middle of its printed range, which is no feedback at all, so every repeat but the first is absent and the two places the filter could sit render identically. Turn the feedback up and they stop being the same: a filter inside the loop is applied once per repeat and its cut compounds, so the tail of a held note goes on darkening, while a filter outside the loop cuts every repeat by the same amount and the tail keeps its colour.",
-        "predicts": {
-          "inside the loop": "the profile of the late tail cut by as many helpings of this section as there have been repeats",
-          "outside the loop": "the profile of the late tail cut by exactly one, the same as the first repeat"
-        },
-        "sensitivity_here": "The section cuts up to 30 dB at its lowest setting, so two helpings against one is tens of decibels at the top of the band against the 1.40 dB the run's own repeats spread at their worst band.",
-        "margin": 10.0,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 50",
-          "address": "40 03 0A",
-          "settings": [
-            0,
-            32,
-            64,
-            96
-          ],
-          "held": {
-            "40 03 03": 64,
-            "40 03 04": 64,
-            "40 03 05": 96,
-            "40 03 12": 127,
-            "40 03 13": 64,
-            "40 03 14": 64,
-            "40 03 16": 127
-          },
-          "why_this_held_block": "The run's own, with two things moved. The feedback byte goes above its centre so that there are repeats to compound over, and the delay times go up from the two and a half milliseconds this run used to something long enough that the repeats can be read apart in time -- which is what lets the late tail be windowed separately from the first arrival.",
-          "why_a_window_and_not_a_profile": "The whole take's band profile is the sum of every repeat and says little; what separates the two readings is how the profile changes from the first repeat to the last, so the stage has to be read over two windows of one take rather than over the take.",
-          "minutes": 6
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "The run it queued. A filter on the way out is the same shape in both windows of one take and cancels between them, so it says the build is one number in every band at every setting of the byte -- which is what the position the page prints as the filter out does, at 18.3 dB across the whole band set. Every setting with the filter in departs from that, upward in frequency and by more as the corner comes down: 9.18 dB at setting 32 and 12500 Hz, against 0.41 dB of floor there. And where each setting's build falls through half its depth moves from between 125 and 160 Hz at the lowest setting to between 2500 and 3150 at the highest, which is more than four octaves of something a filter outside the loop cannot move at all."
     }
   ],
   "reproduces": {
@@ -345,9 +350,303 @@
     "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json"
   ],
   "what_this_does_not_settle": [
-    "Whether the damping sits inside the delay's feedback loop. The run held the feedback at the middle of its printed range, which is none, so there is one repeat and the two places render the same. The run that would tell them apart is in the alternatives.",
     "Whether the other fourteen slots that print this range answer the same way. Every one of them is a delay's or a reverb's damping, which is what makes one routine the thing to expect -- but expecting is not measuring, and one slot was read.",
     "What the coefficient's own quantum is. The corners land on the printed series to a few thousandths of an octave, which bounds the stored number from above but does not say what grid it sits on; that is the kind of question the level class answered with a scan over denominators and this reading has ten points rather than a hundred and twenty-eight.",
-    "Whether the part's high-pass damping, if it has one, is written the same way. Only the low side was swept here, and the cheap pole's high side is its own complement rather than a second routine -- which is a thing to check and not a thing to assume."
-  ]
+    "Whether the part's high-pass damping, if it has one, is written the same way. Only the low side was swept here, and the cheap pole's high side is its own complement rather than a second routine -- which is a thing to check and not a thing to assume.",
+    "What the loop gain was while this was read. The feedback byte was put near the top of its printed range so that there would be passes to compound over, and nothing here reads what that byte is worth -- so the size of the build is not a figure about the loop, only about there being one. Which side of it the filter is on does not depend on that and is what is claimed.",
+    "Where inside the loop. A filter before the delay line and one after it are the same thing once round, and a held note read over two windows cannot separate them: both put one helping of the filter in every pass. What would is the first arrival, which carries the filter under one reading and not under the other -- and at half a second of delay that is one repeat of one take rather than a profile."
+  ],
+  "and_which_side_of_the_loop_it_is_on": {
+    "what": "Read off two windows of one set of takes, with the feedback near the top of its printed range rather than at the centre where the run that closed the section parked it. Nothing is fitted: what is compared is the band profile of the last part of a held note against the first part, for each setting, against the same thing at the position the page prints as the filter out.",
+    "with_no_filter_anywhere": {
+      "build_db": [
+        17.33,
+        17.44,
+        19.44,
+        18.29,
+        18.56,
+        20.75,
+        18.25,
+        17.43,
+        19.13,
+        17.71,
+        18.3,
+        18.2,
+        18.34,
+        18.25,
+        18.01,
+        18.61,
+        18.73,
+        18.64,
+        17.93,
+        18.18,
+        18.5,
+        18.74
+      ],
+      "bands_hz": [
+        100,
+        125,
+        160,
+        200,
+        250,
+        315,
+        400,
+        500,
+        630,
+        800,
+        1000,
+        1250,
+        1600,
+        2000,
+        2500,
+        3150,
+        4000,
+        5000,
+        6300,
+        8000,
+        10000,
+        12500
+      ],
+      "median_db": 18.3,
+      "and_it_is_flat": "The loop builds by one number of decibels and the same number in every band, which is what a loop with nothing in it does and is the control this reading needs."
+    },
+    "with_the_filter_in": {
+      "build_against_no_filter_db": {
+        "0": [
+          -2.07,
+          -1.78,
+          -5.16,
+          -3.03,
+          -5.08,
+          -7.35,
+          -6.4,
+          -6.76,
+          -8.16,
+          -7.48,
+          -7.6,
+          -8.21,
+          -8.63,
+          -8.55,
+          -8.35,
+          -8.64,
+          -8.25,
+          -8.56,
+          -8.49,
+          -8.67,
+          -8.89,
+          -9.93
+        ],
+        "32": [
+          -1.65,
+          0.14,
+          -1.47,
+          -0.76,
+          -2.81,
+          -2.44,
+          -3.63,
+          -4.73,
+          -4.15,
+          -5.76,
+          -6.45,
+          -7.18,
+          -8.2,
+          -8.19,
+          -8.15,
+          -8.58,
+          -8.27,
+          -8.53,
+          -8.62,
+          -8.81,
+          -8.88,
+          -9.18
+        ],
+        "64": [
+          0.74,
+          0.37,
+          0.18,
+          0.36,
+          -0.16,
+          -0.61,
+          0.88,
+          -0.35,
+          -1.97,
+          -1.66,
+          -2.23,
+          -3.48,
+          -5.34,
+          -5.94,
+          -6.24,
+          -7.32,
+          -7.54,
+          -8.0,
+          -8.05,
+          -8.43,
+          -8.53,
+          -8.72
+        ],
+        "96": [
+          0.02,
+          0.42,
+          0.33,
+          0.42,
+          0.4,
+          0.47,
+          0.24,
+          0.05,
+          -0.22,
+          -0.09,
+          -0.88,
+          -1.36,
+          -1.91,
+          -1.92,
+          -3.51,
+          -4.06,
+          -5.48,
+          -5.96,
+          -6.5,
+          -7.18,
+          -7.65,
+          -8.04
+        ]
+      },
+      "admitted": {
+        "0": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        "32": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "64": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "96": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "why_some_bands_are_not_read": "A band has to stand ten decibels over the same chain's silence in both windows before it is read, which is the rule this byte's own claim already uses, applied to the window rather than to the take. At the lowest settings the bottom of the band is under it, and a window at the floor returns the converter's own shape -- stably, which is what makes it dangerous.",
+      "largest_admitted_db": 9.18,
+      "at": {
+        "setting": 32,
+        "hz": 12500
+      },
+      "against_a_floor_of_db": 0.41
+    },
+    "and_where_it_hinges_moves_with_the_byte": {
+      "what": "Where each setting's build falls through half its own depth, read as a bracket between two bands rather than interpolated. It is not the filter's own corner -- the loop's gain pulls it down -- and what matters is that it moves at all.",
+      "at_each_setting": {
+        "0": {
+          "deepest_db": -8.89,
+          "crosses_between_hz": [
+            125,
+            160
+          ]
+        },
+        "32": {
+          "deepest_db": -9.18,
+          "crosses_between_hz": [
+            400,
+            500
+          ]
+        },
+        "64": {
+          "deepest_db": -8.72,
+          "crosses_between_hz": [
+            1250,
+            1600
+          ]
+        },
+        "96": {
+          "deepest_db": -8.04,
+          "crosses_between_hz": [
+            2500,
+            3150
+          ]
+        }
+      }
+    }
+  }
 }

@@ -1,0 +1,218 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/what-scales-the-acceleration",
+      "--type",
+      "01 22",
+      "--slot",
+      "40 03 05",
+      "--setting",
+      "0122-05-low-(?P<value>\\d+)-settled45",
+      "--settled",
+      "45",
+      "--hold",
+      "8",
+      "--held",
+      "40 03 0A=00",
+      "--held",
+      "40 03 06=7F",
+      "--held",
+      "40 03 03=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-settled-longer.json"
+    ],
+    "measured_at": "2026-09-15T10:47:43+00:00",
+    "elapsed_s": 0.7,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "01 22",
+  "address": "40 03 05",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.8,
+      -75.0,
+      -51.0,
+      -51.1,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [
+      "held-16-0122-05-low-000-settled45-00.wav"
+    ],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "held": [
+    {
+      "address": "40 03 0A",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 03",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/what-scales-the-acceleration",
+  "manifest": {
+    "lists": 41,
+    "files_present": 41,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    0,
+    8,
+    16,
+    24,
+    40
+  ],
+  "readings": [
+    {
+      "value": 0,
+      "rate_hz": 9.0272,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.0244,
+        9.0294,
+        9.0276,
+        9.0269
+      ],
+      "heard_db": -51.7,
+      "slowest_measurable_hz": 0.3033,
+      "hold_s": 8.0,
+      "take": "held-16-0122-05-low-000-settled45-00.wav",
+      "settled_s": 45.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 8,
+      "rate_hz": 9.5115,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.5101,
+        9.5121,
+        9.5151,
+        9.511
+      ],
+      "heard_db": -51.5,
+      "slowest_measurable_hz": 0.3033,
+      "hold_s": 8.0,
+      "take": "held-16-0122-05-low-008-settled45-00.wav",
+      "settled_s": 45.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 16,
+      "rate_hz": 9.6763,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.6767,
+        9.6768,
+        9.6746,
+        9.6759
+      ],
+      "heard_db": -51.6,
+      "slowest_measurable_hz": 0.3033,
+      "hold_s": 8.0,
+      "take": "held-16-0122-05-low-016-settled45-00.wav",
+      "settled_s": 45.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 24,
+      "rate_hz": 9.7557,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.7542,
+        9.7563,
+        9.7563,
+        9.7552
+      ],
+      "heard_db": -51.6,
+      "slowest_measurable_hz": 0.3033,
+      "hold_s": 8.0,
+      "take": "held-16-0122-05-low-024-settled45-00.wav",
+      "settled_s": 45.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 40,
+      "rate_hz": 9.8344,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.8346,
+        9.8382,
+        9.8342,
+        9.8298
+      ],
+      "heard_db": -51.7,
+      "slowest_measurable_hz": 0.3033,
+      "hold_s": 8.0,
+      "take": "held-16-0122-05-low-040-settled45-00.wav",
+      "settled_s": 45.0,
+      "named_by": "manifest"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 36,
+    "settings": [
+      "0122-05-low-000-settled10",
+      "0122-05-low-001-settled10",
+      "0122-05-low-002-settled10",
+      "0122-05-low-004-settled10",
+      "0122-05-low-007-settled10",
+      "0122-05-low-008-settled10",
+      "0122-05-low-015-settled10",
+      "0122-05-low-016-settled10",
+      "0122-05-low-024-settled10",
+      "0122-05-low-031-settled10",
+      "0122-05-low-032-settled10",
+      "0122-05-low-040-settled10",
+      "0122-05-low-048-settled10",
+      "0122-05-low-063-settled10",
+      "0122-05-low-064-settled10",
+      "0122-05-low-072-settled10",
+      "0122-05-low-080-settled10",
+      "0122-05-low-088-settled10",
+      "0122-05-low-095-settled10",
+      "0122-05-low-096-settled10",
+      "0122-05-low-104-settled10",
+      "0122-05-low-112-settled10",
+      "0122-05-low-127-settled10",
+      "0122-09-high-000-settled10",
+      "0122-09-high-000-settled45",
+      "0122-09-high-002-settled10",
+      "0122-09-high-008-settled10",
+      "0122-09-high-024-settled10",
+      "0122-09-high-032-settled10",
+      "0122-09-high-048-settled10",
+      "0122-09-high-064-settled10",
+      "0122-09-high-080-settled10",
+      "0122-09-high-088-settled10",
+      "0122-09-high-096-settled10",
+      "0122-09-high-112-settled10",
+      "0122-09-high-127-settled10"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}

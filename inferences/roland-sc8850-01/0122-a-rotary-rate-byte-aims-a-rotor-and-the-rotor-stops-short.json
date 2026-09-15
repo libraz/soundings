@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T09:23:28.714973+00:00",
-    "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-15T11:13:23.925849+00:00",
+    "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -17,7 +17,7 @@
       ]
     }
   },
-  "claim": "A rotary's slow rate byte indexes the same printed table every other rate byte on this unit indexes -- the wide one, picked by the `0.05 - 10.0` the page prints against it, with no constant of its own anywhere in it. What the rotary adds is that the entry is where a rotor is sent and not where it ends up. Sent down, it arrives exactly. Sent up, it stops a fixed distance short: 0.245 Hz on the low rotor and 0.062 on the high, holding to a thousandth of a hertz from the corner to the top of the byte and across both places the table's own step changes. And where the distance to the entry is narrower than that, the rotor barely sets off, so five entries of the low rotor's table return one rate and the high rotor moves a fifth of an entry across the one entry of its own. The width of that flat stretch and the size of the gap are the same number, which is what separates this from a constant subtracted after a lookup: read the gap off the top of the sweep alone and it places the corner, which neither half of the fit was shown. The two rotors' gaps stand at 3.95 to one -- two powers of two -- and the page prints an acceleration parameter per rotor, `0 - 15`, which is the width of a shift count.",
+  "claim": "A rotary's slow rate byte indexes the same printed table every other rate byte on this unit indexes -- the wide one, picked by the `0.05 - 10.0` the page prints against it, with no constant of its own anywhere in it. What the rotary adds is that the entry is where a rotor is sent and not where it ends up. Sent down, it arrives exactly -- which is measured and not inferred: the same byte written after a faster one, with no reset between, comes back on its entry where the same byte written after a reset comes back short of it. Sent up, it stops a fixed distance short: 0.245 Hz on the low rotor and 0.062 on the high, holding to a thousandth of a hertz from the corner to the top of the byte and across both places the table's own step changes. And where the distance to the entry is narrower than that, the rotor barely sets off, so five entries of the low rotor's table return one rate and the high rotor moves a fifth of an entry across the one entry of its own. The width of that flat stretch and the size of the gap are the same number, which is what separates this from a constant subtracted after a lookup: read the gap off the top of the sweep alone and it places the corner, which neither half of the fit was shown. The distance is set by the acceleration byte the page prints against each rotor, and the two rotors are one routine reached twice: at every one of nine settings of that byte the two gaps agree to a median of 2.8 per cent, so the four to one between them is the two defaults and not the two rotors. What that byte does is a claim of its own beside this one.",
   "named": "a first-order lag done with an arithmetic right shift, which underflows climbing and floors falling",
   "rests_on": {
     "measurements": [
@@ -108,6 +108,38 @@
           0.8374
         ],
         "why": "A sweep of a byte that turned out to do nothing, with the low rotor silenced -- so every take of it is the high rotor sitting at its own default of 17, which is a setting neither sweep here asked."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-came.json",
+        "keys": [
+          "readings[value=32,came_from=rest].rate_hz",
+          "readings[value=32,came_from=127].rate_hz",
+          "readings[value=127,came_from=rest].rate_hz",
+          "readings[value=127,came_from=032].rate_hz"
+        ],
+        "values": [
+          1.4071,
+          1.652,
+          9.7548,
+          9.7546
+        ],
+        "why": "The low rotor's byte written twice with no reset between, which is the only reading here that asks the direction rather than inferring it from the shape of a curve. The first two rows are the same byte answered from below and from above; the second two are the same byte climbed to from two different places."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-which-way-the-rotor-came.json",
+        "keys": [
+          "readings[value=32,came_from=rest].rate_hz",
+          "readings[value=32,came_from=127].rate_hz",
+          "readings[value=127,came_from=rest].rate_hz",
+          "readings[value=127,came_from=032].rate_hz"
+        ],
+        "values": [
+          1.5887,
+          1.65,
+          9.9442,
+          9.9451
+        ],
+        "why": "The high rotor's byte written twice with no reset between, which is the only reading here that asks the direction rather than inferring it from the shape of a curve. The first two rows are the same byte answered from below and from above; the second two are the same byte climbed to from two different places."
       }
     ],
     "document_rows": [
@@ -148,71 +180,14 @@
     {
       "reading": "The distance a rotor stops short by is set by its printed acceleration, and being a shift count it changes by whole factors of two rather than smoothly.",
       "candidate": "stops-short",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same sweep with the acceleration byte moved. Both runs left it at the unit's default -- 24 on the low rotor and 88 on the high, on a byte whose printed range is 0 to 15, so the byte is scaled down to that range by something and the two rotors sit eight printed steps apart. Their gaps stand at 3.95 to one. Sweep the byte and the gap either doubles per step of the shift or it does not, and where it steps says how the byte is scaled.",
-        "predicts": {
-          "a shift count": "the gap doubling at some regular spacing of the byte and holding flat between, with the flat stretch at the bottom of the table widening in step -- and above some setting the rotor not setting off at all, because the gap has grown past the whole range",
-          "anything else": "a gap that moves smoothly with the byte, or one that does not move at all"
-        },
-        "sensitivity_here": "The gap is 0.2447 Hz on the low rotor against readings four partials agree on to a thousandth of a hertz, and a doubling of it moves the reading at setting 127 from 9.755 Hz to 9.510.",
-        "margin": 244.0,
-        "run": {
-          "stage": "efx-rate",
-          "type": "01 22",
-          "address": "40 03 05",
-          "settings": [
-            0,
-            7,
-            8,
-            15,
-            16,
-            31,
-            32,
-            63,
-            64,
-            95,
-            96,
-            127
-          ],
-          "held": {
-            "40 03 0A": 0,
-            "40 03 06": 127,
-            "40 03 03": 127
-          },
-          "why_this_held_block": "The other rotor silenced the way the five admitted records silence it, and the rate byte at the top of its table so that the gap is read where it is largest and where an eight second take is far above its own floor. The settings are chosen to bracket every power-of-two boundary the byte could be scaled on.",
-          "minutes": 5
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "Half of it, and the half this claim leant on is the half that fell. The byte does set the distance -- it moves it over a factor of 335 across its range -- and it is read through its top four bits, which five boundary pairs say. But the entries are not a shift count doubling per step: over the first ten of them the distance is one constant divided by the entry's position plus one, which is a multiply before the shift and not the shift. So the four to one between the two rotors' defaults is where those two defaults sit in that table, and reading it as two powers of two was reading a coincidence. The byte has its own claim beside this one, and this claim's sentence about it has been taken out."
     },
     {
       "reading": "Where a rotor rests when the type is switched on is a state it is put into, not a rate it was left at -- so a byte written twice without a reset between would be answered from wherever the first write left the rotor.",
       "candidate": "stops-short",
-      "standing": true,
-      "separated_by": {
-        "observable": "Two writes and one take. Every take in both runs was preceded by a reset, so the rotor set off from the same place every time and this claim's resting rate is one number for the whole sweep. Write a fast setting, let it arrive, then write a slower one without resetting, and take that. Then the same pair the other way round.",
-        "predicts": {
-          "the rotor keeps its speed between writes": "the downward write arriving exactly at its entry, from far above where the rotor rests -- which is the half of the asymmetry that the sweeps could only see under one number; and the upward write from a high rate stopping short of its entry by the same gap",
-          "the type is reinitialised on every write": "both takes answering exactly as the sweeps did, with the resting rate back where it was"
-        },
-        "sensitivity_here": "A downward write from setting 127 to setting 32 is the difference between 1.65 Hz and 1.405, which is 0.245 Hz against readings repeatable to a thousandth.",
-        "margin": 245.0,
-        "run": {
-          "stage": "efx-rate",
-          "type": "01 22",
-          "address": "40 03 03",
-          "settings": [
-            32,
-            127
-          ],
-          "held": {
-            "40 03 0A": 0,
-            "40 03 06": 127
-          },
-          "why_this_held_block": "The low rotor alone, as the admitted records have it. What this run needs that the stage does not do on its own is to write the other setting first and not reset in between, so it is a script beside the stage rather than the stage.",
-          "minutes": 4
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "It was asked. The rotor keeps its speed between writes: the byte written down to setting 32 from setting 127, with no reset between, reads 1.652 Hz on the low rotor against 1.4071 for the same byte after a reset -- 0.2315 octaves apart, where the model says 0.2319. On the high rotor the two are 0.0546 apart against a model saying 0.0553. The other half of the run is the control it needs: a rotor climbing to the top of the table from an entry it had already reached stops where one climbing from rest stops, to six hundred-thousandths of an octave on the low rotor -- so the gap is a property of the step and not of how far the rotor travelled, which is the one thing a lag caught in flight could not say."
     },
     {
       "reading": "The gap is a property of the take rather than of the rotor: ten seconds of settling was not enough and every reading is of a rotor still closing.",
@@ -248,9 +223,11 @@
       "records": [
         "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-came.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowswitchfast.json",
-        "data/units/roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json"
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-which-way-the-rotor-came.json"
       ],
       "generated_from": "data/units/roland-sc8850-01/index.json, every efx-rate record filed under type 01 22 at the two slow rate addresses, less the ones whose own held block does not silence the other rotor",
       "filter": {
@@ -745,7 +722,41 @@
         "read_as": "The one point of daylight is the high rotor at setting 16, where the rotor moved 0.0135 Hz and this reading says it should not have moved at all. That is 0.0242 octaves against a floor of one entry of 0.0875 there, so it does not lean -- but it is the thing to look at, because a loop that takes shrinking steps rather than stopping dead would move a little and then stop, and the acceleration sweep in the alternatives is where that would show."
       }
     },
-    "verdict": "reproduces"
+    "verdict": "reproduces",
+    "and_when_the_byte_was_written_twice": {
+      "what": "The two records the claim's second alternative queued, scored through the same gates with nothing refitted. Each carries four takes: one byte written after a reset and the same byte written after the other end of the range, both ways round.",
+      "per_rotor": {
+        "low": {
+          "record": "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-came.json",
+          "median_octaves": 0.0009,
+          "worst_octaves": 0.00215,
+          "floor_the_run_resolved": 0.793361,
+          "the_two_takes_of_one_byte": {
+            "at_value": 32,
+            "from_rest_hz": 1.4071,
+            "from_the_top_of_the_byte_hz": 1.652,
+            "apart_octaves": 0.2315,
+            "the_model_says_octaves": 0.2319,
+            "and_it_was_not_fitted_on_this": true
+          }
+        },
+        "high": {
+          "record": "data/units/roland-sc8850-01/efx-rate/01-22-07-which-way-the-rotor-came.json",
+          "median_octaves": 0.00077,
+          "worst_octaves": 0.00103,
+          "floor_the_run_resolved": 0.000368,
+          "the_two_takes_of_one_byte": {
+            "at_value": 32,
+            "from_rest_hz": 1.5887,
+            "from_the_top_of_the_byte_hz": 1.65,
+            "apart_octaves": 0.0546,
+            "the_model_says_octaves": 0.0553,
+            "and_it_was_not_fitted_on_this": true
+          }
+        }
+      },
+      "why_the_floor_is_not_the_reading_here": "A record of two settings has no meaningful entry-step floor -- the median step of one entry is taken over the settings the record holds, and two of them are the ends of the table. And the low rotor's own run floor is 0.79 octaves, because one partial of four disagreed in two of its takes. Neither is what this run is read on. What it is read on is the difference between two takes of one byte, which is a quantity both takes' own scatter is inside: the two stand a fifth of an octave apart on the low rotor and the model, which never saw them, says so to four thousandths."
+    }
   },
   "refuted_by": "A rotor sent down to an entry arriving short of it as well, which would make the gap a property of the table rather than of the arrival. Or the flat stretch at the bottom of the byte turning out to be a different width from the gap, which would make them two numbers rather than one. Or the acceleration byte turning out not to move the gap at all, which would leave the gap unexplained and the reading a description rather than a mechanism.",
   "what_it_would_change": [
@@ -755,6 +766,7 @@
     "What the rotary's two fast rate bytes do. Every take of them returns whichever rotor was left at its slow rate, at both settings of the byte the page prints as the speed switch -- so the switch was not switched, and until it is those two bytes have no reading at all. Whether the address this claim's records wrote is the switch is the first thing to ask.",
     "What sets where a rotor rests. Every take here reset the unit first, so the resting rate is one number per rotor and it is neither a table entry nor either rotor's default. The two runs that would say what it is are in the alternatives.",
     "Whether the rate class's refusal can be lifted mechanically. The check that refuses a slot on a type with more than one printed rate does not read the record's held block, so it refuses these five records too, and they were admitted here by hand with the reason written down. Teaching it to read a Level byte at nothing would reopen this type inside the class -- and would move the tally of refusals the closed claim carries, which is why it is named rather than done.",
-    "Whether the other sixty-four types that take a rate byte have an arrival of their own. None of them prints an acceleration, and the closed rate claim's twenty-one slots answer the table with no gap anywhere, so the expectation is that they do not -- but an arrival smaller than one entry would not have shown, and nothing here bounds it."
+    "Whether the other sixty-four types that take a rate byte have an arrival of their own. None of them prints an acceleration, and the closed rate claim's twenty-one slots answer the table with no gap anywhere, so the expectation is that they do not -- but an arrival smaller than one entry would not have shown, and nothing here bounds it.",
+    "How long a rotor takes to get where it gets. Every take here waited ten seconds after the write, or forty-five where the acceleration byte was moved, and then held a note -- so what is measured is where the rotor ended and never the path. At the bottom of the acceleration byte the rotor is still climbing at ten seconds and at forty-five, which is how this is known to be a question rather than a formality, and no take was begun before the write."
   ]
 }
