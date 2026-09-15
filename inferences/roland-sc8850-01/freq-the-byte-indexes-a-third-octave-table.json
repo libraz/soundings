@@ -831,6 +831,25 @@
           ]
         ],
         "why": "A third printed range on a third type: a delay's damping, printed 315 - 8k/Bypass, with the feedback parked at the centre of its own printed range so the effect returns one copy of the note and the damping is the only thing shaping it. The corner is read where the profile has fallen three decibels, interpolated between the two twelfth-octave bands either side, which is the reading the other corner in this class was made with. The reference is the last of the range's own sixteen positions and the record says so in `reference.held`, because a null that is a value of the byte being swept cannot go in the block that says what was held while sweeping it."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+        "keys": [
+          "readings[value=7].largest_db",
+          "readings[value=8].largest_db",
+          "readings[value=15].largest_db",
+          "readings[value=16].largest_db",
+          "readings[value=63].largest_db",
+          "readings[value=64].largest_db"
+        ],
+        "values": [
+          -27.37,
+          -22.86,
+          -18.98,
+          -23.15,
+          -21.42,
+          -22.76
+        ]
       }
     ],
     "document_rows": [
@@ -869,46 +888,10 @@
     {
       "reading": "The entries are sixteen frequencies at equal ratios between the printed ends rather than the named third octaves. On a range whose ends bracket sixteen third octaves the two are the same series to within a third of a percent, and both ranges this claim has been read on are such a range.",
       "candidate": null,
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
-      "separated_by": {
-        "observable": "Where the entries of 100 - 8.0k fall, read as the corner of the all-pass ladder a phaser's manual byte moves. The printed ends bracket nineteen third octaves and not sixteen, which is the whole of what separates the two readings.",
-        "predicts": {
-          "the named third octaves": "Sixteen entries a third of an octave apart, 100 Hz to 3150, a span of 31.6.",
-          "equal ratios between the printed ends": "Sixteen entries 0.42 of an octave apart, 100 Hz to 8000, a span of 80."
-        },
-        "divergence": "0.089 octaves per entry, and 1.34 octaves over the sixteen. The two series share only their first entry.",
-        "sensitivity_here": "The ladder's corner is read off the notches of one setting to 0.030 octaves, which is the spread of the corners its four notches separately imply, measured over the nine settings the manual sweep asked. That is under the twelfth-octave band set the notches were found in, so the reading is not the grid's.",
-        "margin": 3.0,
-        "why_not_separable": null,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 20",
-          "address": "40 03 03",
-          "settings": [
-            0,
-            8,
-            16,
-            24,
-            32,
-            40,
-            48,
-            56,
-            64,
-            72,
-            80,
-            88,
-            96,
-            104,
-            112,
-            120
-          ],
-          "stimulus": "the held broadband voice the manual sweep already used",
-          "takes": 4,
-          "minutes": 80
-        }
-      },
-      "was_parked_on": "That the phaser run could not be read, because its four notches moved relative to each other. They move because the ladder is sampled and their ratios are fixed in the tangent of frequency rather than in frequency, which is settled in 0120-eight-allpass-sections-summed-with-the-dry.json. The record did not change and no new measurement was made -- what changed is that the reading now has a structure to be read through, so a limit on the reading stopped standing as a bound on the rig."
+      "separated_by": null,
+      "ruled_out_by": "Measured on 100 - 8.0k, the one printed range on this unit whose ends bracket a number of third octaves that is not sixteen. Read as the corner of the all-pass ladder the byte moves, at every eighth value and at the three pairs that straddle a stride of eight, the byte turns out to have no sixteen entry table on it: 7 to 8 moves 0.056 octaves, 15 to 16 moves 0.037 and 63 to 64 moves 0.059, against 0.307 between 8 and 15 and 0.478 between 56 and 63 -- which are pairs inside what would be a single entry. Neither series survives it either: scaled onto the sixteen settings on the grid, the named third octaves need a factor that drifts 1.55 octaves and equal ratios one that drifts 2.69. The corner is read to 0.030 octaves, so both are out by more than fifty times the reading. See inferences/roland-sc8850-01/0120-eight-allpass-sections-summed-with-the-dry.json."
     },
     {
       "reading": "The three entries are 200, 250 and 315 and the filter built from them does not peak there. A table entry of this period is a set of coefficients rather than a frequency, so what is stored is already the filter -- and a section whose response below 300 Hz is not the peaking biquad the model renders would put its top somewhere else while the entry behind it is exactly the named one.",
@@ -2303,5 +2286,6 @@
     "and_the_sixteenth_slot": "This range's printed ends bracket fourteen third octaves where both ranges already read bracket fifteen, so fifteen entries fill a table of sixteen slots and the page prints the one left over as the filter out. The unit does what the page says: at the top of the byte the profile against the part routed past the effect is flat to within 0.13 to 0.77 dB over the eighty-eight bands from 100 Hz up, with no shape in it. So the table has sixteen slots on every range read so far and the page says what fills them. The law is not restated for that -- what it says is that the entries are what the page prints between the ends it prints, and a position the page prints as something other than a frequency is that rule holding rather than an exception to it.",
     "why_a_corner_read_this_way_is_a_corner": "The profile runs at 5.8 decibels per octave at its steepest on the four lowest settings, where the corner sits low enough for the filter to reach its asymptote inside the band set. A first-order filter asymptotes to 6.02. Above the middle of the byte the figure falls away to 2.3, which is the corner reaching the top of the set rather than the filter changing: the same reading of the same byte one entry apart moved the top of a third-octave set by 2.1 dB where 20 log10(400 / 315) is 2.07, which is one order and not two.",
     "what_it_does_not_settle": "Whether the entries of a range nobody has read are that range's third octaves. Three ranges are read of the five this unit prints, and the two left are 100 - 8.0k, which this claim's other alternative is about and which no slot here can be read on, and 250 - 6.3k/Bypass, which one slot of one combination type carries."
-  }
+  },
+  "what_this_does_not_reach": "This claim is read on bytes that set a filter corner and leave it there, and it does not extend to every byte a page prints a frequency range against. The one such byte measured outside that description -- the centre a phaser's modulator sweeps, on 100 - 8.0k -- moves at every setting and has no sixteen entry table on it. Which is what a byte that has to be swept smoothly would have to do: sixteen entries under a modulator is sixteen audible steps. So the sixteen entries belong to a stored coefficient set that is chosen once, and the two kinds of frequency byte are not one class."
 }

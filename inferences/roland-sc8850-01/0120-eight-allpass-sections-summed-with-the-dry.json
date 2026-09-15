@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T06:00:58.513046+00:00",
+    "made_at": "2026-09-15T06:12:12.038782+00:00",
     "made_by": "backup/build-phaser-models.py, backup/write-the-phaser-inference.py",
     "rounds": 1,
     "about": {
@@ -38,22 +38,48 @@
         "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
         "keys": [
           "readings[value=0].largest_db",
+          "readings[value=7].largest_db",
+          "readings[value=8].largest_db",
           "readings[value=12].largest_db",
+          "readings[value=15].largest_db",
+          "readings[value=16].largest_db",
           "readings[value=24].largest_db",
+          "readings[value=32].largest_db",
+          "readings[value=40].largest_db",
           "readings[value=48].largest_db",
+          "readings[value=56].largest_db",
+          "readings[value=63].largest_db",
+          "readings[value=64].largest_db",
           "readings[value=72].largest_db",
+          "readings[value=80].largest_db",
+          "readings[value=88].largest_db",
           "readings[value=96].largest_db",
+          "readings[value=104].largest_db",
+          "readings[value=112].largest_db",
           "readings[value=114].largest_db",
           "readings[value=120].largest_db",
           "readings[value=127].largest_db"
         ],
         "values": [
           -23.06,
+          -27.37,
+          -22.86,
           -24.81,
+          -18.98,
+          -23.15,
           -21.03,
+          -22.2,
+          -24.72,
           -25.15,
+          -24.18,
+          -21.42,
+          -22.76,
           -22.12,
+          -21.81,
+          -23.65,
           -18.93,
+          -21.13,
+          -19.26,
           -23.33,
           -18.87,
           -19.05
@@ -78,6 +104,12 @@
       }
     ],
     "community": []
+  },
+  "what_the_manual_byte_is": {
+    "what": "Continuous, or near enough that no stride this run could see. The corner moves at every setting: 7 against 8 is 0.056 octaves, 15 against 16 is 0.037 and 63 against 64 is 0.059, while 8 against 15 -- seven settings inside what a sixteen entry table would make one entry -- is 0.307, and 56 against 63 is 0.478. A table read eight settings at a time holds flat inside an entry and steps between them, and this does the opposite of both.",
+    "why_it_matters": "The frequency bytes this archive has read a table off are filter corners that sit still once set. This one is the centre a modulator sweeps, and a sweep through sixteen entries would be audible as sixteen steps. So the sixteen entry structure is not a property of a byte printed with a frequency range, and the claim that reads it that way is narrowed rather than extended by this run.",
+    "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+    "against": "0.030 octaves, which is what four notches of one setting agree the corner to."
   },
   "what_the_resonance_byte_is": {
     "what": "A feedback path wrapped round the ladder, not a resonance belonging to any section. Read at three settings with the manual held at 64, every one of the four cancellations shallows as the byte rises and not one of them deepens: 17.0, 14.9, 11.6 and 10.5 dB under their own shoulders at zero, against 0.9, 8.5, 7.7 and 4.9 at sixty-four, and the highest of them has become a 8.6 dB peak by a hundred and twenty-seven. The record's own largest deviation follows it out of the notches entirely -- minus 22.6 dB at 1888 Hz at zero, and plus 18.9 dB at 105 Hz at the top.",
@@ -107,42 +139,46 @@
       "reading": "The corner table is a law in the byte rather than the readout published here.",
       "candidate": null,
       "standing": true,
-      "equivalent_under_this_test": false,
+      "equivalent_under_this_test": true,
       "separated_by": {
-        "observable": "The corner at settings between the nine this run asked.",
+        "observable": "Nothing the unit's output can be asked.",
         "predicts": {
-          "a readout": "Nothing between them; the nine are all that was measured.",
-          "a law": "Every unasked setting on the curve the nine define."
+          "a readout": "The corners at the settings measured, and nothing about the rest.",
+          "a law": "The same corners, since a law that returns these numbers and a table holding them differ in where the numbers come from and in nothing that comes out."
         },
-        "sensitivity_here": "The same run at every eighth value would say whether the byte repeats in blocks the way the equaliser's centre byte does, which is what separates a table from a formula on this machine.",
-        "margin": 3,
-        "why_not_separable": null,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 20",
-          "address": "40 03 03",
-          "settings": [
-            0,
-            8,
-            16,
-            24,
-            32,
-            40,
-            48,
-            56,
-            64,
-            72,
-            80,
-            88,
-            96,
-            104,
-            112,
-            120
-          ],
-          "stimulus": "the same held note the manual sweep used",
-          "takes": 4,
-          "minutes": 80
-        }
+        "sensitivity_here": "The corner is read to 0.030 octaves at every setting asked, and twenty-two of the hundred and twenty-eight have been asked.",
+        "margin": 1,
+        "why_not_separable": "The run that was queued here has been made. It asked every eighth value and the three pairs that straddle a stride of eight, to find out whether the byte repeats in blocks the way this unit's filter corners do -- which is the one shape that would have told a stored table from a computed one on this machine. It does not: the corner moves at every setting, 0.056 octaves from 7 to 8 against 0.307 from 8 to 15. With no repeats to count, a table of a hundred and twenty-eight entries and a formula return the same hundred and twenty-eight numbers, and the output is the only thing here that can be asked. This is the state the effect level class is already in for the same reason."
+      },
+      "run_that_was_made": {
+        "stage": "efx-bands",
+        "type": "01 20",
+        "address": "40 03 03",
+        "settings": [
+          0,
+          7,
+          8,
+          12,
+          15,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          63,
+          64,
+          72,
+          80,
+          88,
+          96,
+          104,
+          112,
+          114,
+          120,
+          127
+        ],
+        "what_it_showed": "no stride: the byte is continuous over the range the notches can be read on"
       }
     }
   ],
@@ -174,20 +210,20 @@
     },
     "domain": "dB",
     "residual": {
-      "median_abs_db": 0.13,
+      "median_abs_db": 0.14,
       "worst_abs_db": 4.21,
       "worst_at": {
         "value": 0,
         "hz": 198.4
       },
-      "span_db": 31.3,
+      "span_db": 33.75,
       "floor_db": 1.92,
       "why": "The median is fifteen times under the run's own floor and the span the byte commands is two hundred and forty times the median. The worst band is a notch flank, where the profile falls twenty decibels across two bands and a corner two per cent out is four decibels out."
     },
     "gates": {
       "gross": {
         "verdict": "reproduces",
-        "why": "median 0.13 dB against the 31.3 dB the byte commands"
+        "why": "median 0.14 dB against the 33.75 dB the byte commands"
       },
       "properties": {
         "verdict": "reproduces",
@@ -197,32 +233,32 @@
         "verdict": "separated",
         "beaten": {
           "six-allpass-sections-at-32k": {
-            "median_abs_db": 0.795,
+            "median_abs_db": 0.995,
             "worst_abs_db": 32.1
           },
           "ten-allpass-sections-at-32k": {
-            "median_abs_db": 0.54,
-            "worst_abs_db": 28.07
+            "median_abs_db": 0.64,
+            "worst_abs_db": 28.37
           },
           "eight-allpass-sections-at-44k1": {
-            "median_abs_db": 0.58,
+            "median_abs_db": 0.62,
             "worst_abs_db": 24.99
           },
           "eight-allpass-sections-at-48k": {
-            "median_abs_db": 0.64,
+            "median_abs_db": 0.69,
             "worst_abs_db": 25.67
           },
           "twelve-allpass-sections-at-32k": {
-            "median_abs_db": 0.65,
+            "median_abs_db": 0.79,
             "worst_abs_db": 27.25
           }
         },
         "why": "Every alternative in the catalogue puts a notch where this unit has none. Their worst band is twenty-five to thirty-two decibels out against this one's four, which is a whole cancellation in the wrong place rather than a fit that is slightly worse."
       },
       "breakdown": {
-        "verdict": "structure remains",
-        "why": "the signed median swings 0.11 dB across the settings and 2.14 dB across the readings within one, against the run's own floor of 1.92 dB",
-        "read_as": "Just over the floor and it is reported rather than explained away. It sits on the notch flanks, which is where a band reading is least able to hold a position: the run's own repeats move the deepest band by about a twelfth of an octave, and on a flank that steep a twelfth of an octave is several decibels. Nothing in it leans one way across the settings -- the signed median moves 0.11 dB over the nine."
+        "verdict": "reproduces",
+        "why": "the signed median swings 0.11 dB across the settings and 1.77 dB across the readings within one, against the run's own floor of 1.92 dB",
+        "read_as": "Read over nine settings this gate returned structure, just over the floor. Thirteen more settings were added to answer a different question and it turned over: what looked like a lean was nine points, and every alternative in the catalogue still returns structure on the same twenty-two. The verdict here is whichever the scoring returned, not a reading of it."
       }
     }
   },
@@ -234,6 +270,8 @@
     "What the printed manual number means. The page prints 100 to 8.0k and this fits corners from 1.0 to 13.5 kHz, with the lowest notch running 212 Hz to 6.8 kHz -- so the printed span is the notch's and not the corner's, or it is neither, and no run here decides between them.",
     "Anything about the type with its depth off zero. The profile was taken with the modulator held still, which is what makes the notches countable at all; what the depth byte does to the corner is a different measurement and is not in this.",
     "What the resonance byte is. It was held at zero throughout, so nothing here says whether it is feedback around the ladder or something else.",
+    "What law the corner follows. It is continuous and it is not geometric in the byte -- 0.045 octaves a setting over the bottom half and 0.014 over the top -- and this run was built to find a stride rather than to fit a curve.",
+    "What the printed hundred to eight thousand is measured in. The corner reaches 13.5 kHz and the lowest notch 6.8, and neither is 8000.",
     "How deep the feedback path runs, or where in the chain it is taken from and returned to. What is established is that the byte is a feedback path and not a resonance belonging to a section: three settings of it were read and every notch shallows, none deepens."
   ]
 }
