@@ -110,6 +110,17 @@ WHY_HELD = (
     "about the held parameter is nothing at all. The value it was held at is in `prepared`."
 )
 
+#: Why a null measured beside a held byte is a narrower null than the others.
+WHY_NULL_WHILE_HELD = (
+    "That a null on this run is a null on the type. One of the type's own bytes was held at "
+    "zero for every ask, and a parameter whose whole effect is to scale what that byte moves "
+    "has nothing here to scale -- it is inaudible because of what this run did, not because of "
+    "what the unit does. The held address is in `prepared` and the run says so; which of the "
+    "other slots stand behind it is not decided here, because that is a reading of what each "
+    "parameter is for and no take on this run separates the two. It is the price of the hold: "
+    "unparked, every slot of this type answered that there was no yardstick at all."
+)
+
 #: Why a slot whose run refused to answer is counted apart from one nobody asked.
 WHY_REFUSED = (
     "A parameter slot whose comparison ran, would not answer, and said which of its own "
@@ -244,7 +255,14 @@ def assemble(
             else {}
         ),
         "parameters": rows,
-        "not_established": list(LIMITS),
+        # The held byte narrows every null in the run, so the limit is carried by
+        # the record that has one rather than standing over the sixty-odd that do
+        # not. Read off the coverage the fold built, which is where the hold is
+        # already established, rather than by inspecting `prepared` a second time.
+        "not_established": [
+            *LIMITS,
+            *([WHY_NULL_WHILE_HELD] if (coverage or {}).get("held_still") else []),
+        ],
         "reproduced": (
             "Every address carries the take-to-take figure of each of its two settings beside "
             "the comparison, so a verdict resting on a broken yardstick can be seen to be one. "

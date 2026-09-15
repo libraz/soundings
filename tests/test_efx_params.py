@@ -245,6 +245,44 @@ def test_the_value_a_held_slot_was_held_at_is_the_one_the_record_publishes(tmp_p
     assert _held("40 03 03") in found["prepared"]
 
 
+def test_a_null_measured_beside_a_held_byte_says_the_hold_narrows_it(tmp_path) -> None:
+    """The hold is what makes the rest of the type askable, and it is also what
+    makes one class of null unreadable: a parameter that does nothing but scale
+    what the held byte moves has nothing to scale, and answers inaudible. Without
+    the limit the record publishes that as a fact about the unit, which is the
+    run's own doing reported as the unit's behaviour."""
+    _write(tmp_path, "a.json", _record("40 03 04", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 20",
+        [7, 9, 3],
+        control,
+        [_held("40 03 00", "01 20"), _held("40 03 05")],
+        slots=["40 03 03", "40 03 04", "40 03 05"],
+    )
+
+    assert efxparams.WHY_NULL_WHILE_HELD in found["not_established"]
+    assert found["parameters"][0]["verdict"] == efxparams.NULL
+
+
+def test_an_unparked_run_does_not_carry_the_limit_about_holding(tmp_path) -> None:
+    """Sixty-odd records held nothing, and a limit explaining a hold none of them
+    made is one more sentence a reader has to rule out before trusting the nulls."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path, "04 02", [7], control, [_held("40 03 00", "04 02")], slots=["40 03 03"]
+    )
+
+    assert efxparams.WHY_NULL_WHILE_HELD not in found["not_established"]
+    assert list(efxparams.LIMITS) == found["not_established"]
+
+
 def test_a_run_that_held_nothing_carries_no_note_about_holding(tmp_path) -> None:
     """Every unparked run is one, so the note would stand over sixty-odd records
     explaining a thing none of them did."""
