@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T05:57:39.353671+00:00",
+    "made_at": "2026-09-15T06:00:58.513046+00:00",
     "made_by": "backup/build-phaser-models.py, backup/write-the-phaser-inference.py",
     "rounds": 1,
     "about": {
@@ -21,6 +21,19 @@
   "named": "a phaser as the period built one: an all-pass ladder mixed back with the input",
   "rests_on": {
     "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=64].largest_db",
+          "readings[value=127].largest_db"
+        ],
+        "values": [
+          -22.62,
+          -15.72,
+          18.87
+        ]
+      },
       {
         "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
         "keys": [
@@ -66,37 +79,28 @@
     ],
     "community": []
   },
+  "what_the_resonance_byte_is": {
+    "what": "A feedback path wrapped round the ladder, not a resonance belonging to any section. Read at three settings with the manual held at 64, every one of the four cancellations shallows as the byte rises and not one of them deepens: 17.0, 14.9, 11.6 and 10.5 dB under their own shoulders at zero, against 0.9, 8.5, 7.7 and 4.9 at sixty-four, and the highest of them has become a 8.6 dB peak by a hundred and twenty-seven. The record's own largest deviation follows it out of the notches entirely -- minus 22.6 dB at 1888 Hz at zero, and plus 18.9 dB at 105 Hz at the top.",
+    "why_that_is_the_reading": "Feedback round an all-pass chain leaves no exact null anywhere, because a chain that passes everything at unit gain cannot be cancelled by a copy of itself once part of it is coming back round. So the dips fill in and peaks rise between them, which is what these three settings do. A resonance belonging to each section would sharpen the notches rather than fill them, and would move them apart as it did.",
+    "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+    "found_by": "Takes the manual sweep had already taken and not published. The run asked six resonance and mix settings first, to find out whether the notches would be deep enough to read at all, and the record named those takes as ones its own pattern did not match. Reading them cost no device time."
+  },
   "adds": "The archive says what the manual byte did to each third-octave band at nine settings. It does not say those profiles are the magnitude of a phase -- that the dips are cancellations between a signal and a delayed-in-phase copy of itself rather than filters with stopbands, that there are eight sections rather than six or ten, that the dry and wet are summed rather than averaged, or that the chain runs at thirty-two kilohertz. Each is a structure fitted to the readings, and the fit is what this holds.",
   "alternatives": [
     {
       "reading": "Four second-order all-pass sections rather than eight first-order ones.",
       "candidate": null,
       "standing": true,
-      "equivalent_under_this_test": false,
+      "equivalent_under_this_test": true,
       "separated_by": {
-        "observable": "The notch positions as the resonance byte is raised off zero.",
+        "observable": "Nothing this or any run can read.",
         "predicts": {
-          "eight first order": "Nothing: a first-order section has no resonance to raise, so a feedback path around the ladder is the only thing the byte can be, and the notches deepen and move together.",
-          "four second order": "Each section's own Q sharpens its phase slope near its corner, so the notches move apart by different amounts."
+          "eight first order": "The notches of this record.",
+          "four second order": "The same notches, exactly, wherever the pole pairs sit on the real axis -- and notches at other ratios wherever they do not."
         },
-        "sensitivity_here": "The notch positions of this run repeat to better than a twelfth of an octave, which is the band set, and the corners fitted from four notches of one setting agree to 0.03 of an octave.",
-        "margin": 2,
-        "why_not_separable": null,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 20",
-          "address": "40 03 06",
-          "settings": [
-            0,
-            32,
-            64,
-            96,
-            127
-          ],
-          "stimulus": "the same held note the manual sweep used",
-          "takes": 4,
-          "minutes": 25
-        }
+        "sensitivity_here": "The notch ratios are read to 0.030 octaves, against the 0.089 octaves a pole pair off the real axis would have to move them by before it was a different chain.",
+        "margin": 1,
+        "why_not_separable": "Two second-order all-pass sections with their poles on the real axis are two first-order ones, so at the only setting where this reading reproduces, it is not a second structure -- it is the same chain written in pairs. Anywhere else its phase runs steeper near each corner and the notch ratios move off the ones measured here, which the fit already bounds. So the difference is how somebody implemented it and not what the unit does, and there is no run to queue. This was nearly queued as one: the resonance byte was taken to be the thing that would separate them, and the record beside this one shows it is a feedback path around the ladder, which both readings share."
       }
     },
     {
@@ -155,6 +159,12 @@
         "type": "01 20",
         "file_ends_with": "-in-twelfths.json"
       },
+      "then_dropped": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+          "why": "The byte this one sweeps is the feedback path, and the model holds no feedback path: it is the ladder at the setting where the byte is zero. Scoring it would be asking the model for a term it does not have and reading the answer as a residual."
+        }
+      ],
       "excluded": [
         {
           "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
@@ -224,6 +234,6 @@
     "What the printed manual number means. The page prints 100 to 8.0k and this fits corners from 1.0 to 13.5 kHz, with the lowest notch running 212 Hz to 6.8 kHz -- so the printed span is the notch's and not the corner's, or it is neither, and no run here decides between them.",
     "Anything about the type with its depth off zero. The profile was taken with the modulator held still, which is what makes the notches countable at all; what the depth byte does to the corner is a different measurement and is not in this.",
     "What the resonance byte is. It was held at zero throughout, so nothing here says whether it is feedback around the ladder or something else.",
-    "Whether the eight sections are eight. Four second-order sections at unit Q are the same chain, and this record does not separate them -- which is not the same as nothing being able to, and the run that would is queued rather than parked."
+    "How deep the feedback path runs, or where in the chain it is taken from and returned to. What is established is that the byte is a feedback path and not a resonance belonging to a section: three settings of it were read and every notch shallows, none deepens."
   ]
 }
