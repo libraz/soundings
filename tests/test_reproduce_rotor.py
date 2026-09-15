@@ -196,3 +196,122 @@ def test_the_arrival_is_reachable_through_the_rate_score_and_separates_there():
     assert stalled["median_abs"] == pytest.approx(0.0, abs=1e-9)
     assert stalled["worst_abs"] == pytest.approx(0.0, abs=1e-9)
     assert straight["worst_abs"] > 0.4
+
+
+def test_a_rotor_sent_down_from_a_faster_entry_arrives_on_it():
+    """The asymmetry itself, asked of the renderer rather than of a curve.
+
+    Where the rotor set off from is the reading's, not the model's: a record that
+    carries it is a record of one byte written twice with no reset between, and the
+    model has to answer both rows from the one arrival it holds.
+    """
+    model = stalling(rest=0.6, short=0.25)
+    climbing = reproduce.rate_of(model, WIDE, 32)
+    falling = reproduce.rate_of(model, WIDE, 32, came_from=127)
+    assert climbing == pytest.approx(1.40, abs=1e-6)
+    assert falling == pytest.approx(1.65, abs=1e-6)
+
+
+def test_where_a_climbing_rotor_stops_does_not_depend_on_where_it_set_off():
+    """The gap is a property of the step and not of the journey, so a rotor sent up
+    from an entry it had already reached stops where one sent up from rest does."""
+    model = stalling(rest=0.6, short=0.25)
+    assert reproduce.rate_of(model, WIDE, 127, came_from=32) == pytest.approx(
+        reproduce.rate_of(model, WIDE, 127), abs=1e-9
+    )
+
+
+def test_a_rotor_that_had_not_moved_yet_is_the_same_as_one_from_rest():
+    """`rest` is what a run writes for a take that followed a reset and nothing
+    else, and it has to render as the take every other record is made of."""
+    model = stalling(rest=0.6, short=0.25)
+    assert reproduce.rate_of(model, WIDE, 32, came_from="rest") == pytest.approx(
+        reproduce.rate_of(model, WIDE, 32), abs=1e-9
+    )
+
+
+def test_a_table_with_no_arrival_ignores_where_the_byte_came_from():
+    """Which is every other rate slot on this unit: a byte that names a rate outright
+    returns it whatever it was set to before."""
+    assert reproduce.rate_of(TEN, WIDE, 32, came_from=127) == pytest.approx(
+        reproduce.rate_of(TEN, WIDE, 32), abs=1e-9
+    )
+
+
+def test_two_takes_of_one_byte_are_scored_apart():
+    """A record of one byte written from two places, put through the class's own
+    scoring. Both rows are answered from the same two numbers, which is what makes
+    the second of them a prediction rather than a second fit."""
+    record = {
+        "address": "40 03 03",
+        "readings": [
+            {"value": 32, "came_from": "rest", "rate_hz": 1.4071, "agreeing": 4, "of": 4,
+             "rates": [1.4071, 1.4071], "slowest_measurable_hz": 0.303},
+            {"value": 32, "came_from": "127", "rate_hz": 1.6520, "agreeing": 4, "of": 4,
+             "rates": [1.6520, 1.6520], "slowest_measurable_hz": 0.303},
+        ],
+    }
+    scored = reproduce.score_against_rates(
+        stalling(rest=0.5953, short=0.2445), record, printed_range=WIDE
+    )
+    by_where = {row["came_from"]: row for row in scored["rows"]}
+    assert abs(by_where["rest"]["residual"][0]) < 0.005
+    assert abs(by_where["127"]["residual"][0]) < 0.005
+    apart = by_where["127"]["unit_reading"][0] - by_where["rest"]["unit_reading"][0]
+    said = by_where["127"]["model_reading"][0] - by_where["rest"]["model_reading"][0]
+    assert said == pytest.approx(apart, abs=0.005)
+    assert apart > 0.2, "the two takes of one byte have to be far apart to mean anything"
+
+
+POINTS = {
+    "tables": {
+        WIDE: {
+            "kind": "points",
+            "first_hz": 0.05,
+            "made_from": "one constant, divided by the position of the entry plus one",
+            "points": [[0, 8.17], [8, 9.48], [16, 9.68]],
+        }
+    }
+}
+"""A rate named per setting, which is the shape a record sweeping something other
+than the rate byte needs -- here an acceleration, read with the rate held still."""
+
+
+def test_a_table_of_points_returns_what_it_names():
+    for value, hz in ((0, 8.17), (8, 9.48), (16, 9.68)):
+        assert reproduce.rate_of(POINTS, WIDE, value) == pytest.approx(hz)
+
+
+def test_a_table_of_points_that_does_not_say_what_made_them_refuses():
+    """The guard against the candidate that is the measurement. A table free to
+    hold any number reproduces any reading and says nothing, so the renderer will
+    not read one that does not say how many numbers it really took."""
+    loose = copy.deepcopy(POINTS)
+    loose["tables"][WIDE].pop("made_from")
+    with pytest.raises(ValueError, match="made_from"):
+        reproduce.rate_of(loose, WIDE, 0)
+
+
+def test_a_table_of_points_refuses_a_setting_it_does_not_name():
+    """Rather than interpolating. What sits between two settings a run asked is a
+    thing nobody measured, and returning a number for it would publish the
+    interpolation as a reading."""
+    with pytest.raises(ValueError, match="names no rate"):
+        reproduce.rate_of(POINTS, WIDE, 4)
+
+
+def test_a_table_of_points_is_given_no_floor_of_its_own():
+    """The floor of one entry is the distance to the setting next door, which on a
+    record like this is whatever the run happened to ask -- so a coarse sweep would
+    buy itself a floor wide enough to hide any lean."""
+    record = {
+        "address": "40 03 05",
+        "readings": [
+            {"value": v, "rate_hz": hz, "agreeing": 4, "of": 4,
+             "rates": [hz, hz * 1.0001], "slowest_measurable_hz": 0.303}
+            for v, hz in ((0, 8.17), (8, 9.48), (16, 9.68))
+        ],
+    }
+    scored = reproduce.score_against_rates(POINTS, record, printed_range=WIDE)
+    assert scored["floor_of_one_entry"] == 0.0
+    assert scored["floor"] == pytest.approx(scored["floor_the_run_resolved"], abs=5e-6)

@@ -3596,7 +3596,7 @@
           "nargs": null,
           "default": "None",
           "required": true,
-          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at, or named `type` under --untouched. A run names its takes however its own question needed, so how the setting is read back out belongs in the invocation -- where it lands in the record, and a reader can check it rather than trust it",
+          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at, or named `type` under --untouched. A run names its takes however its own question needed, so how the setting is read back out belongs in the invocation -- where it lands in the record, and a reader can check it rather than trust it. A second group named `from` may say what the address held, and the modulation had reached, when that byte was written with no reset between -- which is the only thing that tells two takes of one byte apart where the byte is one a modulator has to travel to",
           "metavar": "REGEX",
           "choices": null,
           "class": "_StoreAction"
@@ -3919,6 +3919,22 @@
           "required": false,
           "help": "seconds the stimulus was held, where the manifest's own take length is not one second longer than it",
           "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--window"
+          ],
+          "dest": "window",
+          "nargs": 2,
+          "default": "None",
+          "required": false,
+          "help": "read the bands over one stretch of each take, named in seconds from the start of it, rather than over the whole of the held stimulus. For a question about how a profile changes over one sounding -- an effect that builds, a tail that darkens -- where the answer is two windows of the same takes put side by side, which is two records and a derivation between them. Reported beside the hold rather than in place of it, because the stimulus was held as long as it was held",
+          "metavar": [
+            "OPENS",
+            "WIDE"
+          ],
           "choices": null,
           "class": "_StoreAction"
         },

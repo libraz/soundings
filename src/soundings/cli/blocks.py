@@ -103,7 +103,10 @@ def register(sub) -> None:
         "the byte it was taken at, or named `type` under --untouched. A run names its "
         "takes however its own question needed, so how the setting is read back out "
         "belongs in the invocation -- where it lands in the record, and a reader can "
-        "check it rather than trust it",
+        "check it rather than trust it. A second group named `from` may say what the "
+        "address held, and the modulation had reached, when that byte was written "
+        "with no reset between -- which is the only thing that tells two takes of one "
+        "byte apart where the byte is one a modulator has to travel to",
     )
     p.add_argument(
         "--untouched",
@@ -267,6 +270,19 @@ def register(sub) -> None:
         type=float,
         help="seconds the stimulus was held, where the manifest's own take length is not "
         "one second longer than it",
+    )
+    p.add_argument(
+        "--window",
+        type=float,
+        nargs=2,
+        metavar=("OPENS", "WIDE"),
+        help="read the bands over one stretch of each take, named in seconds from the "
+        "start of it, rather than over the whole of the held stimulus. For a question "
+        "about how a profile changes over one sounding -- an effect that builds, a tail "
+        "that darkens -- where the answer is two windows of the same takes put side by "
+        "side, which is two records and a derivation between them. Reported beside the "
+        "hold rather than in place of it, because the stimulus was held as long as it "
+        "was held",
     )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_bands)
@@ -686,6 +702,7 @@ def cmd_efx_bands(args) -> int:
         channel=args.channel,
         lead_s=args.lead,
         hold_s=args.hold,
+        window=tuple(args.window) if args.window else None,
         progress=said,
     )
     picked = found["channel"]

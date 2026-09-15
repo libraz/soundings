@@ -142,3 +142,61 @@ def test_a_setting_pattern_without_the_value_group_refuses(crowded) -> None:
         efxrate.read_directory(
             crowded, type_id="01 21", address="40 03 07", setting=r"held-07-\d+-00"
         )
+
+
+@pytest.fixture
+def approached(tmp_path):
+    """One byte written twice, from a reset and from the other end of the range.
+
+    Two takes of value 64, modulated at different rates, which is the shape a
+    record of one byte to one rate cannot hold: both rows say 64 and they disagree.
+    """
+    store = takes.Store.open(tmp_path / "run")
+    for came_from, value, rate_hz in (
+        ("rest", 64, RATE_HZ),
+        ("127", 64, RATE_HZ * 1.5),
+        ("rest", 127, RATE_HZ * 2),
+    ):
+        store.keep(
+            FakeRecording(np.stack([modulated(rate_hz), np.zeros(int(SECONDS * SR))], 1)),
+            stimulus="held",
+            setting=f"07-from-{came_from}-to-{value:03d}",
+            take=0,
+        )
+    store.close(question="one byte approached from two places")
+    return tmp_path / "run"
+
+
+def from_either_end(where):
+    return efxrate.read_directory(
+        where,
+        type_id="01 22",
+        address="40 03 03",
+        setting=r"held-07-from-(?P<from>rest|\d+)-to-(?P<value>\d+)-00",
+        hold_s=SECONDS - 1.2,
+    )
+
+
+def test_where_a_byte_was_written_from_lands_in_the_reading(approached) -> None:
+    rows = from_either_end(approached)["readings"]
+    assert [(r["value"], r["came_from"]) for r in rows] == [
+        (64, "127"),
+        (64, "rest"),
+        (127, "rest"),
+    ]
+
+
+def test_two_takes_of_one_byte_keep_their_own_rates(approached) -> None:
+    """The reading the record exists to be able to hold at all."""
+    rows = [r for r in from_either_end(approached)["readings"] if r["value"] == 64]
+    by_where = {r["came_from"]: r["rate_hz"] for r in rows}
+    assert by_where["rest"] == pytest.approx(RATE_HZ, abs=0.2)
+    assert by_where["127"] == pytest.approx(RATE_HZ * 1.5, abs=0.2)
+
+
+def test_the_record_says_what_came_from_means_only_when_it_carries_one(
+    approached, crowded
+) -> None:
+    assert "why_came_from" in from_either_end(approached)
+    assert "why_came_from" not in read(crowded)
+    assert all("came_from" not in r for r in read(crowded)["readings"])

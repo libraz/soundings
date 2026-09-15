@@ -327,3 +327,27 @@ def test_a_row_named_by_a_number_with_a_decimal_point_resolves_too():
 def test_an_ordinary_dotted_key_is_still_cut_on_its_dots():
     record = {"reference": {"heard_floor_db": 0.01}}
     assert inferences.resolve(record, "reference.heard_floor_db") == 0.01
+
+
+def test_a_row_can_be_named_by_more_than_one_of_its_fields():
+    """A record whose rows are one byte written from two places has two rows saying
+    `value=32`, and they answer differently -- which is the whole reason it exists.
+    A citation that named a row by the byte alone would point at whichever came
+    first, and that is the silent repointing this naming is here to prevent."""
+    record = {
+        "readings": [
+            {"value": 32, "came_from": "rest", "rate_hz": 1.4071},
+            {"value": 32, "came_from": "127", "rate_hz": 1.6520},
+        ]
+    }
+    assert inferences.resolve(
+        record, "readings[value=32,came_from=rest].rate_hz"
+    ) == 1.4071
+    assert inferences.resolve(
+        record, "readings[value=32,came_from=127].rate_hz"
+    ) == 1.6520
+
+
+def test_one_field_still_names_a_row():
+    record = {"readings": [{"value": 52, "largest_db": -3.0}]}
+    assert inferences.resolve(record, "readings[value=52].largest_db") == -3.0

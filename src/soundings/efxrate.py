@@ -93,6 +93,21 @@ Nothing was written, so there is no byte to name; what separates one take from
 the next is which type was loaded.
 """
 
+CAME_FROM = "from"
+"""A named group a `--setting` pattern may capture beside `value`.
+
+What the same address held, and the modulator had reached, when the byte in
+`value` was written -- with no reset in between, so the reading is of a parameter
+approached from there rather than from wherever a reset leaves it.
+
+Optional, because on most types it is not a question: a byte that names a rate
+outright returns that rate whatever it was set to before. It stops being not a
+question wherever the parameter is one a modulator has to travel to, and there a
+record shaped as one byte to one rate cannot hold the reading at all -- two takes
+of the same byte answer differently and nothing in the row says why. `rest` is
+what a run writes here for a take that followed a reset and nothing else.
+"""
+
 UNTOUCHED_QUESTION = (
     "What a take carried when one insertion effect type was loaded and no parameter "
     "of it was written."
@@ -208,8 +223,14 @@ def read_directory(
     readings: list[dict] = []
     elsewhere: list[str] = []
     for name, entry, named_by, found in wanted:
+        came_from = (
+            found.groupdict().get(CAME_FROM)
+            if CAME_FROM in (pattern.groupindex or {})
+            else None
+        )
         reading = {
             VALUE: int(found.group(VALUE)),
+            **({"came_from": came_from} if came_from is not None else {}),
             **_read_take(
                 where,
                 name,
@@ -229,7 +250,8 @@ def read_directory(
         if progress:
             progress(reading)
 
-    readings.sort(key=lambda r: r[VALUE])
+    readings.sort(key=lambda r: (r[VALUE], str(r.get("came_from") or "")))
+    approached = any("came_from" in r for r in readings)
     return {
         "question": QUESTION,
         "type": type_id,
@@ -253,6 +275,18 @@ def read_directory(
         "takes_from": str(where),
         "manifest": takes.manifest_note(listed, files),
         "settings_asked": sorted({r[VALUE] for r in readings}),
+        **(
+            {
+                "why_came_from": "What this address held, and the modulation had "
+                "reached, when each row's own value was written -- with no reset in "
+                "between. `rest` is a take that followed a reset and nothing else, "
+                "which is what every other record here is made of. Present because "
+                "this run found two takes of one byte answering differently, and a "
+                "row that carries only the byte cannot say which of them it is."
+            }
+            if approached
+            else {}
+        ),
         "readings": readings,
         "takes_not_matching": takes.not_matching(skipped),
     }

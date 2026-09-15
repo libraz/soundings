@@ -772,3 +772,82 @@ def test_a_take_with_one_channel_reports_no_second_one(tmp_path) -> None:
     found = read(tmp_path / "run", silence=None, control=None)
     assert found["other_channel"]["read"] is None
     assert all("apart_db" not in r for r in found["readings"])
+
+
+@pytest.fixture
+def builds(tmp_path):
+    """A run whose sweep does one thing early in each take and another late.
+
+    The first half of every take is the reference's own noise, so a window over it
+    reads nothing however the byte was set; the second half is cut at one band by
+    an amount the byte chooses. A record read over the whole take averages the two
+    and reports half of each, which is why the window exists.
+    """
+    half = int(SECONDS * SR / 2)
+
+    def in_two(early: np.ndarray, late: np.ndarray) -> np.ndarray:
+        return np.concatenate([early[:half], late[half:]])
+
+    store = takes.Store.open(tmp_path / "run")
+    for index in range(4):
+        flat = noise(index)
+        store.keep(
+            FakeRecording(in_two(flat, flat)),
+            stimulus="held",
+            setting=f"flat-{index:02d}",
+            take=0,
+        )
+    for value, by_db in ((0, -12.0), (64, -6.0)):
+        store.keep(
+            FakeRecording(in_two(noise(0), noise(0, cut_at=1000, by_db=by_db))),
+            stimulus="held",
+            setting=f"04-{value:03d}",
+            take=0,
+        )
+    store.close(question="a synthetic run that changes half way through")
+    return tmp_path / "run"
+
+
+def windowed(where, window):
+    return efxbands.read_directory(
+        where,
+        type_id="01 50",
+        address="40 03 0A",
+        setting=r"held-04-(?P<value>\d+)-00",
+        reference=r"held-flat-\d+-00",
+        bands_hz=BANDS,
+        window=window,
+    )
+
+
+def at_1k(found, value: int) -> float:
+    return found["readings"][[r["value"] for r in found["readings"]].index(value)]["band_db"][
+        BANDS.index(1000)
+    ]
+
+
+def test_a_window_reads_the_part_of_the_take_it_names(builds) -> None:
+    early = windowed(builds, (0.1, 1.2))
+    late = windowed(builds, (1.6, 1.2))
+    assert at_1k(early, 0) == pytest.approx(0.0, abs=0.5)
+    assert at_1k(late, 0) == pytest.approx(-12.0, abs=0.5)
+    assert at_1k(late, 64) == pytest.approx(-6.0, abs=0.5)
+
+
+def test_reading_the_whole_take_averages_the_two_halves(builds) -> None:
+    """Why a window is not a convenience. Whole, the twelve decibel cut reads as
+    about three -- an ordinary looking figure that is neither of the two."""
+    whole = at_1k(windowed(builds, None), 0)
+    assert -6.0 < whole < -1.0
+
+
+def test_the_record_says_which_window_and_still_says_the_hold(builds) -> None:
+    found = windowed(builds, (1.6, 1.2))
+    assert found["window_s"]["opens_at"] == 1.6
+    assert found["window_s"]["wide"] == 1.2
+    assert found["window_s"]["measured_from"] == "the start of the take"
+    assert found["readings"][0]["hold_s"] == pytest.approx(SECONDS - 1.0)
+
+
+def test_a_record_read_whole_carries_no_window(builds) -> None:
+    assert "window_s" not in windowed(builds, None)

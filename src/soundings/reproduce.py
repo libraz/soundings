@@ -1151,7 +1151,12 @@ def _arrived_at(want_hz: float, arrival: dict | None) -> float:
     raise ValueError(f"{kind!r} is not an arrival this renderer knows")
 
 
-def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
+def rate_of(
+    model: dict,
+    printed_range: str,
+    byte_value: int,
+    came_from: int | str | None = None,
+) -> float:
     """What one candidate says the modulator runs at, at one setting of the byte.
 
     The printed range picks the table because that is the only thing outside the
@@ -1159,11 +1164,24 @@ def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
     built in this era would have been given: two tables in ROM and a pointer per
     effect. It is also read off a page rather than fitted, so every candidate gets
     it and none is helped by it.
+
+    `came_from` is the byte this address held, and the modulation had reached, when
+    this one was written with no reset between. A model with no arrival ignores it,
+    which is every model here but one: on all but one type a byte names a rate
+    outright and returns it whatever it was set to before. Where the byte is one a
+    modulator has to travel to, where it set off from is half the answer, and the
+    rate it set off from is what the same model says about that byte from rest --
+    so this is a recursion of one step and not a second free number.
     """
     table = model["tables"][printed_range]
     kind = table["kind"]
     first, top = float(table["first_hz"]), float(table.get("top_hz", 0.0))
     arrival = model.get("arrival")
+    if arrival and came_from is not None and came_from != "rest":
+        arrival = {
+            **arrival,
+            "rests_at_hz": rate_of(model, printed_range, int(came_from)),
+        }
     if kind == "steps":
         # Walked rather than solved, because the claim is that these are entries
         # and not a formula: a run that ends and hands over to the next is what a
@@ -1182,6 +1200,29 @@ def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
         return _arrived_at(first + (top - first) * byte_value / 127.0, arrival)
     if kind == "geometric":
         return _arrived_at(first * (top / first) ** (byte_value / 127.0), arrival)
+    if kind == "points":
+        # A rate named per setting, for the records where the byte being swept is
+        # not the one that indexes a rate table at all -- an acceleration, say,
+        # read on a run that held the rate byte still.
+        #
+        # **A points table is exactly as free as whatever wrote it, and this
+        # renderer cannot tell.** A candidate with one point per setting wins every
+        # gate and means nothing, so `made_from` is required and has to say what
+        # generated the points and how many numbers it took. A model whose points
+        # are a law with one constant in it is one free parameter wearing a table's
+        # clothes, and that is the only kind this is for.
+        if not str(table.get("made_from") or "").strip():
+            raise ValueError(
+                "a points table must say what made its points in `made_from`; "
+                "a table free to hold any number reproduces any reading"
+            )
+        at = {int(v): float(hz) for v, hz in table["points"]}
+        if byte_value not in at:
+            raise ValueError(
+                f"this table names no rate at {byte_value}, and a rate between two "
+                "points is an interpolation nothing here measured"
+            )
+        return _arrived_at(at[byte_value], arrival)
     raise ValueError(f"{kind!r} is not a table this renderer knows")
 
 
@@ -1312,8 +1353,16 @@ def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dic
     # one of the 128 settings was read at one slot, so there is no room between
     # them for entries a coarser sweep would have missed. Where that is not true
     # of a class, this floor would hide a finer table and must not be used.
+    #
+    # A table that names a rate per setting and nothing between them has no such
+    # floor, and must not be given one. What an entry is worth is the distance to
+    # the setting next door, and on those records the settings next door are
+    # whatever the run happened to ask -- so the figure would be a reading of the
+    # sweep's own grid, and a coarse sweep would buy itself a floor wide enough to
+    # hide any lean. There the run's own floor governs alone.
+    dense = model["tables"][printed_range]["kind"] != "points"
     steps = []
-    for reading in kept:
+    for reading in kept if dense else []:
         value = int(reading["value"])
         if value == 0:
             continue
@@ -1329,13 +1378,21 @@ def score_against_rates(model: dict, record: dict, *, printed_range: str) -> dic
         (float(r["rate_hz"]) for r in kept if int(r["value"]) == slowest_value), 1.0
     )
     base_model = rate_of(model, printed_range, slowest_value)
-    for reading in sorted(kept, key=lambda r: int(r["value"])):
+    for reading in sorted(
+        kept, key=lambda r: (int(r["value"]), str(r.get("came_from") or ""))
+    ):
         value = int(reading["value"])
-        said = rate_of(model, printed_range, value)
+        # What the record says this address held when the byte was written. Passed
+        # through rather than ignored, because a record carrying it is a record of
+        # two takes of one byte that answered differently -- and a model that reads
+        # only the byte has no way to be right about both.
+        came_from = reading.get("came_from")
+        said = rate_of(model, printed_range, value, came_from)
         answered = float(reading["rate_hz"])
         rows.append(
             {
                 "value": value,
+                **({"came_from": came_from} if came_from is not None else {}),
                 "model_reading": [round(float(np.log2(said)), 5)],
                 "unit_reading": [round(float(np.log2(answered)), 5)],
                 "residual": [round(float(np.log2(said / answered)), 5)],

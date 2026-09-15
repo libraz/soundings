@@ -327,6 +327,15 @@ WHY_STEEPEST = (
     "same stimulus and is the floor this one has to clear."
 )
 
+WHY_WINDOW = (
+    "The stretch of each take the bands were measured over, rather than the whole of "
+    "the held stimulus. `hold_s` still says how long the stimulus was held, because "
+    "that is what it was. A profile read over part of a take is a reading of what the "
+    "effect had done by then and not of what it settles at, so it says nothing on its "
+    "own: what it is for is to be put beside another window of the same takes, and "
+    "that comparison is a derivation and is not made here."
+)
+
 WHY_HELD = (
     "What else the run had written when it took these readings. A band profile is the "
     "whole chain's, so a parameter read with another of the type's stages moved and "
@@ -335,7 +344,29 @@ WHY_HELD = (
 )
 
 
-def _body(samples, rate: int, *, index: int, lead_s: float, hold_s: float, trim_s: float):
+def _body(
+    samples,
+    rate: int,
+    *,
+    index: int,
+    lead_s: float,
+    hold_s: float,
+    trim_s: float,
+    window: tuple[float, float] | None = None,
+):
+    """The part of a take the bands are measured over.
+
+    By default the whole of the held note, less a trim at each end for the attack
+    and the release. A `window` replaces that with a stretch named from the start
+    of the take, for a question about how a profile changes over one sounding
+    rather than what it settles at -- an effect that builds or a tail that dies.
+    The note is still held as long as it was held, so the window is reported
+    beside the hold rather than in place of it.
+    """
+    if window is not None:
+        opens, wide = window
+        first = int(opens * rate)
+        return takes.channel(samples, index)[first : first + int(wide * rate)]
     first = int((lead_s + trim_s) * rate)
     last = int((lead_s + hold_s - trim_s) * rate)
     return takes.channel(samples, index)[first:last]
@@ -387,6 +418,7 @@ def _profile(
     lead_s: float,
     trim_s: float,
     hold_s: float | None,
+    window: tuple[float, float] | None,
     centres,
     width_octaves: float,
 ) -> tuple[dict[int, list[float]], dict[int, float], float, int]:
@@ -401,7 +433,10 @@ def _profile(
     hold = hold_s if hold_s is not None else seconds - 1.0
     bands, heard = {}, {}
     for index in channels:
-        body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
+        body = _body(
+            samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s,
+            window=window,
+        )
         bands[index] = energies(body, rate, centres, width_octaves)
         # Two places rather than one: a tenth of a decibel cannot report a step
         # smaller than a tenth, and whether a byte moves the level in steps at all
@@ -667,6 +702,7 @@ def read_directory(
     lead_s: float = 0.6,
     trim_s: float = 0.5,
     hold_s: float | None = None,
+    window: tuple[float, float] | None = None,
     progress=None,
 ) -> dict:
     """Every take under `where` whose setting matches, read into one record.
@@ -716,8 +752,8 @@ def read_directory(
     def profile(name: str, entry: dict):
         bands, loud, hold, own = _profile(
             where, name, entry, channels=wanted,
-            lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, centres=centres,
-            width_octaves=band_width_octaves,
+            lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, window=window,
+            centres=centres, width_octaves=band_width_octaves,
         )
         if own != used and name not in elsewhere:
             elsewhere.append(name)
@@ -872,6 +908,18 @@ def read_directory(
         },
         "held": held or [],
         "why_held": WHY_HELD,
+        **(
+            {
+                "window_s": {
+                    "opens_at": window[0],
+                    "wide": window[1],
+                    "measured_from": "the start of the take",
+                    "why": WHY_WINDOW,
+                }
+            }
+            if window is not None
+            else {}
+        ),
         "takes_from": str(where),
         "manifest": takes.manifest_note(listed, files),
         "settings_asked": sorted({r[VALUE] for r in readings}),

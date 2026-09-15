@@ -51,7 +51,14 @@ to stop looking like a coincidence. Past it the claim keeps its findings and sto
 consuming attention, so that one type cannot absorb the work.
 """
 
-_INDEXED = re.compile(r"^(?P<field>\w+)\[(?P<key>\w+)=(?P<value>[^\]]+)\]$")
+_INDEXED = re.compile(r"^(?P<field>\w+)\[(?P<by>\w+=[^\]]+)\]$")
+"""A row of a sweep named by its own fields, as `readings[value=52]`.
+
+More than one field where one will not do. A record whose rows are one byte
+written from two places has two rows saying `value=32`, and a citation that
+named a row by the byte alone would point at whichever came first -- which is
+the silent repointing this naming exists to prevent.
+"""
 
 
 def _parts(key: str) -> list[str]:
@@ -92,10 +99,12 @@ def resolve(record: dict, key: str):
         found = _INDEXED.match(part)
         if found:
             rows = here[found["field"]]
-            want = found["value"]
+            want = dict(
+                pair.split("=", 1) for pair in found["by"].split(",")
+            )
             here = next(
                 row for row in rows
-                if str(row.get(found["key"])) == want
+                if all(str(row.get(k)) == v for k, v in want.items())
             )
             continue
         here = here[part]
