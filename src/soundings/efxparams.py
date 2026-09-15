@@ -97,6 +97,19 @@ WHY_NEVER_ASKED = (
     "complete answer."
 )
 
+#: Why a slot the run held still is counted apart from one it failed to reach.
+WHY_HELD = (
+    "A parameter slot the run set to a fixed value and deliberately did not ask, because the "
+    "rest of the type could not be asked while it moved. A free-running modulator puts every "
+    "take of one setting at a different phase, and the yardstick a change is judged against "
+    "becomes the modulator's own swing, so every other parameter answers that there was no "
+    "yardstick. Asking the held slot means writing it to the top of its range, which starts the "
+    "modulator again part way through the run and measures the slots after it against a "
+    "yardstick that had quietly come back. It is separate from the slots with no record because "
+    "only one of the two is work outstanding, and it carries no verdict: what this run says "
+    "about the held parameter is nothing at all. The value it was held at is in `prepared`."
+)
+
 #: Why a slot whose run refused to answer is counted apart from one nobody asked.
 WHY_REFUSED = (
     "A parameter slot whose comparison ran, would not answer, and said which of its own "
@@ -288,12 +301,18 @@ def read_directory(
     watching = json.loads(Path(control).read_text())
     found.pop(watching["address"], None)
     ordered = list(slots) if slots else sorted(found)
+    # A slot the run was told to hold is not a slot it failed to reach, and the
+    # two arrive identically -- as an address with no record under the directory.
+    # Read off `prepared` rather than passed separately, because the value it was
+    # held at is published there and a second list would be one to keep in step.
+    holding = [entry["address"] for entry in prepared if entry["address"] in set(ordered)]
     rows = []
     missing = []
     refused = []
     for slot, address in enumerate(ordered):
         if address not in found:
-            missing.append(address)
+            if address not in holding:
+                missing.append(address)
             continue
         record, withdrawn = found[address], None
         if address in supersede:
@@ -312,6 +331,8 @@ def read_directory(
             "slots": len(ordered),
             "answered": len(rows),
             "never_asked": missing,
+            "held_still": holding,
+            **({"why_held_still": WHY_HELD} if holding else {}),
             "refused": refused,
             **({"why_refused": WHY_REFUSED} if refused else {}),
             # A record under the directory that no slot claims. It is not folded

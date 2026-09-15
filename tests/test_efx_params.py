@@ -198,3 +198,63 @@ def test_a_directory_with_nothing_refused_says_so_without_the_note(tmp_path) -> 
     found = efxparams.read_directory(tmp_path, "04 02", [7], control, [], slots=["40 03 03"])
     assert found["coverage"]["refused"] == []
     assert "why_refused" not in found["coverage"]
+
+
+def _held(address: str, value: str = "00") -> dict:
+    return {"address": address, "bytes": value}
+
+
+def test_a_slot_the_run_held_still_is_not_one_it_failed_to_reach(tmp_path) -> None:
+    """The whole of a moving type is unaskable until its modulator is held, and
+    the held byte then has no record -- which is what a slot the run could not
+    reach also looks like. Read as unasked it goes into a queue of work
+    outstanding, and asking it means writing it to the top of its range, which
+    starts the modulator again and spoils the slots measured after it."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 20",
+        [7, 9, 3],
+        control,
+        [_held("40 03 00", "01 20"), _held("40 03 05")],
+        slots=["40 03 03", "40 03 04", "40 03 05"],
+    )
+
+    coverage = found["coverage"]
+    assert coverage["held_still"] == ["40 03 05"]
+    assert coverage["never_asked"] == ["40 03 04"]
+    assert "why_held_still" in coverage
+
+
+def test_the_value_a_held_slot_was_held_at_is_the_one_the_record_publishes(tmp_path) -> None:
+    """The ground is read off `prepared` rather than from a list beside it, so the
+    byte a reader is shown is the byte the run was given. Two lists would be two
+    to keep in step, and the way that drifts is a record saying a slot was held
+    with nothing saying what at."""
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path, "01 20", [3], control, [_held("40 03 03")], slots=["40 03 03"]
+    )
+
+    assert found["coverage"]["held_still"] == ["40 03 03"]
+    assert _held("40 03 03") in found["prepared"]
+
+
+def test_a_run_that_held_nothing_carries_no_note_about_holding(tmp_path) -> None:
+    """Every unparked run is one, so the note would stand over sixty-odd records
+    explaining a thing none of them did."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path, "04 02", [7], control, [_held("40 03 00", "04 02")], slots=["40 03 03"]
+    )
+
+    assert found["coverage"]["held_still"] == []
+    assert "why_held_still" not in found["coverage"]
