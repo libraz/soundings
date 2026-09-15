@@ -71,6 +71,68 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_motion)
 
     p = sub.add_parser(
+        "efx-partials",
+        help="read every insertion effect's modulator off the partials of one held "
+        "tone per type, from saved takes, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="one directory holding a held-tone take per effect type and at least one "
+        "with the part bypassed. The files are the subject: a take store rewrites its "
+        "manifest when it closes, and which files the manifest forgot is reported",
+    )
+    p.add_argument(
+        "--carrier-hz",
+        type=float,
+        required=True,
+        help="the fundamental of the note the takes hold. Its orders are what the "
+        "reading is taken on, and the demodulator's window is one period of it, which "
+        "is what puts the neighbouring orders on a null",
+    )
+    p.add_argument(
+        "--setting",
+        default=r"(?P<type>[0-9A-Fa-f]{2}-[0-9A-Fa-f]{2})(?:-\d+)?(?:\.wav)?$",
+        help="a regular expression capturing a group named 'type' out of each take's "
+        "setting or file name. Anchored at the end by default, because a file name "
+        "carries the stimulus before the setting and an unanchored pattern reads the "
+        "stimulus: a take of 'held-16' collapses every type into one",
+    )
+    p.add_argument(
+        "--bypassed",
+        default="bypassed",
+        help="what names the takes with the part routed past the effect. The first of "
+        "them decides which orders are read; the rest are read as repeats of it",
+    )
+    p.add_argument("--lead", type=float, default=0.6, help="seconds of silence at the head")
+    p.add_argument(
+        "--hold",
+        type=float,
+        default=8.0,
+        help="seconds the note is held for. Half a second is cut from each end of it, "
+        "because an attack and a release are not the steady tone this reads",
+    )
+    p.add_argument("--min-rate", type=float, default=0.20, help="slowest rate the grid reaches, Hz")
+    p.add_argument("--max-rate", type=float, default=8.0, help="fastest rate the grid reaches, Hz")
+    p.add_argument(
+        "--step-hz",
+        type=float,
+        default=0.01,
+        help="how finely the grid is walked. This is not the resolution -- two rates "
+        "closer than one over the length read are one peak however fine the grid is -- "
+        "it is only how precisely that peak can be placed",
+    )
+    p.add_argument(
+        "--control-at",
+        type=float,
+        default=0.45,
+        help="the rate the injected controls are put in at, Hz. Best set where the "
+        "types being read actually sit, since what a reading can recover depends on "
+        "how many cycles the take holds",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_partials)
+
+    p = sub.add_parser(
         "efx-sort",
         help="sort a unit's insertion effects into the ones that move and the ones "
         "that stand still, from what each did to the unit's own repeatability",
@@ -154,6 +216,53 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
         },
     )
     return 0 if not unsurveyed else 1
+
+
+def cmd_efx_partials(args: argparse.Namespace) -> int:
+    """Read every type's modulator off the partials of one held tone per type."""
+    from .. import efxpartials, takes
+
+    def said(row) -> None:
+        peak = row.get("phase", {}).get("peak", {})
+        level = row.get("level", {}).get("peak", {})
+        kind = row.get("the_level_swing_is") or ""
+        fitted = (row.get("comb") or {}).get("excursion_ms")
+        print(
+            f"  {row['type']:6} phase {peak.get('hz', 0):5.2f} Hz "
+            f"({peak.get('stands_over_bypassed') or 0:6.1f}x)  "
+            f"level {level.get('hz', 0):5.2f} Hz "
+            f"({level.get('stands_over_bypassed') or 0:6.1f}x)  "
+            f"{kind:20s}" + (f" {fitted:8.3f} ms" if fitted is not None else "")
+        )
+
+    found = efxpartials.survey(
+        args.takes,
+        carrier_hz=args.carrier_hz,
+        setting=takes.capturing(args.setting, "type"),
+        bypassed=args.bypassed,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        grid_hz=(args.min_rate, args.max_rate),
+        step_hz=args.step_hz,
+        control_at_hz=args.control_at,
+        progress=said,
+    )
+    rows = found["types"]
+    if not rows:
+        print(f"no takes under {args.takes} whose setting the pattern named")
+        return 1
+
+    moving = efxpartials.moving(rows)
+    named = efxpartials.named_an_excursion(rows)
+    forgot = found["takes"]["not_listed"]
+    print()
+    print(f"{len(moving)} of {len(rows)} types show something moving over their own grid")
+    print(f"{len(named)} of those have an excursion that survived every gate")
+    if forgot:
+        print(f"  !! the manifest did not list {len(forgot)} of the takes that were read")
+
+    report.write_json(args.out, {"takes": str(args.takes), **found, "excursions": named})
+    return 0
 
 
 def cmd_efx_sort(args: argparse.Namespace) -> int:

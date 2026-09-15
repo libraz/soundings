@@ -420,6 +420,39 @@ different properties, so a type they disagree about is reported as a disagreemen
 rather than reconciled. Both take the type map, so a type with no record reads as
 unsurveyed rather than as absent.
 
+A third route answers more than that, from one take per type rather than a pair:
+
+```sh
+rye run soundings efx-partials <one directory of held-tone takes> \
+  --carrier-hz 440 --hold 8.0 --control-at 0.45 \
+  --out data/units/<unit-id>/efx-partials/<name>.json
+```
+
+Each order of the held tone is demodulated by its own frequency, which leaves that
+partial's phase and its level over the take, and a projection is walked across a
+grid of rates. **Nothing is predicted and no byte's value enters it**, which is
+what lets the result be held against a claim about what a rate byte means.
+
+**The three mechanisms are separated by which quantity moves.** A swept delay
+turns each partial's phase in proportion to that partial's own frequency; an
+all-pass section turns them all by the same angle; a level modulation turns none
+of them. Reading either quantity alone returns a number for all three.
+
+**A level swing is a comb only if the partials disagree.** How well a forward comb
+fit explains its series is a gate against the wrong rate and none at all against
+the wrong mechanism -- a plain level modulation is fitted as a comb explaining more
+of its own series than a real comb does. A comb sweeps a notch, so a partial near
+it swings far more than one on a peak; one envelope over the voice cannot do that.
+
+**A peak is placed against the bypassed take, rate by rate, not against the middle
+of its own grid.** A held tone is not steady, and a voice drifting on its own puts
+a peak many times its own grid median without anything in the path.
+
+**What the comb returns is an equivalent, not a length.** It is the delay a two
+path comb would need to move its notches that far; a phaser and a wah move notches
+with all-pass sections and have no delay line to be long, and a level series cannot
+tell those apart.
+
 ### 16. What a parameter's byte stands for
 
 Only for a parameter an audible verdict admitted, and only when a named
