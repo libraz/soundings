@@ -380,6 +380,28 @@ def test_the_control_fails_where_there_is_no_return_to_carry_it() -> None:
     assert vouched["detectable_ms"] is None
 
 
+def test_a_return_spread_over_a_tail_cannot_carry_the_control_and_one_copy_can() -> None:
+    """What the control's reach is bounded by is the return's shape, not its level.
+
+    The stage measures where the dry signal sits inside the return, which is a
+    question with an answer while the return is a copy of it and none once the
+    return is spread out. Both returns here are swept by the same ladder at the
+    same level against the same material, and only the one made of a single copy
+    comes back: the tail's frames each report a delay and the delays disagree, so
+    the ladder recovers no rung of it at any depth.
+
+    Written with both halves because a refusal on its own says nothing -- a ladder
+    that recovers nothing anywhere is a broken ladder rather than a bound, and this
+    one recovers on the copy. It is also the shape a send-return chorus has on a
+    real unit, which is why no type has yet been read as moving.
+    """
+    dry = source()
+    one_copy = dry + 0.5 * np.roll(dry, int(0.020 * SR))
+
+    assert motion.control(dry, one_copy, SR)["detectable_ms"] is not None
+    assert motion.control(dry, reverberated(dry), SR)["detectable_ms"] is None
+
+
 def test_a_ladder_that_recovered_nothing_does_not_say_it_recovered() -> None:
     """The caveat naming the band opens by stating that the ladder recovered at two
     depths. Emitted where there is no band, it stands beside rows saying every rung
