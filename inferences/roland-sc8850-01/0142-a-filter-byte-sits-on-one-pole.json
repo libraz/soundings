@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T06:36:25.105484+00:00",
-    "made_by": "backup/what-order-is-the-pre-filter.py, backup/build-pre-filter-models.py, backup/write-the-pre-filter-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-15T08:26:20.218295+00:00",
+    "made_by": "backup/what-order-is-the-pre-filter.py, backup/build-pre-filter-models.py, backup/write-the-pre-filter-inference.py, backup/which-way-is-the-pre-filter-pole-written.py, backup/update-the-pre-filter-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -274,10 +274,22 @@
               "worst_abs_db": 5.56,
               "structured": true
             }
+          },
+          "one-multiply-pole-at-32k": {
+            "low": {
+              "median_abs_db": 0.53,
+              "worst_abs_db": 15.83,
+              "structured": true
+            },
+            "high": {
+              "median_abs_db": 0.3,
+              "worst_abs_db": 4.77,
+              "structured": true
+            }
           }
         },
-        "how": "contradicted on the low pass and outscored on the high",
-        "why": "Two things separate and they separate differently. The order is contradicted: a second pole puts twelve decibels an octave where the unit has six, which is a slope the reading resolves several times over, and both second-order candidates come back leaning on both records. The rate is separated on the low pass alone, where the same one-pole section clocked at forty-four or forty-eight is four times the winner's median and leans, and on the high pass the three rates are indistinguishable -- which is carried as a standing alternative rather than as agreement."
+        "how": "contradicted on the order, on the way the pole is written and on the rate of the low pass; outscored on the high pass",
+        "why": "Two things separate and they separate differently. The order is contradicted: a second pole puts twelve decibels an octave where the unit has six, which is a slope the reading resolves several times over, and both second-order candidates come back leaning on both records. The rate is separated on the low pass alone, where the same one-pole section clocked at forty-four or forty-eight is four times the winner's median and leans, and on the high pass the three rates are indistinguishable -- which is carried as a standing alternative rather than as agreement. A third thing separates and it was added in a later round: how the pole is written down. The same single pole written as a running average -- one multiply, one state, no zero at half the rate -- levels off where this one goes on cutting, and on the low pass it is 0.53 against 0.08 and 15.83 dB out at its worst. That reading is not a straw man: a delay's damping byte on this same unit turns out to be exactly it, and each record puts the other's section twelve to sixteen decibels out. So the part writes the pole two ways and which way a byte sits on is a thing to measure per byte."
       },
       "breakdown": {
         "verdict": "reproduces on the low pass, structure remains on the high",
@@ -294,10 +306,11 @@
   "what_it_would_change": [
     "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json",
     "inferences/roland-sc8850-01/0120-eight-allpass-sections-summed-with-the-dry.json",
-    "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json"
+    "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+    "inferences/roland-sc8850-01/0150-a-damping-byte-sits-on-the-cheapest-pole.json"
   ],
   "what_this_does_not_settle": [
-    "Whether every filter byte on this unit sits on the same section. Two addresses of one type were read and the class is written for the part, which is a reading of two and not of the archive. What argues for it beyond the era is that the equaliser's own shelves came back first-order on a separate comparison of thirty-one records, so the part is not spending pairs where it can spend poles.",
+    "Whether every filter byte on this unit sits on the same section was the first round's open question, and it has been answered: no. A delay's damping byte is one pole too and is written without the bilinear transform's zero, which is a different routine with a different shape at the top of the band. What the two share is the order. What remains open is how many routines there are rather than whether there is one -- two have been measured on two types and nothing says a third is not there.",
     "What the fourth state of the type byte does. The page prints LPF+HPF and the run asked Off, LPF and HPF; whether that state is the two sections in series or a band pass written separately is not read here.",
     "Where the corners are. That is the frequency class's, and the tables fitted here are a readout taken so that the shapes could be compared without handing one candidate another's corners -- not a second reading of a table already closed.",
     "Whether the high pass shares the low pass's clock. Its own record cannot say, and the run that would is named in the alternatives."

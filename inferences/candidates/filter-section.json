@@ -5,10 +5,11 @@
     "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a rate below the converter's, with a stored coefficient set per table entry.",
     "what_that_implies": [
       "A pole costs one coefficient and a pair costs two, so a table of sixteen corners is sixteen numbers for one pole and thirty-two for a pair. The frequency class already leans on that arithmetic to argue a table of sixteen is affordable and a table of a hundred and twenty-eight of them is not, so what the entry holds is the thing that argument was made about.",
-      "A section is written once and reached by more than one byte. A part that has a one-pole low pass has a one-pole high pass, because the two are the same difference equation with the numerator changed, and giving one of them a second pole would be a second routine to write and a second coefficient to store.",
+      "A section is written once and reached by more than one byte. A part that has a one-pole low pass has a one-pole high pass, because the two are the same difference equation with the numerator changed, and giving one of them a second pole would be a second routine to write and a second coefficient to store. How far that reaches is a question and not an assumption: two bytes of one type sharing a section is what this argues for directly, and every filter byte on the part sharing one is an extrapolation from it.",
+      "How a pole is written down is a choice with a price, and the cheap one is cheap enough to be worth a second routine. The bilinear transform costs two multiplies and a sample of the input kept beside the sample of the output; `y[n] = a y[n-1] + (1-a) x[n]` costs one multiply and one state. What the cheap one gives up is the zero at half the rate, so its skirt stops cutting and levels off at `(1-a)/(1+a)` -- which is a defect in a filter meant to shape a signal and nothing at all in one meant to take the top off a delay's repeats. So the same part may hold both, and which one a byte sits on is a thing to measure per byte rather than to carry across.",
       "The rate the effect runs at is not the converter's, and a low pass is where that shows. The bilinear transform leaves a zero at half the rate, so the skirt bends steeper as it climbs towards it -- a section running at six decibels an octave in the middle of the band and at ten near the top has named where half the rate is. Nothing in a high pass does: its zero is at nothing, and where the warp would show is its own flat passband."
     ],
-    "would_be_wrong_if": "The skirt ran at a slope no whole number of poles gives, or the same byte's low and high settings returned corners that did not agree, or a low pass's skirt stayed at six decibels an octave all the way to the top of the band -- which would put half the rate well outside it."
+    "would_be_wrong_if": "The skirt ran at a slope no whole number of poles gives, or the same byte's low and high settings returned corners that did not agree, or a low pass's skirt stayed at six decibels an octave all the way to the top of the band -- which would put half the rate well outside it. The second of those priors has been measured and came back narrow: one type's filter byte bends towards half the rate and another type's damping byte levels off there, on records that each put the other's section twelve to sixteen decibels out, so the part writes the pole two ways rather than one."
   },
   "candidates": [
     {
@@ -40,6 +41,21 @@
       "id": "tone-a-fixed-shelf-pair-order-2",
       "reading": "The same pair written as the unit-slope shelving biquad of the audio cookbook, which is what a part that already has biquads gets for free.",
       "predicts": "Seven decibels an octave through the transition, which it can only fit by moving its corners -- and it is then wrong where the shelf turns rather than where the reading is worst."
+    },
+    {
+      "id": "one-multiply-pole-at-32k",
+      "reading": "The same single pole written the cheapest way a fixed-point part can write one, at the rate the other classes have named: one multiply, one state, and no zero at half the rate.",
+      "predicts": "Six decibels an octave through the middle of the band, and then a skirt that stops cutting and levels off at a depth the pole alone fixes -- so where a profile flattens names the pole with nothing fitted, and the rate with it."
+    },
+    {
+      "id": "one-multiply-pole-at-44k1",
+      "reading": "The cheap pole clocked at the converter's rate rather than the part's.",
+      "predicts": "The same shape with the levelling-off deeper for a given corner, so that a corner fitted to a measured profile comes back about a twentieth of an octave high and comes back high at every setting."
+    },
+    {
+      "id": "two-one-multiply-poles-at-32k",
+      "reading": "Two of the cheap poles cascaded.",
+      "predicts": "Twelve decibels an octave on the skirt and a levelling-off twice as deep in decibels as one of them."
     },
     {
       "id": "butterworth-pairs-at-32k",
