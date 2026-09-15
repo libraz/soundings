@@ -1,0 +1,123 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0142-two-one-pole-sections-at-32k",
+    "class": "filter-section",
+    "candidate": "0142-two-one-pole-sections-at-32k",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 42",
+    "kind": "lti",
+    "made_by": "backup/build-pre-filter-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "Two identical poles cascaded: twelve decibels an octave and no resonance.",
+  "why_the_type_byte_is_in_it": "The byte that chooses which of these filters runs is what the flat reference every profile is read against was taken at, so a model that did not hold it could not render that reference. A cascade of no sections is unity exactly, which is what the off state has to be: pushing a corner out of the band would leave the section's zero at half the rate in the reference, and every profile would then carry a cut the run did not measure.",
+  "chain": [
+    {
+      "kind": "pole",
+      "side": "low",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "1": 2,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              1051.4428345541562
+            ],
+            [
+              8,
+              1331.1812389552854
+            ],
+            [
+              16,
+              1567.3722449267384
+            ],
+            [
+              24,
+              1787.85324345326
+            ],
+            [
+              32,
+              2074.7681561664294
+            ],
+            [
+              48,
+              2915.7022999877845
+            ],
+            [
+              64,
+              4670.611529803519
+            ],
+            [
+              80,
+              6196.83956991923
+            ],
+            [
+              96,
+              8673.975037355673
+            ],
+            [
+              112,
+              10887.18384694199
+            ],
+            [
+              127,
+              12078.8534728424
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "kind": "pole",
+      "side": "high",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "2": 2,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              126.14569186906492
+            ],
+            [
+              8,
+              156.23820283834792
+            ],
+            [
+              16,
+              185.01407590191087
+            ],
+            [
+              24,
+              231.84932099338582
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

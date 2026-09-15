@@ -1,0 +1,123 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0142-one-pole-sections-at-44k1",
+    "class": "filter-section",
+    "candidate": "0142-one-pole-sections-at-44k1",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 42",
+    "kind": "lti",
+    "made_by": "backup/build-pre-filter-models.py"
+  },
+  "sample_rate_hz": 44100,
+  "why_this_rate": "The same section clocked at the converter's rate instead of the part's.",
+  "why_the_type_byte_is_in_it": "The byte that chooses which of these filters runs is what the flat reference every profile is read against was taken at, so a model that did not hold it could not render that reference. A cascade of no sections is unity exactly, which is what the off state has to be: pushing a corner out of the band would leave the section's zero at half the rate in the reference, and every profile would then carry a cut the run did not measure.",
+  "chain": [
+    {
+      "kind": "pole",
+      "side": "low",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "1": 1,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              237.43678474064043
+            ],
+            [
+              8,
+              315.7443399378566
+            ],
+            [
+              16,
+              397.342741939367
+            ],
+            [
+              24,
+              477.4635274864975
+            ],
+            [
+              32,
+              549.8132589585172
+            ],
+            [
+              48,
+              883.723246802893
+            ],
+            [
+              64,
+              1457.4279968281908
+            ],
+            [
+              80,
+              2185.4583061210096
+            ],
+            [
+              96,
+              3129.270821558837
+            ],
+            [
+              112,
+              4872.018773649356
+            ],
+            [
+              127,
+              6283.027675158684
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "kind": "pole",
+      "side": "high",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "2": 1,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              242.6101806607965
+            ],
+            [
+              8,
+              323.4027864579419
+            ],
+            [
+              16,
+              401.6921938413785
+            ],
+            [
+              24,
+              495.5550724653662
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

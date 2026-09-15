@@ -1,0 +1,129 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0142-butterworth-pairs-at-32k",
+    "class": "filter-section",
+    "candidate": "0142-butterworth-pairs-at-32k",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 42",
+    "kind": "lti",
+    "made_by": "backup/build-pre-filter-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "A conjugate pair at the flattest resonance: the same asymptote as two cascaded poles and three decibels less cut at the corner.",
+  "why_the_type_byte_is_in_it": "The byte that chooses which of these filters runs is what the flat reference every profile is read against was taken at, so a model that did not hold it could not render that reference. A cascade of no sections is unity exactly, which is what the off state has to be: pushing a corner out of the band would leave the section's zero at half the rate in the reference, and every profile would then carry a cut the run did not measure.",
+  "chain": [
+    {
+      "kind": "pole",
+      "side": "low",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "1": 1,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              974.0330464434663
+            ],
+            [
+              8,
+              1227.8580087546966
+            ],
+            [
+              16,
+              1439.6820658632037
+            ],
+            [
+              24,
+              1636.2587998291474
+            ],
+            [
+              32,
+              1897.1257713385598
+            ],
+            [
+              48,
+              2640.3497964179046
+            ],
+            [
+              64,
+              4208.940293595129
+            ],
+            [
+              80,
+              5588.980239057443
+            ],
+            [
+              96,
+              7998.4903634992825
+            ],
+            [
+              112,
+              10265.816614723135
+            ],
+            [
+              127,
+              11544.551381234458
+            ]
+          ]
+        }
+      },
+      "q": {
+        "fixed": 0.7071067811865476
+      }
+    },
+    {
+      "kind": "pole",
+      "side": "high",
+      "sections": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "2": 1,
+            "*": 0
+          }
+        }
+      },
+      "corner_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              153.94616585812943
+            ],
+            [
+              8,
+              185.13019062141706
+            ],
+            [
+              16,
+              216.6295576001031
+            ],
+            [
+              24,
+              271.50593081761264
+            ]
+          ]
+        }
+      },
+      "q": {
+        "fixed": 0.7071067811865476
+      }
+    }
+  ]
+}
