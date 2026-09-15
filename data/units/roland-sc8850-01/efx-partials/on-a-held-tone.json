@@ -1,0 +1,5600 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-partials",
+    "invocation": [
+      "efx-partials",
+      ".cache/takes/survey-types",
+      "--carrier-hz",
+      "440",
+      "--hold",
+      "8.0",
+      "--control-at",
+      "0.45",
+      "--out",
+      "data/units/roland-sc8850-01/efx-partials/on-a-held-tone.json"
+    ],
+    "measured_at": "2026-09-15T19:20:17+00:00",
+    "elapsed_s": 2744.5,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "takes": {
+    "lists": 28,
+    "files_present": 67,
+    "not_listed": [
+      "held-16-00-00-00.wav",
+      "held-16-01-00-00.wav",
+      "held-16-01-01-00.wav",
+      "held-16-01-02-00.wav",
+      "held-16-01-03-00.wav",
+      "held-16-01-10-00.wav",
+      "held-16-01-11-00.wav",
+      "held-16-01-20-00.wav",
+      "held-16-01-21-00.wav",
+      "held-16-01-22-00.wav",
+      "held-16-01-23-00.wav",
+      "held-16-01-24-00.wav",
+      "held-16-01-25-00.wav",
+      "held-16-01-26-00.wav",
+      "held-16-01-30-00.wav",
+      "held-16-01-31-00.wav",
+      "held-16-01-40-00.wav",
+      "held-16-01-41-00.wav",
+      "held-16-01-42-00.wav",
+      "held-16-01-43-00.wav",
+      "held-16-01-44-00.wav",
+      "held-16-01-50-00.wav",
+      "held-16-01-51-00.wav",
+      "held-16-01-52-00.wav",
+      "held-16-01-53-00.wav",
+      "held-16-01-54-00.wav",
+      "held-16-01-55-00.wav",
+      "held-16-01-56-00.wav",
+      "held-16-01-57-00.wav",
+      "held-16-01-60-00.wav",
+      "held-16-01-61-00.wav",
+      "held-16-01-70-00.wav",
+      "held-16-01-71-00.wav",
+      "held-16-01-72-00.wav",
+      "held-16-01-73-00.wav",
+      "held-16-02-00-00.wav",
+      "held-16-02-01-00.wav",
+      "held-16-02-02-00.wav",
+      "held-16-bypassed-before-00.wav"
+    ],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one.",
+    "not_matching": {
+      "count": 0,
+      "settings": [],
+      "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+    },
+    "more_than_one_take_named": {}
+  },
+  "carrier_hz": 440.0,
+  "grid_hz": [
+    0.2,
+    8.0
+  ],
+  "grid_step_hz": 0.01,
+  "bypassed_take": "held-16-bypassed-after-00.wav",
+  "method": "One take per type of a held tone, with the type written and nothing else, so every parameter sat at the value the unit powers it up holding. Each order of the tone that cleared the threshold on the bypassed take was demodulated by its own frequency, leaving that partial's phase and its level over the take. A projection was walked across a grid of rates and the largest reported, separately for the phase and for the level. Where the level swung, the partials were compared with each other to tell a comb being swept from the whole voice rising and falling, and a two path comb was fitted forward to that level series with its rate free, started from every whole submultiple of both peaks.",
+  "limits": {
+    "why_the_orders_come_from_the_bypassed_take": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
+    "why_a_grid_and_not_a_line": "The rate is where a projection across a grid is largest, not where a line was fitted. A line is not read under three cycles of the series it is found in, and every type on a unit whose modulators power up under a hertz puts a nine second take under that floor. A projection at a named rate is a matched filter and needs no cycles counted; what it needs is separation, and two rates closer together than one over the length read are one peak here. That figure is `rates_are_separated_by` and it is what bounds the rates the projections report. The comb fit is not bounded by it, because it does not read a peak: it fits the rate, and the model is far sharper in it than the projection is -- a fiftieth of a hertz out at half a hertz, it explains 0.16 of a series it explains 0.91 of when placed. Where a peak and a fitted rate are both given, they are two readings and not one.",
+    "why_the_phase_and_the_level_are_read_apart": "A swept delay turns a partial's phase in proportion to that partial's own frequency. An all-pass section turns every partial by the same angle. A level modulation turns none of them and moves the level instead. Reading the two quantities apart is what tells the three kinds apart; reading either alone returns a number for all three.",
+    "why_the_excursion_off_the_phase_is_a_floor": "Where a delayed path is mixed against a direct one the composite's phase turns by far less than the delayed path's own, and not in proportion. Measured on this carrier by injection: a fifth wet turns a two millisecond sweep into five thousandths of a millisecond, while detection survives it. So an excursion read off the phase is a lower bound wherever the effect is not fully wet, and what it bounds is not stated by the number itself. The comb reading is the one that answers the mixed case, and a type answering to neither is reported as answering to neither.",
+    "why_the_comb_needs_the_partials_to_disagree": "How well a forward comb fit explains its series is a gate against the wrong rate -- told a rate nothing is running at it falls from 0.91 to 0.05 -- and it is no gate at all against the wrong mechanism. A plain level modulation with no delay anywhere in it is fitted as a comb explaining 0.97 of its own series, which is more than any real comb injected here returns. What separates them is not a fit: a comb sweeps a notch, so a partial near it swings far more than one on a peak and the partials disagree in shape, while one envelope over the whole voice moves every partial by the same decibels at the same moment.",
+    "why_an_equivalent_and_not_a_length": "A comb's phase is the delay times the partial's frequency, so a phase swing converts to a delay excursion outright. That conversion is arithmetic and the interpretation is not: a phaser and a wah move notches with all-pass sections and have no delay line to be long, and a level series cannot tell that from a delay. The figure is what a two path comb would need; which types it is a delay for is not decided here.",
+    "stands_over_bypassed": 3.0,
+    "agrees_as_one_voice": 0.0,
+    "comb_explains": 0.6,
+    "orders_read": 8,
+    "rates_are_separated_by": 0.1472
+  },
+  "controls": {
+    "at_hz": 0.45,
+    "other_takes_with_nothing_in_the_path": [
+      {
+        "take": "held-16-bypassed-before-00.wav",
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.29,
+        "the_two_peaks_are_separated": false,
+        "phase": {
+          "peak": {
+            "hz": 0.51,
+            "stands_over_bypassed": 1.418,
+            "added": 0.0025,
+            "size": 0.008487
+          },
+          "excursion_ms": 0.0001,
+          "excursion_spread_ms": 0.0003,
+          "the_partials_agree": false,
+          "as_a_delay": 0.4842,
+          "as_a_flat_turn": 0.8518,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            7e-05,
+            0.00048,
+            5e-05,
+            0.00166,
+            0.00214,
+            0.00067,
+            0.00054,
+            0.06228
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 1.535,
+            "added": 0.012829,
+            "size": 0.0368
+          },
+          "partials": {
+            "swings_db": [
+              0.1319,
+              0.1298,
+              0.1173,
+              0.2761,
+              0.8646,
+              0.1472,
+              0.1447,
+              0.6387
+            ],
+            "swing_ratio": 7.369,
+            "lowest_agreement": -0.1458,
+            "mean_agreement": 0.3865
+          }
+        },
+        "moves": false,
+        "the_level_swing_is": null
+      }
+    ],
+    "a_level_swing_with_no_delay_in_it": [
+      {
+        "depth": 0.25,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.45,
+        "the_two_peaks_are_separated": false,
+        "phase": {
+          "peak": {
+            "hz": 0.69,
+            "stands_over_bypassed": 1.042,
+            "added": 8.9e-05,
+            "size": 0.002229
+          },
+          "excursion_ms": 0.0001,
+          "excursion_spread_ms": 0.0002,
+          "the_partials_agree": false,
+          "as_a_delay": 0.4248,
+          "as_a_flat_turn": 0.8071,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            9e-05,
+            0.00026,
+            1e-05,
+            0.00151,
+            0.00058,
+            0.00065,
+            0.00049,
+            0.01424
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 31.064,
+            "added": 2.144965,
+            "size": 2.216312
+          },
+          "partials": {
+            "swings_db": [
+              1.5595,
+              1.5598,
+              1.5586,
+              1.5762,
+              1.7883,
+              1.563,
+              1.562,
+              1.838
+            ],
+            "swing_ratio": 1.179,
+            "lowest_agreement": 0.8266,
+            "mean_agreement": 0.9471
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "the whole voice"
+      },
+      {
+        "depth": 0.55,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.45,
+        "the_two_peaks_are_separated": false,
+        "phase": {
+          "peak": {
+            "hz": 0.69,
+            "stands_over_bypassed": 1.109,
+            "added": 0.000234,
+            "size": 0.002374
+          },
+          "excursion_ms": 0.0001,
+          "excursion_spread_ms": 0.0002,
+          "the_partials_agree": false,
+          "as_a_delay": 0.3926,
+          "as_a_flat_turn": 0.7817,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            9e-05,
+            0.00026,
+            2e-05,
+            0.00171,
+            0.0014,
+            0.00078,
+            0.00056,
+            0.01416
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 72.638,
+            "added": 5.111192,
+            "size": 5.182539
+          },
+          "partials": {
+            "swings_db": [
+              3.7071,
+              3.7076,
+              3.707,
+              3.7136,
+              3.81,
+              3.7098,
+              3.709,
+              3.9196
+            ],
+            "swing_ratio": 1.057,
+            "lowest_agreement": 0.9612,
+            "mean_agreement": 0.9887
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "the whole voice"
+      }
+    ],
+    "injected": [
+      {
+        "wet": 1.0,
+        "asked_ms": 2.0,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.45,
+        "the_two_peaks_are_separated": true,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 1735.55,
+            "added": 13.325508,
+            "size": 13.33319
+          },
+          "excursion_ms": 1.882,
+          "excursion_spread_ms": 0.0001,
+          "the_partials_agree": true,
+          "as_a_delay": 0.0,
+          "as_a_flat_turn": 0.2972,
+          "what_the_phase_looks_like": "a swept delay",
+          "phase_swing_rad": [
+            2.60156,
+            5.20294,
+            7.80442,
+            10.40544,
+            13.012,
+            15.60923,
+            20.81209,
+            31.21785
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 5.54,
+            "stands_over_bypassed": 4.45,
+            "added": 0.017646,
+            "size": 0.02276
+          },
+          "partials": {
+            "swings_db": [
+              0.1378,
+              0.1686,
+              0.1186,
+              0.8358,
+              2.2221,
+              0.1922,
+              0.1712,
+              0.8343
+            ],
+            "swing_ratio": 18.728,
+            "lowest_agreement": -0.244,
+            "mean_agreement": 0.2619
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "a comb being swept",
+        "comb": {
+          "partial_hz": 1316.71,
+          "seeded_at_hz": [
+            5.54,
+            2.77,
+            1.8467,
+            1.385,
+            0.45,
+            0.225,
+            0.15,
+            0.1125
+          ],
+          "series_spread_db": 0.1171,
+          "excursion_ms": null,
+          "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+        }
+      },
+      {
+        "wet": 0.5,
+        "asked_ms": 2.0,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.46,
+        "the_two_peaks_are_separated": true,
+        "phase": {
+          "peak": {
+            "hz": 0.46,
+            "stands_over_bypassed": 2410.113,
+            "added": 18.297296,
+            "size": 18.304891
+          },
+          "excursion_ms": 1.6754,
+          "excursion_spread_ms": 2.716,
+          "the_partials_agree": false,
+          "as_a_delay": 0.6079,
+          "as_a_flat_turn": 0.6152,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            1.22129,
+            7.13995,
+            0.69784,
+            17.41952,
+            75.12402,
+            14.01801,
+            3.2713,
+            27.5472
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 1.35,
+            "stands_over_bypassed": 344.083,
+            "added": 2.900575,
+            "size": 2.909029
+          },
+          "partials": {
+            "swings_db": [
+              7.4782,
+              9.779,
+              6.0501,
+              7.1824,
+              6.4686,
+              8.3488,
+              7.1401,
+              6.4389
+            ],
+            "swing_ratio": 1.616,
+            "lowest_agreement": -0.3697,
+            "mean_agreement": -0.0434
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "a comb being swept",
+        "comb": {
+          "partial_hz": 1319.86,
+          "seeded_at_hz": [
+            1.35,
+            0.675,
+            0.46,
+            0.45,
+            0.3375,
+            0.23,
+            0.1533,
+            0.115
+          ],
+          "series_spread_db": 6.1208,
+          "hz": 0.44998,
+          "excursion_ms": 1.9998,
+          "comb_phase_swing_rad": 8.2919,
+          "mix": 0.95,
+          "left_over_db": {
+            "sine": 0.7908,
+            "triangle": 3.9465
+          },
+          "explains": 0.8708,
+          "apart_by": 0.5156,
+          "closer_to": "sine"
+        }
+      },
+      {
+        "wet": 0.2,
+        "asked_ms": 2.0,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.91,
+        "the_two_peaks_are_separated": true,
+        "phase": {
+          "peak": {
+            "hz": 0.91,
+            "stands_over_bypassed": 48.21,
+            "added": 0.058327,
+            "size": 0.059563
+          },
+          "excursion_ms": 0.0064,
+          "excursion_spread_ms": 0.0129,
+          "the_partials_agree": false,
+          "as_a_delay": 0.8159,
+          "as_a_flat_turn": 0.4648,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            0.20014,
+            0.04267,
+            0.0123,
+            0.06834,
+            0.04765,
+            0.04963,
+            0.02317,
+            0.03261
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 1.35,
+            "stands_over_bypassed": 70.542,
+            "added": 0.587939,
+            "size": 0.596393
+          },
+          "partials": {
+            "swings_db": [
+              1.541,
+              1.6134,
+              1.3677,
+              1.6477,
+              1.8799,
+              1.5614,
+              1.5394,
+              1.7027
+            ],
+            "swing_ratio": 1.374,
+            "lowest_agreement": -0.2263,
+            "mean_agreement": -0.0085
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "a comb being swept",
+        "comb": {
+          "partial_hz": 1319.86,
+          "seeded_at_hz": [
+            1.35,
+            0.91,
+            0.675,
+            0.455,
+            0.45,
+            0.3375,
+            0.3033,
+            0.2275
+          ],
+          "series_spread_db": 1.3613,
+          "hz": 0.45,
+          "excursion_ms": 1.9999,
+          "comb_phase_swing_rad": 8.2925,
+          "mix": 0.2499,
+          "left_over_db": {
+            "sine": 0.117,
+            "triangle": 0.6597
+          },
+          "explains": 0.9141,
+          "apart_by": 0.3987,
+          "closer_to": null
+        }
+      },
+      {
+        "wet": 0.2,
+        "asked_ms": 0.5,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.45,
+        "the_two_peaks_are_separated": true,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 18.558,
+            "added": 0.134886,
+            "size": 0.142569
+          },
+          "excursion_ms": 0.0251,
+          "excursion_spread_ms": 0.0721,
+          "the_partials_agree": false,
+          "as_a_delay": 0.6724,
+          "as_a_flat_turn": 0.2324,
+          "what_the_phase_looks_like": "the same angle at every partial",
+          "phase_swing_rad": [
+            0.12606,
+            0.22704,
+            0.26745,
+            0.21394,
+            0.06645,
+            0.0634,
+            0.12766,
+            0.04856
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 0.9,
+            "stands_over_bypassed": 80.901,
+            "added": 1.00712,
+            "size": 1.019725
+          },
+          "partials": {
+            "swings_db": [
+              0.1778,
+              0.5057,
+              1.0429,
+              1.5512,
+              1.9288,
+              1.4486,
+              1.4632,
+              1.7269
+            ],
+            "swing_ratio": 10.851,
+            "lowest_agreement": -0.3505,
+            "mean_agreement": 0.3641
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": "a comb being swept",
+        "comb": {
+          "partial_hz": 1319.86,
+          "seeded_at_hz": [
+            0.9,
+            0.45,
+            0.3,
+            0.225,
+            0.15,
+            0.1125
+          ],
+          "series_spread_db": 1.0432,
+          "hz": 0.44999,
+          "excursion_ms": 0.4917,
+          "comb_phase_swing_rad": 2.0388,
+          "mix": 0.2424,
+          "left_over_db": {
+            "sine": 0.117,
+            "triangle": 0.1747
+          },
+          "explains": 0.8878,
+          "apart_by": 0.0553,
+          "closer_to": null
+        }
+      },
+      {
+        "wet": 0.05,
+        "asked_ms": 2.0,
+        "orders": 8,
+        "sounded_s": 6.795,
+        "rates_are_separated_by": 0.1472,
+        "read_at_hz": 0.92,
+        "the_two_peaks_are_separated": false,
+        "phase": {
+          "peak": {
+            "hz": 0.92,
+            "stands_over_bypassed": 12.864,
+            "added": 0.0116,
+            "size": 0.012578
+          },
+          "excursion_ms": 0.0014,
+          "excursion_spread_ms": 0.0032,
+          "the_partials_agree": false,
+          "as_a_delay": 0.8339,
+          "as_a_flat_turn": 0.4721,
+          "what_the_phase_looks_like": null,
+          "phase_swing_rad": [
+            0.04238,
+            0.01042,
+            0.00198,
+            0.01507,
+            0.01067,
+            0.00967,
+            0.00522,
+            0.00521
+          ]
+        },
+        "level": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 2.568,
+            "added": 0.111853,
+            "size": 0.183201
+          },
+          "partials": {
+            "swings_db": [
+              0.3519,
+              0.3532,
+              0.3148,
+              0.4309,
+              0.9537,
+              0.3516,
+              0.3553,
+              0.7654
+            ],
+            "swing_ratio": 3.029,
+            "lowest_agreement": -0.1102,
+            "mean_agreement": 0.0639
+          }
+        },
+        "moves": true,
+        "the_level_swing_is": null
+      }
+    ]
+  },
+  "types": [
+    {
+      "type": "00 00",
+      "take": "held-16-00-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.8,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 4.8,
+          "stands_over_bypassed": 6.282,
+          "added": 0.003448,
+          "size": 0.004101
+        },
+        "excursion_ms": 0.0006,
+        "excursion_spread_ms": 0.0005,
+        "the_partials_agree": true,
+        "as_a_delay": 0.3,
+        "as_a_flat_turn": 0.2917,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00115,
+          0.00794,
+          0.00152,
+          0.00345,
+          0.0051,
+          0.00226,
+          0.0029,
+          0.00847
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.57,
+          "stands_over_bypassed": 1.265,
+          "added": 0.009865,
+          "size": 0.047065
+        },
+        "partials": {
+          "swings_db": [
+            0.1241,
+            0.1402,
+            0.1141,
+            0.2844,
+            0.9033,
+            0.1609,
+            0.1526,
+            0.7199
+          ],
+          "swing_ratio": 7.918,
+          "lowest_agreement": -0.0977,
+          "mean_agreement": 0.3248
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 00",
+      "take": "held-16-01-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.56,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.52,
+          "stands_over_bypassed": 1.569,
+          "added": 0.003218,
+          "size": 0.008876
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0008,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4616,
+        "as_a_flat_turn": 0.8315,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00021,
+          0.00067,
+          0.00035,
+          0.00576,
+          0.00106,
+          0.00099,
+          0.00111,
+          0.06086
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.56,
+          "stands_over_bypassed": 1.496,
+          "added": 0.021599,
+          "size": 0.065116
+        },
+        "partials": {
+          "swings_db": [
+            0.127,
+            0.1413,
+            0.1142,
+            0.2927,
+            0.7959,
+            0.1537,
+            0.1492,
+            0.6966
+          ],
+          "swing_ratio": 6.968,
+          "lowest_agreement": -0.1678,
+          "mean_agreement": 0.3248
+        }
+      },
+      "moves": false,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 01",
+      "take": "held-16-01-01-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.5,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.5,
+          "stands_over_bypassed": 4.558,
+          "added": 0.022847,
+          "size": 0.029269
+        },
+        "excursion_ms": 0.0004,
+        "excursion_spread_ms": 0.0009,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4828,
+        "as_a_flat_turn": 0.8528,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00028,
+          0.001,
+          0.00041,
+          0.00635,
+          0.00477,
+          0.00139,
+          0.00441,
+          0.21554
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.5,
+          "stands_over_bypassed": 3.698,
+          "added": 0.192096,
+          "size": 0.263298
+        },
+        "partials": {
+          "swings_db": [
+            0.1235,
+            0.1386,
+            0.1137,
+            0.3258,
+            1.2843,
+            0.2206,
+            0.2773,
+            2.1349
+          ],
+          "swing_ratio": 18.781,
+          "lowest_agreement": -0.2728,
+          "mean_agreement": 0.2132
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.5,
+          0.25,
+          0.1667,
+          0.125
+        ],
+        "series_spread_db": 0.1076,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 02",
+      "take": "held-16-01-02-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.83,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 4.83,
+          "stands_over_bypassed": 4.599,
+          "added": 0.003019,
+          "size": 0.003858
+        },
+        "excursion_ms": 0.0007,
+        "excursion_spread_ms": 0.0009,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3433,
+        "as_a_flat_turn": 0.14,
+        "what_the_phase_looks_like": "the same angle at every partial",
+        "phase_swing_rad": [
+          0.00172,
+          0.00224,
+          0.00445,
+          0.0067,
+          0.0046,
+          0.00481,
+          0.00234,
+          0.00399
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.23,
+          "stands_over_bypassed": 1.552,
+          "added": 0.016829,
+          "size": 0.047309
+        },
+        "partials": {
+          "swings_db": [
+            0.1136,
+            0.1425,
+            0.1075,
+            0.4139,
+            1.1945,
+            0.184,
+            0.1599,
+            0.5289
+          ],
+          "swing_ratio": 11.115,
+          "lowest_agreement": -0.1362,
+          "mean_agreement": 0.3334
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 03",
+      "take": "held-16-01-03-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.79,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 4.79,
+          "stands_over_bypassed": 8.405,
+          "added": 0.004285,
+          "size": 0.004863
+        },
+        "excursion_ms": 0.0008,
+        "excursion_spread_ms": 0.0016,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6978,
+        "as_a_flat_turn": 0.4865,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00468,
+          0.00345,
+          0.00125,
+          0.00976,
+          0.00129,
+          0.01516,
+          0.0023,
+          0.00103
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 1.695,
+          "added": 0.016661,
+          "size": 0.040631
+        },
+        "partials": {
+          "swings_db": [
+            0.0952,
+            0.0865,
+            0.057,
+            0.2822,
+            0.136,
+            0.2713,
+            0.1418,
+            0.398
+          ],
+          "swing_ratio": 6.987,
+          "lowest_agreement": -0.4702,
+          "mean_agreement": 0.0552
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 10",
+      "take": "held-16-01-10-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.77,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 4.77,
+          "stands_over_bypassed": 4.338,
+          "added": 0.00151,
+          "size": 0.001963
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0004,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3152,
+        "as_a_flat_turn": 0.4538,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.0001,
+          0.00041,
+          0.00039,
+          0.00319,
+          0.00074,
+          0.00551,
+          0.00214,
+          0.00323
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.9,
+          "stands_over_bypassed": 3.217,
+          "added": 0.0081,
+          "size": 0.011754
+        },
+        "partials": {
+          "swings_db": [
+            0.1039,
+            0.0781,
+            0.051,
+            0.1693,
+            0.09,
+            0.1513,
+            0.0813,
+            0.1124
+          ],
+          "swing_ratio": 3.318,
+          "lowest_agreement": -0.4716,
+          "mean_agreement": -0.0301
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.77,
+          2.385,
+          1.9,
+          1.59,
+          1.1925,
+          0.95,
+          0.6333,
+          0.475
+        ],
+        "series_spread_db": 0.0301,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 11",
+      "take": "held-16-01-11-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 3.64,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 3.64,
+          "stands_over_bypassed": 84.079,
+          "added": 0.032078,
+          "size": 0.032464
+        },
+        "excursion_ms": 0.0047,
+        "excursion_spread_ms": 0.0079,
+        "the_partials_agree": false,
+        "as_a_delay": 0.1765,
+        "as_a_flat_turn": 0.4323,
+        "what_the_phase_looks_like": "a swept delay",
+        "phase_swing_rad": [
+          0.02036,
+          0.03057,
+          0.0105,
+          0.03037,
+          0.00434,
+          0.03221,
+          0.02835,
+          0.10301
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.64,
+          "stands_over_bypassed": 31.588,
+          "added": 0.137793,
+          "size": 0.142298
+        },
+        "partials": {
+          "swings_db": [
+            0.6855,
+            0.7534,
+            0.103,
+            1.7878,
+            0.6225,
+            1.216,
+            0.3799,
+            0.4924
+          ],
+          "swing_ratio": 17.352,
+          "lowest_agreement": -0.7198,
+          "mean_agreement": -0.0573
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.64,
+          1.82,
+          1.2133,
+          0.91
+        ],
+        "series_spread_db": 0.0295,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 20",
+      "take": "held-16-01-20-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.85,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.85,
+          "stands_over_bypassed": 36030.682,
+          "added": 76.597167,
+          "size": 76.599293
+        },
+        "excursion_ms": 0.1521,
+        "excursion_spread_ms": 0.1766,
+        "the_partials_agree": false,
+        "as_a_delay": 0.915,
+        "as_a_flat_turn": 0.8731,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.34492,
+          0.46453,
+          0.56467,
+          1.01693,
+          608.21577,
+          0.80205,
+          0.67224,
+          0.71324
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.85,
+          "stands_over_bypassed": 322.016,
+          "added": 5.464823,
+          "size": 5.481846
+        },
+        "partials": {
+          "swings_db": [
+            7.8122,
+            3.5911,
+            3.0275,
+            5.7906,
+            7.6511,
+            2.6813,
+            7.9064,
+            3.079
+          ],
+          "swing_ratio": 2.949,
+          "lowest_agreement": -0.7892,
+          "mean_agreement": -0.0691
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.85,
+          0.425,
+          0.2833,
+          0.2125
+        ],
+        "series_spread_db": 3.0388,
+        "hz": 0.84891,
+        "excursion_ms": 0.4901,
+        "comb_phase_swing_rad": 2.032,
+        "mix": 0.7782,
+        "left_over_db": {
+          "triangle": 0.1528,
+          "sine": 0.2119
+        },
+        "explains": 0.9497,
+        "apart_by": 0.0194,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "01 21",
+      "take": "held-16-01-21-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 2.05,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 619326.331,
+          "added": 191.378814,
+          "size": 191.379123
+        },
+        "excursion_ms": 4.1205,
+        "excursion_spread_ms": 32.5074,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3971,
+        "as_a_flat_turn": 0.7902,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.04086,
+          1.27028,
+          1.59754,
+          25.35443,
+          251.79113,
+          58.23121,
+          40.42378,
+          1152.32374
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 1905.283,
+          "added": 7.415258,
+          "size": 7.419152
+        },
+        "partials": {
+          "swings_db": [
+            1.4671,
+            6.4337,
+            5.5632,
+            9.216,
+            9.3811,
+            7.5534,
+            5.731,
+            7.1493
+          ],
+          "swing_ratio": 6.394,
+          "lowest_agreement": -0.8439,
+          "mean_agreement": 0.0722
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.05,
+          1.025,
+          0.6833,
+          0.5125
+        ],
+        "series_spread_db": 5.5409,
+        "hz": 2.04835,
+        "excursion_ms": 0.0485,
+        "comb_phase_swing_rad": 0.2011,
+        "mix": 0.95,
+        "left_over_db": {
+          "sine": 1.6073,
+          "triangle": 2.2383
+        },
+        "explains": 0.7099,
+        "apart_by": 0.1139,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "01 22",
+      "take": "held-16-01-22-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.33,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.33,
+          "stands_over_bypassed": 9217.093,
+          "added": 36.697109,
+          "size": 36.701091
+        },
+        "excursion_ms": 0.5124,
+        "excursion_spread_ms": 3.5516,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4487,
+        "as_a_flat_turn": 0.8293,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.41859,
+          1.87044,
+          0.53675,
+          1.68414,
+          29.6369,
+          3.83818,
+          6.21431,
+          249.40942
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.86,
+          "stands_over_bypassed": 137.135,
+          "added": 2.252487,
+          "size": 2.269033
+        },
+        "partials": {
+          "swings_db": [
+            1.5543,
+            4.7507,
+            6.9904,
+            5.5305,
+            5.8266,
+            5.817,
+            5.556,
+            4.8988
+          ],
+          "swing_ratio": 4.497,
+          "lowest_agreement": -0.5861,
+          "mean_agreement": 0.0139
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 440.0,
+        "seeded_at_hz": [
+          0.86,
+          0.43,
+          0.33,
+          0.2867,
+          0.215,
+          0.165,
+          0.11,
+          0.0825
+        ],
+        "series_spread_db": 1.5373,
+        "hz": 0.34965,
+        "excursion_ms": 0.723,
+        "comb_phase_swing_rad": 0.9994,
+        "mix": 0.4627,
+        "left_over_db": {
+          "triangle": 0.1165,
+          "sine": 0.1642
+        },
+        "explains": 0.9242,
+        "apart_by": 0.031,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "01 23",
+      "take": "held-16-01-23-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.59,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.59,
+          "stands_over_bypassed": 34394.505,
+          "added": 84.258084,
+          "size": 84.260534
+        },
+        "excursion_ms": 0.8986,
+        "excursion_spread_ms": 23.0506,
+        "the_partials_agree": false,
+        "as_a_delay": 0.377,
+        "as_a_flat_turn": 0.718,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.97764,
+          2.39125,
+          0.34315,
+          80.9293,
+          175.20206,
+          7.73129,
+          1.40983,
+          405.09975
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.81,
+          "stands_over_bypassed": 553.553,
+          "added": 2.446325,
+          "size": 2.450752
+        },
+        "partials": {
+          "swings_db": [
+            7.0923,
+            6.7828,
+            5.1656,
+            6.0016,
+            8.0699,
+            6.2927,
+            6.5195,
+            6.4567
+          ],
+          "swing_ratio": 1.562,
+          "lowest_agreement": -0.141,
+          "mean_agreement": 0.1218
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          1.81,
+          0.905,
+          0.6033,
+          0.59,
+          0.4525,
+          0.295,
+          0.1967,
+          0.1475
+        ],
+        "series_spread_db": 5.1655,
+        "hz": 0.2983,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 16.1044,
+        "mix": 0.3424,
+        "left_over_db": {
+          "sine": 3.5448,
+          "triangle": 3.9643
+        },
+        "explains": 0.3138,
+        "apart_by": 0.0812,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 24",
+      "take": "held-16-01-24-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.21,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.21,
+          "stands_over_bypassed": 70709.269,
+          "added": 193.6561,
+          "size": 193.658839
+        },
+        "excursion_ms": 1.9265,
+        "excursion_spread_ms": 38.6478,
+        "the_partials_agree": false,
+        "as_a_delay": 0.424,
+        "as_a_flat_turn": 0.7978,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          3.25126,
+          4.14946,
+          1.7874,
+          30.7988,
+          307.32945,
+          9.38956,
+          14.26418,
+          1178.30061
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.84,
+          "stands_over_bypassed": 137.355,
+          "added": 2.324635,
+          "size": 2.341683
+        },
+        "partials": {
+          "swings_db": [
+            6.3227,
+            8.1674,
+            4.8417,
+            5.4923,
+            6.8462,
+            6.3001,
+            5.8886,
+            5.9831
+          ],
+          "swing_ratio": 1.687,
+          "lowest_agreement": -0.3614,
+          "mean_agreement": -0.0171
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.84,
+          0.42,
+          0.28,
+          0.21,
+          0.105,
+          0.07,
+          0.0525
+        ],
+        "series_spread_db": 4.8002,
+        "hz": 0.2871,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 5.7751,
+        "mix": 0.796,
+        "left_over_db": {
+          "triangle": 3.4344,
+          "sine": 3.4727
+        },
+        "explains": 0.2845,
+        "apart_by": 0.008,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 25",
+      "take": "held-16-01-25-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 6.1,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 6.1,
+          "stands_over_bypassed": 5162.948,
+          "added": 2.343743,
+          "size": 2.344197
+        },
+        "excursion_ms": 0.0429,
+        "excursion_spread_ms": 0.3564,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6054,
+        "as_a_flat_turn": 0.7091,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.09436,
+          0.04874,
+          0.01879,
+          1.93779,
+          10.54189,
+          0.07247,
+          0.0202,
+          6.01934
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.05,
+          "stands_over_bypassed": 1815.311,
+          "added": 6.43235,
+          "size": 6.435896
+        },
+        "partials": {
+          "swings_db": [
+            4.9078,
+            6.1183,
+            4.2433,
+            4.2789,
+            4.8065,
+            6.2221,
+            4.759,
+            5.3029
+          ],
+          "swing_ratio": 1.466,
+          "lowest_agreement": 0.8591,
+          "mean_agreement": 0.9437
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 26",
+      "take": "held-16-01-26-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 6.1,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 6.1,
+          "stands_over_bypassed": 5088.922,
+          "added": 2.310132,
+          "size": 2.310586
+        },
+        "excursion_ms": 0.0025,
+        "excursion_spread_ms": 0.3578,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6137,
+        "as_a_flat_turn": 0.7179,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00574,
+          0.00214,
+          0.0005,
+          1.91669,
+          10.58918,
+          0.0033,
+          0.00262,
+          5.96452
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.05,
+          "stands_over_bypassed": 1757.952,
+          "added": 6.228994,
+          "size": 6.232539
+        },
+        "partials": {
+          "swings_db": [
+            4.8807,
+            5.5546,
+            4.3882,
+            4.2649,
+            5.2157,
+            5.2579,
+            4.6511,
+            5.1365
+          ],
+          "swing_ratio": 1.302,
+          "lowest_agreement": 0.898,
+          "mean_agreement": 0.9636
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 30",
+      "take": "held-16-01-30-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.55,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.51,
+          "stands_over_bypassed": 1.807,
+          "added": 0.004829,
+          "size": 0.010816
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0015,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4351,
+        "as_a_flat_turn": 0.8079,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00025,
+          0.0007,
+          0.00041,
+          0.00979,
+          0.00348,
+          0.00176,
+          0.00117,
+          0.06898
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.55,
+          "stands_over_bypassed": 1.699,
+          "added": 0.03476,
+          "size": 0.084508
+        },
+        "partials": {
+          "swings_db": [
+            0.0963,
+            0.1061,
+            0.0895,
+            0.3684,
+            0.9958,
+            0.1393,
+            0.1238,
+            0.8223
+          ],
+          "swing_ratio": 11.121,
+          "lowest_agreement": -0.1851,
+          "mean_agreement": 0.1692
+        }
+      },
+      "moves": false,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 31",
+      "take": "held-16-01-31-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.29,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.51,
+          "stands_over_bypassed": 1.692,
+          "added": 0.004145,
+          "size": 0.010132
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0012,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4562,
+        "as_a_flat_turn": 0.8252,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00013,
+          0.00038,
+          0.00025,
+          0.00776,
+          0.00272,
+          0.0014,
+          0.00037,
+          0.06804
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 1.895,
+          "added": 0.021442,
+          "size": 0.045412
+        },
+        "partials": {
+          "swings_db": [
+            0.1239,
+            0.1394,
+            0.1143,
+            0.2949,
+            0.8742,
+            0.1614,
+            0.1544,
+            0.7084
+          ],
+          "swing_ratio": 7.65,
+          "lowest_agreement": -0.1269,
+          "mean_agreement": 0.3273
+        }
+      },
+      "moves": false,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 40",
+      "take": "held-16-01-40-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 10137.211,
+          "added": 77.870434,
+          "size": 77.878117
+        },
+        "excursion_ms": 6.7197,
+        "excursion_spread_ms": 13.3027,
+        "the_partials_agree": false,
+        "as_a_delay": 0.2879,
+        "as_a_flat_turn": 0.6584,
+        "what_the_phase_looks_like": "a swept delay",
+        "phase_swing_rad": [
+          1.18479,
+          10.146,
+          11.06104,
+          70.41931,
+          100.91371,
+          81.02519,
+          1.7155,
+          346.55941
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.94,
+          "stands_over_bypassed": 86.115,
+          "added": 0.8494,
+          "size": 0.859379
+        },
+        "partials": {
+          "swings_db": [
+            4.7125,
+            6.1808,
+            7.1391,
+            5.4948,
+            5.3553,
+            5.4882,
+            4.0283,
+            3.9871
+          ],
+          "swing_ratio": 1.791,
+          "lowest_agreement": -0.1548,
+          "mean_agreement": -0.0192
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.94,
+          2.47,
+          1.6467,
+          1.235,
+          0.45,
+          0.225,
+          0.15,
+          0.1125
+        ],
+        "series_spread_db": 7.0733,
+        "hz": 4.92894,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 4.7127,
+        "mix": 0.6237,
+        "left_over_db": {
+          "triangle": 3.9669,
+          "sine": 4.3148
+        },
+        "explains": 0.4392,
+        "apart_by": 0.0492,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 41",
+      "take": "held-16-01-41-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 3136.46,
+          "added": 24.087858,
+          "size": 24.09554
+        },
+        "excursion_ms": 2.378,
+        "excursion_spread_ms": 0.029,
+        "the_partials_agree": true,
+        "as_a_delay": 0.3623,
+        "as_a_flat_turn": 0.4532,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          3.26499,
+          6.65387,
+          9.86385,
+          13.12757,
+          74.38238,
+          19.71734,
+          26.32111,
+          39.43321
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.05,
+          "stands_over_bypassed": 1108.227,
+          "added": 3.925494,
+          "size": 3.92904
+        },
+        "partials": {
+          "swings_db": [
+            3.3194,
+            3.0559,
+            3.1704,
+            3.2246,
+            4.372,
+            3.3749,
+            3.3201,
+            2.9645
+          ],
+          "swing_ratio": 1.475,
+          "lowest_agreement": 0.4557,
+          "mean_agreement": 0.7252
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 42",
+      "take": "held-16-01-42-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 7854.787,
+          "added": 60.335941,
+          "size": 60.343623
+        },
+        "excursion_ms": 4.6618,
+        "excursion_spread_ms": 6.5349,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3019,
+        "as_a_flat_turn": 0.5562,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          5.63357,
+          7.38186,
+          0.04198,
+          29.01778,
+          182.38635,
+          25.0899,
+          74.02456,
+          159.17298
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.05,
+          "stands_over_bypassed": 168.095,
+          "added": 1.150122,
+          "size": 1.157005
+        },
+        "partials": {
+          "swings_db": [
+            6.9302,
+            6.9917,
+            6.1922,
+            5.4334,
+            5.209,
+            7.1339,
+            6.2893,
+            5.6206
+          ],
+          "swing_ratio": 1.37,
+          "lowest_agreement": -0.2801,
+          "mean_agreement": -0.0493
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.05,
+          2.025,
+          1.35,
+          1.0125,
+          0.45,
+          0.225,
+          0.15,
+          0.1125
+        ],
+        "series_spread_db": 6.1669,
+        "hz": 0.44823,
+        "excursion_ms": 10.3264,
+        "comb_phase_swing_rad": 42.8181,
+        "mix": 0.8697,
+        "left_over_db": {
+          "triangle": 1.0224,
+          "sine": 4.8296
+        },
+        "explains": 0.8342,
+        "apart_by": 0.6174,
+        "closer_to": "triangle"
+      }
+    },
+    {
+      "type": "01 43",
+      "take": "held-16-01-43-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.47,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.47,
+          "stands_over_bypassed": 401.614,
+          "added": 2.972748,
+          "size": 2.980169
+        },
+        "excursion_ms": 0.0779,
+        "excursion_spread_ms": 1.2098,
+        "the_partials_agree": false,
+        "as_a_delay": 0.7826,
+        "as_a_flat_turn": 0.71,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.36389,
+          0.02169,
+          0.07775,
+          7.43699,
+          13.57771,
+          0.04205,
+          0.04753,
+          2.27374
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 7.17,
+          "stands_over_bypassed": 195.534,
+          "added": 1.221865,
+          "size": 1.228146
+        },
+        "partials": {
+          "swings_db": [
+            5.2978,
+            3.7803,
+            3.5779,
+            6.8993,
+            3.9285,
+            5.8656,
+            2.7112,
+            4.3755
+          ],
+          "swing_ratio": 2.545,
+          "lowest_agreement": -0.4042,
+          "mean_agreement": -0.0179
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          7.17,
+          3.585,
+          2.39,
+          1.7925,
+          0.47,
+          0.235,
+          0.1567,
+          0.1175
+        ],
+        "series_spread_db": 3.5675,
+        "hz": 3.5933,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 2.3289,
+        "mix": 0.2604,
+        "left_over_db": {
+          "triangle": 2.4313,
+          "sine": 2.4324
+        },
+        "explains": 0.3185,
+        "apart_by": 0.0003,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 44",
+      "take": "held-16-01-44-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 4505.272,
+          "added": 34.603626,
+          "size": 34.611308
+        },
+        "excursion_ms": 4.5798,
+        "excursion_spread_ms": 3.6472,
+        "the_partials_agree": true,
+        "as_a_delay": 0.2143,
+        "as_a_flat_turn": 0.3767,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          6.54548,
+          13.0525,
+          0.00602,
+          38.63523,
+          80.97091,
+          24.56802,
+          49.08093,
+          64.03137
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.48,
+          "stands_over_bypassed": 79.53,
+          "added": 1.110515,
+          "size": 1.124656
+        },
+        "partials": {
+          "swings_db": [
+            4.6872,
+            4.9935,
+            2.269,
+            6.6943,
+            4.8778,
+            8.6515,
+            6.5894,
+            5.2988
+          ],
+          "swing_ratio": 3.813,
+          "lowest_agreement": -0.5107,
+          "mean_agreement": -0.0202
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 437.71,
+        "seeded_at_hz": [
+          4.48,
+          2.24,
+          1.4933,
+          1.12,
+          0.45,
+          0.225,
+          0.15,
+          0.1125
+        ],
+        "series_spread_db": 4.6901,
+        "hz": 2.24262,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 1.7931,
+        "mix": 0.5071,
+        "left_over_db": {
+          "sine": 2.5862,
+          "triangle": 2.6283
+        },
+        "explains": 0.4486,
+        "apart_by": 0.009,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 50",
+      "take": "held-16-01-50-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.29,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.51,
+          "stands_over_bypassed": 2.471,
+          "added": 0.008807,
+          "size": 0.014794
+        },
+        "excursion_ms": 0.0008,
+        "excursion_spread_ms": 0.0007,
+        "the_partials_agree": true,
+        "as_a_delay": 0.3464,
+        "as_a_flat_turn": 0.7533,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00077,
+          0.00233,
+          0.00324,
+          0.0086,
+          0.00532,
+          0.00727,
+          0.00799,
+          0.08283
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 5.972,
+          "added": 0.119189,
+          "size": 0.14316
+        },
+        "partials": {
+          "swings_db": [
+            0.187,
+            0.1686,
+            0.2367,
+            0.643,
+            0.8921,
+            0.3068,
+            0.2479,
+            0.7852
+          ],
+          "swing_ratio": 5.292,
+          "lowest_agreement": 0.0951,
+          "mean_agreement": 0.4963
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 51",
+      "take": "held-16-01-51-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.68,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.68,
+          "stands_over_bypassed": 3282.7,
+          "added": 6.650774,
+          "size": 6.652801
+        },
+        "excursion_ms": 0.0036,
+        "excursion_spread_ms": 0.3335,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9108,
+        "as_a_flat_turn": 0.8644,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.02315,
+          0.00495,
+          0.02253,
+          2.09036,
+          51.0534,
+          0.00966,
+          0.01463,
+          0.00373
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 7.13,
+          "stands_over_bypassed": 103.515,
+          "added": 0.743271,
+          "size": 0.750521
+        },
+        "partials": {
+          "swings_db": [
+            1.5324,
+            3.9018,
+            3.7793,
+            3.1623,
+            5.1147,
+            2.4342,
+            4.2206,
+            3.2859
+          ],
+          "swing_ratio": 3.338,
+          "lowest_agreement": -0.2147,
+          "mean_agreement": -0.0121
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          7.13,
+          3.565,
+          2.3767,
+          1.7825,
+          0.68,
+          0.34,
+          0.2267,
+          0.17
+        ],
+        "series_spread_db": 3.7902,
+        "hz": 0.22623,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 67.5296,
+        "mix": 0.0525,
+        "left_over_db": {
+          "triangle": 3.3239,
+          "sine": 3.5595
+        },
+        "explains": 0.123,
+        "apart_by": 0.0622,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 52",
+      "take": "held-16-01-52-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.27,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.51,
+          "stands_over_bypassed": 2.013,
+          "added": 0.006063,
+          "size": 0.01205
+        },
+        "excursion_ms": 0.0005,
+        "excursion_spread_ms": 0.0012,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3972,
+        "as_a_flat_turn": 0.7831,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00224,
+          0.00117,
+          0.00174,
+          0.00701,
+          0.00327,
+          0.00466,
+          0.00386,
+          0.07246
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.27,
+          "stands_over_bypassed": 7.16,
+          "added": 0.160722,
+          "size": 0.186812
+        },
+        "partials": {
+          "swings_db": [
+            0.2153,
+            0.214,
+            0.2621,
+            1.1654,
+            0.8637,
+            0.3667,
+            0.328,
+            0.8026
+          ],
+          "swing_ratio": 5.445,
+          "lowest_agreement": 0.1961,
+          "mean_agreement": 0.5921
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 53",
+      "take": "held-16-01-53-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.32,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.32,
+          "stands_over_bypassed": 49.445,
+          "added": 0.17981,
+          "size": 0.183521
+        },
+        "excursion_ms": 0.0032,
+        "excursion_spread_ms": 0.0407,
+        "the_partials_agree": false,
+        "as_a_delay": 0.5113,
+        "as_a_flat_turn": 0.6323,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00412,
+          0.00928,
+          0.00678,
+          0.61082,
+          0.2989,
+          0.00899,
+          0.00962,
+          0.51966
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.98,
+          "stands_over_bypassed": 38.299,
+          "added": 0.151805,
+          "size": 0.155875
+        },
+        "partials": {
+          "swings_db": [
+            0.2561,
+            0.2988,
+            0.2353,
+            1.281,
+            0.9872,
+            0.4766,
+            0.357,
+            1.299
+          ],
+          "swing_ratio": 5.52,
+          "lowest_agreement": 0.0427,
+          "mean_agreement": 0.4115
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "01 54",
+      "take": "held-16-01-54-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.2,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.2,
+          "stands_over_bypassed": 168.205,
+          "added": 0.443776,
+          "size": 0.44643
+        },
+        "excursion_ms": 0.0051,
+        "excursion_spread_ms": 0.0067,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9066,
+        "as_a_flat_turn": 0.8627,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00529,
+          0.02203,
+          0.0263,
+          0.04498,
+          3.40728,
+          0.01098,
+          0.01458,
+          0.04002
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.48,
+          "stands_over_bypassed": 3.144,
+          "added": 0.156871,
+          "size": 0.230026
+        },
+        "partials": {
+          "swings_db": [
+            0.3413,
+            0.6332,
+            0.2223,
+            0.7104,
+            1.4266,
+            0.7108,
+            0.4232,
+            0.9926
+          ],
+          "swing_ratio": 6.418,
+          "lowest_agreement": -0.6625,
+          "mean_agreement": 0.064
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.48,
+          0.24,
+          0.2,
+          0.16,
+          0.12,
+          0.1,
+          0.0667,
+          0.05
+        ],
+        "series_spread_db": 0.1962,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 55",
+      "take": "held-16-01-55-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.31,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.31,
+          "stands_over_bypassed": 21.974,
+          "added": 0.074304,
+          "size": 0.077847
+        },
+        "excursion_ms": 0.0015,
+        "excursion_spread_ms": 0.007,
+        "the_partials_agree": false,
+        "as_a_delay": 0.8641,
+        "as_a_flat_turn": 0.8142,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00102,
+          0.00416,
+          0.00561,
+          0.0463,
+          0.50711,
+          0.0311,
+          0.00153,
+          0.02595
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.28,
+          "stands_over_bypassed": 8.266,
+          "added": 0.180226,
+          "size": 0.205031
+        },
+        "partials": {
+          "swings_db": [
+            0.2003,
+            0.37,
+            0.2092,
+            1.5171,
+            1.9033,
+            0.4562,
+            0.5043,
+            0.9418
+          ],
+          "swing_ratio": 9.5,
+          "lowest_agreement": -0.6094,
+          "mean_agreement": 0.0197
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.31,
+          0.28,
+          0.155,
+          0.14,
+          0.1033,
+          0.0933,
+          0.0775,
+          0.07
+        ],
+        "series_spread_db": 0.1776,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 56",
+      "take": "held-16-01-56-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.49,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.49,
+          "stands_over_bypassed": 4.748,
+          "added": 0.025588,
+          "size": 0.032415
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0005,
+        "the_partials_agree": false,
+        "as_a_delay": 0.5109,
+        "as_a_flat_turn": 0.8688,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00054,
+          0.0017,
+          0.0004,
+          0.00143,
+          0.00068,
+          0.00098,
+          0.00046,
+          0.25313
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.48,
+          "stands_over_bypassed": 3.944,
+          "added": 0.215379,
+          "size": 0.288535
+        },
+        "partials": {
+          "swings_db": [
+            0.3736,
+            0.1773,
+            0.0341,
+            0.3895,
+            1.3158,
+            0.1457,
+            0.0889,
+            2.3558
+          ],
+          "swing_ratio": 69.17,
+          "lowest_agreement": -0.2403,
+          "mean_agreement": 0.0689
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.49,
+          0.48,
+          0.245,
+          0.24,
+          0.1633,
+          0.16,
+          0.1225,
+          0.12
+        ],
+        "series_spread_db": 0.0281,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 57",
+      "take": "held-16-01-57-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.29,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.2,
+          "stands_over_bypassed": 2.528,
+          "added": 0.004056,
+          "size": 0.00671
+        },
+        "excursion_ms": 0.0006,
+        "excursion_spread_ms": 0.0011,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6163,
+        "as_a_flat_turn": 0.5209,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00088,
+          0.00215,
+          0.00109,
+          0.02288,
+          0.00375,
+          0.01183,
+          0.00729,
+          0.0038
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 5.084,
+          "added": 0.097894,
+          "size": 0.121865
+        },
+        "partials": {
+          "swings_db": [
+            0.2303,
+            0.2012,
+            0.1955,
+            0.5506,
+            1.0122,
+            0.2349,
+            0.2321,
+            0.8277
+          ],
+          "swing_ratio": 5.178,
+          "lowest_agreement": -0.0352,
+          "mean_agreement": 0.5187
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.29,
+          0.2,
+          0.145,
+          0.1,
+          0.0967,
+          0.0725,
+          0.0667,
+          0.05
+        ],
+        "series_spread_db": 0.1411,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 60",
+      "take": "held-16-01-60-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 3.9,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 3.9,
+          "stands_over_bypassed": 86003.628,
+          "added": 40.824466,
+          "size": 40.824941
+        },
+        "excursion_ms": 5.603,
+        "excursion_spread_ms": 7.9028,
+        "the_partials_agree": false,
+        "as_a_delay": 0.2616,
+        "as_a_flat_turn": 0.555,
+        "what_the_phase_looks_like": "a swept delay",
+        "phase_swing_rad": [
+          2.04799,
+          24.96505,
+          0.001,
+          47.63053,
+          74.15287,
+          21.49449,
+          11.48215,
+          144.82545
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.89,
+          "stands_over_bypassed": 177.44,
+          "added": 1.478381,
+          "size": 1.48676
+        },
+        "partials": {
+          "swings_db": [
+            5.8525,
+            5.7762,
+            1.5335,
+            5.7606,
+            4.921,
+            5.8633,
+            2.7332,
+            5.8931
+          ],
+          "swing_ratio": 3.843,
+          "lowest_agreement": -0.2491,
+          "mean_agreement": 0.0259
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.9,
+          3.89,
+          1.95,
+          1.945,
+          1.3,
+          1.2967,
+          0.975,
+          0.9725
+        ],
+        "series_spread_db": 0.2827,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 61",
+      "take": "held-16-01-61-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.2,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.2,
+          "stands_over_bypassed": 33035.357,
+          "added": 87.676133,
+          "size": 87.678787
+        },
+        "excursion_ms": 7.7731,
+        "excursion_spread_ms": 12.8097,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4716,
+        "as_a_flat_turn": 0.5856,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00053,
+          19.65745,
+          0.00542,
+          63.99005,
+          93.75428,
+          336.6308,
+          47.46356,
+          139.92821
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 7.78,
+          "stands_over_bypassed": 599.849,
+          "added": 2.114252,
+          "size": 2.117782
+        },
+        "partials": {
+          "swings_db": [
+            2.7865,
+            5.4406,
+            1.3216,
+            5.7178,
+            5.9234,
+            5.0004,
+            3.4726,
+            4.6282
+          ],
+          "swing_ratio": 4.482,
+          "lowest_agreement": -0.066,
+          "mean_agreement": 0.0488
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          7.78,
+          3.89,
+          2.5933,
+          1.945,
+          0.2,
+          0.1,
+          0.0667,
+          0.05
+        ],
+        "series_spread_db": 1.0386,
+        "hz": 0.0994,
+        "excursion_ms": 15.1152,
+        "comb_phase_swing_rad": 62.6744,
+        "mix": 0.1719,
+        "left_over_db": {
+          "triangle": 0.2114,
+          "sine": 0.2151
+        },
+        "explains": 0.7965,
+        "apart_by": 0.0036,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "01 70",
+      "take": "held-16-01-70-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 1.3,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 1.3,
+          "stands_over_bypassed": 34722.615,
+          "added": 34.631537,
+          "size": 34.632534
+        },
+        "excursion_ms": 0.9632,
+        "excursion_spread_ms": 5.9802,
+        "the_partials_agree": false,
+        "as_a_delay": 0.5199,
+        "as_a_flat_turn": 0.6836,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          1.84279,
+          0.27403,
+          0.61775,
+          27.04972,
+          136.85974,
+          4.91985,
+          1.4006,
+          104.09579
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.3,
+          "stands_over_bypassed": 543.121,
+          "added": 3.565422,
+          "size": 3.571999
+        },
+        "partials": {
+          "swings_db": [
+            5.8533,
+            4.695,
+            4.0899,
+            3.5289,
+            5.463,
+            6.2658,
+            4.0935,
+            5.6874
+          ],
+          "swing_ratio": 1.776,
+          "lowest_agreement": -0.0274,
+          "mean_agreement": 0.2749
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 438.71,
+        "seeded_at_hz": [
+          1.3,
+          0.65,
+          0.4333,
+          0.325
+        ],
+        "series_spread_db": 5.905,
+        "hz": 1.30078,
+        "excursion_ms": 1.5094,
+        "comb_phase_swing_rad": 2.0803,
+        "mix": 0.7857,
+        "left_over_db": {
+          "sine": 1.42,
+          "triangle": 1.8496
+        },
+        "explains": 0.7595,
+        "apart_by": 0.0728,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "01 71",
+      "take": "held-16-01-71-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.29,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.51,
+          "stands_over_bypassed": 1.695,
+          "added": 0.004162,
+          "size": 0.010149
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0011,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4609,
+        "as_a_flat_turn": 0.8289,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00019,
+          0.00043,
+          0.00034,
+          0.0074,
+          0.00196,
+          0.00156,
+          0.00036,
+          0.06896
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 1.809,
+          "added": 0.019385,
+          "size": 0.043355
+        },
+        "partials": {
+          "swings_db": [
+            0.124,
+            0.1395,
+            0.1143,
+            0.2897,
+            0.8634,
+            0.1605,
+            0.1534,
+            0.6973
+          ],
+          "swing_ratio": 7.553,
+          "lowest_agreement": -0.1216,
+          "mean_agreement": 0.3265
+        }
+      },
+      "moves": false,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "01 72",
+      "take": "held-16-01-72-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.21,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.21,
+          "stands_over_bypassed": 1370.031,
+          "added": 3.749508,
+          "size": 3.752247
+        },
+        "excursion_ms": 0.0017,
+        "excursion_spread_ms": 0.0079,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9157,
+        "as_a_flat_turn": 0.8741,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.0018,
+          0.02547,
+          0.00163,
+          0.03104,
+          29.9084,
+          0.0073,
+          0.02403,
+          0.0183
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.24,
+          "stands_over_bypassed": 6.572,
+          "added": 0.16346,
+          "size": 0.192795
+        },
+        "partials": {
+          "swings_db": [
+            0.1182,
+            0.289,
+            0.0995,
+            0.7955,
+            3.347,
+            0.8302,
+            0.5372,
+            1.666
+          ],
+          "swing_ratio": 33.635,
+          "lowest_agreement": -0.2755,
+          "mean_agreement": 0.0266
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.24,
+          0.21,
+          0.12,
+          0.105,
+          0.08,
+          0.07,
+          0.06,
+          0.0525
+        ],
+        "series_spread_db": 0.0729,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "01 73",
+      "take": "held-16-01-73-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.2,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.2,
+          "stands_over_bypassed": 14116.171,
+          "added": 37.462925,
+          "size": 37.465579
+        },
+        "excursion_ms": 0.0016,
+        "excursion_spread_ms": 3.7975,
+        "the_partials_agree": false,
+        "as_a_delay": 0.766,
+        "as_a_flat_turn": 0.8035,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00032,
+          0.00219,
+          0.00028,
+          0.01759,
+          228.09407,
+          0.01415,
+          0.01678,
+          71.57926
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.5,
+          "stands_over_bypassed": 4.687,
+          "added": 0.262522,
+          "size": 0.333724
+        },
+        "partials": {
+          "swings_db": [
+            0.1204,
+            0.1524,
+            0.1135,
+            0.5325,
+            5.7168,
+            0.2637,
+            0.3335,
+            4.0853
+          ],
+          "swing_ratio": 50.359,
+          "lowest_agreement": -0.1277,
+          "mean_agreement": 0.2262
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 440.0,
+        "seeded_at_hz": [
+          0.5,
+          0.25,
+          0.2,
+          0.1667,
+          0.125,
+          0.1,
+          0.0667,
+          0.05
+        ],
+        "series_spread_db": 0.1058,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 00",
+      "take": "held-16-02-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.44,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.44,
+          "stands_over_bypassed": 2081.043,
+          "added": 15.976498,
+          "size": 15.984179
+        },
+        "excursion_ms": 2.6003,
+        "excursion_spread_ms": 2.0671,
+        "the_partials_agree": true,
+        "as_a_delay": 0.1104,
+        "as_a_flat_turn": 0.3738,
+        "what_the_phase_looks_like": "a swept delay",
+        "phase_swing_rad": [
+          4.23358,
+          12.98726,
+          0.01655,
+          18.80241,
+          13.55682,
+          21.27709,
+          13.28921,
+          43.71051
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.48,
+          "stands_over_bypassed": 104.291,
+          "added": 1.460664,
+          "size": 1.474805
+        },
+        "partials": {
+          "swings_db": [
+            6.9343,
+            6.6969,
+            6.6528,
+            6.5332,
+            6.4876,
+            6.431,
+            6.9366,
+            7.1279
+          ],
+          "swing_ratio": 1.108,
+          "lowest_agreement": -0.2639,
+          "mean_agreement": -0.0444
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.48,
+          2.24,
+          1.4933,
+          1.12,
+          0.44,
+          0.22,
+          0.1467,
+          0.11
+        ],
+        "series_spread_db": 6.6639,
+        "hz": 2.24015,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 4.9702,
+        "mix": 0.2723,
+        "left_over_db": {
+          "triangle": 4.8848,
+          "sine": 5.0008
+        },
+        "explains": 0.267,
+        "apart_by": 0.0174,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 01",
+      "take": "held-16-02-01-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.59,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.59,
+          "stands_over_bypassed": 807.891,
+          "added": 1.976742,
+          "size": 1.979192
+        },
+        "excursion_ms": 0.1006,
+        "excursion_spread_ms": 0.7925,
+        "the_partials_agree": false,
+        "as_a_delay": 0.7771,
+        "as_a_flat_turn": 0.6899,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.11925,
+          0.54772,
+          0.13555,
+          5.04893,
+          0.7947,
+          8.61958,
+          0.56173,
+          0.00609
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.19,
+          "stands_over_bypassed": 102.831,
+          "added": 0.934688,
+          "size": 0.943866
+        },
+        "partials": {
+          "swings_db": [
+            3.1686,
+            3.2165,
+            2.4505,
+            3.128,
+            2.9503,
+            3.0999,
+            3.0836,
+            2.7517
+          ],
+          "swing_ratio": 1.313,
+          "lowest_agreement": -0.0517,
+          "mean_agreement": 0.1271
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.19,
+          2.095,
+          1.3967,
+          1.0475,
+          0.59,
+          0.295,
+          0.1967,
+          0.1475
+        ],
+        "series_spread_db": 2.3782,
+        "hz": 4.19129,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 3.4601,
+        "mix": 0.604,
+        "left_over_db": {
+          "triangle": 2.2001,
+          "sine": 2.2036
+        },
+        "explains": 0.0749,
+        "apart_by": 0.0015,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 02",
+      "take": "held-16-02-02-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.62,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.62,
+          "stands_over_bypassed": 3.106,
+          "added": 0.00173,
+          "size": 0.002552
+        },
+        "excursion_ms": 0.0003,
+        "excursion_spread_ms": 0.0009,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3875,
+        "as_a_flat_turn": 0.36,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00175,
+          0.00117,
+          0.0012,
+          0.00677,
+          0.00059,
+          0.00224,
+          0.00237,
+          0.00433
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.26,
+          "stands_over_bypassed": 2.368,
+          "added": 0.037366,
+          "size": 0.064676
+        },
+        "partials": {
+          "swings_db": [
+            0.1601,
+            0.0894,
+            0.1666,
+            0.1967,
+            0.1421,
+            0.2385,
+            0.1973,
+            0.1808
+          ],
+          "swing_ratio": 2.667,
+          "lowest_agreement": 0.1992,
+          "mean_agreement": 0.5638
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "02 03",
+      "take": "held-16-02-03-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 1656.193,
+          "added": 12.715853,
+          "size": 12.723535
+        },
+        "excursion_ms": 2.0219,
+        "excursion_spread_ms": 2.379,
+        "the_partials_agree": false,
+        "as_a_delay": 0.1985,
+        "as_a_flat_turn": 0.3701,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          3.1618,
+          11.3905,
+          0.01245,
+          13.72531,
+          9.88927,
+          26.90804,
+          7.56707,
+          29.13384
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.48,
+          "stands_over_bypassed": 104.795,
+          "added": 1.467797,
+          "size": 1.481939
+        },
+        "partials": {
+          "swings_db": [
+            7.039,
+            6.5392,
+            6.6905,
+            6.5075,
+            6.5929,
+            6.0816,
+            6.7751,
+            7.1978
+          ],
+          "swing_ratio": 1.184,
+          "lowest_agreement": -0.2689,
+          "mean_agreement": -0.0434
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.48,
+          2.24,
+          1.4933,
+          1.12,
+          0.45,
+          0.225,
+          0.15,
+          0.1125
+        ],
+        "series_spread_db": 6.6705,
+        "hz": 0.44822,
+        "excursion_ms": 5.9693,
+        "comb_phase_swing_rad": 24.7514,
+        "mix": 0.9177,
+        "left_over_db": {
+          "triangle": 1.141,
+          "sine": 5.0054
+        },
+        "explains": 0.8289,
+        "apart_by": 0.5793,
+        "closer_to": "triangle"
+      }
+    },
+    {
+      "type": "02 04",
+      "take": "held-16-02-04-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.21,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.21,
+          "stands_over_bypassed": 130.329,
+          "added": 0.354208,
+          "size": 0.356947
+        },
+        "excursion_ms": 0.0007,
+        "excursion_spread_ms": 0.0066,
+        "the_partials_agree": false,
+        "as_a_delay": 0.8777,
+        "as_a_flat_turn": 0.8722,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.01061,
+          0.00425,
+          0.00333,
+          0.00358,
+          0.00317,
+          2.82386,
+          0.00229,
+          0.0045
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.61,
+          "stands_over_bypassed": 111.523,
+          "added": 1.754202,
+          "size": 1.770073
+        },
+        "partials": {
+          "swings_db": [
+            2.6781,
+            4.1248,
+            2.2982,
+            3.3831,
+            2.7705,
+            3.582,
+            3.0185,
+            2.7629
+          ],
+          "swing_ratio": 1.795,
+          "lowest_agreement": -0.1951,
+          "mean_agreement": 0.1358
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.61,
+          0.305,
+          0.21,
+          0.2033,
+          0.1525,
+          0.105,
+          0.07,
+          0.0525
+        ],
+        "series_spread_db": 2.3043,
+        "hz": 0.59896,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 4.7299,
+        "mix": 0.9422,
+        "left_over_db": {
+          "sine": 1.6204,
+          "triangle": 1.8323
+        },
+        "explains": 0.2968,
+        "apart_by": 0.092,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 05",
+      "take": "held-16-02-05-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 3.65,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 3.65,
+          "stands_over_bypassed": 31.561,
+          "added": 0.011142,
+          "size": 0.011506
+        },
+        "excursion_ms": 0.0013,
+        "excursion_spread_ms": 0.0025,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4128,
+        "as_a_flat_turn": 0.2283,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.01455,
+          0.0023,
+          0.00275,
+          0.01563,
+          0.0224,
+          0.0136,
+          0.01063,
+          0.01019
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.64,
+          "stands_over_bypassed": 16.609,
+          "added": 0.070314,
+          "size": 0.074818
+        },
+        "partials": {
+          "swings_db": [
+            0.1483,
+            0.1734,
+            0.1625,
+            0.3115,
+            0.2103,
+            0.4139,
+            0.2096,
+            0.2799
+          ],
+          "swing_ratio": 2.79,
+          "lowest_agreement": -0.1097,
+          "mean_agreement": 0.3502
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.65,
+          3.64,
+          1.825,
+          1.82,
+          1.2167,
+          1.2133,
+          0.9125,
+          0.91
+        ],
+        "series_spread_db": 0.1172,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 06",
+      "take": "held-16-02-06-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.45,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.45,
+          "stands_over_bypassed": 565.563,
+          "added": 4.337203,
+          "size": 4.344885
+        },
+        "excursion_ms": 0.0058,
+        "excursion_spread_ms": 0.04,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9147,
+        "as_a_flat_turn": 0.8722,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.03601,
+          0.01529,
+          0.02551,
+          0.24573,
+          34.37548,
+          0.01882,
+          0.00452,
+          0.03771
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 6.73,
+          "stands_over_bypassed": 83.8,
+          "added": 0.450009,
+          "size": 0.455444
+        },
+        "partials": {
+          "swings_db": [
+            2.8943,
+            3.0656,
+            2.7698,
+            4.2489,
+            4.5981,
+            2.701,
+            2.5327,
+            3.1683
+          ],
+          "swing_ratio": 1.816,
+          "lowest_agreement": -0.2679,
+          "mean_agreement": -0.0323
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          6.73,
+          3.365,
+          2.2433,
+          1.6825,
+          0.45,
+          0.225,
+          0.15,
+          0.1125
+        ],
+        "series_spread_db": 2.7697,
+        "hz": 0.21952,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 51.8389,
+        "mix": 0.8748,
+        "left_over_db": {
+          "sine": 2.5567,
+          "triangle": 2.6643
+        },
+        "explains": 0.0769,
+        "apart_by": 0.0388,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 07",
+      "take": "held-16-02-07-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.59,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.59,
+          "stands_over_bypassed": 13584.784,
+          "added": 33.277899,
+          "size": 33.280348
+        },
+        "excursion_ms": 0.1122,
+        "excursion_spread_ms": 5.7848,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6839,
+        "as_a_flat_turn": 0.7311,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.26775,
+          0.06505,
+          0.12736,
+          33.36321,
+          165.42483,
+          0.05837,
+          0.04958,
+          66.88662
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.79,
+          "stands_over_bypassed": 6.288,
+          "added": 0.868562,
+          "size": 1.032816
+        },
+        "partials": {
+          "swings_db": [
+            2.5311,
+            2.1491,
+            2.0472,
+            3.5249,
+            3.8818,
+            2.2131,
+            2.4365,
+            3.1808
+          ],
+          "swing_ratio": 1.896,
+          "lowest_agreement": -0.0122,
+          "mean_agreement": 0.1701
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.79,
+          2.395,
+          1.5967,
+          1.1975,
+          0.59,
+          0.295,
+          0.1967,
+          0.1475
+        ],
+        "series_spread_db": 2.039,
+        "hz": 2.39339,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 3.019,
+        "mix": 0.6008,
+        "left_over_db": {
+          "sine": 1.6403,
+          "triangle": 1.6405
+        },
+        "explains": 0.1955,
+        "apart_by": 0.0001,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 08",
+      "take": "held-16-02-08-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.26,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.2,
+          "stands_over_bypassed": 2.756,
+          "added": 0.004661,
+          "size": 0.007315
+        },
+        "excursion_ms": 0.0008,
+        "excursion_spread_ms": 0.001,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6098,
+        "as_a_flat_turn": 0.5081,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00118,
+          0.00187,
+          0.0009,
+          0.02472,
+          0.00945,
+          0.00624,
+          0.0106,
+          0.00355
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.26,
+          "stands_over_bypassed": 2.664,
+          "added": 0.045439,
+          "size": 0.072748
+        },
+        "partials": {
+          "swings_db": [
+            0.1159,
+            0.1245,
+            0.1381,
+            0.6019,
+            0.9164,
+            0.2259,
+            0.1809,
+            0.5536
+          ],
+          "swing_ratio": 7.904,
+          "lowest_agreement": -0.0075,
+          "mean_agreement": 0.4315
+        }
+      },
+      "moves": false,
+      "the_level_swing_is": null
+    },
+    {
+      "type": "02 09",
+      "take": "held-16-02-09-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.35,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.35,
+          "stands_over_bypassed": 561.853,
+          "added": 2.678572,
+          "size": 2.683348
+        },
+        "excursion_ms": 0.0011,
+        "excursion_spread_ms": 0.0031,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9152,
+        "as_a_flat_turn": 0.8742,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00207,
+          0.00204,
+          0.00015,
+          0.00764,
+          21.39534,
+          0.00246,
+          2e-05,
+          0.05707
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.98,
+          "stands_over_bypassed": 13.345,
+          "added": 0.33858,
+          "size": 0.366007
+        },
+        "partials": {
+          "swings_db": [
+            1.8805,
+            2.0651,
+            1.7485,
+            2.6509,
+            4.2085,
+            2.3107,
+            1.8929,
+            2.5049
+          ],
+          "swing_ratio": 2.407,
+          "lowest_agreement": -0.1405,
+          "mean_agreement": -0.0078
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.98,
+          2.49,
+          1.66,
+          1.245,
+          0.35,
+          0.175,
+          0.1167,
+          0.0875
+        ],
+        "series_spread_db": 1.7437,
+        "hz": 1.24884,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 19.1457,
+        "mix": 0.0768,
+        "left_over_db": {
+          "triangle": 1.2148,
+          "sine": 1.2712
+        },
+        "explains": 0.3033,
+        "apart_by": 0.0323,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 0A",
+      "take": "held-16-02-0A-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.59,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.59,
+          "stands_over_bypassed": 12248.232,
+          "added": 30.00358,
+          "size": 30.006029
+        },
+        "excursion_ms": 0.2526,
+        "excursion_spread_ms": 3.7659,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6924,
+        "as_a_flat_turn": 0.7581,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.35364,
+          0.07168,
+          0.17036,
+          11.94444,
+          158.73455,
+          2.06863,
+          0.08279,
+          66.62213
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 2.99,
+          "stands_over_bypassed": 184.686,
+          "added": 0.950504,
+          "size": 0.955678
+        },
+        "partials": {
+          "swings_db": [
+            2.6919,
+            2.6666,
+            2.2745,
+            3.2298,
+            4.3615,
+            2.9702,
+            2.9154,
+            3.1911
+          ],
+          "swing_ratio": 1.918,
+          "lowest_agreement": -0.0722,
+          "mean_agreement": 0.1807
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.99,
+          1.495,
+          0.9967,
+          0.7475,
+          0.59,
+          0.295,
+          0.1967,
+          0.1475
+        ],
+        "series_spread_db": 2.2709,
+        "hz": 0.59853,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 10.2487,
+        "mix": 0.9429,
+        "left_over_db": {
+          "triangle": 1.842,
+          "sine": 1.9541
+        },
+        "explains": 0.1889,
+        "apart_by": 0.0494,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "02 0B",
+      "take": "held-16-02-0B-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.6,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.6,
+          "stands_over_bypassed": 19003.825,
+          "added": 35.360022,
+          "size": 35.361882
+        },
+        "excursion_ms": 0.7731,
+        "excursion_spread_ms": 9.4024,
+        "the_partials_agree": false,
+        "as_a_delay": 0.361,
+        "as_a_flat_turn": 0.7056,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.40183,
+          2.88856,
+          0.69974,
+          59.5752,
+          41.50601,
+          2.99413,
+          5.54346,
+          169.28614
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.0,
+          "stands_over_bypassed": 306.023,
+          "added": 1.323944,
+          "size": 1.328284
+        },
+        "partials": {
+          "swings_db": [
+            4.9882,
+            4.769,
+            4.3244,
+            4.8285,
+            6.1403,
+            5.5274,
+            5.4031,
+            5.1201
+          ],
+          "swing_ratio": 1.42,
+          "lowest_agreement": -0.0683,
+          "mean_agreement": 0.0813
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.0,
+          1.5,
+          1.0,
+          0.75,
+          0.6,
+          0.3,
+          0.2,
+          0.15
+        ],
+        "series_spread_db": 4.3185,
+        "hz": 0.74788,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 28.2255,
+        "mix": 0.0641,
+        "left_over_db": {
+          "triangle": 3.8015,
+          "sine": 3.9205
+        },
+        "explains": 0.1197,
+        "apart_by": 0.0276,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "03 00",
+      "take": "held-16-03-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.33,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.33,
+          "stands_over_bypassed": 5486.313,
+          "added": 21.8417,
+          "size": 21.845682
+        },
+        "excursion_ms": 0.4905,
+        "excursion_spread_ms": 1.366,
+        "the_partials_agree": false,
+        "as_a_delay": 0.455,
+        "as_a_flat_turn": 0.8313,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.41927,
+          1.87354,
+          0.53454,
+          5.02615,
+          11.92775,
+          2.15888,
+          3.00948,
+          149.81585
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.85,
+          "stands_over_bypassed": 130.963,
+          "added": 2.212422,
+          "size": 2.229446
+        },
+        "partials": {
+          "swings_db": [
+            1.5553,
+            4.7455,
+            6.8758,
+            5.4198,
+            5.9954,
+            5.885,
+            5.5752,
+            4.9544
+          ],
+          "swing_ratio": 4.421,
+          "lowest_agreement": -0.595,
+          "mean_agreement": 0.0144
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 440.0,
+        "seeded_at_hz": [
+          0.85,
+          0.425,
+          0.33,
+          0.2833,
+          0.2125,
+          0.165,
+          0.11,
+          0.0825
+        ],
+        "series_spread_db": 1.5385,
+        "hz": 0.34968,
+        "excursion_ms": 0.7568,
+        "comb_phase_swing_rad": 1.0461,
+        "mix": 0.4768,
+        "left_over_db": {
+          "triangle": 0.1012,
+          "sine": 0.1531
+        },
+        "explains": 0.9342,
+        "apart_by": 0.0337,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "04 00",
+      "take": "held-16-04-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 2.24,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 2.24,
+          "stands_over_bypassed": 107.13,
+          "added": 0.039987,
+          "size": 0.040364
+        },
+        "excursion_ms": 0.0049,
+        "excursion_spread_ms": 0.0275,
+        "the_partials_agree": false,
+        "as_a_delay": 0.8752,
+        "as_a_flat_turn": 0.5156,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.02548,
+          0.09574,
+          0.12321,
+          0.03064,
+          0.02883,
+          0.00723,
+          0.00904,
+          0.00274
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.34,
+          "stands_over_bypassed": 43.043,
+          "added": 0.356869,
+          "size": 0.365357
+        },
+        "partials": {
+          "swings_db": [
+            1.3966,
+            1.6067,
+            1.186,
+            1.763,
+            1.3063,
+            1.6068,
+            1.359,
+            1.3423
+          ],
+          "swing_ratio": 1.486,
+          "lowest_agreement": -0.1797,
+          "mean_agreement": 0.0066
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.24,
+          1.34,
+          1.12,
+          0.7467,
+          0.67,
+          0.56,
+          0.4467,
+          0.335
+        ],
+        "series_spread_db": 1.1851,
+        "hz": 0.44817,
+        "excursion_ms": 2.2011,
+        "comb_phase_swing_rad": 9.1269,
+        "mix": 0.2036,
+        "left_over_db": {
+          "triangle": 0.0361,
+          "sine": 0.6323
+        },
+        "explains": 0.9695,
+        "apart_by": 0.5031,
+        "closer_to": "triangle"
+      }
+    },
+    {
+      "type": "04 01",
+      "take": "held-16-04-01-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 3.64,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 3.64,
+          "stands_over_bypassed": 46.701,
+          "added": 0.017646,
+          "size": 0.018032
+        },
+        "excursion_ms": 0.0019,
+        "excursion_spread_ms": 0.0033,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3644,
+        "as_a_flat_turn": 0.2465,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.02848,
+          0.00576,
+          0.00362,
+          0.01414,
+          0.0355,
+          0.01496,
+          0.01658,
+          0.02523
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.64,
+          "stands_over_bypassed": 39.219,
+          "added": 0.172167,
+          "size": 0.176672
+        },
+        "partials": {
+          "swings_db": [
+            0.5794,
+            0.7625,
+            0.1061,
+            1.5569,
+            0.4903,
+            0.8549,
+            0.6131,
+            0.5413
+          ],
+          "swing_ratio": 14.667,
+          "lowest_agreement": -0.5502,
+          "mean_agreement": 0.0443
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.64,
+          1.82,
+          1.2133,
+          0.91
+        ],
+        "series_spread_db": 0.03,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "04 02",
+      "take": "held-16-04-02-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 3.65,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 3.65,
+          "stands_over_bypassed": 112.738,
+          "added": 0.040736,
+          "size": 0.041101
+        },
+        "excursion_ms": 0.0043,
+        "excursion_spread_ms": 0.0084,
+        "the_partials_agree": false,
+        "as_a_delay": 0.1447,
+        "as_a_flat_turn": 0.4154,
+        "what_the_phase_looks_like": "a swept delay",
+        "phase_swing_rad": [
+          0.00584,
+          0.00401,
+          0.00667,
+          0.062,
+          0.07358,
+          0.02368,
+          0.04916,
+          0.10386
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.65,
+          "stands_over_bypassed": 108.155,
+          "added": 0.531758,
+          "size": 0.536721
+        },
+        "partials": {
+          "swings_db": [
+            0.4116,
+            0.4539,
+            0.2095,
+            2.151,
+            1.9575,
+            0.6748,
+            0.7892,
+            4.326
+          ],
+          "swing_ratio": 20.65,
+          "lowest_agreement": -0.9263,
+          "mean_agreement": 0.0129
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 440.0,
+        "seeded_at_hz": [
+          3.65,
+          1.825,
+          1.2167,
+          0.9125
+        ],
+        "series_spread_db": 0.0653,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "04 03",
+      "take": "held-16-04-03-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.44,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.44,
+          "stands_over_bypassed": 4680.774,
+          "added": 35.944648,
+          "size": 35.952329
+        },
+        "excursion_ms": 0.0643,
+        "excursion_spread_ms": 5.6296,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4584,
+        "as_a_flat_turn": 0.827,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.15331,
+          3.63571,
+          0.07321,
+          0.05624,
+          43.0309,
+          0.05473,
+          0.01135,
+          240.60318
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 2.24,
+          "stands_over_bypassed": 501.349,
+          "added": 1.585619,
+          "size": 1.588788
+        },
+        "partials": {
+          "swings_db": [
+            5.2688,
+            6.2175,
+            5.4694,
+            3.8468,
+            4.1089,
+            4.5648,
+            4.0293,
+            6.1319
+          ],
+          "swing_ratio": 1.616,
+          "lowest_agreement": -0.3578,
+          "mean_agreement": -0.0601
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.24,
+          1.12,
+          0.7467,
+          0.56,
+          0.44,
+          0.22,
+          0.1467,
+          0.11
+        ],
+        "series_spread_db": 5.3925,
+        "hz": 0.10846,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 52.5699,
+        "mix": 0.254,
+        "left_over_db": {
+          "triangle": 3.7695,
+          "sine": 4.8681
+        },
+        "explains": 0.301,
+        "apart_by": 0.2037,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "04 04",
+      "take": "held-16-04-04-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.39,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.39,
+          "stands_over_bypassed": 21346.897,
+          "added": 138.134816,
+          "size": 138.141288
+        },
+        "excursion_ms": 1.7413,
+        "excursion_spread_ms": 7.0741,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4625,
+        "as_a_flat_turn": 0.8408,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.51455,
+          0.54304,
+          0.79765,
+          39.67658,
+          50.50545,
+          6.28954,
+          30.12694,
+          976.67655
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.5,
+          "stands_over_bypassed": 1418.067,
+          "added": 7.104011,
+          "size": 7.109024
+        },
+        "partials": {
+          "swings_db": [
+            4.8449,
+            6.6727,
+            8.9558,
+            8.4796,
+            9.1065,
+            7.0209,
+            7.6294,
+            7.9728
+          ],
+          "swing_ratio": 1.88,
+          "lowest_agreement": -0.4154,
+          "mean_agreement": 0.1968
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          1.5,
+          0.75,
+          0.5,
+          0.39,
+          0.375,
+          0.195,
+          0.13,
+          0.0975
+        ],
+        "series_spread_db": 8.9926,
+        "hz": 0.08805,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 25.7576,
+        "mix": 0.02,
+        "left_over_db": {
+          "triangle": 5.8329,
+          "sine": 6.4742
+        },
+        "explains": 0.3514,
+        "apart_by": 0.0713,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "04 05",
+      "take": "held-16-04-05-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.9,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.9,
+          "stands_over_bypassed": 69.309,
+          "added": 0.10109,
+          "size": 0.10257
+        },
+        "excursion_ms": 0.006,
+        "excursion_spread_ms": 0.0655,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9161,
+        "as_a_flat_turn": 0.6039,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.06976,
+          0.34864,
+          0.2858,
+          0.00964,
+          0.05416,
+          0.03439,
+          0.0125,
+          0.00567
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.61,
+          "stands_over_bypassed": 66.961,
+          "added": 1.046922,
+          "size": 1.062794
+        },
+        "partials": {
+          "swings_db": [
+            2.1363,
+            2.881,
+            2.3216,
+            2.2734,
+            2.4795,
+            3.1105,
+            2.3591,
+            2.5395
+          ],
+          "swing_ratio": 1.456,
+          "lowest_agreement": -0.7316,
+          "mean_agreement": -0.0906
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.9,
+          0.61,
+          0.45,
+          0.305,
+          0.3,
+          0.225,
+          0.2033,
+          0.1525
+        ],
+        "series_spread_db": 2.2983,
+        "hz": 0.29932,
+        "excursion_ms": 1.4256,
+        "comb_phase_swing_rad": 5.911,
+        "mix": 0.3583,
+        "left_over_db": {
+          "triangle": 0.0737,
+          "sine": 0.7609
+        },
+        "explains": 0.9679,
+        "apart_by": 0.299,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "04 06",
+      "take": "held-16-04-06-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.84,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.84,
+          "stands_over_bypassed": 18040.253,
+          "added": 37.897306,
+          "size": 37.899406
+        },
+        "excursion_ms": 1.2811,
+        "excursion_spread_ms": 9.444,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3304,
+        "as_a_flat_turn": 0.6946,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.12439,
+          1.71049,
+          0.77445,
+          21.56933,
+          81.82888,
+          14.49986,
+          8.9996,
+          173.68826
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 3.05,
+          "stands_over_bypassed": 641.665,
+          "added": 2.271376,
+          "size": 2.274922
+        },
+        "partials": {
+          "swings_db": [
+            7.2142,
+            7.0311,
+            6.634,
+            5.964,
+            5.7055,
+            7.1641,
+            7.886,
+            6.4001
+          ],
+          "swing_ratio": 1.382,
+          "lowest_agreement": -0.286,
+          "mean_agreement": 0.0067
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          3.05,
+          1.525,
+          1.0167,
+          0.84,
+          0.7625,
+          0.42,
+          0.28,
+          0.21
+        ],
+        "series_spread_db": 6.6174,
+        "hz": 0.41766,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 23.051,
+        "mix": 0.9486,
+        "left_over_db": {
+          "triangle": 4.2528,
+          "sine": 5.511
+        },
+        "explains": 0.3573,
+        "apart_by": 0.1901,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "05 00",
+      "take": "held-16-05-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.28,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.28,
+          "stands_over_bypassed": 75594.197,
+          "added": 247.336199,
+          "size": 247.339471
+        },
+        "excursion_ms": 0.1501,
+        "excursion_spread_ms": 6.4976,
+        "the_partials_agree": false,
+        "as_a_delay": 0.4993,
+        "as_a_flat_turn": 0.8639,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.03271,
+          0.0502,
+          0.03267,
+          23.76883,
+          0.03146,
+          56.46276,
+          3.05903,
+          1895.27811
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.88,
+          "stands_over_bypassed": 148.329,
+          "added": 2.133371,
+          "size": 2.147852
+        },
+        "partials": {
+          "swings_db": [
+            1.2632,
+            3.2199,
+            3.0398,
+            4.3154,
+            3.5123,
+            4.3579,
+            3.5191,
+            5.757
+          ],
+          "swing_ratio": 4.557,
+          "lowest_agreement": -0.6835,
+          "mean_agreement": -0.0549
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.88,
+          0.44,
+          0.2933,
+          0.28,
+          0.22,
+          0.14,
+          0.0933,
+          0.07
+        ],
+        "series_spread_db": 2.9854,
+        "hz": 0.44904,
+        "excursion_ms": 0.597,
+        "comb_phase_swing_rad": 2.4754,
+        "mix": 0.0713,
+        "left_over_db": {
+          "triangle": 0.6332,
+          "sine": 0.7801
+        },
+        "explains": 0.7879,
+        "apart_by": 0.0492,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "11 00",
+      "take": "held-16-11-00-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.47,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 4.47,
+          "stands_over_bypassed": 36.872,
+          "added": 0.017465,
+          "size": 0.017952
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0157,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9355,
+        "as_a_flat_turn": 0.8086,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.02462,
+          0.00129,
+          0.00048,
+          0.11338,
+          0.00084,
+          0.00185,
+          0.00047,
+          0.0007
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.29,
+          "stands_over_bypassed": 4.05,
+          "added": 0.073115,
+          "size": 0.097085
+        },
+        "partials": {
+          "swings_db": [
+            0.1923,
+            0.1479,
+            0.1731,
+            1.0986,
+            0.9819,
+            0.3164,
+            0.2323,
+            0.7958
+          ],
+          "swing_ratio": 7.428,
+          "lowest_agreement": -0.0132,
+          "mean_agreement": 0.3023
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.47,
+          2.235,
+          1.49,
+          1.1175,
+          0.29,
+          0.145,
+          0.0967,
+          0.0725
+        ],
+        "series_spread_db": 0.1452,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 01",
+      "take": "held-16-11-01-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.8,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 4.8,
+          "stands_over_bypassed": 23.981,
+          "added": 0.015,
+          "size": 0.015653
+        },
+        "excursion_ms": 0.0023,
+        "excursion_spread_ms": 0.0054,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6384,
+        "as_a_flat_turn": 0.4112,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00959,
+          0.00679,
+          0.01372,
+          0.04684,
+          0.01186,
+          0.00865,
+          0.02406,
+          0.00371
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 5.99,
+          "stands_over_bypassed": 29.949,
+          "added": 0.114606,
+          "size": 0.118565
+        },
+        "partials": {
+          "swings_db": [
+            0.3061,
+            0.19,
+            0.2482,
+            0.9007,
+            1.0392,
+            0.4341,
+            0.3274,
+            0.7788
+          ],
+          "swing_ratio": 5.47,
+          "lowest_agreement": 0.0238,
+          "mean_agreement": 0.2337
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "the whole voice"
+    },
+    {
+      "type": "11 02",
+      "take": "held-16-11-02-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.59,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 0.59,
+          "stands_over_bypassed": 32890.169,
+          "added": 80.572724,
+          "size": 80.575174
+        },
+        "excursion_ms": 0.5785,
+        "excursion_spread_ms": 20.942,
+        "the_partials_agree": false,
+        "as_a_delay": 0.3883,
+        "as_a_flat_turn": 0.716,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00959,
+          0.03604,
+          0.04942,
+          58.32176,
+          204.18956,
+          5.74409,
+          5.13507,
+          371.11585
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 4.79,
+          "stands_over_bypassed": 15.476,
+          "added": 2.377699,
+          "size": 2.541953
+        },
+        "partials": {
+          "swings_db": [
+            4.3652,
+            3.1247,
+            3.9435,
+            6.5802,
+            7.2272,
+            5.2517,
+            5.0426,
+            4.6614
+          ],
+          "swing_ratio": 2.313,
+          "lowest_agreement": -0.5269,
+          "mean_agreement": 0.0931
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.79,
+          2.395,
+          1.5967,
+          1.1975,
+          0.59,
+          0.295,
+          0.1967,
+          0.1475
+        ],
+        "series_spread_db": 3.9068,
+        "hz": 1.19784,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 2.8351,
+        "mix": 0.9156,
+        "left_over_db": {
+          "triangle": 2.3759,
+          "sine": 2.4811
+        },
+        "explains": 0.3919,
+        "apart_by": 0.0269,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 03",
+      "take": "held-16-11-03-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 4.77,
+      "the_two_peaks_are_separated": true,
+      "phase": {
+        "peak": {
+          "hz": 4.77,
+          "stands_over_bypassed": 3.985,
+          "added": 0.001351,
+          "size": 0.001803
+        },
+        "excursion_ms": 0.0002,
+        "excursion_spread_ms": 0.0004,
+        "the_partials_agree": false,
+        "as_a_delay": 0.2906,
+        "as_a_flat_turn": 0.4735,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00012,
+          0.0003,
+          0.00023,
+          0.00267,
+          0.00052,
+          0.00512,
+          0.00214,
+          0.00332
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.92,
+          "stands_over_bypassed": 3.722,
+          "added": 0.009486,
+          "size": 0.012972
+        },
+        "partials": {
+          "swings_db": [
+            0.103,
+            0.0731,
+            0.0402,
+            0.1675,
+            0.0879,
+            0.1588,
+            0.0948,
+            0.1421
+          ],
+          "swing_ratio": 4.168,
+          "lowest_agreement": -0.4317,
+          "mean_agreement": -0.021
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          4.77,
+          2.385,
+          1.92,
+          1.59,
+          1.1925,
+          0.96,
+          0.64,
+          0.48
+        ],
+        "series_spread_db": 0.022,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 04",
+      "take": "held-16-11-04-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 1.08,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 1.08,
+          "stands_over_bypassed": 4.653,
+          "added": 0.00191,
+          "size": 0.002433
+        },
+        "excursion_ms": 0.0005,
+        "excursion_spread_ms": 0.0008,
+        "the_partials_agree": false,
+        "as_a_delay": 0.6243,
+        "as_a_flat_turn": 0.4442,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00209,
+          0.00161,
+          0.00191,
+          0.00288,
+          0.00025,
+          0.00786,
+          0.00187,
+          0.00099
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 1.06,
+          "stands_over_bypassed": 5.178,
+          "added": 0.019791,
+          "size": 0.024528
+        },
+        "partials": {
+          "swings_db": [
+            0.1284,
+            0.0963,
+            0.0555,
+            0.1764,
+            0.0879,
+            0.1843,
+            0.09,
+            0.1095
+          ],
+          "swing_ratio": 3.319,
+          "lowest_agreement": -0.4893,
+          "mean_agreement": -0.0277
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          1.08,
+          1.06,
+          0.54,
+          0.53,
+          0.36,
+          0.3533,
+          0.27,
+          0.265
+        ],
+        "series_spread_db": 0.0484,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 05",
+      "take": "held-16-11-05-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.84,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.84,
+          "stands_over_bypassed": 3.812,
+          "added": 0.005907,
+          "size": 0.008008
+        },
+        "excursion_ms": 0.0014,
+        "excursion_spread_ms": 0.0023,
+        "the_partials_agree": false,
+        "as_a_delay": 0.7594,
+        "as_a_flat_turn": 0.3508,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.01947,
+          0.00692,
+          0.00863,
+          0.00699,
+          0.00025,
+          0.01297,
+          0.00845,
+          0.00038
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.85,
+          "stands_over_bypassed": 5.339,
+          "added": 0.073857,
+          "size": 0.090881
+        },
+        "partials": {
+          "swings_db": [
+            0.1978,
+            0.1036,
+            0.0874,
+            0.1758,
+            0.0875,
+            0.2328,
+            0.0982,
+            0.1105
+          ],
+          "swing_ratio": 2.663,
+          "lowest_agreement": -0.6784,
+          "mean_agreement": -0.0368
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.85,
+          0.84,
+          0.425,
+          0.42,
+          0.2833,
+          0.28,
+          0.2125,
+          0.21
+        ],
+        "series_spread_db": 0.0784,
+        "excursion_ms": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 06",
+      "take": "held-16-11-06-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 2.05,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 56.147,
+          "added": 0.017041,
+          "size": 0.01735
+        },
+        "excursion_ms": 0.0026,
+        "excursion_spread_ms": 0.0067,
+        "the_partials_agree": false,
+        "as_a_delay": 0.7785,
+        "as_a_flat_turn": 0.5123,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.00578,
+          0.03931,
+          0.02901,
+          0.00527,
+          0.0007,
+          0.04915,
+          0.00852,
+          0.00107
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 41.27,
+          "added": 0.156811,
+          "size": 0.160705
+        },
+        "partials": {
+          "swings_db": [
+            0.1019,
+            0.7208,
+            0.3202,
+            0.2357,
+            0.0937,
+            0.4256,
+            0.1073,
+            0.1098
+          ],
+          "swing_ratio": 7.693,
+          "lowest_agreement": -0.3884,
+          "mean_agreement": -0.0002
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.05,
+          1.025,
+          0.6833,
+          0.5125
+        ],
+        "series_spread_db": 0.317,
+        "hz": 1.0243,
+        "excursion_ms": null,
+        "comb_phase_swing_rad": 6.7597,
+        "mix": 0.5965,
+        "left_over_db": {
+          "sine": 0.1926,
+          "triangle": 0.2006
+        },
+        "explains": 0.3924,
+        "apart_by": 0.0252,
+        "closer_to": null,
+        "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      }
+    },
+    {
+      "type": "11 07",
+      "take": "held-16-11-07-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 0.84,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 0.84,
+          "stands_over_bypassed": 30814.861,
+          "added": 64.734517,
+          "size": 64.736618
+        },
+        "excursion_ms": 0.1588,
+        "excursion_spread_ms": 0.2217,
+        "the_partials_agree": false,
+        "as_a_delay": 0.9131,
+        "as_a_flat_turn": 0.8714,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.25167,
+          0.4809,
+          0.59544,
+          0.56908,
+          510.62913,
+          0.8499,
+          3.79954,
+          0.71729
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 0.85,
+          "stands_over_bypassed": 308.944,
+          "added": 5.24229,
+          "size": 5.259313
+        },
+        "partials": {
+          "swings_db": [
+            5.8383,
+            3.3321,
+            3.3742,
+            5.9878,
+            7.7023,
+            2.392,
+            7.9673,
+            3.1965
+          ],
+          "swing_ratio": 3.331,
+          "lowest_agreement": -0.8528,
+          "mean_agreement": -0.0685
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          0.85,
+          0.84,
+          0.425,
+          0.42,
+          0.2833,
+          0.28,
+          0.2125,
+          0.21
+        ],
+        "series_spread_db": 3.3858,
+        "hz": 0.84874,
+        "excursion_ms": 0.4709,
+        "comb_phase_swing_rad": 1.9525,
+        "mix": 0.8066,
+        "left_over_db": {
+          "triangle": 0.1693,
+          "sine": 0.2567
+        },
+        "explains": 0.95,
+        "apart_by": 0.0258,
+        "closer_to": null
+      }
+    },
+    {
+      "type": "11 08",
+      "take": "held-16-11-08-00.wav",
+      "orders": 8,
+      "sounded_s": 6.795,
+      "rates_are_separated_by": 0.1472,
+      "read_at_hz": 2.05,
+      "the_two_peaks_are_separated": false,
+      "phase": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 652958.447,
+          "added": 201.771533,
+          "size": 201.771842
+        },
+        "excursion_ms": 2.8149,
+        "excursion_spread_ms": 38.6286,
+        "the_partials_agree": false,
+        "as_a_delay": 0.403,
+        "as_a_flat_turn": 0.7891,
+        "what_the_phase_looks_like": null,
+        "phase_swing_rad": [
+          0.01384,
+          0.87651,
+          1.45693,
+          51.27477,
+          297.17092,
+          9.81365,
+          49.17197,
+          1204.39615
+        ]
+      },
+      "level": {
+        "peak": {
+          "hz": 2.05,
+          "stands_over_bypassed": 2349.19,
+          "added": 9.143827,
+          "size": 9.147721
+        },
+        "partials": {
+          "swings_db": [
+            1.4138,
+            6.9062,
+            8.0028,
+            10.1112,
+            9.7552,
+            9.761,
+            9.4132,
+            7.3579
+          ],
+          "swing_ratio": 7.152,
+          "lowest_agreement": -0.8822,
+          "mean_agreement": 0.0977
+        }
+      },
+      "moves": true,
+      "the_level_swing_is": "a comb being swept",
+      "comb": {
+        "partial_hz": 1319.86,
+        "seeded_at_hz": [
+          2.05,
+          1.025,
+          0.6833,
+          0.5125
+        ],
+        "series_spread_db": 7.9498,
+        "hz": 1.02428,
+        "excursion_ms": 0.9618,
+        "comb_phase_swing_rad": 3.9881,
+        "mix": 0.5617,
+        "left_over_db": {
+          "sine": 1.8248,
+          "triangle": 2.1533
+        },
+        "explains": 0.7705,
+        "apart_by": 0.0413,
+        "closer_to": null
+      }
+    }
+  ],
+  "excursions": [
+    {
+      "type": "01 20",
+      "hz": 0.84891,
+      "excursion_ms": 0.4901,
+      "mix": 0.7782,
+      "explains": 0.9497,
+      "closer_to": null,
+      "lowest_agreement": -0.7892
+    },
+    {
+      "type": "01 21",
+      "hz": 2.04835,
+      "excursion_ms": 0.0485,
+      "mix": 0.95,
+      "explains": 0.7099,
+      "closer_to": null,
+      "lowest_agreement": -0.8439
+    },
+    {
+      "type": "01 22",
+      "hz": 0.34965,
+      "excursion_ms": 0.723,
+      "mix": 0.4627,
+      "explains": 0.9242,
+      "closer_to": null,
+      "lowest_agreement": -0.5861
+    },
+    {
+      "type": "01 42",
+      "hz": 0.44823,
+      "excursion_ms": 10.3264,
+      "mix": 0.8697,
+      "explains": 0.8342,
+      "closer_to": "triangle",
+      "lowest_agreement": -0.2801
+    },
+    {
+      "type": "01 61",
+      "hz": 0.0994,
+      "excursion_ms": 15.1152,
+      "mix": 0.1719,
+      "explains": 0.7965,
+      "closer_to": null,
+      "lowest_agreement": -0.066
+    },
+    {
+      "type": "01 70",
+      "hz": 1.30078,
+      "excursion_ms": 1.5094,
+      "mix": 0.7857,
+      "explains": 0.7595,
+      "closer_to": null,
+      "lowest_agreement": -0.0274
+    },
+    {
+      "type": "02 03",
+      "hz": 0.44822,
+      "excursion_ms": 5.9693,
+      "mix": 0.9177,
+      "explains": 0.8289,
+      "closer_to": "triangle",
+      "lowest_agreement": -0.2689
+    },
+    {
+      "type": "03 00",
+      "hz": 0.34968,
+      "excursion_ms": 0.7568,
+      "mix": 0.4768,
+      "explains": 0.9342,
+      "closer_to": null,
+      "lowest_agreement": -0.595
+    },
+    {
+      "type": "04 00",
+      "hz": 0.44817,
+      "excursion_ms": 2.2011,
+      "mix": 0.2036,
+      "explains": 0.9695,
+      "closer_to": "triangle",
+      "lowest_agreement": -0.1797
+    },
+    {
+      "type": "04 05",
+      "hz": 0.29932,
+      "excursion_ms": 1.4256,
+      "mix": 0.3583,
+      "explains": 0.9679,
+      "closer_to": null,
+      "lowest_agreement": -0.7316
+    },
+    {
+      "type": "05 00",
+      "hz": 0.44904,
+      "excursion_ms": 0.597,
+      "mix": 0.0713,
+      "explains": 0.7879,
+      "closer_to": null,
+      "lowest_agreement": -0.6835
+    },
+    {
+      "type": "11 07",
+      "hz": 0.84874,
+      "excursion_ms": 0.4709,
+      "mix": 0.8066,
+      "explains": 0.95,
+      "closer_to": null,
+      "lowest_agreement": -0.8528
+    },
+    {
+      "type": "11 08",
+      "hz": 1.02428,
+      "excursion_ms": 0.9618,
+      "mix": 0.5617,
+      "explains": 0.7705,
+      "closer_to": null,
+      "lowest_agreement": -0.8822
+    }
+  ]
+}
