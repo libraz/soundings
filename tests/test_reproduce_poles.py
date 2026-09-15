@@ -121,3 +121,121 @@ def test_a_deep_cut_stops_where_the_chain_stops_and_a_shallow_one_is_untouched()
 def test_a_record_with_no_silence_takes_leaves_the_reading_alone():
     """Not a floor invented for it: such a record's deep cuts cannot be scored."""
     assert reproduce._over_the_chains_own_silence(-60.0, None) == -60.0
+
+
+def test_the_cheap_pole_is_three_decibels_down_at_its_corner_too():
+    """The two forms have to mean the same thing by a corner or nothing compares.
+
+    A corner table fitted through one section is held against a corner table
+    fitted through the other, and against the frequencies a manufacturer printed.
+    If one form's corner were its time constant and the other's were its half
+    power point, those tables would be a third of an octave apart near the top of
+    the band for no reason at all -- which is enough to land a measurement on the
+    wrong entry of a printed list.
+    """
+    for corner in (315.0, 1000.0, 8000.0):
+        assert _db(
+            [corner], side="low", corner_hz=corner, sections=1, q=None,
+            form="one-multiply",
+        ) == pytest.approx(-3.0103, abs=0.01)
+
+
+def test_the_cheap_pole_levels_off_where_the_bilinear_one_keeps_cutting():
+    """The whole of what separates the two, and where the separation lives.
+
+    A pole put through the bilinear transform carries a zero at half the rate, so
+    its skirt bends steeper and steeper and arrives at nothing. Written as a
+    running average there is no zero: the section runs out at one minus the
+    coefficient over one plus it and stops. That is a floor a profile can be read
+    off directly, with no fit anywhere in it.
+    """
+    nyquist = np.array([FS / 2.0])
+    bilinear = np.abs(
+        reproduce._pole_cascade(nyquist, side="low", corner_hz=CORNER, sections=1,
+                                q=None, fs=FS)
+    )
+    cheap = np.abs(
+        reproduce._pole_cascade(nyquist, side="low", corner_hz=CORNER, sections=1,
+                                q=None, fs=FS, form="one-multiply")
+    )
+    assert bilinear[0] == pytest.approx(0.0, abs=1e-12)
+
+    cos0 = np.cos(2 * np.pi * CORNER / FS)
+    root = 2.0 - cos0
+    a = root - np.sqrt(root * root - 1.0)
+    assert cheap[0] == pytest.approx((1.0 - a) / (1.0 + a), rel=1e-9)
+
+    # And the two skirts are running opposite ways up there: one steeper than the
+    # six decibels an octave a pole gives and the other shallower, which is the
+    # sign of the thing and not its size. What a profile is read for is which side
+    # of six it is on near the top of the band.
+    where = {"side": "low", "corner_hz": CORNER, "sections": 1, "q": None}
+    assert _slope(FS / 4.0, FS / 2.2, form="bilinear", **where) < -6.0
+    assert -6.0 < _slope(FS / 4.0, FS / 2.2, form="one-multiply", **where) < 0.0
+
+
+def test_the_two_forms_agree_well_under_the_corner():
+    """So that what separates them is the top of the band and not the whole of it."""
+    for form in ("bilinear", "one-multiply"):
+        assert _db([CORNER / 8.0], side="low", corner_hz=CORNER, sections=1, q=None,
+                   form=form) == pytest.approx(-0.0678, abs=0.01)
+
+
+def test_the_cheap_poles_two_sides_are_one_section_and_its_complement():
+    """One routine and not two, which is the arithmetic the era argument is about."""
+    freq = np.geomspace(20.0, 15900.0, 500)
+    low = reproduce._pole_cascade(freq, side="low", corner_hz=CORNER, sections=1,
+                                  q=None, fs=FS, form="one-multiply")
+    high = reproduce._pole_cascade(freq, side="high", corner_hz=CORNER, sections=1,
+                                   q=None, fs=FS, form="one-multiply")
+    assert np.allclose(low + high, 1.0, rtol=0, atol=1e-12)
+
+
+def test_two_cheap_poles_level_off_twice_as_deep():
+    """Which is how the pair is told from the single one below the corner."""
+    top = np.array([FS / 2.0])
+    one = np.abs(
+        reproduce._pole_cascade(top, side="low", corner_hz=CORNER, sections=1,
+                                q=None, fs=FS, form="one-multiply")
+    )
+    two = np.abs(
+        reproduce._pole_cascade(top, side="low", corner_hz=CORNER, sections=2,
+                                q=None, fs=FS, form="one-multiply")
+    )
+    assert two[0] == pytest.approx(one[0] ** 2, rel=1e-9)
+
+
+def test_no_cheap_sections_is_no_filter_either():
+    freq = np.geomspace(20.0, 15900.0, 200)
+    assert np.allclose(
+        reproduce._pole_cascade(freq, side="low", corner_hz=CORNER, sections=0,
+                                q=None, fs=FS, form="one-multiply"),
+        1.0,
+        rtol=0,
+        atol=1e-12,
+    )
+
+
+def test_the_form_is_reachable_through_the_renderer():
+    model = {
+        "sample_rate_hz": FS,
+        "chain": [
+            {
+                "kind": "pole",
+                "side": "low",
+                "form": "one-multiply",
+                "corner_hz": {"fixed": CORNER},
+                "sections": {
+                    "byte": "40 03 0A",
+                    "map": {"kind": "states", "values": {"127": 0, "*": 1}},
+                },
+            }
+        ],
+    }
+    freq = np.array([CORNER, FS / 2.5])
+    assert np.allclose(reproduce.response(model, {"40 03 0A": 127}, freq), 1.0)
+    assert np.allclose(
+        reproduce.response(model, {"40 03 0A": 0}, freq),
+        reproduce._pole_cascade(freq, side="low", corner_hz=CORNER, sections=1,
+                                q=None, fs=FS, form="one-multiply"),
+    )

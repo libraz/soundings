@@ -344,6 +344,7 @@ def _pole_cascade(
     sections: int,
     q: float | None,
     fs: float,
+    form: str = "bilinear",
 ):
     """A plain low or high pass, `sections` identical stages of it, bilinear transformed.
 
@@ -378,8 +379,35 @@ def _pole_cascade(
     render as. Rendering "off" as a corner pushed out of the band would not do --
     the zero at Nyquist is still in there, and the flat reference every profile is
     read against would then carry a cut nobody measured.
+
+    `form` is which way the pole was written down, and it is a candidate rather
+    than a detail. The bilinear transform is one way and it costs two multiplies
+    and a sample of the input; the other is the cheapest filter in the book --
+    `y[n] = a y[n-1] + (1-a) x[n]`, one multiply and one state and nothing else --
+    which puts the same pole in the same place and leaves out the zero. Without
+    that zero the skirt does not bend steeper towards half the rate, it flattens:
+    the section runs out at `(1-a)/(1+a)` and stops cutting. So the two forms are
+    told apart at the top of the band and they are told apart by the sign of the
+    thing they do there, which is about as separable as a reading gets -- and the
+    stopband a profile levels off at names the pole outright, with no fit.
     """
     w = 2 * np.pi * freq_hz / fs
+    if q is None and form == "one-multiply":
+        # `corner_hz` is where the section is three decibels down, the same
+        # quantity the bilinear form's corner is, so that a corner table fitted
+        # to one can be read beside a corner table fitted to the other. The pole
+        # that puts it there is the root inside the unit circle of
+        # `a**2 - 2(2 - cos w0)a + 1`, which is the design rule for this filter
+        # and not a fit. Written the lazy way -- pole at `exp(-2 pi fc / fs)` --
+        # the two agree at the bottom of the band and part company by a third of
+        # an octave near half the rate, which would land the same measurement on
+        # a different entry of a printed table.
+        cos0 = np.cos(2 * np.pi * corner_hz / fs)
+        root = 2.0 - cos0
+        a = root - np.sqrt(root * root - 1.0)
+        z1 = np.exp(-1j * w)
+        low = (1.0 - a) / (1.0 - a * z1)
+        return (low if side == "low" else 1.0 - low) ** sections
     if q is None:
         t = np.tan(np.pi * corner_hz / fs)
         z1 = np.exp(-1j * w)
@@ -449,6 +477,7 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
                 sections=int(_value(stage["sections"], bytes_now)),
                 q=None if resonance is None else _value(resonance, bytes_now),
                 fs=fs,
+                form=stage.get("form", "bilinear"),
             )
         elif kind == "gain":
             out = out * 10.0 ** (_value(stage["gain_db"], bytes_now) / 20.0)
