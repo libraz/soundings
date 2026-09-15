@@ -1101,6 +1101,56 @@ def _which_settings_moved(
 # ---------------------------------------------------------------- a byte as a table
 
 
+def _arrived_at(want_hz: float, arrival: dict | None) -> float:
+    """Where a modulator that has to accelerate towards an entry ends up.
+
+    Most rate slots step straight to the entry the byte names, and a model with
+    nothing here says so. A rotary does not: the page gives it an acceleration,
+    and a rotor driven towards its target by the cheapest arithmetic there is --
+    a difference, a right shift, an add -- arrives coming down and stops short
+    going up, because the shift underflows while the difference is still wide and
+    an arithmetic shift of a negative number floors rather than rounding to zero.
+
+    So the entry is what the rotor is aimed at and not what it turns at, and the
+    distance it stops short by is one number for the whole table rather than one
+    per entry. The other kinds here are the competing readings of the same gap --
+    a constant taken off every entry, a table scaled, a lag caught still closing,
+    the same stall run on how long a turn takes rather than on how many. Each is
+    written out so it can be scored through the same table and lose.
+    """
+    if not arrival:
+        return want_hz
+    kind = arrival["kind"]
+    if kind == "steps-straight-to-it":
+        return want_hz
+    if kind == "stops-short":
+        rest = float(arrival["rests_at_hz"])
+        short = float(arrival["short_by_hz"])
+        if want_hz <= rest:
+            return want_hz
+        return max(rest, want_hz - short)
+    if kind == "short-by-a-constant":
+        # Clamped rather than allowed through, because the settings this reading
+        # is wrong about are the ones where it takes the rate to nothing or past
+        # it, and a comparison in octaves cannot report a rate of nothing. The
+        # clamp is far under the slowest entry of any table here, so what it
+        # reports is a candidate that has run out of range and not a rate.
+        return max(1e-6, want_hz - float(arrival["short_by_hz"]))
+    if kind == "scaled":
+        return want_hz * float(arrival["by"])
+    if kind == "stops-short-on-the-period":
+        rest = float(arrival["rests_at_hz"])
+        longer = float(arrival["long_by_s"])
+        if want_hz <= rest:
+            return want_hz
+        return max(rest, 1.0 / (1.0 / want_hz + longer))
+    if kind == "still-closing":
+        rest = float(arrival["rests_at_hz"])
+        left = float(arrival["of_the_gap_left"])
+        return max(1e-6, want_hz - (want_hz - rest) * left)
+    raise ValueError(f"{kind!r} is not an arrival this renderer knows")
+
+
 def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
     """What one candidate says the modulator runs at, at one setting of the byte.
 
@@ -1113,6 +1163,7 @@ def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
     table = model["tables"][printed_range]
     kind = table["kind"]
     first, top = float(table["first_hz"]), float(table.get("top_hz", 0.0))
+    arrival = model.get("arrival")
     if kind == "steps":
         # Walked rather than solved, because the claim is that these are entries
         # and not a formula: a run that ends and hands over to the next is what a
@@ -1124,13 +1175,13 @@ def rate_of(model: dict, printed_range: str, byte_value: int) -> float:
                 None,
             )
             if step is None:
-                return here  # past the last entry, and the table holds its last
+                break  # past the last entry, and the table holds its last
             here += step
-        return here
+        return _arrived_at(here, arrival)
     if kind == "linear":
-        return first + (top - first) * byte_value / 127.0
+        return _arrived_at(first + (top - first) * byte_value / 127.0, arrival)
     if kind == "geometric":
-        return first * (top / first) ** (byte_value / 127.0)
+        return _arrived_at(first * (top / first) ** (byte_value / 127.0), arrival)
     raise ValueError(f"{kind!r} is not a table this renderer knows")
 
 
