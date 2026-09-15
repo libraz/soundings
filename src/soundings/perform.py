@@ -174,7 +174,18 @@ WHY_RETAKEN = (
 
 
 def lead_in_dbfs(recording: Recording, before: float) -> float:
-    """How loud the take's own lead-in was, in dBFS.
+    """How loud the take's own lead-in was, in dBFS, on the input the unit is on.
+
+    **On that input and not across the interface.** An interface carries inputs
+    nothing is plugged into, and they are not silent. Measured on this rig they
+    sat twenty-five dB over the two the unit arrives on, and a peak taken across
+    all six then answers a question about a cable rather than about the take: it
+    refused every take three times, on a run whose own channels were quieter than
+    any the archive holds, and wrote into each record that the lead-in was never
+    quiet -- which is false about the only channels anything is read from. The
+    cost is three times the machine time and a sentence in the archive that is
+    not true. This is the same defect as choosing a whole take's channel per
+    take, arriving in the gate that decides whether to take it again.
 
     A Python float rather than whatever numpy returned. A numpy scalar compares
     and rounds like a number and then refuses to be written: the record is built
@@ -184,7 +195,7 @@ def lead_in_dbfs(recording: Recording, before: float) -> float:
     span = recording.samples[: int(before * recording.sample_rate)]
     if not span.size:
         return float("-inf")
-    peak_level = float(np.abs(span).max())
+    peak_level = float(np.abs(span[:, loudest_channel(recording)]).max())
     return float(20.0 * np.log10(peak_level)) if peak_level > 0 else float("-inf")
 
 
