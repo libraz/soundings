@@ -1,0 +1,162 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0120-a-loop-a-sample-late-through-a-blocked-return",
+    "class": "phaser-resonance",
+    "candidate": "0120-a-loop-a-sample-late-through-a-blocked-return",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 20",
+    "kind": "lti",
+    "made_by": "backup/build-phaser-loop-models.py"
+  },
+  "why_this_rate": "Carried from the claim that measured it. The rate is not refitted here and could not be: what this byte adds to the profile is read against notches whose places the closed reading already fixed.",
+  "chain": [
+    {
+      "kind": "allpass-chain",
+      "sections": 8,
+      "corner_hz": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              1040.2053755074955
+            ],
+            [
+              7,
+              1382.2486734851007
+            ],
+            [
+              8,
+              1437.0474460854286
+            ],
+            [
+              12,
+              1626.573757894251
+            ],
+            [
+              15,
+              1778.280493735326
+            ],
+            [
+              16,
+              1824.1710071524915
+            ],
+            [
+              24,
+              2395.968446097186
+            ],
+            [
+              32,
+              3097.9436758016154
+            ],
+            [
+              40,
+              3816.536028850209
+            ],
+            [
+              48,
+              4485.526336193734
+            ],
+            [
+              56,
+              5378.256759199095
+            ],
+            [
+              63,
+              7488.343097681504
+            ],
+            [
+              64,
+              7803.037726104284
+            ],
+            [
+              72,
+              9356.455822835202
+            ],
+            [
+              80,
+              10504.532175486016
+            ],
+            [
+              88,
+              11354.296580614071
+            ],
+            [
+              96,
+              12102.912549090937
+            ],
+            [
+              104,
+              12514.741261595093
+            ],
+            [
+              112,
+              12962.003096003058
+            ],
+            [
+              114,
+              13092.779066871764
+            ],
+            [
+              120,
+              13345.854000751846
+            ],
+            [
+              127,
+              13508.3953318364
+            ]
+          ],
+          "from": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+          "why": "One corner per setting the run asked, fitted from that setting's own notches. A readout and not a law: what is claimed is the section count and the rate, which a table with a free entry per setting cannot arrange, and the corner's own figure is this reading's rounding error."
+        }
+      },
+      "mix": {
+        "byte": "40 03 07",
+        "map": {
+          "kind": "points",
+          "log": false,
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ],
+          "why": "The run held the type's mix at the top of its range, so the cascade is summed with the dry at equal weight. How deep that makes a notch is decided by the band reading rather than here: a band a twelfth of an octave wide reports the energy across a notch, not the null."
+        }
+      },
+      "feedback_delay": 1,
+      "feedback_highpass_hz": 20.0,
+      "feedback": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "points",
+          "log": false,
+          "points": [
+            [
+              0,
+              0.0015
+            ],
+            [
+              64,
+              0.375
+            ],
+            [
+              127,
+              0.887
+            ]
+          ],
+          "from": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+          "why": "One number per setting the run asked, fitted at the mix the run held at the top of its range and at no other. A readout and not a law -- what is claimed is where the loop is closed, how late it is and what it will not pass, none of which a free entry per setting can arrange. The second record is what asks these three numbers a question they were not fitted to."
+        }
+      }
+    }
+  ],
+  "sample_rate_hz": 32000
+}

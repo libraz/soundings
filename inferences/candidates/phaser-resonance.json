@@ -1,0 +1,56 @@
+{
+  "class": "phaser-resonance",
+  "what_the_class_is": "What a phaser's second byte is, as opposed to what its first one is. The type closed as a cascade of all-pass sections summed with the dry signal, and one byte moves every section's corner together; the byte beside it is not a second corner and not a second mix. A cascade passes everything at unit gain, so a sum of it with the dry cannot rise above six decibels wherever the two arrive in phase -- and this byte takes the profile nineteen decibels up. Only a loop can do that, and what the class asks is where the loop is closed, how late it arrives and what it will not carry.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a rate below the converter's, computing one sample at a time out of a small state.",
+    "what_that_implies": [
+      "A loop costs one multiply and one add and no memory beyond what the cascade already keeps, which is why a part that has written the cascade writes the loop as well rather than adding sections. Four notches are eight sections; a resonance between each pair of them is one more coefficient.",
+      "A loop computed sample by sample returns the previous result and not the present one, because the present one is what is being computed. So a delay of one sample is not a refinement on the loop, it is the loop -- and the phase it costs grows with frequency until at half the rate it has turned the returned signal right round and every resonance it placed becomes the cancellation it was avoiding. That makes the top of the band a place the rate can be read.",
+      "A fixed-point loop that passes DC accumulates whatever offset its arithmetic cannot represent, around and around, until it is the signal. One pole of a high pass in the return path is what stops it, and the corner goes as low as the arithmetic allows because everything above it is what the effect is for.",
+      "The byte is one number, so what varies with it is a gain and not a topology. Where the loop is closed and how late it is are written once."
+    ],
+    "would_be_wrong_if": "The profile never rose above six decibels anywhere, which a sum can reach and a loop is not needed for. Or the resonances sat on top of the notches rather than between them, which is a loop returned the other way round. Or the setting the page prints as nothing left a resonance behind, which would put the loop somewhere the byte does not reach."
+  },
+  "candidates": [
+    {
+      "id": "0120-a-loop-a-sample-late-through-a-blocked-return",
+      "reading": "The byte is the gain of a loop closed around the all-pass cascade, whose return arrives one sample late and has one pole of a high pass in it.",
+      "predicts": "A resonance between each pair of notches and none on top of one; the resonance nearest half the rate turned into its opposite by the sample of delay; and the lowest resonance unable to reach the bottom of the band, by more the harder the loop is driven."
+    },
+    {
+      "id": "0120-a-loop-a-sample-late",
+      "reading": "The same loop with nothing stopping it at the bottom.",
+      "predicts": "The same profile everywhere the band set has signal in it, and a resonance that keeps climbing below the lowest note rather than falling away."
+    },
+    {
+      "id": "0120-a-loop-through-a-blocked-return",
+      "reading": "The same loop closed on the present sample rather than the previous one, which is the loop as it is written on paper and not as it can be built.",
+      "predicts": "The same profile through the middle of the band and the top resonance in the opposite place, because nothing has turned the return round up there."
+    },
+    {
+      "id": "0120-a-loop-with-nothing-in-it",
+      "reading": "The loop as the textbook draws it: instantaneous, and flat from nothing to half the rate.",
+      "predicts": "Both of the above at once."
+    },
+    {
+      "id": "0120-a-loop-around-the-output-a-sample-late",
+      "reading": "The loop closed around the summed output rather than around the cascade, so the dry signal is inside it.",
+      "predicts": "A loop gain multiplied by the mix, so that halving the mix halves the resonance -- and the notches filled in, because the dry is being returned into the path whose cancellation makes them."
+    },
+    {
+      "id": "0120-a-loop-around-four-sections-a-sample-late",
+      "reading": "The loop closed around half the cascade, which a part that had a tap there might do.",
+      "predicts": "Resonances at twice the spacing of the notches rather than between them, so that every other notch has one sitting on it."
+    },
+    {
+      "id": "0120-the-byte-is-the-resonance-of-four-second-order-sections",
+      "reading": "The cascade is four second-order all-pass sections rather than eight first-order ones, and the byte is their resonance. The section count alone cannot tell those apart, so this is where it would show.",
+      "predicts": "Notches crowding towards the corner as the byte rises, because a second-order section's phase steepens near its own corner -- and no resonance anywhere, because an all-pass has none in its magnitude."
+    },
+    {
+      "id": "0120-the-byte-is-a-second-mix",
+      "reading": "The byte adds more of the cascade to the dry, on top of what the mix byte already added.",
+      "predicts": "Deeper notches and a profile that rises towards six decibels between them and stops, since that is a sum of two unit-gain signals and is all a sum can be."
+    }
+  ]
+}

@@ -1,0 +1,384 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-15T08:11:26.722816+00:00",
+    "made_by": "backup/what-does-resonance-do-to-a-phaser.py, backup/what-stops-the-loop-at-the-bottom.py, backup/build-phaser-loop-models.py, backup/write-the-phaser-loop-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "slot",
+      "types": [
+        "01 20"
+      ],
+      "addresses": [
+        "40 03 06"
+      ]
+    }
+  },
+  "claim": "The byte beside this type's manual is the gain of a feedback loop closed around the all-pass cascade, and it is not a second mix and not a resonance inside the sections. A cascade passes everything at unit gain, so summing it with the dry signal reaches six decibels where the two arrive in phase and no further; the profile reaches 18.87 dB, which a sum would need nearly eight helpings of the cascade to do. What the loop puts there instead is a resonance between each pair of notches -- where the cascade comes back in phase with itself and the return adds up -- while the notches stay where the closed reading put them. Two further things about it are readable, one at each end of the band. The return arrives one sample late, which is what a part computing a sample at a time has no choice about, and the phase that costs is nothing at the bottom and half a circle at half the rate: at the top of the band it turns the highest resonance into the cancellation it would otherwise have been, which the unit does and an instantaneous loop does not. And the return will not carry the bottom of the band: the lowest resonance is largest at 105 Hz and has fallen thirteen decibels by 25, by more the harder the loop is driven and by nothing at all when the loop is open -- which puts one pole of a high pass inside the loop and nowhere else in the chain. The loop gains themselves are a readout of three settings and no law is claimed on them.",
+  "named": "a feedback path around an all-pass cascade, a sample late and blocked at DC",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=0].largest_at_hz",
+          "readings[value=127].largest_db",
+          "readings[value=127].largest_at_hz",
+          "reference.above_the_silence_db"
+        ],
+        "values": [
+          -22.62,
+          1887.7,
+          18.87,
+          105.1,
+          55.0
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-the-same-resonance-at-half-mix-in-twelfths.json",
+        "keys": [
+          "readings[value=127].largest_db",
+          "readings[value=127].largest_at_hz"
+        ],
+        "values": [
+          12.56,
+          99.2
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "Phaser, parameter 1, +Manual, 100 - 8.0k",
+          "Phaser, parameter 4, Reso (Resonance), 0 - 127",
+          "Phaser, parameter 5, Mix (Mix level), 0 - 127"
+        ],
+        "why": "Which byte is which, and nothing else. The page numbers the parameters and the block numbers the addresses, so the fourth parameter is the byte swept here and the fifth is the one the run held at the top of its range. What the page calls this byte is Resonance, which names an effect and not a structure -- that it is the gain of a loop, where the loop is closed, and what is in the return path are read off the profiles and are not on the page."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A loop computed a sample at a time returns the previous result, because the present one is what is being computed. A delay of one sample is therefore not a refinement on the loop but the only form it can take.",
+        "why": "It is the difference between a loop that can be written and one that cannot, and it is readable rather than assumed: the phase it costs grows with frequency and is worth a whole half circle at half the rate, so the two readings disagree by eighteen decibels in the top band and by nothing over the rest.",
+        "would_be_wrong_if": "The top band came back where an instantaneous loop puts it. The reading is at the edge of the band set and a single band wide, so it is the one figure here a second run could most easily overturn -- and if it did, the loop would have to be reached some other way than sample by sample."
+      },
+      {
+        "claim": "A fixed-point loop that passes DC accumulates the offset its arithmetic cannot represent, so a part that closes one puts a pole of a high pass in the return path and puts its corner as low as it can.",
+        "why": "It says where the filter is rather than that there is one, and that is the part the measurement answers: a filter anywhere outside the loop would cut the bottom of the band by the same amount at every setting, and what the record shows is a shortfall that is nothing with the loop open and thirteen decibels with it nearly closed.",
+        "would_be_wrong_if": "The shortfall at the bottom of the band did not follow the loop gain. A constant one would put the filter in the signal path, and none at all would leave the loop flat to nothing -- which for a fixed-point part would be the more surprising of the two."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The two records say what this byte did to each twelfth-octave band at three settings, once with the type's mix at the top of its range and once at its middle. What is read out of them here is that the byte is a loop rather than a mix or a section resonance, where the loop is closed, that its return is a sample late, and that it does not pass the bottom of the band. The records name no loop, no delay and no filter, and say so.",
+  "what_the_loop_gains_are": {
+    "what": "One number per setting, fitted at the top mix and at no other. A readout and not a law: three settings cannot say what curve the byte runs on, and a table with a free entry per setting will fit the three profiles it was fitted to whatever the byte is doing.",
+    "at_each_setting": [
+      {
+        "setting": "0",
+        "loop_gain": 0.0015
+      },
+      {
+        "setting": "64",
+        "loop_gain": 0.375
+      },
+      {
+        "setting": "127",
+        "loop_gain": 0.887
+      }
+    ],
+    "fitted_on_a_grid_of": "a two-hundredth, then a two-thousandth around the winner. What the reading itself resolves is finer than the first of those and is stated in the alternative below, so the coarse pass's step is not what the published numbers carry.",
+    "and_it_is_not_a_straight_line": "A gain linear in the byte would be 0.447 at the middle setting and the reading puts it at 0.375, which is 0.92 dB of profile at 10079.4 Hz against a floor of 0.02. That much is settled by three points. What curve it is instead is not.",
+    "what_a_free_table_could_not_arrange": "The second record. The same three numbers, with nothing refitted, answer the three profiles taken at half the mix to a median of 0.575 dB against the 18.0 dB that record commands -- and the two places the loop could be closed differ in exactly that, because a loop around the summed output carries the dry with it and has its gain multiplied by the mix while a loop around the cascade alone does not."
+  },
+  "alternatives": [
+    {
+      "reading": "The cascade is four second-order all-pass sections rather than eight first-order ones, with this byte as the loop gain either way.",
+      "candidate": "0120-a-loop-a-sample-late-through-a-blocked-return",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "why": "A second-order all-pass at a resonance of exactly a half is two real poles at the same place, which is two of the first-order sections. The two chains are then the same transfer function and no reading can separate them. This byte does not change that -- what it settles is that the byte is not the resonance of those sections, which is a different question and is answered below."
+    },
+    {
+      "reading": "The loop gain runs on a law in the byte rather than on the three numbers published here.",
+      "candidate": "0120-a-loop-a-sample-late-through-a-blocked-return",
+      "standing": true,
+      "separated_by": {
+        "observable": "The same sweep at the settings between. Three points cannot tell one curve from another, and the resonance a loop gain puts in the profile is the reciprocal of one minus it -- which near the top of the byte is steep enough that neighbouring settings are decibels apart. One law is already gone: a gain linear in the byte is 0.447 at the middle setting, which scores 0.470 against the published reading's 0.100 on the record it was fitted to and 0.725 against 0.610 on the record it was not. So the byte is not a straight line into the loop, and what it is instead needs the settings between.",
+        "predicts": {
+          "a gain linear in the byte": "0.447 at the middle setting, taken from the top setting's own reading.",
+          "the readout published here": "0.375 at the middle setting."
+        },
+        "sensitivity_here": "Those two loop gains stand 0.92 dB apart at 10079.4 Hz, against the 0.02 dB the run's own repeats spread in that band.",
+        "margin": 46.0,
+        "run": {
+          "stage": "efx-bands",
+          "type": "01 20",
+          "address": "40 03 06",
+          "settings": [
+            0,
+            8,
+            16,
+            24,
+            32,
+            40,
+            48,
+            56,
+            64,
+            72,
+            80,
+            88,
+            96,
+            104,
+            112,
+            120,
+            127
+          ],
+          "held": {
+            "40 03 03": 64,
+            "40 03 04": 0,
+            "40 03 05": 0,
+            "40 03 07": 127,
+            "40 03 13": 64,
+            "40 03 14": 64
+          },
+          "why_this_held_block": "The one the two records already carry, so that the seventeen settings and the three are one sweep and not two. The manual stays where it was because the loop gain is read off resonances whose places that byte fixes, and a manual moved between runs would put the reading's own uncertainty into the answer.",
+          "why_every_eighth": "The corner table on this type's first byte turned out to have a stride of eight, and a byte that indexes a table of sixteen would show the same one here -- so a grid of eight either lands on the entries or lands on a curve, and both are answers. Settings between two that returned the same gain are what a second pass would ask for, not this one.",
+          "and_its_own_controls": "Four repeats of the setting the byte is nothing at, two with the part routed past the effect and two with nothing played, taken in the same session rather than carried from the one on disk -- what a noise stimulus fails to repeat belongs to the evening it was recorded in.",
+          "minutes": 8
+        }
+      }
+    },
+    {
+      "reading": "The byte adds more of the cascade to the dry signal, on top of what the mix byte already added.",
+      "candidate": "0120-the-byte-is-a-second-mix",
+      "standing": false,
+      "ruled_out_by": "Arithmetic, with no fit needed and none possible here. A cascade of all-pass sections passes every frequency at unit gain, so a sum of it with the dry reaches 20 log10(1 + mix) where the two arrive in phase. The profile reaches 18.87 dB, which needs 7.78 helpings of it -- and the type's mix byte was already held at the top of its printed range. It is not in the ranking because this harness renders every model's flat reference from the same byte block with the swept address at nothing, so a candidate that moves the mix onto the swept address renders its own flat reference at that mix and reports no deviation at all at the setting of zero. That is a property of the harness rather than of the reading, and saying so is why the arithmetic is quoted instead of a score."
+    },
+    {
+      "reading": "The byte is the resonance of the all-pass sections themselves, which is where four second-order sections would differ from eight first-order ones.",
+      "candidate": "0120-the-byte-is-the-resonance-of-four-second-order-sections",
+      "standing": false,
+      "ruled_out_by": "Its own direction. An all-pass has unit magnitude at every resonance, so raising one moves notches and cannot raise a profile anywhere; scored against these records the best resonance it can find goes down as the byte goes up -- 0.4992593313618718, 0.4481299101573052, 0.39000961388318234 -- which is the sections getting shallower rather than sharper. At the setting where the byte is nothing it returns a half, which is the first-order cascade exactly, and that is the only setting it fits."
+    }
+  ],
+  "reproduces": {
+    "model": "inferences/models/0120-a-loop-a-sample-late-through-a-blocked-return.json",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-20-06-the-same-resonance-at-half-mix-in-twelfths.json"
+      ],
+      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 20 at address 40 03 06 at the twelfth-octave resolution",
+      "filter": {
+        "index": "data/units/roland-sc8850-01/index.json",
+        "stage": "efx-bands",
+        "type": "01 20",
+        "address_in": [
+          "40 03 06"
+        ],
+        "file_ends_with": "-in-twelfths.json"
+      },
+      "then_dropped": [],
+      "excluded": []
+    },
+    "domain": "dB",
+    "residual": {
+      "at_the_mix_it_was_fitted_at": {
+        "median_abs_db": 0.115,
+        "worst_abs_db": 3.15,
+        "worst_at": {
+          "value": 127,
+          "hz": 26.3
+        },
+        "span_db": 41.49,
+        "floor_db": 1.92
+      },
+      "at_half_that_mix_with_nothing_refitted": {
+        "median_abs_db": 0.575,
+        "worst_abs_db": 3.3,
+        "worst_at": {
+          "value": 127,
+          "hz": 31.2
+        },
+        "span_db": 17.96,
+        "floor_db": 1.92
+      }
+    },
+    "how_the_model_is_read": "Rendered through the very takes each record was read from and then measured on the same band set, with the chain's own silence added back where the model cuts below it. The cascade's own corner is the entry the closed phaser readout already holds for the manual setting this run held, and nothing here was allowed to move it: a corner refitted per setting would let a loop that puts its resonance in the wrong place buy the right answer back by sliding the whole chain, which is the one thing this comparison is for.",
+    "gates": {
+      "measured_in": "dB",
+      "gross": {
+        "verdict": "reproduces",
+        "why": "median 0.115 dB against the 41.5 dB this byte commands at the mix it was fitted at, and 0.575 against 18.0 at half that mix with nothing refitted."
+      },
+      "properties": {
+        "verdict": "reproduces",
+        "why": "Where the profile is largest is a property of where the loop is closed, and the model returns it band for band. At the setting the loop is open both profiles are largest in the band the closed reading puts the first notch in; at the setting it is nearly shut both are largest at 105 Hz on one record, and one band apart on the other. The resonances sit between the notches and not on them, which is what separates a loop around the whole cascade from a loop around half of it."
+      },
+      "power": {
+        "verdict": "separated",
+        "beaten": {
+          "0120-a-loop-with-nothing-in-it": {
+            "full": {
+              "median_abs_db": 0.53,
+              "worst_abs_db": 18.51,
+              "worst_at": {
+                "value": 127,
+                "hz": 14254.4
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.635,
+              "worst_abs_db": 9.05,
+              "worst_at": {
+                "value": 127,
+                "hz": 10678.7
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          },
+          "0120-a-loop-a-sample-late": {
+            "full": {
+              "median_abs_db": 0.18,
+              "worst_abs_db": 12.77,
+              "worst_at": {
+                "value": 127,
+                "hz": 26.3
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.525,
+              "worst_abs_db": 11.23,
+              "worst_at": {
+                "value": 127,
+                "hz": 24.8
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          },
+          "0120-a-loop-through-a-blocked-return": {
+            "full": {
+              "median_abs_db": 0.425,
+              "worst_abs_db": 18.21,
+              "worst_at": {
+                "value": 127,
+                "hz": 14254.4
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.665,
+              "worst_abs_db": 9.71,
+              "worst_at": {
+                "value": 127,
+                "hz": 3363.6
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          },
+          "0120-a-loop-around-the-output-a-sample-late": {
+            "full": {
+              "median_abs_db": 0.68,
+              "worst_abs_db": 20.11,
+              "worst_at": {
+                "value": 127,
+                "hz": 1887.7
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.815,
+              "worst_abs_db": 6.64,
+              "worst_at": {
+                "value": 127,
+                "hz": 2996.6
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          },
+          "0120-a-loop-around-four-sections-a-sample-late": {
+            "full": {
+              "median_abs_db": 0.745,
+              "worst_abs_db": 25.91,
+              "worst_at": {
+                "value": 127,
+                "hz": 6349.6
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.875,
+              "worst_abs_db": 13.06,
+              "worst_at": {
+                "value": 127,
+                "hz": 6349.6
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          },
+          "0120-the-byte-is-the-resonance-of-four-second-order-sections": {
+            "full": {
+              "median_abs_db": 1.135,
+              "worst_abs_db": 19.23,
+              "worst_at": {
+                "value": 127,
+                "hz": 10678.7
+              },
+              "span_db": 41.49,
+              "floor_db": 1.92
+            },
+            "half": {
+              "median_abs_db": 0.77,
+              "worst_abs_db": 11.1,
+              "worst_at": {
+                "value": 127,
+                "hz": 10678.7
+              },
+              "span_db": 17.96,
+              "floor_db": 1.92
+            }
+          }
+        },
+        "how": "contradicted, and each of the three runners-up in a different band",
+        "why": "The three things claimed are read in three places and each competing reading fails in its own. Taking the sample of delay out puts the worst band at 14254 Hz, the top of the set, where the model has a cancellation and the unit has a resonance -- 18.2 dB out. Taking the blocked return out puts it at 26.3 Hz, the bottom, where the model has a resonance and the unit has almost none -- 12.8 dB. Closing the loop around the summed output instead fills the first notch in and is 20.1 dB out at 1887.7 Hz, which is where the notch is. Closing it around four of the eight sections puts resonances at twice the spacing and lands one on top of a notch, 25.9 dB out at 6349.6 Hz. None of these is a fit that is merely worse: each is a feature in the wrong place.",
+        "and_the_median_barely_says_so": "Worth reading against the residual's own limits. On the median the loop with no blocker is 0.18 against the winner's 0.115 and is better than it on the second record, because the blocker touches ten bands out of a hundred and thirteen and a median over three settings cannot see them. What separates them is the band where one is 12.8 dB out and the other 3.3, which is the residual being a detector rather than a score."
+      },
+      "breakdown": {
+        "verdict": "structure remains",
+        "why": {
+          "at_the_mix_it_was_fitted_at": "the signed median swings 0.065 dB across the settings and 2.78 dB across the readings within one, against the run's own floor of 1.92 dB",
+          "at_half_that_mix": "the signed median swings 0.05 dB across the settings and 3.59 dB across the readings within one, against the run's own floor of 1.92 dB"
+        },
+        "read_as": "The structure is at the bottom of the band and it is not this byte's. Below about 60 Hz the model runs 1.6 to 3.3 dB high at every setting including the one where the loop is open and the model is the closed phaser claim unchanged -- and that claim's own record shows the same lean at the same bands, 1.6 dB at 25 Hz falling to 0.8 by 33. So what the gate is reporting is carried in rather than created here. Above 60 Hz the residual is inside the run's own repeats at every band of every setting on both records."
+      }
+    },
+    "verdict": "reproduces"
+  },
+  "refuted_by": "A setting of this byte that raised the profile without putting a resonance between the notches, or one that moved a notch, either of which would make the byte something other than a loop gain. Or the top band coming back where an instantaneous loop puts it on a second run, which would take the sample of delay away. Or the shortfall at the bottom of the band turning out not to follow the loop gain, which would move the high pass out of the return path.",
+  "what_it_would_change": [
+    "inferences/roland-sc8850-01/0120-eight-allpass-sections-summed-with-the-dry.json"
+  ],
+  "what_this_does_not_settle": [
+    "What law the byte runs on. Three settings were asked and three loop gains are published; whether they lie on a line, a curve or a table is the alternative left standing, with the sweep that would say.",
+    "Whether every feedback byte on this unit closes the same kind of loop. One byte of one type was read. What the page calls an amount of feedback appears on delays and on other modulated types, and a delay's loop returns a signal that is not a copy of the cascade's.",
+    "Where the return's high pass sits. Its corner is under the band set's lowest band, so what the reading places is how far the resonance has fallen by 25 Hz and not the corner itself. Twenty hertz is published as the lowest corner consistent with the readings rather than as a measured value.",
+    "Whether the loop is closed before or after the type's own tone controls. Both were held at their centres for every take here, so the two orders render the same."
+  ]
+}
