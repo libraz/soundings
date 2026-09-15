@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T11:19:55.755621+00:00",
-    "made_by": "backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/build-the-acceleration-models.py, backup/write-the-acceleration-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-15T13:01:15.021222+00:00",
+    "made_by": "backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/build-the-acceleration-models.py, backup/write-the-acceleration-inference.py, backup/what-scales-the-acceleration.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-the-corrected-acceleration-table.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -17,7 +17,7 @@
       ]
     }
   },
-  "claim": "A rotary's acceleration byte is read through its top four bits, and the sixteen entries that leaves are what the rotor's loop multiplies the difference by before shifting it. So the distance the rotor stops short of the rate entry it was aimed at is one constant divided by what the entry holds. Over the first ten entries what it holds is the entry's own position plus one: eight of those ten are readable and they sit within 1.9 per cent of one number, 0.9843 Hz. Above the tenth entry the multiplier leaves that line and grows faster, and what it is up there is four numbers read off the records rather than a law. The byte is not a shift count, which is what a four-bit acceleration invited: the distance does not halve per step of it, and the near-four between the two rotors' defaults is where those two defaults happen to sit in this table. The two rotors are one routine reached twice -- at nine settings of the byte their distances agree to a median of 2.8 per cent. And the constant names the clock a fifth time, by a route none of the other four used: it is a rate divided by a power of two, and at thirty-two kilohertz that power is 14.99 while at forty-four and forty-eight no integer power comes within a quarter.",
+  "claim": "A rotary's acceleration byte is read through its top four bits, and the sixteen entries that leaves are what the rotor's loop multiplies the difference by before shifting it. So the distance the rotor stops short of the rate entry it was aimed at is one constant divided by what the entry holds. What the entries hold is a sequence: the first ten count up, one through ten, and then they double -- twelve, sixteen, thirty-two, sixty-four, a hundred and twenty-eight. 14 of the sixteen are readable and 12 of those land on that sequence inside what their own take told a rate apart to, with one constant over the whole table and nothing else fitted. The last one does not: it reads 168 where the doubling says 256, five times what the take resolves, and it is published as the number it is. The byte is not a shift count, which is what a four-bit acceleration invited: the distance does not halve per step of it, and the near-four between the two rotors' defaults is where those two defaults happen to sit in this table. The two rotors are one routine reached twice -- at nine settings of the byte their distances agree to a median of 2.8 per cent. And the constant, 0.9768 Hz, names the clock a fifth time by a route none of the other four used: it is a rate divided by a power of two, and at thirty-two kilohertz that power is 14.9996 while at forty-four and forty-eight no integer power comes within four tenths.",
   "named": "a four-bit acceleration that multiplies the difference before the shift",
   "rests_on": {
     "measurements": [
@@ -70,6 +70,68 @@
           9.0291
         ],
         "why": "One row of the sweep, as the tie between this record and the others: every figure in this claim is a difference between what the record's own held block says the rotor was aimed at and what the record says it turned at."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above.json",
+        "keys": [
+          "readings[value=24,came_from=127].rate_hz",
+          "readings[value=120,came_from=127].rate_hz",
+          "readings[value=24,came_from=rest].rate_hz"
+        ],
+        "values": [
+          0.8488,
+          0.8488,
+          0.6046
+        ],
+        "why": "What the unit holds at the entry the run below aimed at, read by sending the rotor down onto it from the top of the table rather than up to it. The two descents are at accelerations five entries apart and return the same number, which is what says a descent arrives and carries no acceleration in the reading. The third row climbed to the same entry and is the tie to the sweep: the distance it leaves is the distance the same byte gave aimed twelve times higher."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above-a-fifth-up.json",
+        "keys": [
+          "readings[value=24,came_from=127].rate_hz",
+          "readings[value=120,came_from=127].rate_hz",
+          "readings[value=24,came_from=rest].rate_hz"
+        ],
+        "values": [
+          2.0491,
+          2.0487,
+          1.8045
+        ],
+        "why": "The same descent onto a second entry, a fifth of the way up the table rather than near the bottom of it, which is the entry the middle sweep aimed at. Its climb row is the third reading of one distance at three aims twelve times apart, which is what says the distance does not depend on where the rotor was sent -- it is the same number to a ten-thousandth of a hertz at all three."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-aimed-lowest.json",
+        "keys": [
+          "readings[value=64].rate_hz",
+          "readings[value=80].rate_hz",
+          "readings[value=96].rate_hz",
+          "readings[value=104].rate_hz",
+          "readings[value=112].rate_hz",
+          "readings[value=120].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          0.7401,
+          0.7673,
+          0.818,
+          0.8335,
+          0.841,
+          0.843,
+          0.843
+        ],
+        "why": "The top of the byte read with the rotor aimed at an entry twelve times slower than the first sweep used and the note held a minute rather than eight seconds. A take pins a rate to a fraction of the rate, so the same distance in hertz stands an order further above what the take tells apart here, and the entries whose distance is thousandths of a hertz are readable rather than bounded."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-aimed-lowest-settled-longer.json",
+        "keys": [
+          "readings[value=120].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          0.843,
+          0.8429
+        ],
+        "why": "The top entry taken again after thirty seconds instead of ten. Where waiting longer changes nothing the two takes are a repeat of one setting, and at the entry that arrives fastest that is what they are for: they come back 0.0001 Hz apart, which is what the reading is worth where the distance being measured is under six thousandths."
       }
     ],
     "document_rows": [
@@ -93,149 +155,268 @@
   },
   "adds": "The records say what each rotor turned at, at each setting of the byte the page calls its acceleration, with the other rotor silenced and the rate byte held. What is read out of them here is that the byte is taken by its top four bits, that the sixteen entries are a multiplier rather than a shift count, what that multiplier is over the first ten of them, what the constant is, and that the constant is a clock over a power of two. The records name no bits, no multiplier and no clock, and say so.",
   "what_the_table_holds": {
-    "what": "One number per entry, as the distance the rotor stops short by and as the multiplier that is its reciprocal. A readout above the tenth entry and a law below it, and the two are kept apart here rather than averaged into one curve.",
+    "what": "One number per entry, as the distance the rotor stops short by and as the multiplier that is its reciprocal, against the sequence rather than against a line. Which of the two the distance was taken against -- a number the unit stated or this project's reading of the rate table -- is carried beside each entry, because that is what the departures are made of.",
+    "the_sequence": {
+      "0": 1,
+      "1": 2,
+      "2": 3,
+      "3": 4,
+      "4": 5,
+      "5": 6,
+      "6": 7,
+      "7": 8,
+      "8": 9,
+      "9": 10,
+      "10": 12,
+      "11": 16,
+      "12": 32,
+      "13": 64,
+      "14": 128,
+      "15": 256
+    },
+    "and_how_many_sit_inside_what_their_own_take_resolved": {
+      "what": "The bar is per entry and it is the record's own. A percentage will not do here: the distances run from three tenths of a hertz to five thousandths, so one per cent is two orders apart between the ends of the table, and the takes that read them differ by an order in what they tell a rate apart to.",
+      "inside": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "outside": {
+        "7": {
+          "times_over": 1.23,
+          "apart_hz": 0.0016,
+          "what_the_take_told_apart_hz": 0.0013
+        },
+        "15": {
+          "times_over": 4.96,
+          "apart_hz": 0.00198,
+          "what_the_take_told_apart_hz": 0.0004
+        }
+      }
+    },
+    "the_constant_hz": 0.9768,
     "at_each_entry": [
-      {
-        "entry": 0,
-        "byte_read_at": 0,
-        "distance_hz": 0.9728,
-        "multiplier": 1.01,
-        "the_line_would_say": 1
-      },
-      {
-        "entry": 1,
-        "byte_read_at": 8,
-        "distance_hz": 0.4885,
-        "multiplier": 2.01,
-        "the_line_would_say": 2
-      },
       {
         "entry": 2,
         "byte_read_at": 16,
         "distance_hz": 0.3237,
-        "multiplier": 3.04,
-        "the_line_would_say": 3
+        "multiplier": 3.02,
+        "the_sequence_says": 3,
+        "off_by_per_cent": 0.7,
+        "aimed_at": 10.0,
+        "aimed_at_said_by": "this project's reading of the rate table",
+        "what_the_take_told_apart_hz": 0.0022,
+        "the_sequence_wants_hz": 0.3256,
+        "apart_hz": 0.0019,
+        "times_what_the_take_told_apart": 0.86
       },
       {
         "entry": 3,
         "byte_read_at": 24,
-        "distance_hz": 0.2443,
-        "multiplier": 4.03,
-        "the_line_would_say": 4
+        "distance_hz": 0.2442,
+        "multiplier": 4.0,
+        "the_sequence_says": 4,
+        "off_by_per_cent": 0.0,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0007,
+        "the_sequence_wants_hz": 0.2442,
+        "apart_hz": 0.0,
+        "times_what_the_take_told_apart": 0.0
       },
       {
         "entry": 4,
         "byte_read_at": 32,
         "distance_hz": 0.1987,
-        "multiplier": 4.95,
-        "the_line_would_say": 5
+        "multiplier": 4.92,
+        "the_sequence_says": 5,
+        "off_by_per_cent": 1.6,
+        "aimed_at": 10.0,
+        "aimed_at_said_by": "this project's reading of the rate table",
+        "what_the_take_told_apart_hz": 0.0084,
+        "the_sequence_wants_hz": 0.19536,
+        "apart_hz": 0.00334,
+        "times_what_the_take_told_apart": 0.4
       },
       {
         "entry": 5,
         "byte_read_at": 40,
         "distance_hz": 0.1656,
-        "multiplier": 5.94,
-        "the_line_would_say": 6
+        "multiplier": 5.9,
+        "the_sequence_says": 6,
+        "off_by_per_cent": 1.7,
+        "aimed_at": 10.0,
+        "aimed_at_said_by": "this project's reading of the rate table",
+        "what_the_take_told_apart_hz": 0.0084,
+        "the_sequence_wants_hz": 0.1628,
+        "apart_hz": 0.0028,
+        "times_what_the_take_told_apart": 0.33
       },
       {
         "entry": 6,
         "byte_read_at": 48,
         "distance_hz": 0.1433,
-        "multiplier": 6.87,
-        "the_line_would_say": 7
+        "multiplier": 6.82,
+        "the_sequence_says": 7,
+        "off_by_per_cent": 2.6,
+        "aimed_at": 10.0,
+        "aimed_at_said_by": "this project's reading of the rate table",
+        "what_the_take_told_apart_hz": 0.0078,
+        "the_sequence_wants_hz": 0.13954,
+        "apart_hz": 0.00376,
+        "times_what_the_take_told_apart": 0.48
       },
       {
         "entry": 7,
         "byte_read_at": 63,
         "distance_hz": 0.1237,
-        "multiplier": 7.96,
-        "the_line_would_say": 8
+        "multiplier": 7.9,
+        "the_sequence_says": 8,
+        "off_by_per_cent": 1.2,
+        "aimed_at": 10.0,
+        "aimed_at_said_by": "this project's reading of the rate table",
+        "what_the_take_told_apart_hz": 0.0013,
+        "the_sequence_wants_hz": 0.1221,
+        "apart_hz": 0.0016,
+        "times_what_the_take_told_apart": 1.23
       },
       {
         "entry": 8,
         "byte_read_at": 64,
-        "distance_hz": 0.1075,
-        "multiplier": 9.16,
-        "the_line_would_say": 9
+        "distance_hz": 0.1087,
+        "multiplier": 8.99,
+        "the_sequence_says": 9,
+        "off_by_per_cent": 0.1,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0006,
+        "the_sequence_wants_hz": 0.10853,
+        "apart_hz": 0.00017,
+        "times_what_the_take_told_apart": 0.28
       },
       {
         "entry": 9,
         "byte_read_at": 72,
-        "distance_hz": 0.0979,
-        "multiplier": 10.05,
-        "the_line_would_say": 10
+        "distance_hz": 0.0968,
+        "multiplier": 10.09,
+        "the_sequence_says": 10,
+        "off_by_per_cent": 0.9,
+        "aimed_at": 2.0489,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0028,
+        "the_sequence_wants_hz": 0.09768,
+        "apart_hz": 0.00088,
+        "times_what_the_take_told_apart": 0.31
       },
       {
         "entry": 10,
         "byte_read_at": 80,
-        "distance_hz": 0.0828,
-        "multiplier": 11.89,
-        "the_line_would_say": 11
+        "distance_hz": 0.0815,
+        "multiplier": 11.99,
+        "the_sequence_says": 12,
+        "off_by_per_cent": 0.1,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0013,
+        "the_sequence_wants_hz": 0.0814,
+        "apart_hz": 0.0001,
+        "times_what_the_take_told_apart": 0.08
       },
       {
         "entry": 11,
         "byte_read_at": 88,
-        "distance_hz": 0.0622,
-        "multiplier": 15.82,
-        "the_line_would_say": 12
+        "distance_hz": 0.0611,
+        "multiplier": 15.99,
+        "the_sequence_says": 16,
+        "off_by_per_cent": 0.1,
+        "aimed_at": 2.0489,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0008,
+        "the_sequence_wants_hz": 0.06105,
+        "apart_hz": 5e-05,
+        "times_what_the_take_told_apart": 0.06
       },
       {
         "entry": 12,
         "byte_read_at": 96,
-        "distance_hz": 0.0303,
-        "multiplier": 32.49,
-        "the_line_would_say": 13
+        "distance_hz": 0.0308,
+        "multiplier": 31.71,
+        "the_sequence_says": 32,
+        "off_by_per_cent": 0.9,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0003,
+        "the_sequence_wants_hz": 0.03053,
+        "apart_hz": 0.00028,
+        "times_what_the_take_told_apart": 0.92
       },
       {
         "entry": 13,
         "byte_read_at": 104,
-        "distance_hz": 0.016,
-        "multiplier": 61.52,
-        "the_line_would_say": 14
+        "distance_hz": 0.0153,
+        "multiplier": 63.84,
+        "the_sequence_says": 64,
+        "off_by_per_cent": 0.2,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0002,
+        "the_sequence_wants_hz": 0.01526,
+        "apart_hz": 4e-05,
+        "times_what_the_take_told_apart": 0.19
       },
       {
         "entry": 14,
         "byte_read_at": 112,
-        "distance_hz": 0.0042,
-        "multiplier": 234.36,
-        "the_line_would_say": 15
+        "distance_hz": 0.0078,
+        "multiplier": 125.23,
+        "the_sequence_says": 128,
+        "off_by_per_cent": 2.2,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0003,
+        "the_sequence_wants_hz": 0.00763,
+        "apart_hz": 0.00017,
+        "times_what_the_take_told_apart": 0.56
       },
       {
         "entry": 15,
-        "byte_read_at": 127,
-        "distance_hz": 0.0029,
-        "multiplier": 339.41,
-        "the_line_would_say": 16
+        "byte_read_at": 120,
+        "distance_hz": 0.0058,
+        "multiplier": 168.41,
+        "the_sequence_says": 256,
+        "off_by_per_cent": 34.2,
+        "aimed_at": 0.8488,
+        "aimed_at_said_by": "the unit, landed on from above",
+        "what_the_take_told_apart_hz": 0.0004,
+        "the_sequence_wants_hz": 0.00382,
+        "apart_hz": 0.00198,
+        "times_what_the_take_told_apart": 4.96
       }
     ],
-    "the_constant_hz": 0.9843,
-    "read_from": "the median of entries 2 to 9, which are the ones where the rotor has arrived and the distance stands ten times over what the run resolves",
-    "and_the_line_holds_to_within": "1.9 per cent over those eight entries",
-    "where_it_leaves_the_line": {
-      "10": {
-        "product_hz": 0.9108,
-        "times_what_the_line_gives": 0.925
-      },
-      "11": {
-        "product_hz": 0.7464,
-        "times_what_the_line_gives": 0.758
-      },
-      "12": {
-        "product_hz": 0.3939,
-        "times_what_the_line_gives": 0.4
-      },
-      "13": {
-        "product_hz": 0.224,
-        "times_what_the_line_gives": 0.228
-      },
-      "14": {
-        "product_hz": 0.063,
-        "times_what_the_line_gives": 0.064
-      },
-      "15": {
-        "product_hz": 0.0464,
-        "times_what_the_line_gives": 0.047
-      }
+    "and_where_the_departures_come_from": {
+      "what": "An entry read against a number the unit stated lands on the sequence far closer than one read against a curve this project fitted, and the difference between the two is the size of the rate table's own error rather than of anything the acceleration byte does.",
+      "median_per_cent_off_where_the_unit_said_the_entry": 0.15,
+      "median_per_cent_off_where_the_table_did": 1.6,
+      "and_what_would_close_it": "Descending onto the entries the other runs aimed at, the same way this one was read. The top of the rate table cannot be descended onto because nothing is above it, so those entries keep the table's error whatever is done."
+    },
+    "the_entry_that_is_not_on_it": {
+      "entry": 15,
+      "byte_read_at": 120,
+      "distance_hz": 0.0058,
+      "multiplier": 168.4,
+      "the_sequence_says": 256,
+      "what_the_take_told_apart_hz": 0.0004,
+      "how_far_out_it_is": "The distance the doubling asks for is 0.00382 Hz and the reading is 0.00580, which is 5 times what that take told a rate apart to. Read the other way, the multiplier is 168 give or take 12, and the sequence's next number is outside that by a wide margin.",
+      "and_it_is_not_the_rate_table": "This entry's distance was taken against a number the unit stated, so it carries none of the table error the entries above do -- both the reading and what it is subtracted from come off the same evening and the same held block, so a reading bias cancels between them."
     }
   },
   "how_the_byte_is_read": {
@@ -440,16 +621,17 @@
     "and_where_their_defaults_sit": "24 is entry 3 and 88 is entry 11. Entry 3 is on the line and entry 11 is well off it, so the ratio between them is 3.96 rather than the three the line would give -- which is why it landed near four and why reading that as two powers of two was reading a coincidence."
   },
   "and_the_constant_is_a_clock_over_a_power_of_two": {
-    "what": "The constant is 0.9843 Hz. A distance in hertz divided by a sample rate is a pure number, and what this one is at thirty-two kilohertz is a power of two.",
+    "what": "The constant is 0.9768 Hz, read off the two entries whose distance was taken against a number the unit itself stated rather than against a curve fitted here. A distance in hertz divided by a sample rate is a pure number, and what this one is at thirty-two kilohertz is a power of two.",
     "at_32k": {
-      "power": -14.9886,
-      "off_an_integer_by_per_cent": 0.79
+      "power": -14.9996,
+      "off_an_integer_by_per_cent": 0.03
     },
     "elsewhere_the_nearest_integer_power_is_off_by_per_cent": {
-      "44100": 26.9,
-      "48000": 34.4
+      "44100": 27.4,
+      "48000": 33.4
     },
-    "why_this_is_a_reading_and_not_a_coincidence": "The rate was not chosen here. Four other structures in this archive name thirty-two kilohertz before this one, each by a different route, so what is being asked is whether a fifth quantity agrees with a number already fixed -- not which number makes this quantity tidy. What it would take to be wrong is stated: at the two other rates a part of this period could have run at, the nearest integer power of two is a quarter and a third away.",
+    "and_it_sharpened_when_the_entry_was_measured": "Round one read this constant against entries of the rate table this project had fitted, and it came out 0.79 per cent from a whole power. Read against the one entry the unit was asked for directly it is inside a tenth of that. Nothing about the candidate changed between the two -- what changed is what the distance was subtracted from.",
+    "why_this_is_a_reading_and_not_a_coincidence": "The rate was not chosen here. Four other structures in this archive name thirty-two kilohertz before this one, each by a different route, so what is being asked is whether a fifth quantity agrees with a number already fixed -- not which number makes this quantity tidy. What it would take to be wrong is stated: at the two other rates a part of this period could have run at, the nearest integer power of two is four tenths of a power away in both directions.",
     "and_what_it_does_not_say": "Which power, in the sense of how the rotor's rate is stored. A stopping distance of one part in two to the fifteen of the sample rate is what is measured; whether that is a seventeen-bit shift of a thirty-two-bit phase increment or a nine-bit shift of a twenty-four-bit one is the same reading, and nothing here separates them."
   },
   "alternatives": [
@@ -474,48 +656,34 @@
     {
       "reading": "The multiplier above the tenth entry is a law of its own rather than four numbers -- the table's top half on a different footing from its bottom half, which is what a hand-made table looks like and also what a second formula looks like.",
       "candidate": "the-entry-plus-one",
-      "standing": true,
-      "separated_by": {
-        "observable": "The top four entries read where the distance is furthest above what the run resolves. The distance does not depend on the entry the rotor was aimed at -- which is measured and not assumed, since six entries were read at two aims and agree to a few per cent -- and the run resolves a ratio, so aiming at a slow entry puts the same distance further above the floor. At the top of the byte the rotor lands within three thousandths of a hertz of ten, and the same three thousandths at 0.85 Hz is four times the ratio.",
-        "predicts": {
-          "four numbers": "nothing in particular, which is what makes it a readout",
-          "a second law": "the four entries landing on it once they are read to a few per cent rather than to a fifth of themselves"
-        },
-        "sensitivity_here": "The run resolves a distance to 0.0009 Hz. At the entry the rotor was aimed at here that is a fifth of the top entry's distance; aimed at 0.85 Hz with a sixty second take it is a fortieth, because the take is long enough to hold the rate to a part in a hundred thousand and the rate itself is twelve times slower.",
-        "margin": 8.0,
-        "run": {
-          "stage": "efx-rate",
-          "type": "01 22",
-          "address": "40 03 05",
-          "settings": [
-            64,
-            80,
-            96,
-            104,
-            112,
-            120,
-            127
-          ],
-          "held": {
-            "40 03 0A": 0,
-            "40 03 06": 127,
-            "40 03 03": 16
-          },
-          "why_this_held_block": "The low rotor alone as every admitted record has it, and the rate byte at entry 16 of the shared table -- 0.85 Hz, which is the first entry the rotor will climb to from where it rests. A slower entry would be under where it rests and the rotor would arrive exactly, which is a reading of nothing.",
-          "and_the_take_has_to_be_long": "Sixty seconds, because an eight second take cannot look below 0.303 Hz and the rate being read is 0.85. The run that measured the bottom of the rate table already works this way.",
-          "minutes": 9
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "The run it queued, once the entry the rotor was aimed at had been measured rather than fitted. It is a law and not four numbers: above the tenth entry the table doubles -- twelve, sixteen, thirty-two, sixty-four, a hundred and twenty-eight -- and four of those five land inside what their own take told a rate apart to. Scored against the same records with the same single constant, the sequence is worst by 0.00356 octaves on the low rotor where the line is worst by 0.10174, which is the same comparison round one made and the first time the top of the table has been in it. The sixteenth entry is not on the sequence and is published as the number it is."
+    },
+    {
+      "reading": "The sixteenth entry is on the doubling after all, and what is read there is the rate table's own error at the entry the rotor was aimed at rather than a distance the byte set.",
+      "candidate": "a-line-then-a-doubling",
+      "standing": false,
+      "ruled_out_by": "The entry it was aimed at was measured, not fitted. The descent and the climb are two takes of the same evening on the same held block, so the distance between them is a difference of two readings of one quantity and a reading bias cancels in it. What is left is 0.00580 Hz against the 0.00382 the doubling asks for, and against 0.00040 Hz that the take told a rate apart to."
+    },
+    {
+      "reading": "The entries between the tenth and the sixteenth are on whole numbers other than these -- the departures being real rather than a reading.",
+      "candidate": "a-line-then-a-doubling",
+      "standing": false,
+      "ruled_out_by": "The bar the departures are read against, which is per entry and is the record's own. A distance is a number of hertz and the takes here tell a rate apart to between two ten-thousandths and nine thousandths of one, so the question is not how many per cent an entry is off: it is whether the reading can tell it from the sequence. 12 of 14 cannot. The two that can are entries [7, 15] -- one at 1.2 times its take's own spread, which is the bar and not a margin over it, and the last entry, which is dealt with above. Two of the entries also had the number they were subtracted from measured after this was queued, and the one that moved most moved onto its whole number: the eleventh entry read 1.7 per cent off sixteen against a fitted aim and 0.1 per cent off it against one the unit stated."
     }
   ],
   "reproduces": {
     "model": {
-      "40 03 05": "inferences/models/0122-accl-the-entry-plus-one.json",
-      "40 03 09": "inferences/models/0122-accl-the-entry-plus-one.json"
+      "40 03 05": "inferences/models/0122-accl-a-line-then-a-doubling.json",
+      "40 03 09": "inferences/models/0122-accl-a-line-then-a-doubling.json"
     },
     "compared_against": {
       "records": [
+        "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above-a-fifth-up.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-aimed-lower.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-aimed-lowest-settled-longer.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-aimed-lowest.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales-settled-longer.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-05-what-the-acceleration-byte-scales.json",
         "data/units/roland-sc8850-01/efx-rate/01-22-09-what-the-acceleration-byte-scales-settled-longer.json",
@@ -537,22 +705,25 @@
     "domain": "octaves",
     "residual": {
       "the_low_rotor": {
-        "median_octaves": 0.00046,
-        "worst_octaves": 0.03882,
-        "worst_at_value": 104,
-        "span_octaves": 2.3554,
-        "floor_octaves": 0.00013
+        "median_octaves": 0.00029,
+        "worst_octaves": 0.00356,
+        "worst_at_value": 127,
+        "span_octaves": 4.0299,
+        "floor_octaves": 0.00063
       },
       "the_high_rotor": {
-        "median_octaves": 0.00069,
-        "worst_octaves": 0.00723,
-        "worst_at_value": 96,
-        "span_octaves": 0.0319,
-        "floor_octaves": 0.00013
+        "median_octaves": 0.00041,
+        "worst_octaves": 0.00259,
+        "worst_at_value": 32,
+        "span_octaves": 0.0349,
+        "floor_octaves": 0.00035
+      },
+      "and_the_two_constants": {
+        "what": "One constant is fitted per rotor and they come back 0.977 Hz and 0.934. The low rotor's is read against an entry the unit stated and the high rotor's is not -- nothing has been descended onto on that rotor's rate byte -- and the high rotor's distances are four times smaller, so the same table error is four times more of them. The difference between the two constants is what that costs, and it is not evidence that the rotors differ."
       }
     },
     "which_readings_were_admitted": {
-      "why": "Decided by the records and before any candidate saw them. A reading is refused if the rotor was still climbing at the entry it was set to, which the settings taken at two settle times say, or if the distance does not stand ten times over what the run resolves.",
+      "why": "Decided by the records and before any candidate saw them. A reading is refused if the rotor was still climbing at the entry it was set to, which the settings taken at two settle times say, or if the distance does not stand ten times over what that take told a rate apart to. The bar is per take rather than one number for all of them: the runs behind this table aimed a rotor at ten hertz, at two and at less than one, and a take pins a rate to a fraction of the rate, so one floor over all of them is an order too coarse at one end.",
       "the_low_rotor": {
         "admitted": [
           16,
@@ -566,46 +737,44 @@
           72,
           80,
           88,
-          95,
           96,
-          104
+          104,
+          112,
+          120,
+          127
         ],
         "refused": [
           {
             "accl": 0,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 1,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 2,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 4,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 7,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 8,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.0716 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.0249 Hz, against the 0.0093 those two takes tell apart"
           },
           {
             "accl": 15,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.0716 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.0249 Hz, against the 0.0093 those two takes tell apart"
           },
           {
-            "accl": 112,
-            "why": "the gap is 0.0042 Hz against the 0.0009 Hz this run resolves a distance to, which is a bound and not a distance"
-          },
-          {
-            "accl": 127,
-            "why": "the gap is 0.0029 Hz against the 0.0009 Hz this run resolves a distance to, which is a bound and not a distance"
+            "accl": 95,
+            "why": "the gap is 0.0597 Hz against the 0.0070 Hz this take told a rate apart to, which is a bound and not a distance"
           }
         ]
       },
@@ -617,32 +786,28 @@
           64,
           80,
           88,
-          96
+          96,
+          127
         ],
         "refused": [
           {
             "accl": 0,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 2,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.8988 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.8402 Hz, against the 0.0760 those two takes tell apart"
           },
           {
             "accl": 8,
-            "why": "the rotor was still climbing: at this entry, waiting forty-five seconds instead of ten moves the reading 0.0716 octaves further"
+            "why": "the rotor was still climbing: at this entry, waiting 45 seconds instead of 10 moves the distance 0.0249 Hz, against the 0.0093 those two takes tell apart"
           },
           {
             "accl": 112,
-            "why": "the gap is 0.0076 Hz against the 0.0009 Hz this run resolves a distance to, which is a bound and not a distance"
-          },
-          {
-            "accl": 127,
-            "why": "the gap is 0.0062 Hz against the 0.0009 Hz this run resolves a distance to, which is a bound and not a distance"
+            "why": "the gap is 0.0076 Hz against the 0.0009 Hz this take told a rate apart to, which is a bound and not a distance"
           }
         ]
-      },
-      "and_arrival_is_a_property_of_the_entry": "Eight byte values share an entry and behave as one, so a setting inside an entry the settle control caught still climbing is refused with it. Read per byte instead, four takes of the entry furthest from having arrived would have been admitted on the grounds that nobody happened to wait longer at them -- and they are the four the winner is furthest from."
+      }
     },
     "gates": {
       "measured_in": "octaves",
@@ -680,14 +845,25 @@
     },
     "verdict": "reproduces"
   },
-  "refuted_by": "Two settings inside one run of eight returning different distances, which would take the four bits away. Or the two rotors returning different distances at one setting of the byte, which would make them two routines and put the four to one back on the rotors. Or the constant turning out to depend on the entry the rotor was aimed at, which would make it a ratio rather than a distance -- six entries were read at two aims and it does not.",
+  "refuted_by": "Two settings inside one run of eight returning different distances, which would take the four bits away. Or the two rotors returning different distances at one setting of the byte, which would make them two routines and put the four to one back on the rotors. Or the constant turning out to depend on the entry the rotor was aimed at, which would make it a ratio rather than a distance -- the same entry has now been read aimed at 10.00 Hz and at 0.8488, twelve times apart, and the two distances differ by 0.0001 Hz. Or an entry of the sequence moving off its whole number as the entry it was aimed at is measured rather than fitted, which is what the standing alternative asks.",
   "what_it_would_change": [
     "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json"
   ],
   "what_this_does_not_settle": [
     "How long the rotor takes. Every take here waited ten seconds or forty-five and then held a note, so what is measured is where the rotor stopped and never the path. The bottom two entries are refused for exactly that: the rotor is still climbing at both settle times, so what they would say about the distance is a reading of the wait. A take begun before the write would say something about the path and none was made.",
-    "What the top four entries hold. They are read off the records and no law is claimed on them; the run that would say is the standing alternative.",
     "Whether the fast rate bytes are aimed the same way. This byte is printed against a rotor and not against one of its two rates, so one acceleration for both is the thing to expect -- but the fast rate bytes have no reading at all yet, because the speed switch was never switched.",
-    "What the multiplier is in the part's own units. The constant is a distance in hertz and the entries are its reciprocal scaled by it, so what is measured is a ratio between entries and one absolute number. Whether the stored entry is the position plus one or that times something is not readable from the output."
-  ]
+    "What the multiplier is in the part's own units. The constant is a distance in hertz and the entries are its reciprocal scaled by it, so what is measured is a ratio between entries and one absolute number. Whether the stored entry is the position plus one or that times something is not readable from the output.",
+    "What the sixteenth entry holds. It reads 168 give or take 12, which is 5 times what the take resolves away from where the doubling puts it -- so what is published there is a number and not a place in the sequence, and nothing here says why one entry of sixteen would leave a pattern the other fifteen keep. Nor is it queueable: aiming the rotor at the slowest entry it can climb to would halve what the take resolves and leave the multiplier good to about six, where the whole numbers it is being chosen between are one apart.",
+    "Whether the first two entries are on the sequence. They are refused because the rotor is still climbing at both settle times, and a take begun before the write would be needed to say anything about them -- which is a reading of the path and this run measures only where the rotor stopped."
+  ],
+  "and_the_rate_table_is_a_thousandth_over_at_one_entry": {
+    "what": "A rotor sent down onto an entry arrives on it, because falling the shift floors -- which is measured on this type at another entry and is the closed rate claim's own central reading. So a descent reads the unit's value for an entry with no acceleration in it at all, and this run made two.",
+    "at_rate_byte": 16,
+    "the_unit_lands_on_hz": 0.8488,
+    "this_projects_reading_of_the_table_says_hz": 0.85,
+    "over_by_hz": 0.0012,
+    "over_by_octaves": 0.00204,
+    "how_it_was_checked": "Two descents, at acceleration bytes 24 and 120 -- five entries apart in the table this claim is about, and a factor of forty apart in how hard the rotor was pulled. They returned the same rate to four decimals, which is what says the descent arrives and that the number is the entry rather than a second stopping distance.",
+    "and_what_it_does_to_the_claim_beside_this_one": "Nothing that refutes it. The rate claim's own residual is larger than this difference, so the table stands where it stood; what is new is that one of its entries now has a number the unit stated beside the number that was fitted, and they differ by less than the claim's worst case. Reading the rest of that table the same way is a run and is queued there."
+  }
 }

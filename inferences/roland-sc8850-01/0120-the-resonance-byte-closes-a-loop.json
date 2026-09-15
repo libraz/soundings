@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T11:09:18.212647+00:00",
-    "made_by": "backup/what-does-resonance-do-to-a-phaser.py, backup/what-stops-the-loop-at-the-bottom.py, backup/build-phaser-loop-models.py, backup/write-the-phaser-loop-inference.py, backup/the-resonance-between-the-three.py, backup/what-law-the-loop-gain-runs-on.py, backup/fold-in-the-resonance-between.py",
-    "rounds": 2,
+    "made_at": "2026-09-15T12:50:54.607821+00:00",
+    "made_by": "backup/what-does-resonance-do-to-a-phaser.py, backup/what-stops-the-loop-at-the-bottom.py, backup/build-phaser-loop-models.py, backup/write-the-phaser-loop-inference.py, backup/the-resonance-between-the-three.py, backup/what-law-the-loop-gain-runs-on.py, backup/fold-in-the-resonance-between.py, backup/across-the-resonance-boundary.py, backup/whether-the-resonance-has-a-corner.py, backup/fold-in-across-the-resonance-boundary.py",
+    "rounds": 3,
     "about": {
       "scope": "slot",
       "types": [
@@ -63,6 +63,22 @@
           105.1
         ],
         "why": "The seventeen settings the loop gains below are fitted on, and the two figures that say the byte is not read through its top four bits: 120 and 127 are the same four bits and their profiles stand 3.24 dB apart at the band the resonance is largest in."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-across-the-resonance-boundary-in-twelfths.json",
+        "keys": [
+          "readings[value=56].largest_db",
+          "readings[value=63].largest_db",
+          "readings[value=64].largest_db",
+          "readings[value=72].largest_db"
+        ],
+        "values": [
+          -15.5,
+          -15.69,
+          -15.67,
+          -15.24
+        ],
+        "why": "Eleven settings of the byte from 56 to 72, tightest at the join between two entries of a table of sixteen. The two pairs cited are the ends of the two entries this range covers: settings that share a nibble, which a table read straight through four bits would return the same profile for."
       }
     ],
     "document_rows": [
@@ -200,51 +216,15 @@
       "reading": "The gain is a table of sixteen entries with the byte's low three bits interpolating between them, rather than a law computed from the whole byte.",
       "candidate": "0120-a-loop-a-sample-late-through-a-blocked-return",
       "standing": true,
-      "separated_by": {
-        "observable": "Where the gain bends. The sweep asked every eighth value, which lands on the entry boundaries and nowhere else, so it sees the entries of an interpolated table and the law through the same points and cannot tell them apart. A table interpolated in eight steps is straight between two entries and has a corner at each one; a law computed from the whole byte has neither. Ask the settings either side of one boundary and the corner is there or it is not.",
-        "predicts": {
-          "a table interpolated between entries": "the gain rises by one eighth of the entry step at each of the seven settings inside an entry, and the rise per step changes only at the boundary",
-          "a law computed from the whole byte": "the rise per step changes smoothly through the boundary and by about as much inside an entry as across one"
-        },
-        "sensitivity_here": "Across the boundary at 64 the sweep's own entries are 0.055 and 0.06 apart, so an eighth of an entry is about seven thousandths of loop gain -- and the reading holds two gains 0.072 apart to 0.92 dB at 10079.4 Hz against a floor of 0.02, which is a margin of 46 on ten times that difference. A single step is at the edge of it; what the run reads is the shape over fifteen settings and not one step.",
-        "margin": 4.5,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 20",
-          "address": "40 03 06",
-          "settings": [
-            56,
-            58,
-            60,
-            62,
-            63,
-            64,
-            65,
-            66,
-            68,
-            70,
-            72
-          ],
-          "held": {
-            "40 03 03": 64,
-            "40 03 04": 0,
-            "40 03 05": 0,
-            "40 03 07": 127,
-            "40 03 13": 64,
-            "40 03 14": 64
-          },
-          "why_this_held_block": "The one both records already carry, so the eleven settings and the seventeen are one sweep. The manual stays where it is for the same reason it did there: the gain is read off resonances whose places that byte fixes.",
-          "why_around_one_boundary": "A corner is a local thing and asking every value of the byte would be a hundred and twenty-eight takes for one. The boundary at 64 is chosen because it is the middle of the byte, where the gain is far enough from both ends that neither is squeezing the reading, and because the two entries either side of it are among the sweep's larger steps.",
-          "and_its_own_controls": "Four repeats of the mix at nothing, two with the part routed past the effect and two with nothing played, taken in the same session -- what a noise stimulus fails to repeat belongs to the evening it was recorded in.",
-          "minutes": 5
-        }
-      }
+      "equivalent_under_this_test": true,
+      "why_equivalent": "What separates an interpolated table from a law is the sag of the chord across a span, and that is 0.00281 of loop gain at its worst across the whole byte, against 0.0125 that the same setting's fit moves by between two evenings -- a margin of 0.22. The eleven settings were taken and they say the same thing the arithmetic does: the second difference at the join is 0.0225 where the ones beside it reach 0.03000. A finer grid would not help, because the difference being looked for is a property of how straight the curve already is."
     }
   ],
   "reproduces": {
     "model": "inferences/models/0120-a-loop-a-sample-late-through-a-blocked-return.json",
     "compared_against": {
       "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-20-06-across-the-resonance-boundary-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-20-06-the-resonance-between-the-three-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-20-06-the-same-resonance-at-half-mix-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json"
@@ -294,7 +274,14 @@
         "span_db": 17.96,
         "floor_db": 1.92
       },
-      "why_three": "The gains are fitted on the seventeen-setting record and asked for two others. One is the three settings of the earlier run, which is the same held block on another evening; the other is the same three at half the type's mix. A table with a free entry per setting can arrange the record it was fitted on and neither of those, and the two places the loop could be closed differ in exactly the second -- a loop around the summed output carries the dry with it and has its gain multiplied by the mix, while a loop around the cascade alone does not."
+      "why_three": "The gains are fitted on the seventeen-setting record and asked for two others. One is the three settings of the earlier run, which is the same held block on another evening; the other is the same three at half the type's mix. A table with a free entry per setting can arrange the record it was fitted on and neither of those, and the two places the loop could be closed differ in exactly the second -- a loop around the summed output carries the dry with it and has its gain multiplied by the mix, while a loop around the cascade alone does not.",
+      "on_eleven_settings_across_one_boundary": {
+        "median_abs_db": 0.13,
+        "worst_abs_db": 2.95,
+        "span_db": 24.62,
+        "floor_db": 1.17,
+        "why_this_is_a_prediction": "The model's table holds a gain at every eighth setting and reads anything between two of them by interpolating, so of the eleven settings here 8 were never fitted: [58, 60, 62, 63, 65, 66, 68, 70]. Nothing was refitted for this record and the three settings it shares with the sweep are the tie."
+      }
     },
     "how_the_model_is_read": "Rendered through the very takes each record was read from and then measured on the same band set, with the chain's own silence added back where the model cuts below it. The cascade's own corner is the entry the closed phaser readout already holds for the manual setting this run held, and nothing here was allowed to move it: a corner refitted per setting would let a loop that puts its resonance in the wrong place buy the right answer back by sliding the whole chain, which is the one thing this comparison is for.",
     "gates": {
@@ -464,9 +451,72 @@
     "inferences/roland-sc8850-01/0120-eight-allpass-sections-summed-with-the-dry.json"
   ],
   "what_this_does_not_settle": [
-    "What law the byte runs on. Seventeen settings were asked and seventeen loop gains are published. They rule out a straight line and a table read through the byte's top four bits, and they do not choose between a law computed from the whole byte and a table of sixteen with the low three bits interpolating between its entries -- because the sweep's own grid lands on the entry boundaries and nowhere else. The alternative that says so carries the run.",
     "Whether every feedback byte on this unit closes the same kind of loop. One byte of one type was read. What the page calls an amount of feedback appears on delays and on other modulated types, and a delay's loop returns a signal that is not a copy of the cascade's.",
     "Where the return's high pass sits. Its corner is under the band set's lowest band, so what the reading places is how far the resonance has fallen by 25 Hz and not the corner itself. Twenty hertz is published as the lowest corner consistent with the readings rather than as a measured value.",
-    "Whether the loop is closed before or after the type's own tone controls. Both were held at their centres for every take here, so the two orders render the same."
-  ]
+    "Whether the loop is closed before or after the type's own tone controls. Both were held at their centres for every take here, so the two orders render the same.",
+    "Whether the gain is computed or looked up. An interpolated table of sixteen and a law reproduce the same profiles to a fifth of what a fitted gain repeats to, across the whole byte, so the two are published as equivalent and a reader downstream may take either. What is claimed is the curve, not how the unit arrives at it."
+  ],
+  "and_the_byte_is_not_a_table_of_sixteen_even_inside_one_entry": {
+    "what": "A table of sixteen read through the byte's top four bits returns one gain for the eight settings that share a nibble. Round two refuted that across two entries, on a pair the grid of eight happened to contain. This reads inside one.",
+    "at_each_entry": {
+      "56": {
+        "settings": [
+          56,
+          63
+        ],
+        "the_gain_moves": 0.045,
+        "times_what_a_fitted_gain_repeats_to": 3.6
+      },
+      "64": {
+        "settings": [
+          64,
+          70
+        ],
+        "the_gain_moves": 0.035,
+        "times_what_a_fitted_gain_repeats_to": 2.8
+      }
+    },
+    "what_a_fitted_gain_repeats_to": 0.0125,
+    "how_that_was_measured": "Three settings of this range are on both records, fitted separately on two evenings' takes, and the largest difference between the two fits is what one is worth. Not the spread of gains one profile cannot tell apart, which is an absolute bar on a single reading and is twenty times wider -- a comparison of two settings measured the same way does not carry it."
+  },
+  "and_an_interpolated_table_cannot_be_told_from_a_law_here": {
+    "what": "A table of sixteen with the settings between its entries interpolated is the chord across each span; a law is the curve the entries sit on. How far apart those two are is a property of how bent this byte's own curve is, and it is read off the sweep rather than argued: fit a cubic through the two entries either side of a span and compare it with the straight line between the middle two, at the midpoint the line was never fitted to.",
+    "the_chord_sags_by": 0.00281,
+    "at_the_span": "80-88",
+    "per_span": {
+      "8-16": -0.00016,
+      "16-24": 0.00109,
+      "24-32": 0.00078,
+      "32-40": -0.00078,
+      "40-48": 0.00078,
+      "48-56": 0.00078,
+      "56-64": 0.0,
+      "64-72": -0.00125,
+      "72-80": 0.00031,
+      "80-88": 0.00281,
+      "88-96": -0.00016,
+      "96-104": -0.00078,
+      "104-112": 0.00094,
+      "112-120": 0.00057
+    },
+    "against_what_a_fitted_gain_repeats_to": 0.0125,
+    "margin": 0.22,
+    "and_so": "Below one, so no grid on this byte separates them however good the takes get -- the thing that would have to be seen is a fifth of what the reading repeats to, everywhere across the byte and not just at this join. The two are recorded as equivalent readings rather than left open, which is what this project does with a pair a test cannot separate.",
+    "and_the_corner_the_run_went_looking_for": {
+      "what": "An interpolated table is straight between entries, so on a grid of stride two every second difference is zero except at the join, which carries the whole slope change. The eleven settings give seven of those.",
+      "second_difference": {
+        "58": -0.01,
+        "60": 0.0225,
+        "62": -0.0075,
+        "64": -0.0225,
+        "66": 0.03,
+        "68": -0.01,
+        "70": -0.0025
+      },
+      "at_the_join": 0.0225,
+      "largest_beside_the_join": 0.03,
+      "at_a_stride_of_one_across_the_join": -0.005,
+      "and_what_it_says": "The join is not where the largest one is, and the ones beside it are the same size. Which is the same answer the margin above gives and is why the margin is the reading published here: the corner was a proxy for a difference that is smaller than the fit's own spread, so a corner not standing out was the only outcome available."
+    }
+  }
 }

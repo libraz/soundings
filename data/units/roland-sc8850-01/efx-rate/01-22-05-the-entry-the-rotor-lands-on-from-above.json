@@ -1,0 +1,144 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/what-the-entry-at-sixteen-is",
+      "--type",
+      "01 22",
+      "--slot",
+      "40 03 05",
+      "--setting",
+      "0122-05-low-(?P<value>\\d+)-from-(?P<from>rest|\\d+)-to-016",
+      "--settled",
+      "20",
+      "--hold",
+      "60",
+      "--held",
+      "40 03 0A=00",
+      "--held",
+      "40 03 06=7F",
+      "--held",
+      "40 03 03=10",
+      "--out",
+      "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above.json"
+    ],
+    "measured_at": "2026-09-15T12:35:43+00:00",
+    "elapsed_s": 2.8,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "01 22",
+  "address": "40 03 05",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -50.9,
+      -50.9,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "held": [
+    {
+      "address": "40 03 0A",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 03",
+      "bytes": "10"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/what-the-entry-at-sixteen-is",
+  "manifest": {
+    "lists": 3,
+    "files_present": 3,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    24,
+    120
+  ],
+  "why_came_from": "What this address held, and the modulation had reached, when each row's own value was written -- with no reset in between. `rest` is a take that followed a reset and nothing else, which is what every other record here is made of. Present because this run found two takes of one byte answering differently, and a row that carries only the byte cannot say which of them it is.",
+  "readings": [
+    {
+      "value": 24,
+      "came_from": "127",
+      "rate_hz": 0.8488,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        0.8489,
+        0.8489,
+        0.8486,
+        0.8487
+      ],
+      "heard_db": -51.2,
+      "slowest_measurable_hz": 0.0341,
+      "hold_s": 60.0,
+      "take": "held-16-0122-05-low-024-from-127-to-016-00.wav",
+      "settled_s": 20.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 24,
+      "came_from": "rest",
+      "rate_hz": 0.6046,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        0.6046,
+        0.6039,
+        0.6046,
+        0.6046
+      ],
+      "heard_db": -51.2,
+      "slowest_measurable_hz": 0.0341,
+      "hold_s": 60.0,
+      "take": "held-16-0122-05-low-024-from-rest-to-016-00.wav",
+      "settled_s": 20.0,
+      "named_by": "manifest"
+    },
+    {
+      "value": 120,
+      "came_from": "127",
+      "rate_hz": 0.8488,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        0.8486,
+        0.8488,
+        0.849,
+        0.8488
+      ],
+      "heard_db": -51.2,
+      "slowest_measurable_hz": 0.0341,
+      "hold_s": 60.0,
+      "take": "held-16-0122-05-low-120-from-127-to-016-00.wav",
+      "settled_s": 20.0,
+      "named_by": "manifest"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 0,
+    "settings": [],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}

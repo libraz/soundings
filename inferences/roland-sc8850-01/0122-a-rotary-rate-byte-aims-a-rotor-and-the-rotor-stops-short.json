@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-15T11:13:23.925849+00:00",
-    "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py",
-    "rounds": 2,
+    "made_at": "2026-09-15T13:02:06.817109+00:00",
+    "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-an-entry-the-unit-stated.py",
+    "rounds": 3,
     "about": {
       "scope": "slot",
       "types": [
@@ -140,6 +140,30 @@
           9.9451
         ],
         "why": "The high rotor's byte written twice with no reset between, which is the only reading here that asks the direction rather than inferring it from the shape of a curve. The first two rows are the same byte answered from below and from above; the second two are the same byte climbed to from two different places."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above.json",
+        "keys": [
+          "readings[value=24,came_from=127].rate_hz",
+          "readings[value=120,came_from=127].rate_hz"
+        ],
+        "values": [
+          0.8488,
+          0.8488
+        ],
+        "why": "Two rotors sent down onto one entry of this claim's table from the top of it, at acceleration bytes forty times apart. What this claim says about a descent is that it arrives, so these are readings of the entry rather than of a stopping distance -- and the two agreeing to four decimals while the byte that sets how hard the rotor is pulled moves five entries is what says so within the record."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above-a-fifth-up.json",
+        "keys": [
+          "readings[value=24,came_from=127].rate_hz",
+          "readings[value=120,came_from=127].rate_hz"
+        ],
+        "values": [
+          2.0491,
+          2.0487
+        ],
+        "why": "Two rotors sent down onto one entry of this claim's table from the top of it, at acceleration bytes forty times apart. What this claim says about a descent is that it arrives, so these are readings of the entry rather than of a stopping distance -- and the two agreeing to four decimals while the byte that sets how hard the rotor is pulled moves five entries is what says so within the record."
       }
     ],
     "document_rows": [
@@ -767,6 +791,92 @@
     "What sets where a rotor rests. Every take here reset the unit first, so the resting rate is one number per rotor and it is neither a table entry nor either rotor's default. The two runs that would say what it is are in the alternatives.",
     "Whether the rate class's refusal can be lifted mechanically. The check that refuses a slot on a type with more than one printed rate does not read the record's held block, so it refuses these five records too, and they were admitted here by hand with the reason written down. Teaching it to read a Level byte at nothing would reopen this type inside the class -- and would move the tally of refusals the closed claim carries, which is why it is named rather than done.",
     "Whether the other sixty-four types that take a rate byte have an arrival of their own. None of them prints an acceleration, and the closed rate claim's twenty-one slots answer the table with no gap anywhere, so the expectation is that they do not -- but an arrival smaller than one entry would not have shown, and nothing here bounds it.",
-    "How long a rotor takes to get where it gets. Every take here waited ten seconds after the write, or forty-five where the acceleration byte was moved, and then held a note -- so what is measured is where the rotor ended and never the path. At the bottom of the acceleration byte the rotor is still climbing at ten seconds and at forty-five, which is how this is known to be a question rather than a formality, and no take was begun before the write."
-  ]
+    "How long a rotor takes to get where it gets. Every take here waited ten seconds after the write, or forty-five where the acceleration byte was moved, and then held a note -- so what is measured is where the rotor ended and never the path. At the bottom of the acceleration byte the rotor is still climbing at ten seconds and at forty-five, which is how this is known to be a question rather than a formality, and no take was begun before the write.",
+    "What the unit holds at the other entries of this table. Two have been read directly and the rest are this project's reading of a curve. The run that would say is the same one made here, repeated: a descent onto each entry from above it, which is a take apiece and a long one where the entry is slow. Nothing about the claim depends on it -- the table already reproduces inside its own floor -- and what it would buy is a table of measured numbers rather than fitted ones, which is a thing a renderer wants and an identification does not."
+  ],
+  "and_the_entries_the_unit_stated_rather_than_this_table": {
+    "what": "A descent is an instrument as well as an asymmetry. A rotor sent down onto an entry arrives on it, so what it reads is the entry, with no acceleration in the number and no curve fitted between it and its neighbours. Two entries have been read that way.",
+    "at_each": [
+      {
+        "byte": 16,
+        "the_unit_lands_on_hz": 0.8488,
+        "this_table_says_hz": 0.85,
+        "over_by_hz": 0.0012,
+        "over_by_octaves": 0.00204,
+        "read_from": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above.json"
+      },
+      {
+        "byte": 40,
+        "the_unit_lands_on_hz": 2.0489,
+        "this_table_says_hz": 2.05,
+        "over_by_hz": 0.0011,
+        "over_by_octaves": 0.00077,
+        "read_from": "data/units/roland-sc8850-01/efx-rate/01-22-05-the-entry-the-rotor-lands-on-from-above-a-fifth-up.json"
+      }
+    ],
+    "against_this_claims_own_residual_octaves": {
+      "low": {
+        "01-22-03-the-bottom-of-the-constant-low.json": {
+          "median_abs_octaves": 0.00092,
+          "worst_abs_octaves": 0.0061,
+          "worst_at": {
+            "value": 8,
+            "hz": 0.4481
+          },
+          "structured": false,
+          "span_octaves": 2.4898,
+          "floor_octaves": 0.09885
+        },
+        "01-22-03-silence-the-other-stage-LoSlowalone.json": {
+          "median_abs_octaves": 0.00039,
+          "worst_abs_octaves": 0.00185,
+          "worst_at": {
+            "value": 32,
+            "hz": 1.4068
+          },
+          "structured": false,
+          "span_octaves": 2.7937,
+          "floor_octaves": 0.03857
+        }
+      },
+      "high": {
+        "01-22-07-the-bottom-of-the-constant-high.json": {
+          "median_abs_octaves": 0.00071,
+          "worst_abs_octaves": 0.02417,
+          "worst_at": {
+            "value": 16,
+            "hz": 0.8125
+          },
+          "structured": false,
+          "span_octaves": 5.0014,
+          "floor_octaves": 0.08746
+        },
+        "01-22-07-silence-the-other-stage-HiSlowalone.json": {
+          "median_abs_octaves": 0.00084,
+          "worst_abs_octaves": 0.0009,
+          "worst_at": {
+            "value": 127,
+            "hz": 9.9442
+          },
+          "structured": false,
+          "span_octaves": 2.646,
+          "floor_octaves": 0.03512
+        },
+        "01-22-07-silence-the-other-stage-HiSlowswitchfast.json": {
+          "median_abs_octaves": 0.00081,
+          "worst_abs_octaves": 0.00099,
+          "worst_at": {
+            "value": 127,
+            "hz": 9.9448
+          },
+          "structured": false,
+          "span_octaves": 2.6461,
+          "floor_octaves": 0.03512
+        }
+      }
+    },
+    "and_so_the_table_stands": "Both differences are smaller than the largest gap between this table and the rates the unit was measured at, which is the figure the claim already publishes. So nothing here moves the table -- what it does is put two measured numbers beside two fitted ones and find them closer than the claim's own bound. They are over by nearly the same number of hertz at rates two and a half times apart, which is what a constant in the reading looks like rather than what an error in a fitted curve looks like -- and either way it cancels in a difference of two rates read the same evening, which is what the acceleration claim uses these for.",
+    "how_it_was_checked": "Two descents onto each, at acceleration bytes 24 and 120. A descent that had not finished would depend on how hard the rotor was pulled; at the lower entry the two differ by nothing at four decimals and at the higher by four ten-thousandths of a hertz.",
+    "and_what_it_cannot_reach": "The top entry, and by extension the top of the table. A descent needs somewhere above to start from, and 127 has nowhere. Every entry below it can be read this way and the last one cannot be read this way at all."
+  }
 }
