@@ -254,6 +254,67 @@ def _allpass_chain(freq_hz, *, sections: int, corner_hz: float, mix: float, fs: 
     return 1.0 + mix * allpass**sections
 
 
+def _pole_cascade(
+    freq_hz,
+    *,
+    side: str,
+    corner_hz: float,
+    sections: int,
+    q: float | None,
+    fs: float,
+):
+    """A plain low or high pass, `sections` identical stages of it, bilinear transformed.
+
+    The section this archive's filter bytes turn out to be made of, and the one
+    the catalogue had no entry for: the shelves here are shelves because a gain
+    byte sits on them, and a corner byte with no gain beside it is a filter that
+    cuts everything past it rather than tilting the two sides against each other.
+
+    Two things are varied against each other and nothing else is. `sections` is
+    how many identical stages are cascaded, which sets the asymptotic slope at
+    six decibels an octave each; `q` turns each stage from one pole into a
+    conjugate pair at that resonance, which leaves the asymptote where it is and
+    changes the shape at the corner. A cascade of two one-poles and a single
+    Butterworth pair both run at twelve decibels an octave far from the corner
+    and differ by three decibels at it, so the two are separated by the corner and
+    not by the skirt -- which is why both are in the catalogue rather than one
+    standing in for the order.
+
+    The one-pole form carries a zero at half the rate and that is the whole of why
+    a rate can be read off a low pass at all. In the tangent of frequency the
+    section is exactly its analogue self, so its skirt runs at six decibels an
+    octave and would say nothing about any clock; what says something is the zero
+    the bilinear transform leaves at Nyquist, which bends the skirt steeper and
+    steeper as the band set approaches it. A profile that is running at six
+    decibels an octave in its middle and at ten near the top of the band has named
+    where half the rate is, and a profile still running at six there has named
+    that it is further off.
+
+    `sections` is read off a byte like every other quantity here, because what
+    switches these filters in is a byte carrying more than one of them: a cascade
+    of none returns unity exactly, which is what the type byte's off state has to
+    render as. Rendering "off" as a corner pushed out of the band would not do --
+    the zero at Nyquist is still in there, and the flat reference every profile is
+    read against would then carry a cut nobody measured.
+    """
+    w = 2 * np.pi * freq_hz / fs
+    if q is None:
+        t = np.tan(np.pi * corner_hz / fs)
+        z1 = np.exp(-1j * w)
+        if side == "low":
+            one = (t * (1.0 + z1)) / ((1.0 + t) + (t - 1.0) * z1)
+        else:
+            one = (1.0 - z1) / ((1.0 + t) + (t - 1.0) * z1)
+        return one**sections
+    w0 = 2 * np.pi * corner_hz / fs
+    cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
+    if side == "low":
+        b0, b1, b2 = (1 - cos0) / 2.0, 1 - cos0, (1 - cos0) / 2.0
+    else:
+        b0, b1, b2 = (1 + cos0) / 2.0, -(1 + cos0), (1 + cos0) / 2.0
+    return _biquad(b0, b1, b2, 1 + alpha, -2 * cos0, 1 - alpha, w) ** sections
+
+
 def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.ndarray:
     """The whole chain's transfer at the frequencies asked for, for one setting.
 
@@ -288,6 +349,16 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
                 sections=int(stage["sections"]),
                 corner_hz=_value(stage["corner_hz"], bytes_now),
                 mix=_value(stage["mix"], bytes_now),
+                fs=fs,
+            )
+        elif kind == "pole":
+            resonance = stage.get("q")
+            out = out * _pole_cascade(
+                safe,
+                side=stage["side"],
+                corner_hz=_value(stage["corner_hz"], bytes_now),
+                sections=int(_value(stage["sections"], bytes_now)),
+                q=None if resonance is None else _value(resonance, bytes_now),
                 fs=fs,
             )
         elif kind == "gain":
@@ -431,6 +502,35 @@ def _peak_band(profile: list[float], usable: list[int], centres: list[float]) ->
     return float(centres[int(np.argmax(values))])
 
 
+def _over_the_chains_own_silence(deviation_db: float, over_db: float | None) -> float:
+    """One band of a model's profile, read through a chain that has a noise floor.
+
+    A unit filters the signal and then adds its own noise to what comes out, so a
+    band it cuts forty decibels stops at whatever its output stage is doing there
+    and goes no further. A model rendered by filtering a take cuts the take's
+    noise along with its signal and keeps going, and the difference between the
+    two is the whole of a residual that grows towards the bottom of a deep cut and
+    is nothing anywhere else. On the one profile here that cuts far enough to
+    reach it, that residual ran to fifteen decibels in the top band and under a
+    tenth everywhere the cut was shallow -- a shape that reads exactly like a
+    model breaking down at one end of a byte, and is not.
+
+    Nothing is fitted. `over_db` is how far the run's own flat reference stood
+    over the run's own silence in this band, both of which the record publishes,
+    so what is added back is the noise the take was measured to have and not a
+    floor chosen to make a residual smaller. Where the model is not cutting there
+    is nothing to add back and the figure is unchanged; where a record carries no
+    silence takes there is nothing to add it from and the reading is left alone,
+    which is a record whose deep cuts cannot be scored rather than one that scores
+    well.
+    """
+    if over_db is None:
+        return deviation_db
+    kept = 10.0 ** (deviation_db / 10.0)
+    noise = 10.0 ** (-over_db / 10.0)
+    return 10.0 * np.log10(kept + noise * max(0.0, 1.0 - kept))
+
+
 def score_against_bands(
     model: dict,
     record: dict,
@@ -457,6 +557,18 @@ def score_against_bands(
 
     floors = record.get("reference", {}).get("floor_db") or [0.0]
     floor = float(max(floors))
+
+    # How far the run's flat reference stood over the run's own silence, band by
+    # band. Both are the record's own controls and neither is a choice made here;
+    # a record with no silence takes gets `None` and its deep cuts are scored
+    # without the floor the unit put under them.
+    quiet = record.get("silence", {}).get("band_db")
+    loud = record.get("reference", {}).get("band_db")
+    over_silence: list[float | None] = (
+        [float(loud[i]) - float(quiet[i]) for i in range(len(centres))]
+        if quiet and loud and len(quiet) == len(loud) == len(centres)
+        else [None] * len(centres)
+    )
 
     rows, left_out = [], []
     for reading in record["readings"]:
@@ -490,7 +602,10 @@ def score_against_bands(
             channel=channel,
             hold_s=reading.get("hold_s"),
         )
-        said = [round(wet[i] - dry[i], 2) for i in range(len(centres))]
+        said = [
+            round(_over_the_chains_own_silence(wet[i] - dry[i], over_silence[i]), 2)
+            for i in range(len(centres))
+        ]
         answered = reading["band_db"]
         residual = [round(said[i] - answered[i], 2) for i in usable]
         here = [centres[i] for i in usable]
