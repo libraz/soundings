@@ -218,7 +218,20 @@ def _peaking(freq_hz, *, centre_hz: float, q: float, gain_db: float, fs: float):
     )
 
 
-def _allpass_chain(freq_hz, *, sections: int, corner_hz: float, mix: float, fs: float):
+def _allpass_chain(
+    freq_hz,
+    *,
+    sections: int,
+    corner_hz: float,
+    mix: float,
+    fs: float,
+    q: float | None = None,
+    feedback: float = 0.0,
+    feedback_around: str = "the-chain",
+    feedback_sections: int | None = None,
+    feedback_delay: int = 0,
+    feedback_highpass_hz: float | None = None,
+):
     """A cascade of first-order all-pass sections summed back with the dry signal.
 
     The only section in this catalogue whose magnitude comes from a phase. Each
@@ -246,12 +259,81 @@ def _allpass_chain(freq_hz, *, sections: int, corner_hz: float, mix: float, fs: 
     What the notch depth is worth is decided by the band reading this gets scored
     through, since a band a twelfth of an octave wide reports the energy over a
     notch and not the null at the bottom of it.
+
+    `feedback` returns some of the cascade to its own input, which costs one
+    multiply and is what a part with a byte left over spends it on. It cannot move
+    a notch -- the dry sum still cancels wherever the phase has reached an odd half
+    circle -- and what it does instead is put a resonance at every *even* half
+    circle, where the returned signal arrives in phase with itself and the loop
+    adds up. So a chain with feedback reads as a peak between each pair of notches
+    rather than as deeper notches, and the peak grows as the reciprocal of one
+    minus the loop gain while the notches barely move. That asymmetry is the whole
+    of what separates this from a byte that merely raises the mix.
+
+    Where the loop is closed is `feedback_around`, and the two places differ in
+    what the numerator becomes. Closed around the cascade alone the dry path is
+    outside the loop and the zeros of `1 + mix * A` survive untouched; closed
+    around the summed output the dry is inside it, which multiplies the loop gain
+    by the mix and leaves the same zeros -- so the two are told apart by how much
+    feedback it takes to reach a given resonance and not by where anything sits.
+    `feedback_sections` closes the loop around the first few sections rather than
+    all of them, which puts the resonances at a different spacing from the notches
+    instead of halfway between them.
+
+    `q` makes each section a second-order all-pass instead of a first-order one,
+    which turns the phase through a whole circle per section rather than a half.
+    Four of those and eight of these put the same number of notches in the same
+    places at the flattest resonance, which is why the section count alone cannot
+    tell them apart. What tells them apart is a byte that moves the resonance: a
+    second-order section's phase steepens near its own corner as `q` rises, so the
+    notches crowd towards that corner and the spacing between them stops being
+    fixed. A first-order cascade has no resonance to raise, so a byte doing
+    anything at all to it is doing something else.
+
+    `feedback_delay` is how many samples the returned signal is late by, and it is
+    not a refinement on the loop -- it is what makes the loop buildable. A part
+    computing this sample by sample has nothing to return but the previous result,
+    so an instantaneous loop is the one thing that cannot be written. What the
+    delay costs is a phase that grows with frequency: nothing at the bottom of the
+    band, a quarter circle a quarter of the way to half the rate, and a whole half
+    circle at half the rate, where it turns every resonance the loop places into
+    the cancellation it would otherwise have avoided. So a loop that is a sample
+    late and one that is not agree over most of the band and disagree where the
+    band runs out, which is one more place the rate can be read off a profile.
+
+    `feedback_highpass_hz` puts one pole of a high pass in the loop, which is what
+    stops a fixed-point loop accumulating an offset it can never lose. It leaves
+    the loop alone over almost the whole band and takes the loop gain to nothing
+    below its corner, so the resonance the loop builds cannot reach the bottom: a
+    profile whose peak sits at a frequency rather than at nothing, and falls away
+    under it by more the harder the loop is driven, is a loop that cannot pass DC.
+    It is outside the cascade's own path, so it does nothing at all when the loop
+    gain is nothing -- which is why the setting at zero says nothing about it and
+    is not asked to.
     """
-    t = np.tan(np.pi * corner_hz / fs)
-    c = (t - 1.0) / (t + 1.0)
     z1 = np.exp(-1j * 2 * np.pi * freq_hz / fs)
-    allpass = (c + z1) / (1.0 + c * z1)
-    return 1.0 + mix * allpass**sections
+    late = z1**feedback_delay
+    if feedback_highpass_hz is not None:
+        blocked = np.tan(np.pi * feedback_highpass_hz / fs)
+        late = late * (1.0 - z1) / ((1.0 + blocked) + (blocked - 1.0) * z1)
+    if q is None:
+        t = np.tan(np.pi * corner_hz / fs)
+        c = (t - 1.0) / (t + 1.0)
+        allpass = (c + z1) / (1.0 + c * z1)
+    else:
+        w0 = 2 * np.pi * corner_hz / fs
+        cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
+        allpass = _biquad(
+            1 - alpha, -2 * cos0, 1 + alpha, 1 + alpha, -2 * cos0, 1 - alpha,
+            2 * np.pi * freq_hz / fs,
+        )
+    whole = allpass**sections
+    if not feedback:
+        return 1.0 + mix * whole
+    if feedback_around == "the-output":
+        return (1.0 + mix * whole) / (1.0 - feedback * late * mix * whole)
+    around = allpass ** (sections if feedback_sections is None else feedback_sections)
+    return 1.0 + mix * whole / (1.0 - feedback * late * around)
 
 
 def _pole_cascade(
@@ -344,12 +426,19 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
                 fs=fs,
             )
         elif kind == "allpass-chain":
+            returned, resonance = stage.get("feedback"), stage.get("q")
             out = out * _allpass_chain(
                 safe,
                 sections=int(stage["sections"]),
                 corner_hz=_value(stage["corner_hz"], bytes_now),
                 mix=_value(stage["mix"], bytes_now),
                 fs=fs,
+                q=None if resonance is None else _value(resonance, bytes_now),
+                feedback=0.0 if returned is None else _value(returned, bytes_now),
+                feedback_around=stage.get("feedback_around", "the-chain"),
+                feedback_sections=stage.get("feedback_sections"),
+                feedback_delay=int(stage.get("feedback_delay", 0)),
+                feedback_highpass_hz=stage.get("feedback_highpass_hz"),
             )
         elif kind == "pole":
             resonance = stage.get("q")
