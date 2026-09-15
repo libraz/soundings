@@ -218,6 +218,42 @@ def _peaking(freq_hz, *, centre_hz: float, q: float, gain_db: float, fs: float):
     )
 
 
+def _allpass_chain(freq_hz, *, sections: int, corner_hz: float, mix: float, fs: float):
+    """A cascade of first-order all-pass sections summed back with the dry signal.
+
+    The only section in this catalogue whose magnitude comes from a phase. Each
+    all-pass passes everything at unit gain and turns the phase from nothing to
+    half a circle, through a quarter circle at its corner; `sections` of them in
+    series turn it through `sections` half circles, and adding the dry signal back
+    cancels wherever that total has reached an odd half circle. So the notches are
+    at `corner * tan(pi * (2k + 1) / (2 * sections))` in the tangent of frequency,
+    and their count is fixed by the number of sections alone -- four notches is
+    eight sections and cannot be six or ten.
+
+    Written against `tan(pi f / fs)` rather than against `f` because that is what
+    the bilinear transform leaves invariant, and here the difference is the whole
+    reading: the notches keep fixed ratios in the tangent and crowd together in
+    hertz as they approach half the rate, which is why a chain's upper notches run
+    out of room while its lower ones have not moved relative to each other.
+
+    `mix` is how much of the cascade is added to the dry, and it is added rather
+    than averaged in: the measured profile stands 5.9 dB over its own dry
+    reference where the cascade comes back in phase, which is the six decibels of
+    a sum and not the nothing of a mean. Dividing by the total would have put the
+    whole profile 6 dB low and left the notches where they are, so the error would
+    have gone into the residual as a constant and leaned nowhere.
+
+    What the notch depth is worth is decided by the band reading this gets scored
+    through, since a band a twelfth of an octave wide reports the energy over a
+    notch and not the null at the bottom of it.
+    """
+    t = np.tan(np.pi * corner_hz / fs)
+    c = (t - 1.0) / (t + 1.0)
+    z1 = np.exp(-1j * 2 * np.pi * freq_hz / fs)
+    allpass = (c + z1) / (1.0 + c * z1)
+    return 1.0 + mix * allpass**sections
+
+
 def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.ndarray:
     """The whole chain's transfer at the frequencies asked for, for one setting.
 
@@ -244,6 +280,14 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
                 centre_hz=_value(stage["centre_hz"], bytes_now),
                 q=_value(stage["q"], bytes_now),
                 gain_db=_value(stage["gain_db"], bytes_now),
+                fs=fs,
+            )
+        elif kind == "allpass-chain":
+            out = out * _allpass_chain(
+                safe,
+                sections=int(stage["sections"]),
+                corner_hz=_value(stage["corner_hz"], bytes_now),
+                mix=_value(stage["mix"], bytes_now),
                 fs=fs,
             )
         elif kind == "gain":
