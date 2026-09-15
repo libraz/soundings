@@ -73,6 +73,21 @@ WHY_STEADIER = (
     "general either value could be the one that switches something on."
 )
 
+WHY_INCONCLUSIVE = (
+    "These types were compared against a yardstick that could not carry the comparison. The two "
+    "settings were not told apart by anything, and the run said so rather than reading the "
+    "silence as agreement: a contrast whose own repeatability is no better than the difference "
+    "it is looking for has nothing left to measure with."
+)
+
+WHY_UNDECIDED = (
+    "Being here is not a verdict of any kind, and there is more than one way to arrive. The "
+    "grounds below say which way each type took, with its own reason, because a single sentence "
+    "over the pile is a sentence about types that are not in it for that: a run whose undecided "
+    "types are all undecided for the calibration's sake would otherwise be published saying they "
+    "changed nothing this note could hear, beside rows of the same record reading audible."
+)
+
 WHY_TWO_ROUTES = (
     "This sort and the delay-tracked one rest on different properties and are reported apart. "
     "Tracking measures the motion itself and can miss one it cannot follow: too deep for a frame, "
@@ -130,8 +145,27 @@ class TypeSort:
         return bool(first - second > 12.0)
 
     @property
+    def ground(self) -> str | None:
+        """Which way this type is undecided, or None where it was decided.
+
+        There is more than one way to be undecided and they are not the same
+        fact, so the pile cannot carry one reason for all of them. Named here
+        and read by `verdict` rather than tested twice: the conditions and the
+        reason published beside them would otherwise be two lists to keep in
+        step, and the way that goes wrong is silent -- a pile of one type whose
+        stated reason is the one ground it is not there for.
+        """
+        if self.inconclusive:
+            return "nothing to measure with"
+        if not self.audible:
+            return "nothing audible"
+        if self.inside_the_gap:
+            return "inside the calibration gap"
+        return None
+
+    @property
     def verdict(self) -> str:
-        if self.inconclusive or not self.audible or self.inside_the_gap:
+        if self.ground is not None:
             return "could not say"
         # Not merely an asymmetry: the asymmetry has to run the right way. The
         # audible module's flag does not care which setting repeated worse, since
@@ -152,6 +186,7 @@ class TypeSort:
             "inside_the_calibration_gap": self.inside_the_gap,
             "steadier_when_routed": self.steadier_when_routed,
             "audible_by": self.heard_by,
+            "undecided_because": self.ground,
         }
 
 
@@ -210,6 +245,35 @@ def partition(found: list[TypeSort]) -> dict[str, list[str]]:
 def steadier_when_routed(found: list[TypeSort]) -> list[str]:
     """Types the effect made more repeatable, not less."""
     return [f.type_id for f in found if f.steadier_when_routed]
+
+
+GROUNDS = {
+    "nothing to measure with": WHY_INCONCLUSIVE,
+    "nothing audible": WHY_NOT_AUDIBLE,
+    "inside the calibration gap": WHY_INSIDE_THE_GAP,
+}
+"""Every way of being undecided, in the order a type is tested against them.
+
+The order is the one `TypeSort.ground` walks, so the grounds partition the pile
+rather than overlapping it: a type inaudible *and* inside the gap is counted once,
+under the first that held.
+"""
+
+
+def grounds(found: list[TypeSort]) -> list[dict]:
+    """The undecided pile split by which way each type is undecided.
+
+    A ground nothing landed on is left out rather than published empty, for the
+    reason a ladder that recovered nothing is not given the sentence saying it
+    recovered: a reason standing over no types is a claim about the run that the
+    run did not make.
+    """
+    out = []
+    for name, why in GROUNDS.items():
+        types = [f.type_id for f in found if f.ground == name]
+        if types:
+            out.append({"ground": name, "types": types, "why": why})
+    return out
 
 
 def inside_the_gap(found: list[TypeSort]) -> list[str]:
@@ -277,15 +341,19 @@ def summarise(found: list[TypeSort]) -> str:
 
 
 __all__ = [
+    "GROUNDS",
     "METHOD",
     "WHY_ASYMMETRY",
+    "WHY_INCONCLUSIVE",
     "WHY_INSIDE_THE_GAP",
     "WHY_STEADIER",
     "WHY_NOT_AUDIBLE",
     "WHY_TWO_ROUTES",
+    "WHY_UNDECIDED",
     "TypeSort",
     "declined_elsewhere",
     "disagreements",
+    "grounds",
     "inside_the_gap",
     "steadier_when_routed",
     "partition",

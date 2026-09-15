@@ -212,11 +212,8 @@ def cmd_efx_sort(args: argparse.Namespace) -> int:
             "static": piles["static"],
             "could_not_say": {
                 "types": piles["could_not_say"],
-                "why": efxsort.WHY_NOT_AUDIBLE,
-                "inside_the_calibration_gap": {
-                    "types": efxsort.inside_the_gap(found),
-                    "why": efxsort.WHY_INSIDE_THE_GAP,
-                },
+                "why": efxsort.WHY_UNDECIDED,
+                "grounds": efxsort.grounds(found),
             },
             **(
                 {

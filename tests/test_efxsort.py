@@ -204,6 +204,56 @@ def test_the_gap_is_a_reason_inside_could_not_say_and_not_a_fourth_pile() -> Non
     assert set(efxsort.inside_the_gap(found)) <= set(piles["could_not_say"])
 
 
+def test_a_pile_with_nothing_inaudible_in_it_says_nothing_about_being_inaudible() -> None:
+    """The defect this exists to keep out, which reached the archive once.
+
+    One reason was published over the whole undecided pile, and the pile held a
+    single type that was plainly audible and undecided for the calibration's
+    sake. A reader taking the pile's sentence was told that type changed nothing
+    the note could hear, beside a row of the same record reading `audible: true`.
+    It is the shape a ladder gets when the caveat naming a recovered band is
+    emitted over rows saying every rung failed, and it is fixed the same way:
+    the reason belongs to the ground, not to the pile.
+    """
+    found = [efxsort.sort_one(record(unrepeatable=[-50.1, -21.0]), "01 25")]
+
+    reasons = efxsort.grounds(found)
+
+    assert [g["ground"] for g in reasons] == ["inside the calibration gap"]
+    assert reasons[0]["types"] == ["01 25"]
+    assert reasons[0]["why"] == efxsort.WHY_INSIDE_THE_GAP
+    assert efxsort.WHY_NOT_AUDIBLE not in [g["why"] for g in reasons]
+
+
+def test_every_undecided_type_is_counted_under_exactly_one_ground() -> None:
+    """The grounds have to account for the pile and not overlap it. A type can
+    satisfy two of them at once -- inaudible and inside the gap -- and counting
+    it twice would make the reasons add up to more types than are undecided."""
+    found = [
+        efxsort.sort_one(record(unrepeatable=[-50.1, -21.0]), "01 25"),
+        efxsort.sort_one(record(audible=False, shape=False, unrepeatable=[-50.1, -21.0]), "03 00"),
+        efxsort.sort_one(record(inconclusive=True), "01 10"),
+        efxsort.sort_one(record(repeatability=True, unrepeatable=[-61.9, -3.8]), "02 01"),
+    ]
+    undecided = efxsort.partition(found)["could_not_say"]
+
+    named = [t for reason in efxsort.grounds(found) for t in reason["types"]]
+
+    assert sorted(named) == sorted(undecided)
+    assert len(named) == len(set(named))
+
+
+def test_a_type_that_was_decided_is_given_no_ground_at_all() -> None:
+    """The field says why a type is undecided, so a decided one carries nothing:
+    a ground on a type with a verdict would read as a doubt nobody measured."""
+    moving = efxsort.sort_one(record(repeatability=True, unrepeatable=[-61.9, -3.8]), "02 01")
+    static = efxsort.sort_one(record(unrepeatable=[-60.0, -60.0]), "01 00")
+
+    assert moving is not None and static is not None
+    assert moving.ground is None and static.ground is None
+    assert moving.to_json()["undecided_because"] is None
+
+
 def test_an_effect_that_makes_the_takes_agree_better_is_not_a_modulator() -> None:
     """The asymmetry has to run the right way. The audible module's flag does not
     care which setting repeated worse, because for a parameter in general either
