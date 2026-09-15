@@ -1,0 +1,85 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0120-six-allpass-sections-at-32k",
+    "class": "phaser",
+    "candidate": "0120-six-allpass-sections-at-32k",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 20",
+    "kind": "lti",
+    "made_by": "backup/build-phaser-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "Part of the candidate rather than a constant, because it is one of the two things this comparison is for. An all-pass cascade keeps its notches at fixed ratios in the tangent of frequency, so the rate decides how far up the band those ratios start to close -- and the profile is read to sixteen kilohertz, which is where a chain running at thirty-two has nothing left.",
+  "chain": [
+    {
+      "kind": "allpass-chain",
+      "sections": 6,
+      "corner_hz": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "points",
+          "log": true,
+          "points": [
+            [
+              0,
+              611.3061383653545
+            ],
+            [
+              12,
+              955.337008071065
+            ],
+            [
+              24,
+              1413.400748414505
+            ],
+            [
+              48,
+              2718.523462273873
+            ],
+            [
+              72,
+              6659.327001304449
+            ],
+            [
+              96,
+              9730.535334553328
+            ],
+            [
+              114,
+              11976.742599479572
+            ],
+            [
+              120,
+              11536.827747277883
+            ],
+            [
+              127,
+              12527.811360665974
+            ]
+          ],
+          "from": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+          "why": "One corner per setting the run asked, fitted from that setting's own notches. A readout and not a law: what is claimed is the section count and the rate, which a table with a free entry per setting cannot arrange, and the corner's own figure is this reading's rounding error."
+        }
+      },
+      "mix": {
+        "byte": "40 03 07",
+        "map": {
+          "kind": "points",
+          "log": false,
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ],
+          "why": "The run held the type's mix at the top of its range, so the cascade is summed with the dry at equal weight. How deep that makes a notch is decided by the band reading rather than here: a band a twelfth of an octave wide reports the energy across a notch, not the null."
+        }
+      }
+    }
+  ]
+}

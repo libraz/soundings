@@ -1,0 +1,45 @@
+{
+  "class": "phaser",
+  "what_the_class_is": "A type whose effect is a signal summed with a phase-shifted copy of itself. Nothing in it filters in the ordinary sense: every section passes all frequencies at unit gain and only turns the phase, and the cancellations a listener hears are between the two copies. What varies is where the sections' shared corner sits, how many of them there are, and how much of the shifted copy comes back.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a rate below the converter's.",
+    "what_that_implies": [
+      "Sections are first-order all-pass. One costs a single coefficient and two multiplies, where a section that filtered would cost a coefficient set, so a part that can afford eight all-pass sections could not afford eight biquads.",
+      "One coefficient moves every section. Giving each section its own corner would need a coefficient per section per setting, and the notches would then not keep fixed ratios -- which is a thing the band profile can be asked.",
+      "The rate the effect runs at is not the converter's. Under the bilinear transform the notch ratios are fixed in the tangent of frequency rather than in frequency, so they crowd together as they climb and where they start to crowd measures the rate."
+    ],
+    "would_be_wrong_if": "The notch count changed with the setting for a reason other than notches leaving the band, or the ratios between the lowest notches moved while they were all well inside it."
+  },
+  "candidates": [
+    {
+      "id": "eight-allpass-sections-at-32k",
+      "reading": "Eight first-order all-pass sections sharing one corner, summed with the dry signal, at thirty-two kilohertz.",
+      "predicts": "Four cancellations in the audible band at the bottom of the byte, at 3.36 and 2.24 and 3.36 times each other."
+    },
+    {
+      "id": "six-allpass-sections-at-32k",
+      "reading": "Six sections rather than eight.",
+      "predicts": "Three cancellations, at 3.73 times each other."
+    },
+    {
+      "id": "ten-allpass-sections-at-32k",
+      "reading": "Ten sections.",
+      "predicts": "Five cancellations, at 3.22, 1.96, 1.96 and 3.22."
+    },
+    {
+      "id": "twelve-allpass-sections-at-32k",
+      "reading": "Twelve sections.",
+      "predicts": "Six cancellations, at 3.15, 1.85, 1.70, 1.85 and 3.15."
+    },
+    {
+      "id": "eight-allpass-sections-at-44k1",
+      "reading": "Eight sections at forty-four point one kilohertz, the converter's own rate.",
+      "predicts": "The same ratios low down, and the upper notches staying spread where a thirty-two kilohertz chain has them closing up."
+    },
+    {
+      "id": "eight-allpass-sections-at-48k",
+      "reading": "Eight sections at forty-eight kilohertz.",
+      "predicts": "The upper notches spread wider still."
+    }
+  ]
+}

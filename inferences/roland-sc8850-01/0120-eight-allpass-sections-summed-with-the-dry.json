@@ -1,0 +1,227 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-15T05:48:52.138122+00:00",
+    "made_by": "backup/build-phaser-models.py, backup/write-the-phaser-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 20"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 07"
+      ]
+    }
+  },
+  "claim": "This type is eight first-order all-pass sections in series, summed with the dry signal rather than averaged with it, running at thirty-two kilohertz. One byte moves every section's corner together, which puts four cancellations in the audible band at fixed ratios read in the tangent of frequency -- so they crowd towards each other in hertz as the byte takes them up, and the top ones leave the band rather than staying four.",
+  "named": "a phaser as the period built one: an all-pass ladder mixed back with the input",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=12].largest_db",
+          "readings[value=24].largest_db",
+          "readings[value=48].largest_db",
+          "readings[value=72].largest_db",
+          "readings[value=96].largest_db",
+          "readings[value=114].largest_db",
+          "readings[value=120].largest_db",
+          "readings[value=127].largest_db"
+        ],
+        "values": [
+          -23.06,
+          -24.81,
+          -21.03,
+          -25.15,
+          -22.12,
+          -18.93,
+          -23.33,
+          -18.87,
+          -19.05
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+        "rows": [
+          "01 20 parameter 1 +Manual 100 - 8.0k",
+          "01 20 parameter 5 Mix 0 - 127"
+        ],
+        "says": "The page gives the swept byte a frequency range and calls it a manual, and gives the summed byte a mix. Neither states a structure, and what the page calls a frequency is not what this model calls a corner: the printed span is 100 to 8k and the fitted corners run from 1.0 to 13.5 kilohertz, with the lowest notch running 212 Hz to 6.8 kHz. Which of the three the printed number is meant to be is not settled here."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A phaser of this period is a cascade of first-order all-pass sections summed with the input.",
+        "why": "It is the one structure that gives evenly spaced notches for the cost of two multiplies a section, and a fixed-point part can run eight of them where it could not run eight biquads.",
+        "would_be_wrong_if": "The notches did not sit at the ratios an all-pass ladder fixes, or their count did not match one section count across every setting. Both were measured: four notches at the bottom of the byte, at 3.30 and 2.20 times each other against the 3.36 and 2.24 that eight sections fix."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The archive says what the manual byte did to each third-octave band at nine settings. It does not say those profiles are the magnitude of a phase -- that the dips are cancellations between a signal and a delayed-in-phase copy of itself rather than filters with stopbands, that there are eight sections rather than six or ten, that the dry and wet are summed rather than averaged, or that the chain runs at thirty-two kilohertz. Each is a structure fitted to the readings, and the fit is what this holds.",
+  "alternatives": [
+    {
+      "reading": "Four second-order all-pass sections rather than eight first-order ones.",
+      "candidate": null,
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": "The notch positions as the resonance byte is raised off zero.",
+        "predicts": {
+          "eight first order": "Nothing: a first-order section has no resonance to raise, so a feedback path around the ladder is the only thing the byte can be, and the notches deepen and move together.",
+          "four second order": "Each section's own Q sharpens its phase slope near its corner, so the notches move apart by different amounts."
+        },
+        "sensitivity_here": "The notch positions of this run repeat to better than a twelfth of an octave, which is the band set, and the corners fitted from four notches of one setting agree to 0.03 of an octave.",
+        "margin": 2,
+        "why_not_separable": null,
+        "run": {
+          "stage": "efx-bands",
+          "type": "01 20",
+          "address": "40 03 06",
+          "settings": [
+            0,
+            32,
+            64,
+            96,
+            127
+          ],
+          "stimulus": "the same held note the manual sweep used",
+          "takes": 4,
+          "minutes": 25
+        }
+      }
+    },
+    {
+      "reading": "The corner table is a law in the byte rather than the readout published here.",
+      "candidate": null,
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": "The corner at settings between the nine this run asked.",
+        "predicts": {
+          "a readout": "Nothing between them; the nine are all that was measured.",
+          "a law": "Every unasked setting on the curve the nine define."
+        },
+        "sensitivity_here": "The same run at every eighth value would say whether the byte repeats in blocks the way the equaliser's centre byte does, which is what separates a table from a formula on this machine.",
+        "margin": 3,
+        "why_not_separable": null,
+        "run": {
+          "stage": "efx-bands",
+          "type": "01 20",
+          "address": "40 03 03",
+          "settings": [
+            0,
+            8,
+            16,
+            24,
+            32,
+            40,
+            48,
+            56,
+            64,
+            72,
+            80,
+            88,
+            96,
+            104,
+            112,
+            120
+          ],
+          "stimulus": "the same held note the manual sweep used",
+          "takes": 4,
+          "minutes": 80
+        }
+      }
+    }
+  ],
+  "reproduces": {
+    "model": "inferences/models/0120-eight-allpass-sections-at-32k.json",
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json"
+      ],
+      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 20 at the twelfth-octave resolution",
+      "filter": {
+        "index": "data/units/roland-sc8850-01/index.json",
+        "stage": "efx-bands",
+        "type": "01 20",
+        "file_ends_with": "-in-twelfths.json"
+      },
+      "excluded": [
+        {
+          "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
+          "why": "The same takes read at the coarser set. A notch is narrower than a third octave, so that reading reports the energy either side of one rather than the notch, and scoring both counts one measurement twice."
+        }
+      ]
+    },
+    "domain": "dB",
+    "residual": {
+      "median_abs_db": 0.13,
+      "worst_abs_db": 4.21,
+      "worst_at": {
+        "value": 0,
+        "hz": 198.4
+      },
+      "span_db": 31.3,
+      "floor_db": 1.92,
+      "why": "The median is fifteen times under the run's own floor and the span the byte commands is two hundred and forty times the median. The worst band is a notch flank, where the profile falls twenty decibels across two bands and a corner two per cent out is four decibels out."
+    },
+    "gates": {
+      "gross": {
+        "verdict": "reproduces",
+        "why": "median 0.13 dB against the 31.3 dB the byte commands"
+      },
+      "properties": {
+        "verdict": "reproduces",
+        "why": "The count of notches is a property of the section count alone and the model returns it: four at settings 0 to 72, and fewer above, because the upper ones pass out of the band rather than because they were never there."
+      },
+      "power": {
+        "verdict": "separated",
+        "beaten": {
+          "six-allpass-sections-at-32k": {
+            "median_abs_db": 0.795,
+            "worst_abs_db": 32.1
+          },
+          "ten-allpass-sections-at-32k": {
+            "median_abs_db": 0.54,
+            "worst_abs_db": 28.07
+          },
+          "eight-allpass-sections-at-44k1": {
+            "median_abs_db": 0.58,
+            "worst_abs_db": 24.99
+          },
+          "eight-allpass-sections-at-48k": {
+            "median_abs_db": 0.64,
+            "worst_abs_db": 25.67
+          },
+          "twelve-allpass-sections-at-32k": {
+            "median_abs_db": 0.65,
+            "worst_abs_db": 27.25
+          }
+        },
+        "why": "Every alternative in the catalogue puts a notch where this unit has none. Their worst band is twenty-five to thirty-two decibels out against this one's four, which is a whole cancellation in the wrong place rather than a fit that is slightly worse."
+      },
+      "breakdown": {
+        "verdict": "structure remains",
+        "why": "the signed median swings 0.11 dB across the settings and 2.14 dB across the readings within one, against the run's own floor of 1.92 dB",
+        "read_as": "Just over the floor and it is reported rather than explained away. It sits on the notch flanks, which is where a band reading is least able to hold a position: the run's own repeats move the deepest band by about a twelfth of an octave, and on a flank that steep a twelfth of an octave is several decibels. Nothing in it leans one way across the settings -- the signed median moves 0.11 dB over the nine."
+      }
+    }
+  },
+  "refuted_by": "A setting of the manual byte whose profile has a number of cancellations no single section count explains, or notches whose positions in the tangent of frequency are not fixed multiples of one corner. Either would say the sections do not share a corner, which is the whole of this structure. A rate other than thirty-two kilohertz fitting better once the profile can be read above sixteen would refute the rate without touching the section count.",
+  "what_it_would_change": [],
+  "what_this_does_not_settle": [
+    "What the printed manual number means. The page prints 100 to 8.0k and this fits corners from 1.0 to 13.5 kHz, with the lowest notch running 212 Hz to 6.8 kHz -- so the printed span is the notch's and not the corner's, or it is neither, and no run here decides between them.",
+    "Anything about the type with its depth off zero. The profile was taken with the modulator held still, which is what makes the notches countable at all; what the depth byte does to the corner is a different measurement and is not in this.",
+    "What the resonance byte is. It was held at zero throughout, so nothing here says whether it is feedback around the ladder or something else.",
+    "Whether the eight sections are eight. Four second-order sections at unit Q are the same chain, and this test does not separate them."
+  ]
+}
