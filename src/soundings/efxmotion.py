@@ -47,7 +47,20 @@ WHY_COULD_NOT_SAY = (
     "an injected modulation at any depth, so a modulator and the absence of one would have "
     "produced the same empty track. Filing them as static is the error this category exists to "
     "prevent: it is the cheapest answer available and it is wrong for precisely the types worth "
-    "finding."
+    "finding. Read the floor each pair carries beside this -- `slowest_rate_hz` under every "
+    "type's track, and `slowest_shown_hz` over the survey. A modulation under that floor would "
+    "have been reported as absent whatever the control did, because a line is not read under "
+    "three cycles and these takes are as long as they are."
+)
+
+WHY_SLOWEST_SHOWN = (
+    "The slowest modulation the takes in this survey could have carried, which is a fact about "
+    "how long the note sounded and not about the band the run was asked for. The two are far "
+    "apart here and only the asked-for one used to be written down, which left every null in "
+    "this survey reading as a type that does not modulate. What a null means is bounded by this "
+    "number: under it, a type that modulates and a type that does not return the same empty "
+    "track, and no control can tell them apart because the control is injected above the floor "
+    "as well."
 )
 
 NOT_NAMED = (
@@ -151,6 +164,7 @@ def measure_type(
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
     depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
+    window: float = 0.010,
 ) -> TypeMotion:
     """Sort one type, from its own pair of takes and its own control."""
     dry, dry_rate = read(dry_path)
@@ -164,7 +178,13 @@ def measure_type(
     dry, wet = channel(dry, picked), channel(wet, picked)
 
     found = motion.measure(
-        dry, wet, dry_rate, search_ms=search_ms, rate_range=rate_range, lead_s=lead_s
+        dry,
+        wet,
+        dry_rate,
+        search_ms=search_ms,
+        rate_range=rate_range,
+        lead_s=lead_s,
+        window=window,
     )
     # Only where the type stood still. A control sweeps the take's own return, so
     # on a type that already moves it adds a motion to a motion and recovers a
@@ -181,6 +201,7 @@ def measure_type(
             search_ms=search_ms,
             rate_range=rate_range,
             lead_s=lead_s,
+            window=window,
         )
     )
 
@@ -226,6 +247,7 @@ def survey(
     rate_range: tuple[float, float] = (0.05, 20.0),
     depths_ms: tuple[float, ...] = motion.CONTROL_DEPTHS_MS,
     lead_s: float = 0.0,
+    window: float = 0.010,
     progress=None,
 ) -> list[TypeMotion]:
     """Sort every type whose takes are under this directory, one subdirectory each."""
@@ -247,6 +269,7 @@ def survey(
             search_ms=search_ms,
             rate_range=rate_range,
             depths_ms=depths_ms,
+            window=window,
         )
         out.append(found)
         if progress:
@@ -294,6 +317,31 @@ def partition(found: list[TypeMotion]) -> dict[str, list[str]]:
     }
 
 
+def slowest_shown(found: list[TypeMotion]) -> dict:
+    """The floor the takes in this survey carried, over every type that was sorted.
+
+    Per type it is already under each track. Here it is over the survey, because the
+    band the invocation asked for is written at this level too and the two would
+    otherwise sit a record apart -- one of them true and the other the one a reader
+    takes a null against.
+    """
+    floors = [
+        f.track["slowest_rate_hz"]
+        for f in found
+        if (f.track or {}).get("slowest_rate_hz") is not None
+    ]
+    if not floors:
+        return {"hz": None, "why": WHY_SLOWEST_SHOWN}
+    return {
+        "hz": [round(min(floors), 3), round(max(floors), 3)],
+        "sounded_s": [
+            round(min(f.track["sounded_s"] for f in found), 3),
+            round(max(f.track["sounded_s"] for f in found), 3),
+        ],
+        "why": WHY_SLOWEST_SHOWN,
+    }
+
+
 def summarise(found: list[TypeMotion]) -> str:
     piles = partition(found)
     lines = [f"{len(found)} types sorted"]
@@ -318,6 +366,7 @@ __all__ = [
     "WHY_COULD_NOT_SAY",
     "WHY_MISSING",
     "WHY_ONE_PAIR",
+    "WHY_SLOWEST_SHOWN",
     "TypeMotion",
     "accepted_types",
     "lead_from",
@@ -325,6 +374,7 @@ __all__ = [
     "missing",
     "pair_from",
     "partition",
+    "slowest_shown",
     "summarise",
     "survey",
 ]

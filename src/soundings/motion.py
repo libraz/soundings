@@ -123,6 +123,27 @@ WHY_FLOOR_GATE = (
     "over the noise floor measured in this take's own silent lead-in."
 )
 
+WHY_SLOWEST_RATE = (
+    "The slowest modulation this pair of takes could have shown, which is three cycles across "
+    "the longest unbroken stretch the note sounded for. A line is not read under three cycles "
+    "because a series with a bend in it -- an envelope decaying and then flattening onto the "
+    "noise -- puts all its leftover energy in the lowest bins, where it presents as a very slow "
+    "and very convincing oscillation. The floor that follows is a fact about the take's length "
+    "and not about the band the run was asked for, and the two are routinely far apart. It has "
+    "to be read beside any null here: a type reported as showing no modulation may be one that "
+    "does not modulate, or one whose modulator was slower than its take was long."
+)
+
+WHY_MS_HZ = (
+    "Rate times depth, which is the quantity that bounds this tracker from above rather than "
+    "either on its own. A delay that moves during a frame smears that frame's correlation peak, "
+    "and how far it moves is the product: a deep slow sweep and a shallow fast one are lost to "
+    "the same thing. On broadband material, whose correlation peak is a couple of samples wide, "
+    "the boundary was mapped at roughly four to five millisecond-hertz -- so the deepest rungs "
+    "of this ladder sit far outside it and cannot recover on any material, which is why "
+    "sensitivity here is reported as a band closed at both ends."
+)
+
 FRAME_CONFIDENCE = 0.2
 """Normalised correlation a frame must reach before its delay is believed.
 
@@ -164,6 +185,19 @@ class DelayTrack:
     and the track carries whatever the silent parts of the take reported.
     """
 
+    window: float = 0.010
+    """Length of the frame each delay was read over, in seconds.
+
+    Published because it sets the tracker's upper limit and nothing else does. A delay
+    that moves during a frame smears that frame's correlation peak, and how far it
+    moves is the slew times this -- so the deepest swing a track can follow at a given
+    rate is inversely proportional to it, measured on struck material at 2.6, 4.0, 7.0
+    and 10.4 millisecond-hertz for frames of 20, 10, 5 and 2.5 ms. The price is
+    correlation gain: over the same pair, coverage fell from 0.992 to 0.959 across that
+    range. A record made at one frame length does not bound a run made at another, so
+    the number belongs beside the track rather than in this file.
+    """
+
     frames_below_floor: int = 0
     """Frames dropped for holding the recorder rather than the unit.
 
@@ -181,9 +215,74 @@ class DelayTrack:
         return ~np.isnan(self.delay_samples)
 
     @property
+    def fitted(self) -> slice:
+        """The stretch a fit is taken over: first frame that found anything to last.
+
+        Outside it there is nothing to interpolate between, so `fit_lfo` never looks
+        there and neither does anything that asks how much of the answer was supplied.
+        """
+        found = np.flatnonzero(self.usable)
+        if not found.size:
+            return slice(0, 0)
+        return slice(int(found[0]), int(found[-1]) + 1)
+
+    @property
     def coverage(self) -> float:
-        """Fraction of frames that found anything. A low value makes any fit suspect."""
-        return float(self.usable.mean()) if self.delay_samples.size else 0.0
+        """Fraction of the fitted stretch that found anything, not of the take.
+
+        **The denominator is the part of the take a fit is taken over.** Measured over
+        every frame instead, this number is mostly the take's duty cycle: a note that
+        dies in a fifth of a second inside a three-second capture leaves two thirds of
+        the frames holding the recorder, the level gate drops all of them by design,
+        and the fraction that results can never reach a half however perfectly the
+        tracker worked. Two pairs were refused that way with every single sounding
+        frame having found a peak -- refused, that is, for the length of the silence
+        after the note. What is left over is worth reporting on its own and is
+        `duty` below; it is a property of the stimulus and not of the measurement.
+        """
+        inside = self.usable[self.fitted]
+        return float(inside.mean()) if inside.size else 0.0
+
+    @property
+    def duty(self) -> float:
+        """Fraction of the whole take that fell inside the stretch a fit is taken over.
+
+        How much of the capture held anything, as against how well the tracker did
+        with it. A low value is a stimulus that stopped sounding, which bounds what
+        rates the take can show -- see `slowest_rate_hz` -- and says nothing about
+        whether the tracker could follow what was there.
+        """
+        n = self.delay_samples.size
+        if not n:
+            return 0.0
+        stretch = self.fitted
+        return float(stretch.stop - stretch.start) / n
+
+    @property
+    def sounded_s(self) -> float:
+        """The longest unbroken run of frames that found a peak, in seconds."""
+        best = run = 0
+        for on in self.usable:
+            run = run + 1 if on else 0
+            best = max(best, run)
+        return best * self.hop
+
+    @property
+    def slowest_rate_hz(self) -> float:
+        """The slowest modulation this track could have carried, from its own length.
+
+        A line is not read under three cycles of the series it is found in, because a
+        series with a bend in it has all its leftover energy in the lowest bins and
+        presents there as a very slow, very deep, very convincing oscillation. That
+        rule sets a floor in hertz which is a property of how long the note sounded,
+        and it is not the band the run was asked for: a take whose note sounds for
+        2.31 s can show nothing under 1.30 Hz, whatever range the invocation names.
+
+        This is the number that has to be published beside a null. Without it a type
+        reported as showing no modulation reads as a type that does not modulate, when
+        what may be true is that its modulator was slower than the take was long.
+        """
+        return 3.0 / self.sounded_s if self.sounded_s > 0 else float("inf")
 
     @property
     def excursion_ms(self) -> float:
@@ -205,6 +304,13 @@ class DelayTrack:
             "frames": int(self.delay_samples.size),
             "frames_found": int(self.usable.sum()),
             "coverage": round(self.coverage, 3),
+            "duty": round(self.duty, 3),
+            "sounded_s": round(self.sounded_s, 3),
+            "slowest_rate_hz": None
+            if np.isinf(self.slowest_rate_hz)
+            else round(self.slowest_rate_hz, 3),
+            "why_slowest_rate": WHY_SLOWEST_RATE,
+            "frame_ms": round(self.window * 1000.0, 3),
             "frame_rate_hz": round(self.frame_rate, 2),
             "searched_ms": [round(v, 2) for v in self.searched_ms],
             "excursion_ms": None if np.isnan(self.excursion_ms) else round(self.excursion_ms, 3),
@@ -470,6 +576,7 @@ def track_delay(
         frames_below_floor=int(below),
         sample_rate=sample_rate,
         hop=hop,
+        window=window,
         searched_ms=search_ms,
         ambiguity_ms=spacing,
         periodicity=strength,
@@ -678,8 +785,12 @@ class Motion:
 
     def describe(self) -> str:
         lines = [
-            f"track: {self.track.usable.sum()}/{self.track.delay_samples.size} frames found "
-            f"({self.track.coverage * 100:.0f}%), swing {self.track.excursion_ms:.2f} ms"
+            f"track: the note sounds for {self.track.sounded_s:.2f} s of "
+            f"{self.track.delay_samples.size * self.track.hop:.2f} s, and "
+            f"{self.track.coverage * 100:.0f}% of that found a delay; "
+            f"swing {self.track.excursion_ms:.2f} ms",
+            f"  nothing under {self.track.slowest_rate_hz:.2f} Hz could have been shown "
+            "here -- three cycles is what a line is read over",
         ]
         if self.track.wraps:
             lines.append(
@@ -759,9 +870,16 @@ def measure(
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
     lead_s: float = 0.0,
+    window: float = 0.010,
 ) -> Motion:
-    """Track an effect's motion in both delay and level, and report both nulls."""
-    track = track_delay(dry, wet, sample_rate, search_ms=search_ms, lead_s=lead_s)
+    """Track an effect's motion in both delay and level, and report both nulls.
+
+    `window` is the one parameter here that moves what can be found rather than how
+    well: it sets the ceiling `DelayTrack.window` describes. The default is left where
+    a measurement put it and a run that needs a deeper swing shortens it deliberately,
+    so that the records made at either say which they were made at.
+    """
+    track = track_delay(dry, wet, sample_rate, search_ms=search_ms, lead_s=lead_s, window=window)
     return Motion(
         track=track,
         delay=fit_lfo(track, rate_range=rate_range),
@@ -887,6 +1005,7 @@ def _attempt(
     search_ms: tuple[float, float],
     rate_range: tuple[float, float],
     lead_s: float,
+    window: float,
 ) -> dict:
     """Set the take's own return moving, and see whether the tracker follows it.
 
@@ -919,10 +1038,12 @@ def _attempt(
         search_ms=search_ms,
         rate_range=rate_range,
         lead_s=lead_s,
+        window=window,
     )
     fit = found.delay if found.delay_answered else None
     return {
         "injected_depth_ms": round(depth_ms, 4),
+        "injected_ms_hz": round(depth_ms * rate_hz, 3),
         "recovered_rate_hz": round(fit.rate_hz, 4) if fit else None,
         "recovered_depth": f"{fit.depth:.4f} {fit.unit}" if fit else None,
         "recovered": bool(
@@ -941,6 +1062,7 @@ def control(
     search_ms: tuple[float, float] = (0.0, 60.0),
     rate_range: tuple[float, float] = (0.05, 20.0),
     lead_s: float = 0.0,
+    window: float = 0.010,
 ) -> dict:
     """How shallow a modulation this pair of takes could have shown, asked of itself.
 
@@ -983,6 +1105,7 @@ def control(
                 search_ms=search_ms,
                 rate_range=rate_range,
                 lead_s=lead_s,
+                window=window,
             )
             for depth in ladder
         ]
@@ -992,6 +1115,8 @@ def control(
     return {
         "injected_rate_hz": round(rate_hz, 4),
         "injected_depths_ms": [round(d, 4) for d in ladder],
+        "injected_ms_hz": [round(d * rate_hz, 3) for d in ladder],
+        "why_ms_hz": WHY_MS_HZ,
         "return_level_db": round(level_db, 2) if np.isfinite(level_db) else None,
         "no_return_to_carry_a_control": not attempts,
         "attempts": attempts,
@@ -1020,7 +1145,9 @@ __all__ = [
     "WHY_DETECTABLE",
     "WHY_CONTROL",
     "WHY_FLOOR_GATE",
+    "WHY_MS_HZ",
     "WHY_NO_BAND",
+    "WHY_SLOWEST_RATE",
     "DelayTrack",
     "LfoFit",
     "Motion",

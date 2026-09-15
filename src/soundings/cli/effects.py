@@ -51,6 +51,14 @@ def register(sub) -> None:
     p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
     p.add_argument(
+        "--frame-ms",
+        type=float,
+        default=10.0,
+        help="length of the frame each delay is read over, ms. This sets the "
+        "deepest swing the track can follow at a given rate -- shorter follows a "
+        "deeper one and loses a little coverage",
+    )
+    p.add_argument(
         "--lead",
         type=float,
         default=0.6,
@@ -100,6 +108,7 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
         search_ms=(0.0, args.max_delay),
         rate_range=(args.min_rate, args.max_rate),
         lead_s=args.lead,
+        window=args.frame_ms / 1000.0,
         progress=said,
     )
     if not found:
@@ -121,6 +130,7 @@ def cmd_efx_motion(args: argparse.Namespace) -> int:
         {
             "takes": str(args.takes),
             "searched_rate_hz": [args.min_rate, args.max_rate],
+            "slowest_shown_hz": efxmotion.slowest_shown(found),
             "searched_delay_ms": [0.0, args.max_delay],
             "method": efxmotion.METHOD,
             "one_pair_per_type": efxmotion.WHY_ONE_PAIR,

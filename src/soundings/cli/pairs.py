@@ -32,6 +32,14 @@ def register(sub) -> None:
         help="milliseconds of delay searched. A null is a fact about this range",
     )
     p.add_argument("--min-rate", type=float, default=0.05, help="slowest modulation searched, Hz")
+    p.add_argument(
+        "--frame-ms",
+        type=float,
+        default=10.0,
+        help="length of the frame each delay is read over, ms. This sets the "
+        "deepest swing the track can follow at a given rate -- shorter follows a "
+        "deeper one and loses a little coverage",
+    )
     p.add_argument("--max-rate", type=float, default=20.0, help="fastest modulation searched, Hz")
     p.add_argument(
         "--lead",
@@ -138,11 +146,27 @@ def cmd_motion(args: argparse.Namespace) -> int:
     dry, wet, rate, picked = _pair(args.dry, args.wet)
     span = (0.0, args.max_delay)
     rates = (args.min_rate, args.max_rate)
-    found = motion.measure(dry, wet, rate, search_ms=span, rate_range=rates, lead_s=args.lead)
+    found = motion.measure(
+        dry,
+        wet,
+        rate,
+        search_ms=span,
+        rate_range=rates,
+        lead_s=args.lead,
+        window=args.frame_ms / 1000.0,
+    )
     # Always, not only when the answer is a null. A run that reports motion is
     # not excused the control either: knowing the tracker works on this material
     # is what says a recovered rate is the effect's and not the search's.
-    vouched = motion.control(dry, wet, rate, search_ms=span, rate_range=rates, lead_s=args.lead)
+    vouched = motion.control(
+        dry,
+        wet,
+        rate,
+        search_ms=span,
+        rate_range=rates,
+        lead_s=args.lead,
+        window=args.frame_ms / 1000.0,
+    )
 
     print(f"{args.dry} against {args.wet}, {rate} Hz")
     print(found.describe())

@@ -530,3 +530,65 @@ def test_a_take_with_no_lead_in_declared_is_left_ungated() -> None:
     assert np.isnan(track.floor_db)
     assert track.to_json()["noise_floor_db"] is None
     assert "frames_gated_on_level" not in track.to_json()
+
+
+# What a null here is bounded by. The tracker succeeding on every frame that held
+# signal and the fit being refused anyway is one failure; a fit refused because the
+# modulator was slower than the take was long is another, and both used to come out
+# of the record as the same sentence about coverage.
+
+
+def test_a_take_that_is_mostly_silence_is_not_refused_for_the_silence() -> None:
+    """Coverage asks how much of the answer interpolation supplied, so its
+    denominator is the stretch a fit is taken over and not the capture. Measured
+    over every frame instead it is mostly the take's duty cycle: two real pairs
+    were refused with every sounding frame having found a peak, which is a refusal
+    for the length of the silence after the note."""
+    dry, wet = decaying_into_silence()
+    track = motion.track_delay(dry, wet, SR, lead_s=0.6)
+
+    sounding = track.usable[track.fitted]
+    assert sounding.mean() > 0.9
+    assert track.coverage > 0.9
+    # And the part of the take that stopped sounding is still reported, as the
+    # separate thing it is.
+    assert track.duty < 0.9
+    assert track.to_json()["duty"] == pytest.approx(track.duty, abs=5e-4)
+
+
+def test_a_track_states_the_slowest_rate_it_could_have_carried() -> None:
+    """A line is not read under three cycles, so how long the note sounded sets a
+    floor in hertz that has nothing to do with the band the run asked for. Without
+    it published, a type whose modulator ran under that floor reads as a type that
+    does not modulate."""
+    long_dry = source(seconds=4.0)
+    short_dry = source(seconds=1.0)
+    moved = 0.5 * np.roll(long_dry, 400)
+
+    long_track = motion.track_delay(long_dry, long_dry + moved, SR, lead_s=0.0)
+    short_track = motion.track_delay(
+        short_dry, short_dry + 0.5 * np.roll(short_dry, 400), SR, lead_s=0.0
+    )
+
+    assert long_track.slowest_rate_hz < 1.0 < short_track.slowest_rate_hz
+    assert long_track.sounded_s > 3.0
+    assert long_track.to_json()["slowest_rate_hz"] == pytest.approx(
+        long_track.slowest_rate_hz, abs=5e-4
+    )
+
+
+def test_a_shorter_frame_follows_a_deeper_swing() -> None:
+    """The tracker's upper limit is the frame's own length, because what smears a
+    frame's peak is how far the delay moved inside it. A swing missed at the
+    default frame is followed at a quarter of it, which is the lever a run needing
+    a deep swing has and the reason the frame length is published beside a null."""
+    dry = source()
+    deep = motion.modulated_copy(dry, SR, rate_hz=1.3, depth_ms=8.0, centre_ms=16.0)
+    wet = dry + 0.7 * deep
+
+    assert motion.measure(dry, wet, SR).delay is None
+    finer = motion.measure(dry, wet, SR, window=0.0025).delay
+    assert finer is not None
+    assert finer.rate_hz == pytest.approx(1.3, rel=0.1)
+    assert finer.depth == pytest.approx(8.0, rel=0.15)
+    assert motion.measure(dry, wet, SR, window=0.0025).track.to_json()["frame_ms"] == 2.5
