@@ -345,6 +345,27 @@ one made on broadband level cannot see a parameter that changed one channel's
 shape while leaving its level alone. Which of the three was asked is therefore
 part of what a null from this stage means.
 
+**`vibrato` needs a stimulus whose pitch survives the type it is read through.**
+Its reading is a pitch track, and a pitch track is only a reading of the note
+while the note still has the partials a pitch is estimated from. On a type whose
+output at the effect-alone balance is a delayed copy of itself, a delay of a few
+tenths of a millisecond puts a comb's notches through the middle of a struck
+tone's own partials, and the track jumps between whichever are left: measured on
+two runs across three pre-delays, the track wandered by hundreds to thousands of
+cents on every take -- **including the takes made with the depth byte at nought
+and nothing modulating at all**. What comes out of such a track repeats badly,
+does not rise with the byte, and is not a depth.
+
+The stage's own control does not catch that and is not built to. It injects a
+known modulation into one take and reports which depths came back, so what it
+establishes is that the search can find a periodic component in that series. It
+does not establish that the series is the note's pitch. A control passing is
+therefore not a track being sound, and on a type that combs its own output the
+one take the control is injected into -- the setting with nothing sweeping -- is
+the least like the rows it is bounding. Before reading a depth out of this stage,
+look at what the track does over a take the parameter was held at nought in: if
+that wanders, nothing above it is a reading.
+
 `phase` carries a control the others do not need. It measures between two takes of
 one note, which works only where the two takes are the same waveform, so every
 band is published with the coherence of that band beside it: a phase measured
