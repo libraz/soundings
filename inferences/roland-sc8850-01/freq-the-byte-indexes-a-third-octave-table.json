@@ -850,6 +850,22 @@
           -21.42,
           -22.76
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-73-09-the-window-read-through-its-own-noise-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_at_hz",
+          "readings[value=8].largest_at_hz",
+          "readings[value=16].largest_at_hz",
+          "readings[value=32].largest_at_hz"
+        ],
+        "values": [
+          15102.0,
+          15102.0,
+          15102.0,
+          16000.0
+        ],
+        "read_as": "`250 - 6.3k/Bypass` read where the filter is the whole output, which is what places the entry the claim and the series disagree about."
       }
     ],
     "document_rows": [
@@ -1010,34 +1026,11 @@
       "ruled_out_by": "The run it asked for was made and the prediction held at every setting. Ten entries of a third printed range, on a type that shares no stage with either of the two already read, land on the third octaves that range's printed ends bracket to a median 0.0053 octaves and a worst 0.0179, where one band of the reading is 0.0847. A table belonging to the type would have to hold the entries of a range it has no reason to know about."
     },
     {
-      "reading": "The 279.1 Hz this claim reads where the page prints 315 belongs to the range it was read in rather than to the series every range is cut from, so a different range covering the same entry returns the printed frequency there.",
-      "candidate": "the-odd-entry-belongs-to-its-range",
-      "standing": true,
+      "reading": "The 279.1 Hz belongs to the series every printed range is cut from, so the same element read on any range returns it.",
+      "candidate": "the-odd-entry-belongs-to-the-series",
+      "standing": false,
       "equivalent_under_this_test": false,
-      "why_it_stands": "Every reading of that entry so far is through one range. Both mid sections were read and they agree with each other to two thousandths of an octave, which establishes that they index one table and says nothing about whose table it is. No range this claim has been read on covers that entry twice.",
-      "what_the_claim_still_holds": "The stride of eight, the sixteen entries, and the named third octaves at fifteen of them. Both readings of this alternative agree about all of it; they differ about where one number lives, and a reader rendering that range gets the same frequency either way.",
-      "separated_by": {
-        "observable": "Where the largest band sits at a setting of 40 03 0B on type 04 06 inside entry 1 of this window, which the page prints 315 and whose settings are 8 to 15.",
-        "predicts": {
-          "the-odd-entry-belongs-to-the-series": "279.1 Hz",
-          "the-odd-entry-belongs-to-its-range": "315 Hz"
-        },
-        "sensitivity_here": "The two stand 0.1746 octaves apart, against the 0.083 octaves a twelfth-octave reading of this stage separates. It is the same distance that made the entry a disagreement in the first place, read the same way, so the run cannot be closer to one answer than the reading that raised it.",
-        "margin": 2.1,
-        "run": {
-          "stage": "efx-bands",
-          "type": "04 06",
-          "address": "40 03 0B",
-          "settings": [
-            8,
-            15
-          ],
-          "minutes": 8,
-          "why_this_slot": "It is the one slot on this window the contrast stage heard: 1.427 dB over a floor at -54.47, in data/units/roland-sc8850-01/efx-params/04-06-parked.json. The other three are on a type whose run heard nothing at them.",
-          "what_it_has_to_hold": "The type's modulators, at the values its parked contrast run held them at. That run is where this slot was heard, and a band profile taken with a modulator running is a profile of the modulator as much as of the filter.",
-          "why_two_settings": "Both are inside one entry, so they say whether the stride is eight here as well -- two settings of one entry returning one frequency is the cheapest check that the window is read the way the claim says, and it costs nothing beside the reading that separates the two candidates."
-        }
-      }
+      "ruled_out_by": "data/units/roland-sc8850-01/efx-bands/01-73-09-the-window-read-through-its-own-noise-in-twelfths.json at settings 8 to 15, where the same element of the list reads 332.9 Hz -- three bands from 279.1 and inside one of the printed 315."
     }
   ],
   "refuted_by": "Two settings inside one of these entries returning frequencies the run tells apart, or two settings across an entry boundary returning frequencies it does not. Either is measurable at settings 4 through 12 of any slot printed with a frequency range. Or a slot on the same printed range whose readings do not land on this series at all, which would make the table a property of the type rather than of the range.",
@@ -2671,6 +2664,40 @@
           ]
         }
       ]
+    }
+  },
+  "a_fourth_printed_range": {
+    "what_was_asked": "Where the entries of `250 - 6.3k/Bypass` fall, and the second of them in particular: the page prints 315 against it, and it is the same element of the stored list as the entry the mid range returned 279.1 Hz for.",
+    "the_run_that_could_not_read": {
+      "record": "data/units/roland-sc8850-01/efx-bands/04-06-0B-the-window-that-would-place-the-odd-entry-in-twelfths.json",
+      "type": "04 06",
+      "the_deepest_profile_falls_db": -4.48,
+      "why_it_does_not_read": "Four and a half decibels is a shelf. This type sums its filtered path with a dry one and the mix byte at full does not remove it, so the profile never falls far enough for a corner to be where it is rather than merely which way it leans. The spacing between entries survives that -- a shelf moves with the entry -- and the place of any one of them does not."
+    },
+    "the_run_that_could": {
+      "record": "data/units/roland-sc8850-01/efx-bands/01-73-09-the-window-read-through-its-own-noise-in-twelfths.json",
+      "type": "01 73",
+      "slot": "40 03 09",
+      "why_this_slot": "It is the low pass of the type's own noise generator. With the generator up, the type's three other sources down and no note played, the output is that noise through this filter and nothing else -- so there is no dry path to sum against, and the reference is the same chain at the position the range prints as the filter out.",
+      "the_deepest_profile_falls_db": -49.45,
+      "the_disputed_entry_hz": 332.9,
+      "from_the_printed_value_octaves": 0.0797,
+      "from_what_the_mid_range_put_there_octaves": 0.2543,
+      "against_what_the_reading_separates_octaves": 0.0847,
+      "the_step_this_window_usually_takes_octaves": 0.321
+    },
+    "what_it_settles": "The entry sits at 332.9 Hz, which is 0.08 octaves from the value the page prints there -- inside the one band this reading separates -- and 0.254 octaves from the number the mid range returns for the same element, which is three bands. So the 279 belongs to the range it was read on. A printed range gets its own table, which is what the second printed range already said and what a third now says on a path where the filter is the whole output.",
+    "one_entry_of_this_range_sits_low_too": {
+      "entry": 4,
+      "printed": "630",
+      "read_hz": 552.0,
+      "away_octaves": -0.1907,
+      "read_as": "Not the same entry, and not claimed as the same thing. This range has one entry of its own that sits about a fifth of an octave under the named series while the other fourteen sit within a band of it, which is the shape the mid range has. Whether every printed range carries one such entry, and whether there is anything the low ones share, is a question this record opens and does not answer."
+    },
+    "the_whole_window": {
+      "median_octaves_from_the_named_series": 0.0364,
+      "entries_within_one_band": 11,
+      "entries_read": 15
     }
   }
 }
