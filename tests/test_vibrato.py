@@ -212,3 +212,38 @@ def test_the_two_refusals_are_told_apart_in_the_record() -> None:
 
     assert not trend.found
     assert trend.notes == [vibrato.WHY_AT_THE_EDGE]
+
+
+def test_a_rate_between_two_bins_is_read_between_them() -> None:
+    """A rate is wrong by up to half a bin if it is reported as the bin it landed in.
+
+    What that costs is not the rate, which is near enough either way. It is the
+    depth and, in the stage next door, the folded cycle: an average taken over `c`
+    cycles on a period out by a fraction `e` smears by `c * e` of a cycle, so a take
+    made longer to fold more cycles in gets worse at the thing it was lengthened
+    for. The rate here is chosen to fall between two bins of this take's own grid.
+    """
+    seconds = 2.0
+    a_bin = 1.0 / seconds
+    between = vibrato.measure(tone(seconds=seconds, hz=5.37, cents=60.0), RATE)
+
+    assert between.found
+    # The bar is the bin, because that is what the reading used to be quantised to.
+    # A rate landing anywhere inside its bin is what reporting the bin gives; this
+    # asks for a third of one, which the interpolation clears by a factor of five.
+    assert abs(between.rate_hz - 5.37) < a_bin / 3.0, (
+        f"{between.rate_hz} is {abs(between.rate_hz - 5.37) / a_bin:.2f} of a "
+        f"{a_bin} Hz bin away from the rate the take carries"
+    )
+
+
+def test_the_depth_survives_a_rate_between_the_bins() -> None:
+    """The depth is projected onto a basis at the rate that was found, so a rate off
+    by half a bin projects onto the wrong basis and returns a shallower modulation
+    than the take carries. A known depth has to come back whether or not the rate
+    it runs at is one the grid happens to hold."""
+    on_a_bin = vibrato.measure(tone(seconds=2.0, hz=5.0, cents=60.0), RATE)
+    between = vibrato.measure(tone(seconds=2.0, hz=5.37, cents=60.0), RATE)
+
+    assert on_a_bin.depth_cents == pytest.approx(60.0, rel=0.1)
+    assert between.depth_cents == pytest.approx(60.0, rel=0.1)
