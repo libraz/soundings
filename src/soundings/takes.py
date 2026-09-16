@@ -153,6 +153,22 @@ def channel_reaching(root: str | Path, names, *, seconds: float = 2.0) -> tuple[
     return int(np.argmax(highest)), highest
 
 
+def channel_pair_reaching(
+    root: str | Path, names, *, seconds: float = 2.0
+) -> tuple[tuple[int, int], list[float]]:
+    """Which pair of channels the unit is on, and the highest each channel reached.
+
+    The loudest channel and the one it is paired with, rather than the two loudest.
+    An interface presents its inputs in stereo pairs, and a measurement that reads
+    a difference between channels has to read it across a pair the unit's two
+    outputs are on -- not across whichever two happened to be loudest, which on a
+    parameter that empties one side is a different pair at each setting.
+    """
+    picked, highest = channel_reaching(root, names, seconds=seconds)
+    first = picked - (picked % 2)
+    return (first, min(first + 1, len(highest) - 1)), highest
+
+
 WHY_CHANNEL = (
     "Which channel of the interface both takes were read from, and the highest each channel "
     "reached across the two. One channel for the pair rather than the loudest of each take: this "

@@ -180,6 +180,73 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_rate)
 
     p = sub.add_parser(
+        "efx-sway",
+        help="read what one insertion effect's modulator did to level and to balance, "
+        "setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    p.add_argument("--type", metavar="MSB LSB", required=True,
+                   help="the type the takes were made under")
+    p.add_argument("--slot", metavar="ADDR", required=True, help="the address that was swept")
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's name with a group named `value`, which is the "
+        "byte it was taken at. A run names its takes however its own question needed, so "
+        "how the setting is read back out belongs in the invocation -- where it lands in "
+        "the record, and a reader can check it rather than trust it",
+    )
+    p.add_argument(
+        "--still",
+        metavar="REGEX",
+        help="a pattern naming the take with no modulation in it -- the modulator "
+        "switched off, or the part routed past the effect -- which the control is "
+        "injected into. Named rather than guessed: a take already carrying a modulation "
+        "ends up with two, the search finds the unit's own, and the control reads as "
+        "having failed on material it can read perfectly well",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. A type "
+        "with more than one modulator returns whichever dominates, so a reading taken "
+        "with the other stage held still is a different reading and nothing in the "
+        "number says so",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument("--min-rate", type=float, default=0.3, help="slowest modulation searched, Hz")
+    p.add_argument("--max-rate", type=float, default=15.0, help="fastest modulation searched, Hz")
+    p.add_argument(
+        "--least",
+        type=float,
+        default=0.5,
+        help="dB peak to peak a cycle must reach before a rate is reported. Under this a "
+        "held note's own unsteadiness fits a slow oscillation as well as a modulator does, "
+        "and the control is what says whether a row over the bar is worth reading",
+    )
+    p.add_argument(
+        "--channels",
+        type=int,
+        nargs=2,
+        metavar="N",
+        help="the interface channels to read every take from. Defaults to the pair that "
+        "reached highest across the takes read, chosen once for the run: half of what "
+        "this reads is the difference between two channels, and a difference taken "
+        "across a pair chosen per take is a difference between two different things",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_sway)
+
+    p = sub.add_parser(
         "efx-bands",
         help="read what one insertion effect's parameter did to the level of each third "
         "octave, setting by setting, from takes already saved, with no machine attached",
@@ -1005,5 +1072,60 @@ def cmd_efx_params(args) -> int:
         print(f"  {name}: {count}")
     if (coverage := found.get("coverage")) and (missing := coverage["never_asked"]):
         print(f"  => {len(missing)} never asked: {' | '.join(missing)}")
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_sway(args) -> int:
+    """What one modulator does to level and to balance, read from takes already saved."""
+    from .. import efxsway
+
+    def said(reading) -> None:
+        parts = []
+        for key in ("level", "level_in_db", "balance"):
+            track = reading[key]
+            if track["rate_hz"] is None:
+                parts.append(f"{key} --")
+                continue
+            parts.append(
+                f"{key} {track['rate_hz']:.3f} Hz {track['depth']:.3f} "
+                f"{track['measured_in']} up {track['going_up_fraction']}"
+            )
+        print(f"  {reading['value']:5d} -> " + "; ".join(parts))
+
+    found = efxsway.sweep(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        still=args.still,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        lead_s=args.lead,
+        search_hz=(args.min_rate, args.max_rate),
+        least_db=args.least,
+        channels=tuple(args.channels) if args.channels else None,
+        progress=said,
+    )
+    if not found["readings"]:
+        print(
+            f"no take under {args.takes} has a setting matching {args.setting!r}; "
+            f"{found['takes_not_matching']['count']} were looked at"
+        )
+        return 1
+    picked = found["channel"]
+    print(
+        f"  read from channels {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
+    if found["control"] is not None:
+        print(
+            f"  control, injected into {found['control_taken_from']}: recovered "
+            f"{found['control']['depths_recovered_db']} of "
+            f"{found['control']['depths_tried_db']} dB"
+        )
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  {missed} takes did not match the pattern and were not read")
     report.write_json(args.out, found)
     return 0

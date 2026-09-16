@@ -331,6 +331,15 @@ to the level between the two, to their separation band by band, and to what a
 take holds early against what it holds late. All but `transfer` read takes and
 need no unit attached.
 
+**`motion` reads a modulated delay and only that.** Its positive control injects a
+swing in milliseconds, so on a type whose modulator moves a level or a pan instead
+it cannot pass and never could -- and the null it returns is correct and says
+nothing about the type. `efx-sway` is the reader for those: it tracks the take's
+own level and its own difference between channels, inside one take for the reason
+`vibrato` is read that way, and reports the rate, the depth and one averaged cycle
+of whatever was modulating. Which printed shape that cycle answers to is a
+comparison against `documents/` and is not made in the record.
+
 A comparison made in one channel cannot see a parameter that moved the other, and
 one made on broadband level cannot see a parameter that changed one channel's
 shape while leaving its level alone. Which of the three was asked is therefore
@@ -468,7 +477,15 @@ rye run soundings efx-bands <takes> --type 01 00 --slot "40 03 07" \
 rye run soundings efx-time <takes> --type 01 40 --slot "40 03 03" \
   --setting '...' --control '...' \
   --out data/units/<unit-id>/efx-time/01-40-03-<what-was-asked>.json
+rye run soundings efx-sway <takes> --type 01 26 --slot "40 03 03" \
+  --setting '...' --still '...' --held "40 03 05=7F" \
+  --out data/units/<unit-id>/efx-sway/01-26-03-<what-was-asked>.json
 ```
+
+`--still` names the take with no modulation in it, which the control is injected
+into. It is named rather than guessed: a take already carrying a modulation ends
+up with two, the search finds the unit's own, and the control reads as having
+failed on material it can read perfectly well.
 
 Each reads a directory of takes a `--save` run left, so none of them needs the
 unit attached and all of them run while the hardware is busy with something else.
