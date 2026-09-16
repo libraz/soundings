@@ -888,6 +888,49 @@
         "margin": 1.0,
         "run": null
       }
+    },
+    {
+      "reading": "What picks the ladder is the conversion column the effect list cites beside the parameter, not the range the page prints. The two agree on every slot read so far because the ends separate four of the five columns, and the page prints one parameter where they do not.",
+      "candidate": "the-column-the-page-cites-picks-the-ladder",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "why_it_stands": "It is not beaten by anything read here. Every slot this claim rests on is a slot the two rules agree about, so the readings cannot tell them apart, and the one slot that would is on a type nothing has measured.",
+      "what_the_claim_still_holds": "Each of the five ladders, at every setting it was read at, and the cut to a whole step of a clock at 32000 Hz. Those are readings and this alternative is about which of them a slot nobody read uses.",
+      "separated_by": {
+        "observable": "The time the copy comes back at, at settings 80 to 115 of 40 03 03 on type 01 54.",
+        "predicts": {
+          "the-printed-range-picks-the-ladder": "the 2. Delay Time 1 ladder: 650.0 ms at setting 80",
+          "the-column-the-page-cites-picks-the-ladder": "the 3. Delay Time 2 ladder: 600.0 ms at setting 80"
+        },
+        "sensitivity_here": "The two ladders are 50.0 ms apart at every one of 36 settings. What that is measured against is not the clock but what this stage reports having resolved: two peaks are told apart at 0.0625 ms, and the one setting taken twice came back at the same time both times. Read off data/units/roland-sc8850-01/efx-time/01-52-03-every-step-of-a-three-tap-delay.json.",
+        "margin": 800.0,
+        "run": {
+          "stage": "efx-time",
+          "type": "01 54",
+          "slot": "40 03 03",
+          "settings": [
+            0,
+            64,
+            80,
+            96,
+            115
+          ],
+          "taken_twice": 80,
+          "held": {
+            "40 03 04": 0,
+            "40 03 05": 64,
+            "40 03 06": 127,
+            "40 03 07": 64,
+            "40 03 12": 64,
+            "40 03 13": 64,
+            "40 03 14": 64,
+            "40 03 16": 127
+          },
+          "minutes": 10,
+          "why_these_settings": "80, 96 and 115 are inside the window where the two ladders stand furthest apart, and it is the same distance at each, so any one of them answers and three of them say whether the answer is the same shape all along. 0 and 64 are the control: both ladders put the same time there, so a run that misses them is not reading this slot at all and its disagreement higher up would be about the run. One setting is taken twice, which is where the floor a difference has to clear comes from.",
+          "what_it_has_to_hold": "This type glides to a delay time rather than arriving at it, and the acceleration byte is what decides how long that takes. It is held at the bottom of its printed range and the take begins after arrival -- and how long arrival is, is measured at that value by taking one setting at two waits, not assumed from which end of the range the byte is at. A reading taken before arrival is a reading of the way there, and on an accelerating type one has already come back most of the way wrong."
+        }
+      }
     }
   ],
   "refuted_by": "A reading at any setting of any of these slots that is not its range's ladder entry for it, by more than that setting's own resolution. Or a slot on another type one of these ranges is printed against whose ladder has different steps, which would make the printed range the wrong thing to index by. Or the same sweep on a unit whose delay is not clocked at 32000 Hz coming back with the heights split the same way, which would mean the split is not the grid.",
@@ -1258,8 +1301,59 @@
       "columns": [
         "3. Delay Time 2"
       ],
-      "why": "Nothing measured here was on it. The grid's index names one effect type under it, so it is one type's worth of work rather than a hole across the class -- and until the effect list is read, which type that is, is a number in an index with no two bytes beside it.",
-      "what_would_close_it": "The efx-time stage on the one type the index names, at the settings where this column's step changes. It bends at a different setting from every ladder already read, so a run that found the bend where the page puts it could not have found it by carrying anything over from those."
+      "why": "Nothing measured here was on it. It is one parameter of one type rather than a hole across the class, and the effect list now names which.",
+      "what_would_close_it": "The efx-time stage on the one type the index names, at the settings where this column's step changes. It bends at a different setting from every ladder already read, so a run that found the bend where the page puts it could not have found it by carrying anything over from those.",
+      "the_effect_list_names_it": {
+        "type": "01 54",
+        "effect": "Tm Ctrl Delay",
+        "parameter": "+ Dly Time",
+        "address": "40 03 03",
+        "page": 218,
+        "printed_range": "200ms–500ms–990ms/1sec",
+        "why_one_slot": "The grid's index named one effect type under this column and the effect list now says which parameter of it: one slot on one type, and no other row of the whole list refers to this column."
+      },
+      "and_naming_it_contests_this_claim": {
+        "what": "This claim says the range the page prints picks the ladder. The parameter the column belongs to is printed '200ms–500ms–990ms/1sec', which is the same string the page prints against 01 53 Dly Tm 1 -- and those cite a different column. One printed range, two ladders.",
+        "on_the_page_this_claim_rests_on": "The other manual spells its ranges by their ends alone, and there it prints this parameter `200m - 990m/1sec`, which is the key this claim reads its own 01 52 ladder by. So the rule does not merely run out here: it names a ladder, and the unit's own conversion grid puts another one at that address.",
+        "why_no_reading_could_have_caught_it": "The two columns share both ends -- two hundred milliseconds at the bottom and a second at the top -- and differ only in where the step changes from five milliseconds to ten. Keying by the ends separates the other four columns of this class and only these two collide, so every slot read so far agrees with the rule and none of them was in a position not to.",
+        "the_two_ladders": {
+          "2. Delay Time 1": [
+            {
+              "from_setting": 0,
+              "step_ms": 5.0
+            },
+            {
+              "from_setting": 70,
+              "step_ms": 10.0
+            }
+          ],
+          "3. Delay Time 2": [
+            {
+              "from_setting": 0,
+              "step_ms": 5.0
+            },
+            {
+              "from_setting": 80,
+              "step_ms": 10.0
+            },
+            {
+              "from_setting": 120,
+              "step_ms": 0.0
+            }
+          ]
+        },
+        "they_part_at": {
+          "first_setting": 71,
+          "by_ms_there": 5.0,
+          "widest_ms": 50.0,
+          "settings_that_wide": [
+            80,
+            115
+          ],
+          "settings_stated_by_both": 116,
+          "settings_that_differ": 45
+        }
+      }
     }
   }
 }
