@@ -102,6 +102,9 @@ FRAME_OVER_FLOOR_DB = 12.0
 SEARCH_HZ = (0.5, 15.0)
 """Where a vibrato is looked for. A null is a fact about this range."""
 
+CYCLE_POINTS = 64
+"""How many places one averaged cycle is held at, as `sway` holds its own."""
+
 TREND_ORDER = 3
 """Order of the trend taken out before the track is searched.
 
@@ -256,6 +259,29 @@ def _between_the_bins(spectrum: np.ndarray, k: int, step_hz: float) -> float:
     return float(np.clip(shift, -0.5, 0.5)) * step_hz
 
 
+def _detrended(cents: np.ndarray) -> np.ndarray:
+    """The track with its settling taken out, fitted where the track is itself.
+
+    The trend is a cubic and it used to be fitted by least squares over every
+    frame, which hands it to whichever frames the estimator got wrong: a run of
+    them two thousand cents out drags a polynomial through the whole take and the
+    subtraction puts that back in everywhere. Measured on takes with the swept byte
+    at nought -- nothing modulating at all -- the track is flat to eight tenths of
+    a cent and the least-squares detrend of it came back between 21 and 181.
+
+    So the fit is made on the frames inside the track's own middle and then
+    subtracted from all of them. Nothing is dropped from the reading; what changes
+    is which frames are allowed to say where the note was settling to.
+    """
+    axis = np.arange(len(cents))
+    low, high = np.percentile(cents, [5.0, 95.0])
+    itself = (cents >= low) & (cents <= high)
+    if int(np.count_nonzero(itself)) <= TREND_ORDER + 1:
+        itself = np.ones(len(cents), dtype=bool)
+    trend = np.polyfit(axis[itself], cents[itself], TREND_ORDER)
+    return cents - np.polyval(trend, axis)
+
+
 def _rate_and_depth(cents: np.ndarray, hop_hz: float, search: tuple[float, float]):
     """The strongest periodic component of a pitch track, and how deep it is.
 
@@ -270,8 +296,7 @@ def _rate_and_depth(cents: np.ndarray, hop_hz: float, search: tuple[float, float
     # straight line, and a linear fit leaves the curve behind: measured on a
     # piano note with the vibrato depth at zero, what was left read as 356 cents
     # of modulation at the bottom of the search.
-    index_axis = np.arange(n)
-    detrended = cents - np.polyval(np.polyfit(index_axis, cents, TREND_ORDER), index_axis)
+    detrended = _detrended(cents)
     spectrum = np.abs(np.fft.rfft(detrended * np.hanning(n)))
     freqs = np.fft.rfftfreq(n, 1.0 / hop_hz)
     # A rate needs enough of the track to have held it. One cycle of a slow
@@ -298,12 +323,25 @@ def _rate_and_depth(cents: np.ndarray, hop_hz: float, search: tuple[float, float
     rate = float(freqs[here]) + _between_the_bins(
         spectrum, here, float(freqs[1] - freqs[0])
     )
-    # Depth from the track itself at that rate, by projection, rather than from
-    # the spectrum's own scale, which the window and the length both move.
-    t = np.arange(n) / hop_hz
-    basis = np.stack([np.cos(2 * np.pi * rate * t), np.sin(2 * np.pi * rate * t)])
-    amplitude = float(np.hypot(*(basis @ detrended))) * 2.0 / n
-    return rate, amplitude * 2.0, None
+    return rate, _swing(detrended), None
+
+
+def _swing(series: np.ndarray) -> float:
+    """How far the track swings, ignoring the frames the estimator got wrong.
+
+    Between its fifth and ninety-fifth percentile rather than end to end, because
+    end to end is one frame's opinion: the same tracks whose middle is steady to a
+    cent have single frames a thousand from it. On a sinusoid this reads a per cent
+    low, which is inside everything either stage is asked to separate.
+
+    This replaces a projection onto a sinusoid at the rate found, which is the
+    right reading of a sinusoid and the wrong one of anything else. A modulator's
+    shape is whatever the unit made it, and an inner product has no notion of an
+    outlier -- so the projection weighed the wrong frames in full and returned
+    depths that did not repeat, did not rise with their own byte and disagreed
+    between runs that differed in nothing that could move them.
+    """
+    return float(np.percentile(series, 95.0) - np.percentile(series, 5.0))
 
 
 def measure(
