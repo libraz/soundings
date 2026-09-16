@@ -1,0 +1,227 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-time",
+    "invocation": [
+      "efx-time",
+      ".cache/takes/which-way-the-delay-came",
+      "--type",
+      "01 54",
+      "--slot",
+      "40 03 03",
+      "--setting",
+      "held-126-powered-up-(?P<value>\\d+)-\\d+-00",
+      "--control",
+      "held-126-out-\\d+-00",
+      "--stimulus",
+      "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0",
+      "--frame",
+      "131072",
+      "--longest",
+      "1100",
+      "--hold",
+      "8.0",
+      "--held",
+      "40 42 22=01",
+      "--held",
+      "40 12 31=00",
+      "--held",
+      "40 03 05=40",
+      "--held",
+      "40 03 06=7F",
+      "--held",
+      "40 03 07=40",
+      "--held",
+      "40 03 12=40",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=7F",
+      "--held",
+      "40 03 04=00",
+      "--out",
+      "data/units/roland-sc8850-01/efx-time/01-54-03-which-way-the-delay-came-from-powered-up.json"
+    ],
+    "measured_at": "2026-09-16T21:12:45+00:00",
+    "elapsed_s": 0.1,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "Where one insertion effect's delay slot put the copy it returns, at each setting of its byte, in milliseconds.",
+  "type": "01 54",
+  "address": "40 03 03",
+  "method": "One take per setting, with the effect's balance at the point that carries both the direct path and the return, so the output holds a sound and its copy at once. The cepstrum of the held part of the take is averaged over every frame that fits in it, the same curve taken with the part routed past the effect is subtracted, and the strongest peak of what is left is the delay. Two further peaks are reported beside it. The take is read from one channel named for the whole run, and a setting taken more than once gives the run its floor.",
+  "limits": "The reading places a copy and does not weigh one. How much of the output the return is does not come out of a cepstral peak -- the peak's height moves with it, but it moves with the stimulus and with the take's own roughness too, so the height is published as how far the peak stood over that roughness and is not a proportion of anything. A second tap and a feedback path both appear as further peaks at multiples of the first, which is where a single copy's own rahmonics appear as well, so this stage does not tell them apart and does not try. What it publishes is where the peaks are. The range searched is bounded at both ends by the frame: below by where a quefrency is shorter than the analysis can resolve, above by half the frame. A delay outside it is not reported as absent, it is not reported at all, and the searched range is in this record so that a reader can see which of the two a missing setting is.",
+  "not_in_this_record": "No curve and no table. Which shape these times lie on as the byte rises, and whether the steps between them are a stored table or a formula, is a fit across settings and types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "searched_ms": [
+    0.0625,
+    1100.0
+  ],
+  "searched_asked_for_ms": [
+    0.0625,
+    1100.0
+  ],
+  "why_searched": "What was searched, beside what was asked for. The frame reaches half of itself and no further, so a search asked past that is narrowed to it. The two are published separately because a record carrying only the wider figure would be claiming a range it never looked at -- and the one finding that would hide behind such a claim is a byte running past its printed end, which would come back sitting on the end and read as the page being right.",
+  "frame": 131072,
+  "hop": 16384,
+  "frames_averaged": 13,
+  "read_at_hz": 48000,
+  "why_read_at_hz": "The rate the takes were captured at, which is the grid every time below is quantised to: one quefrency is one sample of it. Stated rather than left to be divided back out of the step, which is rounded for reading and does not come back as a whole number of hertz -- and a reader comparing these times against a grid of their own needs the grid they are already on to be exact.",
+  "quefrency_step_ms": 0.020833,
+  "peaks_apart_ms": 0.0625,
+  "stands_out": 6.0,
+  "why_admitted": "A peak is read as a delay only where it stood over the carrier's own roughness by the margin an injected comb was measured to need. Below that the strongest peak of a curve is wherever the roughness happened to be highest, which is a number that looks exactly like a short delay and is not one. The settings that fail it are listed with what they returned rather than dropped: a byte whose bottom settings return nothing is a reading about the bottom of the range, and a record that simply omitted them would read as a shorter sweep.",
+  "floor_ms": 0.0,
+  "settings_taken_twice": [
+    80
+  ],
+  "why_floor": "How far apart the reading put one setting's own repeats, which is what a difference between two settings has to clear to be a difference. Null where no setting was taken twice -- in which case this run measured no floor, and the quefrency step below is the grid the answers are quantised to and not a substitute for one.",
+  "why_also": "The two next strongest peaks after the one read as the delay. A single copy puts its own at odd multiples of where it sits and not at even ones, because the even terms of the expanded log are negative; a second tap or a feedback path puts one at every multiple. Published so that which of those a reading found can be seen rather than assumed, and so that a first peak sitting at half of where the structure really is shows as a row whose neighbours do not fit.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "loudest in the takes with the effect out",
+    "reference_db": [
+      -69.7,
+      -75.0,
+      -51.9,
+      -61.8,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached while the takes with the effect out were sounding. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a full plausible cepstrum of something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "with_the_effect_out": {
+    "takes": [
+      "held-126-out-00-00.wav",
+      "held-126-out-01-00.wav"
+    ],
+    "ms": 0.0833,
+    "stands": 97.67,
+    "would_be_read_as_a_delay": true,
+    "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+    "with_nothing_in_its_path": {
+      "take": "held-126-out-00-00.wav",
+      "against": "held-126-out-01-00.wav",
+      "ms": 950.8958,
+      "stands": 11.61,
+      "admitted": true
+    },
+    "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+  },
+  "held": [
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    },
+    {
+      "address": "40 12 31",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 12",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "00"
+    }
+  ],
+  "why_held": "Every address written before the takes were made, beside the one that was swept. A time read out of a cepstrum is a time through the whole chain, so what else was in the chain decides what the reading is of -- a feedback path returns further copies, a damping filter shapes them, and a balance that carries only the return leaves nothing for it to beat against and no peak at all.",
+  "takes_from": ".cache/takes/which-way-the-delay-came",
+  "manifest": {
+    "lists": 0,
+    "files_present": 8,
+    "not_listed": [
+      "held-126-above-080-0-00.wav",
+      "held-126-above-080-1-00.wav",
+      "held-126-below-080-0-00.wav",
+      "held-126-below-080-1-00.wav",
+      "held-126-out-00-00.wav",
+      "held-126-out-01-00.wav",
+      "held-126-powered-up-080-0-00.wav",
+      "held-126-powered-up-080-1-00.wav"
+    ],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    80
+  ],
+  "settings_admitted": [
+    80
+  ],
+  "readings": [
+    {
+      "value": 80,
+      "take": "held-126-powered-up-080-0-00.wav",
+      "ms": 563.5625,
+      "stands": 68.94,
+      "admitted": true,
+      "also_ms": [
+        950.6667,
+        563.6458
+      ],
+      "also_stands": [
+        11.25,
+        9.7
+      ],
+      "roughness": 0.00120629,
+      "named_by": "file name"
+    },
+    {
+      "value": 80,
+      "take": "held-126-powered-up-080-1-00.wav",
+      "ms": 563.5625,
+      "stands": 70.01,
+      "admitted": true,
+      "also_ms": [
+        563.6458,
+        563.5
+      ],
+      "also_stands": [
+        9.37,
+        8.5
+      ],
+      "roughness": 0.00120348,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 4,
+    "settings": [
+      "held-126-above-080-0-00.wav",
+      "held-126-above-080-1-00.wav",
+      "held-126-below-080-0-00.wav",
+      "held-126-below-080-1-00.wav"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  },
+  "stimulus": "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, 40 12 31 = 0"
+}
