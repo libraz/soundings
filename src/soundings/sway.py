@@ -296,6 +296,21 @@ WHY_AT_THE_EDGE = (
 
 
 def _detrend(series: np.ndarray) -> np.ndarray:
+    """Least squares over every frame, which is not what the stage next door does.
+
+    `vibrato` fits its trend on the frames inside the track's own middle, because a
+    pitch estimator loses the note and comes back and least squares hands itself to
+    those frames. The tracks here are a frame's energy and the difference between
+    two of them, which have no equivalent: there is no octave to land in and no
+    partial to lose, so nothing sits hundreds of units from its neighbours.
+
+    Asked rather than assumed. Fitting this robustly and taking the fold's median
+    instead of its mean moves the four entries whose printed shape has known
+    harmonics by three per cent in total, two of them nearer and two further -- so
+    the treatment buys nothing here and would move seven published records to do
+    it. Left plain, with the reason, so that a later reading of the two stages side
+    by side does not take this for the defect it is next door.
+    """
     axis = np.arange(len(series))
     return series - np.polyval(np.polyfit(axis, series, TREND_ORDER), axis)
 
