@@ -131,6 +131,36 @@ def test_an_address_asked_again_carries_the_pair_that_was_withdrawn(tmp_path) ->
     assert row["each_setting_unrepeatable_db"] == [-38.0, -38.0]
 
 
+def test_a_pair_withdrawn_for_naming_an_unprinted_value_says_that_and_not_silence(
+    tmp_path,
+) -> None:
+    """Two things send an address round again, and the row must name the right one.
+
+    A pair of nought against 127 on a parameter the page prints two states for was
+    not withdrawn because a setting fell silent -- it was withdrawn because 127 is
+    not one of that parameter's settings. Reported as the other reason the row
+    would say the run had found something it did not look for.
+    """
+    _write(tmp_path, "first.json", _record("40 03 03", audible=False, shape=False, level=False))
+    again = tmp_path / "again.json"
+    again.write_text(json.dumps(_record("40 03 03", audible=True, shape=True, level=False)))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+    found = efxparams.read_directory(
+        tmp_path,
+        "04 02",
+        [7],
+        control,
+        [],
+        supersede={"40 03 03": str(again)},
+        printed={"40 03 03": "00/01"},
+    )
+    row = found["parameters"][0]
+    assert row["withdrawn_pair"]["values"] == [0, 127]
+    assert "not printed as having" in row["why_asked_again"]
+    assert "silent" not in row["why_asked_again"]
+
+
 def test_the_record_carries_its_control_and_its_limits(tmp_path) -> None:
     """A run of nulls is readable only beside the thing that proves it could have found one."""
     _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))

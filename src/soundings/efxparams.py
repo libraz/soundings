@@ -277,7 +277,7 @@ def row(
         out["why"] = why
     if withdrawn:
         out["withdrawn_pair"] = withdrawn
-        out["why_asked_again"] = WHY_SILENT_PAIR
+        out["why_asked_again"] = withdrawn.get("why", WHY_SILENT_PAIR)
     return out
 
 
@@ -408,7 +408,20 @@ def read_directory(
             continue
         record, withdrawn = found[address], None
         if address in supersede:
-            withdrawn = {"values": record["values"], "why": WHY_SILENT_PAIR}
+            # Why the first pair was withdrawn is read off that pair rather than
+            # assumed. Two things send an address round again and they are not the
+            # same finding: a setting that left the part silent, and a setting the
+            # page gives the parameter none of. Naming one of them for both would
+            # put the wrong reason on the row, and the reason is the whole of what
+            # a withdrawn pair carries.
+            withdrawn = {
+                "values": record["values"],
+                "why": (
+                    WHY_OUTSIDE_ITS_PRINTED_VALUES
+                    if asked_outside_its_printed_values(record, printed.get(address))
+                    else WHY_SILENT_PAIR
+                ),
+            }
             record = json.loads(Path(supersede[address]).read_text())
         # A refused run holds no takes to read a verdict out of, so it cannot
         # become a row. It is not missing either, and the difference is the
