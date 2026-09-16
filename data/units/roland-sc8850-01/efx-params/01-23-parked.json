@@ -5,7 +5,7 @@
     "stage": "efx-params",
     "invocation": [
       "efx-params",
-      ".cache/efx-params-01-20-parked-inmap",
+      ".cache/efx-params-01-23-parked-inmap",
       "--slots",
       "40 03 03",
       "40 03 04",
@@ -28,42 +28,42 @@
       "40 03 15",
       "40 03 16",
       "--type",
-      "01 20",
+      "01 23",
       "--types-from",
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
-      ".cache/efx-params-01-20-parked-inmap/control-routing.json",
+      ".cache/efx-params-01-23-parked-inmap/control-routing.json",
       "--states-from",
       "documents/roland-sc-8850-owners-manual-en/effect-list.json",
       "--first-parameter",
       "40 03 03",
       "--prepare",
-      "40 03 00=01 20",
+      "40 03 00=01 23",
       "--prepare",
       "40 42 22=01",
       "--prepare",
-      "40 03 05=00",
+      "40 03 07=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/01-20-parked.json"
+      "data/units/roland-sc8850-01/efx-params/01-23-parked.json"
     ],
-    "measured_at": "2026-09-16T08:00:06+00:00",
+    "measured_at": "2026-09-16T08:01:48+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
-  "type": "01 20",
+  "type": "01 23",
   "prepared": [
     {
       "address": "40 03 00",
-      "bytes": "01 20"
+      "bytes": "01 23"
     },
     {
       "address": "40 42 22",
       "bytes": "01"
     },
     {
-      "address": "40 03 05",
+      "address": "40 03 07",
       "bytes": "00"
     }
   ],
@@ -76,13 +76,13 @@
       1
     ],
     "audible": true,
-    "shape_db": -3.09,
-    "repeatability_db": -40.27,
+    "shape_db": -1.54,
+    "repeatability_db": -39.4,
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "audible": 6,
-    "not audible under the note asked": 13,
+    "audible": 7,
+    "not audible under the note asked": 12,
     "asked": 19
   },
   "coverage": {
@@ -90,7 +90,7 @@
     "answered": 19,
     "never_asked": [],
     "held_still": [
-      "40 03 05"
+      "40 03 07"
     ],
     "why_held_still": "A parameter slot the run set to a fixed value and deliberately did not ask, because the rest of the type could not be asked while it moved. A free-running modulator puts every take of one setting at a different phase, and the yardstick a change is judged against becomes the modulator's own swing, so every other parameter answers that there was no yardstick. Asking the held slot means writing it to the top of its range, which starts the modulator again part way through the run and measures the slots after it against a yardstick that had quietly come back. It is separate from the slots with no record because only one of the two is work outstanding, and it carries no verdict: what this run says about the held parameter is nothing at all. The value it was held at is in `prepared`.",
     "refused": [],
@@ -100,36 +100,36 @@
   "why_slots_in_order": "Which slot each address is was given to the fold in order, not inferred from the records that happened to be present. A slot read off the sorted file names moves every later parameter up by one whenever a record is missing, and each of them is then reported against the default belonging to the slot before it -- a wrong number in the archive rather than a missing one.",
   "parameters": [
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 0,
       "address": "40 03 03",
-      "default": 36,
+      "default": 0,
       "asked_at": [
         0,
-        127
+        2
       ],
       "audible": true,
       "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -36.5,
-        -39.98
+        -39.97,
+        -41.83
       ],
-      "same_setting_residual_db": -30.37,
-      "across_setting_residual_db": -2.95,
-      "across_setting_level_db": 4.841,
-      "noise_floor_db": -48.53,
+      "same_setting_residual_db": -34.36,
+      "across_setting_residual_db": -11.64,
+      "across_setting_level_db": 0.459,
+      "noise_floor_db": -56.34,
       "changed_the_shape": true,
       "changed_the_level": false,
-      "printed_values": "*12",
+      "printed_values": "00/01/02",
       "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 1,
       "address": "40 03 04",
-      "default": 16,
+      "default": 0,
       "asked_at": [
         0,
         127
@@ -139,120 +139,124 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.81,
-        -43.26
+        -40.51,
+        -42.01
       ],
-      "same_setting_residual_db": -39.95,
-      "across_setting_residual_db": -39.2,
-      "across_setting_level_db": 0.024,
-      "noise_floor_db": -50.23,
+      "same_setting_residual_db": -39.79,
+      "across_setting_residual_db": -40.02,
+      "across_setting_level_db": 0.027,
+      "noise_floor_db": -56.24,
+      "changed_the_shape": false,
+      "changed_the_level": false,
+      "printed_values": "*9",
+      "asked_inside_its_printed_values": true
+    },
+    {
+      "type": "01 23",
+      "parameter": 2,
+      "address": "40 03 05",
+      "default": 16,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -42.5,
+        -41.36
+      ],
+      "same_setting_residual_db": -40.56,
+      "across_setting_residual_db": -1.24,
+      "across_setting_level_db": 3.358,
+      "noise_floor_db": -58.21,
+      "changed_the_shape": true,
+      "changed_the_level": false,
+      "printed_values": "*1",
+      "asked_inside_its_printed_values": true
+    },
+    {
+      "type": "01 23",
+      "parameter": 3,
+      "address": "40 03 06",
+      "default": 11,
+      "asked_at": [
+        0,
+        127
+      ],
+      "audible": false,
+      "verdict": "not audible under the note asked",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -42.22,
+        -40.88
+      ],
+      "same_setting_residual_db": -39.48,
+      "across_setting_residual_db": -39.9,
+      "across_setting_level_db": -0.019,
+      "noise_floor_db": -56.38,
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
       "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
-      "parameter": 3,
-      "address": "40 03 06",
-      "default": 16,
-      "asked_at": [
-        0,
-        127
-      ],
-      "audible": true,
-      "verdict": "audible",
-      "conclusive": true,
-      "takes_per_setting": 4,
-      "each_setting_unrepeatable_db": [
-        -47.08,
-        -42.56
-      ],
-      "same_setting_residual_db": -40.74,
-      "across_setting_residual_db": -2.05,
-      "across_setting_level_db": 8.09,
-      "noise_floor_db": -48.48,
-      "changed_the_shape": true,
-      "changed_the_level": true,
-      "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
-    },
-    {
-      "type": "01 20",
-      "parameter": 4,
-      "address": "40 03 07",
-      "default": 127,
-      "asked_at": [
-        127,
-        0
-      ],
-      "audible": true,
-      "verdict": "audible",
-      "conclusive": true,
-      "takes_per_setting": 4,
-      "each_setting_unrepeatable_db": [
-        -42.93,
-        -42.48
-      ],
-      "same_setting_residual_db": -40.28,
-      "across_setting_residual_db": -3.09,
-      "across_setting_level_db": 0.078,
-      "noise_floor_db": -53.28,
-      "changed_the_shape": true,
-      "changed_the_level": false,
-      "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
-    },
-    {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 5,
       "address": "40 03 08",
-      "default": 0,
+      "default": 104,
       "asked_at": [
-        0,
-        127
+        113,
+        15
       ],
-      "audible": false,
-      "verdict": "not audible under the note asked",
+      "audible": true,
+      "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.63,
-        -41.12
+        -42.84,
+        -39.57
       ],
-      "same_setting_residual_db": -37.96,
-      "across_setting_residual_db": -37.29,
-      "across_setting_level_db": -0.029,
-      "noise_floor_db": -51.42,
-      "changed_the_shape": false,
-      "changed_the_level": false
+      "same_setting_residual_db": -39.33,
+      "across_setting_residual_db": -0.09,
+      "across_setting_level_db": 14.737,
+      "noise_floor_db": -62.01,
+      "changed_the_shape": true,
+      "changed_the_level": true,
+      "printed_values": "0F\u201371",
+      "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 6,
       "address": "40 03 09",
-      "default": 0,
+      "default": 90,
       "asked_at": [
-        0,
-        127
+        90,
+        0
       ],
       "audible": false,
       "verdict": "not audible under the note asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -41.57,
-        -42.85
+        -39.68,
+        -42.05
       ],
-      "same_setting_residual_db": -39.2,
-      "across_setting_residual_db": -38.62,
-      "across_setting_level_db": 0.019,
-      "noise_floor_db": -51.56,
+      "same_setting_residual_db": -39.04,
+      "across_setting_residual_db": -39.5,
+      "across_setting_level_db": 0.034,
+      "noise_floor_db": -56.28,
       "changed_the_shape": false,
-      "changed_the_level": false
+      "changed_the_level": false,
+      "printed_values": "00\u20135A",
+      "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 7,
       "address": "40 03 0A",
       "default": 0,
@@ -265,18 +269,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -44.31,
-        -41.74
+        -41.64,
+        -41.55
       ],
-      "same_setting_residual_db": -40.21,
-      "across_setting_residual_db": -39.66,
-      "across_setting_level_db": -0.01,
-      "noise_floor_db": -51.07,
+      "same_setting_residual_db": -40.08,
+      "across_setting_residual_db": -41.58,
+      "across_setting_level_db": 0.013,
+      "noise_floor_db": -56.31,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 8,
       "address": "40 03 0B",
       "default": 0,
@@ -289,18 +293,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.84,
-        -42.21
+        -41.62,
+        -43.6
       ],
-      "same_setting_residual_db": -39.26,
-      "across_setting_residual_db": -39.78,
-      "across_setting_level_db": 0.022,
-      "noise_floor_db": -51.55,
+      "same_setting_residual_db": -34.77,
+      "across_setting_residual_db": -41.61,
+      "across_setting_level_db": 0.008,
+      "noise_floor_db": -56.27,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 9,
       "address": "40 03 0C",
       "default": 0,
@@ -313,18 +317,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.65,
-        -47.72
+        -44.45,
+        -40.53
       ],
-      "same_setting_residual_db": -39.03,
-      "across_setting_residual_db": -42.16,
-      "across_setting_level_db": -0.006,
-      "noise_floor_db": -51.1,
+      "same_setting_residual_db": -39.7,
+      "across_setting_residual_db": -41.44,
+      "across_setting_level_db": 0.013,
+      "noise_floor_db": -56.28,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 10,
       "address": "40 03 0D",
       "default": 0,
@@ -337,18 +341,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -44.04,
-        -47.58
+        -40.76,
+        -42.42
       ],
-      "same_setting_residual_db": -41.21,
-      "across_setting_residual_db": -39.21,
-      "across_setting_level_db": -0.029,
-      "noise_floor_db": -51.0,
+      "same_setting_residual_db": -40.23,
+      "across_setting_residual_db": -41.51,
+      "across_setting_level_db": 0.012,
+      "noise_floor_db": -56.33,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 11,
       "address": "40 03 0E",
       "default": 0,
@@ -361,18 +365,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -38.67,
-        -46.46
+        -42.07,
+        -42.43
       ],
-      "same_setting_residual_db": -38.23,
-      "across_setting_residual_db": -41.04,
-      "across_setting_level_db": -0.023,
-      "noise_floor_db": -49.83,
+      "same_setting_residual_db": -41.0,
+      "across_setting_residual_db": -41.46,
+      "across_setting_level_db": 0.009,
+      "noise_floor_db": -56.26,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 12,
       "address": "40 03 0F",
       "default": 0,
@@ -385,18 +389,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -39.29,
-        -40.81
+        -40.93,
+        -40.94
       ],
-      "same_setting_residual_db": -32.11,
-      "across_setting_residual_db": -41.32,
-      "across_setting_level_db": -0.015,
-      "noise_floor_db": -49.78,
+      "same_setting_residual_db": -39.09,
+      "across_setting_residual_db": -42.28,
+      "across_setting_level_db": -0.018,
+      "noise_floor_db": -56.3,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 13,
       "address": "40 03 10",
       "default": 0,
@@ -409,18 +413,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -46.48,
-        -43.37
+        -41.73,
+        -43.65
       ],
-      "same_setting_residual_db": -41.57,
-      "across_setting_residual_db": -44.06,
-      "across_setting_level_db": -0.008,
-      "noise_floor_db": -51.72,
+      "same_setting_residual_db": -41.02,
+      "across_setting_residual_db": -40.18,
+      "across_setting_level_db": 0.021,
+      "noise_floor_db": -56.28,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 14,
       "address": "40 03 11",
       "default": 0,
@@ -433,94 +437,96 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -41.91,
-        -40.73
+        -41.82,
+        -42.25
       ],
-      "same_setting_residual_db": -39.52,
-      "across_setting_residual_db": -38.35,
-      "across_setting_level_db": 0.025,
-      "noise_floor_db": -50.99,
+      "same_setting_residual_db": -41.11,
+      "across_setting_residual_db": -41.49,
+      "across_setting_level_db": 0.01,
+      "noise_floor_db": -56.28,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 15,
       "address": "40 03 12",
-      "default": 0,
+      "default": 64,
       "asked_at": [
-        0,
-        127
+        127,
+        0
       ],
-      "audible": false,
-      "verdict": "not audible under the note asked",
+      "audible": true,
+      "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.38,
-        -41.61
+        -43.32,
+        -42.6
       ],
-      "same_setting_residual_db": -39.04,
-      "across_setting_residual_db": -39.08,
-      "across_setting_level_db": 0.019,
-      "noise_floor_db": -49.51,
-      "changed_the_shape": false,
-      "changed_the_level": false
+      "same_setting_residual_db": -39.86,
+      "across_setting_residual_db": -2.21,
+      "across_setting_level_db": -0.354,
+      "noise_floor_db": -54.58,
+      "changed_the_shape": true,
+      "changed_the_level": false,
+      "printed_values": "00\u20137F",
+      "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 16,
       "address": "40 03 13",
       "default": 64,
       "asked_at": [
-        127,
-        0
+        52,
+        76
       ],
       "audible": true,
       "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -37.77,
-        -46.61
+        -42.34,
+        -43.82
       ],
-      "same_setting_residual_db": -36.52,
-      "across_setting_residual_db": -17.65,
-      "across_setting_level_db": -0.016,
-      "noise_floor_db": -49.3,
+      "same_setting_residual_db": -40.18,
+      "across_setting_residual_db": -15.39,
+      "across_setting_level_db": 0.254,
+      "noise_floor_db": -56.28,
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "34\u20134C",
-      "asked_inside_its_printed_values": false
+      "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 17,
       "address": "40 03 14",
       "default": 64,
       "asked_at": [
-        127,
-        0
+        52,
+        76
       ],
       "audible": true,
       "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -36.36,
-        -45.16
+        -45.75,
+        -38.93
       ],
-      "same_setting_residual_db": -35.66,
-      "across_setting_residual_db": -5.71,
-      "across_setting_level_db": -5.952,
-      "noise_floor_db": -55.64,
+      "same_setting_residual_db": -36.65,
+      "across_setting_residual_db": -5.85,
+      "across_setting_level_db": 8.159,
+      "noise_floor_db": -53.32,
       "changed_the_shape": true,
-      "changed_the_level": false,
+      "changed_the_level": true,
       "printed_values": "34\u20134C",
-      "asked_inside_its_printed_values": false
+      "asked_inside_its_printed_values": true
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 18,
       "address": "40 03 15",
       "default": 0,
@@ -533,18 +539,18 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.73,
-        -43.98
+        -42.0,
+        -43.33
       ],
-      "same_setting_residual_db": -39.05,
-      "across_setting_residual_db": -39.57,
-      "across_setting_level_db": 0.014,
-      "noise_floor_db": -50.12,
+      "same_setting_residual_db": -40.63,
+      "across_setting_residual_db": -41.6,
+      "across_setting_level_db": 0.01,
+      "noise_floor_db": -56.32,
       "changed_the_shape": false,
       "changed_the_level": false
     },
     {
-      "type": "01 20",
+      "type": "01 23",
       "parameter": 19,
       "address": "40 03 16",
       "default": 104,
@@ -557,13 +563,13 @@
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -40.63,
+        -41.16,
         null
       ],
       "same_setting_residual_db": -0.44,
       "across_setting_residual_db": -0.0,
-      "across_setting_level_db": -57.582,
-      "noise_floor_db": -55.59,
+      "across_setting_level_db": -60.586,
+      "noise_floor_db": -58.63,
       "changed_the_shape": false,
       "changed_the_level": true,
       "printed_values": "00\u20137F",

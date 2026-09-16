@@ -15,8 +15,8 @@
       "--out",
       "data/units/roland-sc8850-01/efx-partials/on-a-held-tone.json"
     ],
-    "measured_at": "2026-09-16T04:37:50+00:00",
-    "elapsed_s": 2567.3,
+    "measured_at": "2026-09-16T07:54:51+00:00",
+    "elapsed_s": 2867.9,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -104,7 +104,10 @@
       "held-16-11-02-00.wav",
       "held-16-11-08-00.wav"
     ],
-    "why": "Which channel of the interface every take was read on, and the highest each channel reached across them. One channel for the run rather than the loudest of each take, because on this stage the input decides the answer twice over. An interface carries inputs the unit is not on which are not silent, and an idle input carries no modulation -- which is what a type without one also returns. And the unit's own two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other, and two types read on different ones are not comparable however loud both were. `loudest_elsewhere` names every take whose own loudest channel was not the one read."
+    "why": "Which channel of the interface every take was read on, and the highest each channel reached across them. One channel for the run rather than the loudest of each take, because on this stage the input decides the answer twice over. An interface carries inputs the unit is not on which are not silent, and an idle input carries no modulation -- which is what a type without one also returns. And the unit's own two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other, and two types read on different ones are not comparable however loud both were. `loudest_elsewhere` names every take whose own loudest channel was not the one read.",
+    "the_other_output": 3,
+    "why_the_rate_is_read_on_both": "One channel decides a level series and it does not decide a rate, so the rate is read on both of the unit's outputs and both are reported. A stereo modulator runs the two outputs against each other, which makes a level read on one of them incomparable with a level read on the other -- that is why everything else here is read on the single channel named above. A rate is a different quantity and the two outputs were measured to disagree about it: over one survey of sixty-five types, five returned the lowest rate anybody searched on the channel the run reads and a rate on the other, and four returned one output at twice the other, which is the projection's own largest landing on a different multiple of the same modulator rather than two modulators. Reported side by side rather than resolved here, because choosing between them is a reading and this record does not make readings. The second output is measured for its rates alone: no comb is fitted to it and no level series is taken from it, both of which belong to the one channel.",
+    "paired_within_db": 30.0
   },
   "grid_hz": [
     0.2,
@@ -116,6 +119,7 @@
   "limits": {
     "why_the_orders_come_from_the_bypassed_take": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
     "why_a_grid_and_not_a_line": "The rate is where a projection across a grid is largest, not where a line was fitted. A line is not read under three cycles of the series it is found in, and every type on a unit whose modulators power up under a hertz puts a nine second take under that floor. A projection at a named rate is a matched filter and needs no cycles counted; what it needs is separation, and two rates closer together than one over the length read are one peak here. That figure is `rates_are_separated_by` and it is what bounds the rates the projections report. The comb fit is not bounded by it, because it does not read a peak: it fits the rate, and the model is far sharper in it than the projection is -- a fiftieth of a hertz out at half a hertz, it explains 0.16 of a series it explains 0.91 of when placed. Where a peak and a fitted rate are both given, they are two readings and not one.",
+    "why_a_rate_at_the_edge_of_the_search_is_the_search": "Two ways a rate here can be the reading's own limit rather than the unit's, and both are stated per reading rather than left for a reader to work out. A projection walked across a grid reports where it was largest, and largest *at an end of the grid* means the largest thing seen was at the boundary -- the maximum may be outside it, and a held tone drifting slowly over the take puts its energy exactly there. `rates_are_separated_by` bounds how close two rates can be and says nothing about this. Separately, a take holds only so many cycles of a slow rate: `slowest_measurable_hz` is the rate two cycles of which fill the part of the take that sounded, and the same figure computed the same way elsewhere in this harness was measured to matter -- an injected sweep at 0.15 Hz, one cycle of which does not fit in seven seconds, came back as 0.28. A reading on either count is reported with the figure that bounds it and is not withheld, because which of them disqualifies a reading is a judgement and this record does not make judgements.",
     "why_the_phase_and_the_level_are_read_apart": "A swept delay turns a partial's phase in proportion to that partial's own frequency. An all-pass section turns every partial by the same angle. A level modulation turns none of them and moves the level instead. Reading the two quantities apart is what tells the three kinds apart; reading either alone returns a number for all three.",
     "why_the_excursion_off_the_phase_is_a_floor": "Where a delayed path is mixed against a direct one the composite's phase turns by far less than the delayed path's own, and not in proportion. Measured on this carrier by injection: a fifth wet turns a two millisecond sweep into five thousandths of a millisecond, while detection survives it. So an excursion read off the phase is a lower bound wherever the effect is not fully wet, and what it bounds is not stated by the number itself. The comb reading is the one that answers the mixed case, and a type answering to neither is reported as answering to neither.",
     "why_the_comb_needs_the_partials_to_disagree": "How well a forward comb fit explains its series is a gate against the wrong rate -- told a rate nothing is running at it falls from 0.91 to 0.05 -- and it is no gate at all against the wrong mechanism. A plain level modulation with no delay anywhere in it is fitted as a comb explaining 0.97 of its own series, which is more than any real comb injected here returns. What separates them is not a fit: a comb sweeps a notch, so a partial near it swings far more than one on a peak and the partials disagree in shape, while one envelope over the whole voice moves every partial by the same decibels at the same moment.",
@@ -140,7 +144,11 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.29,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
         "the_two_peaks_are_separated": false,
         "phase": {
           "peak": {
@@ -199,7 +207,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.45,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": false,
         "phase": {
           "peak": {
@@ -256,7 +266,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.45,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": false,
         "phase": {
           "peak": {
@@ -316,7 +328,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.45,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": true,
         "phase": {
           "peak": {
@@ -390,7 +404,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.46,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": true,
         "phase": {
           "peak": {
@@ -478,7 +494,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.91,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": true,
         "phase": {
           "peak": {
@@ -566,7 +584,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.45,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": true,
         "phase": {
           "peak": {
@@ -652,7 +672,9 @@
         "orders": 8,
         "sounded_s": 6.795,
         "rates_are_separated_by": 0.1472,
+        "slowest_measurable_hz": 0.2943,
         "read_at_hz": 0.92,
+        "stands_on_the_edge_of_the_search": null,
         "the_two_peaks_are_separated": false,
         "phase": {
           "peak": {
@@ -713,7 +735,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 4.8,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -763,7 +787,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.83,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.83,
+            "stands_over_bypassed": 4.988,
+            "added": 0.003209,
+            "size": 0.004014
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.32,
+            "stands_over_bypassed": 2.042,
+            "added": 0.011705,
+            "size": 0.022938
+          }
+        }
+      }
     },
     {
       "type": "01 00",
@@ -771,7 +818,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.56,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -821,7 +870,30 @@
         }
       },
       "moves": false,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.83,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.83,
+            "stands_over_bypassed": 4.125,
+            "added": 0.002515,
+            "size": 0.003319
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.3,
+            "stands_over_bypassed": 1.921,
+            "added": 0.022598,
+            "size": 0.04714
+          }
+        }
+      }
     },
     {
       "type": "01 01",
@@ -829,7 +901,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.5,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -891,6 +965,29 @@
         "series_spread_db": 0.1076,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.49,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.49,
+            "stands_over_bypassed": 4.05,
+            "added": 0.020477,
+            "size": 0.02719
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.5,
+            "stands_over_bypassed": 3.319,
+            "added": 0.166829,
+            "size": 0.238765
+          }
+        }
       }
     },
     {
@@ -899,7 +996,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 4.8,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -949,7 +1048,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.83,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.83,
+            "stands_over_bypassed": 4.795,
+            "added": 0.003054,
+            "size": 0.003858
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.23,
+            "stands_over_bypassed": 1.567,
+            "added": 0.017119,
+            "size": 0.047309
+          }
+        }
+      }
     },
     {
       "type": "01 03",
@@ -957,7 +1079,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 4.79,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1007,7 +1131,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.79,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.79,
+            "stands_over_bypassed": 8.522,
+            "added": 0.004293,
+            "size": 0.004863
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 1.712,
+            "added": 0.016894,
+            "size": 0.040631
+          }
+        }
+      }
     },
     {
       "type": "01 10",
@@ -1015,7 +1162,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 4.77,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1081,6 +1230,29 @@
         "series_spread_db": 0.0301,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.78,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.78,
+            "stands_over_bypassed": 4.531,
+            "added": 0.001769,
+            "size": 0.00227
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 1.91,
+            "stands_over_bypassed": 2.626,
+            "added": 0.007735,
+            "size": 0.012492
+          }
+        }
       }
     },
     {
@@ -1089,7 +1261,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 3.64,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1151,6 +1325,29 @@
         "series_spread_db": 0.0295,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 3.64,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 3.64,
+            "stands_over_bypassed": 77.396,
+            "added": 0.031491,
+            "size": 0.031903
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.64,
+            "stands_over_bypassed": 35.837,
+            "added": 0.152588,
+            "size": 0.156968
+          }
+        }
       }
     },
     {
@@ -1159,7 +1356,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.85,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1235,6 +1434,29 @@
         "explains": 0.9497,
         "apart_by": 0.0194,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.84,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.84,
+            "stands_over_bypassed": 23203.856,
+            "added": 49.506911,
+            "size": 49.509044
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.85,
+            "stands_over_bypassed": 283.821,
+            "added": 4.996204,
+            "size": 5.01387
+          }
+        }
       }
     },
     {
@@ -1243,7 +1465,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 2.05,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1319,6 +1543,29 @@
         "explains": 0.7627,
         "apart_by": 0.1667,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 2.05,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 610765.825,
+            "added": 195.755887,
+            "size": 195.756208
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 2306.27,
+            "added": 8.663861,
+            "size": 8.66762
+          }
+        }
       }
     },
     {
@@ -1327,7 +1574,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1408,6 +1660,29 @@
         "apart_by": 0.011,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.33,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.33,
+            "stands_over_bypassed": 9301.161,
+            "added": 36.697145,
+            "size": 36.701091
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.86,
+            "stands_over_bypassed": 132.236,
+            "added": 2.251874,
+            "size": 2.269033
+          }
+        }
       }
     },
     {
@@ -1416,7 +1691,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.59,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1497,6 +1774,29 @@
         "apart_by": 0.0812,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.6,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.6,
+            "stands_over_bypassed": 40120.487,
+            "added": 71.875615,
+            "size": 71.877406
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 1.21,
+            "stands_over_bypassed": 571.514,
+            "added": 2.628355,
+            "size": 2.632962
+          }
+        }
       }
     },
     {
@@ -1505,7 +1805,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.21,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1585,6 +1889,31 @@
         "apart_by": 0.008,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.22,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.22,
+            "stands_over_bypassed": 34069.741,
+            "added": 97.54652,
+            "size": 97.549384
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.9,
+            "stands_over_bypassed": 172.867,
+            "added": 2.198141,
+            "size": 2.210931
+          }
+        }
       }
     },
     {
@@ -1593,7 +1922,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 6.1,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1643,7 +1974,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 6.1,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 6.1,
+            "stands_over_bypassed": 5574.294,
+            "added": 2.64845,
+            "size": 2.648925
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.05,
+            "stands_over_bypassed": 1414.672,
+            "added": 6.144302,
+            "size": 6.148649
+          }
+        }
+      }
     },
     {
       "type": "01 26",
@@ -1651,7 +2005,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 6.1,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1701,7 +2057,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 6.1,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 6.1,
+            "stands_over_bypassed": 5146.564,
+            "added": 2.445191,
+            "size": 2.445666
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.05,
+            "stands_over_bypassed": 1470.066,
+            "added": 6.385062,
+            "size": 6.389409
+          }
+        }
+      }
     },
     {
       "type": "01 30",
@@ -1709,7 +2088,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.55,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1759,7 +2140,30 @@
         }
       },
       "moves": false,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.57,
+        "moves": false,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.51,
+            "stands_over_bypassed": 1.626,
+            "added": 0.003688,
+            "size": 0.009582
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.57,
+            "stands_over_bypassed": 1.813,
+            "added": 0.030257,
+            "size": 0.067485
+          }
+        }
+      }
     },
     {
       "type": "01 31",
@@ -1767,7 +2171,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.29,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1817,7 +2225,32 @@
         }
       },
       "moves": false,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.29,
+        "moves": false,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.51,
+            "stands_over_bypassed": 1.607,
+            "added": 0.003579,
+            "size": 0.009473
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 2.109,
+            "added": 0.026318,
+            "size": 0.050055
+          }
+        }
+      }
     },
     {
       "type": "01 40",
@@ -1825,7 +2258,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -1902,6 +2337,29 @@
         "apart_by": 0.2087,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.45,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 10294.035,
+            "added": 77.870552,
+            "size": 77.878117
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.94,
+            "stands_over_bypassed": 79.58,
+            "added": 0.84858,
+            "size": 0.859379
+          }
+        }
       }
     },
     {
@@ -1910,7 +2368,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -1960,7 +2420,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.46,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.46,
+            "stands_over_bypassed": 3560.697,
+            "added": 26.61555,
+            "size": 26.623027
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.05,
+            "stands_over_bypassed": 893.014,
+            "added": 3.877,
+            "size": 3.881347
+          }
+        }
+      }
     },
     {
       "type": "01 42",
@@ -1968,7 +2451,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2048,6 +2533,29 @@
         "explains": 0.8342,
         "apart_by": 0.6174,
         "closer_to": "triangle"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.44,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.44,
+            "stands_over_bypassed": 8667.867,
+            "added": 65.573755,
+            "size": 65.581321
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.03,
+            "stands_over_bypassed": 131.136,
+            "added": 1.099281,
+            "size": 1.107728
+          }
+        }
       }
     },
     {
@@ -2056,7 +2564,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2137,6 +2650,29 @@
         "apart_by": 0.128,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.47,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.47,
+            "stands_over_bypassed": 408.116,
+            "added": 2.972867,
+            "size": 2.980169
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 7.17,
+            "stands_over_bypassed": 195.938,
+            "added": 1.221878,
+            "size": 1.228146
+          }
+        }
       }
     },
     {
@@ -2145,7 +2681,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2226,6 +2764,29 @@
         "apart_by": 0.009,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.47,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.47,
+            "stands_over_bypassed": 2999.569,
+            "added": 21.896314,
+            "size": 21.903617
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.49,
+            "stands_over_bypassed": 121.141,
+            "added": 1.05084,
+            "size": 1.059587
+          }
+        }
       }
     },
     {
@@ -2234,7 +2795,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.29,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -2284,7 +2849,32 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.29,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.51,
+            "stands_over_bypassed": 2.492,
+            "added": 0.008796,
+            "size": 0.01469
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 6.388,
+            "added": 0.127887,
+            "size": 0.151625
+          }
+        }
+      }
     },
     {
       "type": "01 51",
@@ -2292,7 +2882,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2373,6 +2968,29 @@
         "apart_by": 0.0156,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.68,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.68,
+            "stands_over_bypassed": 3201.935,
+            "added": 6.650723,
+            "size": 6.652801
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 7.13,
+            "stands_over_bypassed": 100.512,
+            "added": 0.743054,
+            "size": 0.750521
+          }
+        }
       }
     },
     {
@@ -2381,7 +2999,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.27,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -2431,7 +3053,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.32,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.32,
+            "stands_over_bypassed": 12.091,
+            "added": 0.04099,
+            "size": 0.044686
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 5.412,
+            "added": 0.10472,
+            "size": 0.128457
+          }
+        }
+      }
     },
     {
       "type": "01 53",
@@ -2439,7 +3084,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.32,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2489,7 +3136,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.32,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.32,
+            "stands_over_bypassed": 61.575,
+            "added": 0.223869,
+            "size": 0.227564
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.28,
+            "stands_over_bypassed": 10.349,
+            "added": 0.229735,
+            "size": 0.254308
+          }
+        }
+      }
     },
     {
       "type": "01 54",
@@ -2497,7 +3167,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2563,6 +3238,32 @@
         "series_spread_db": 0.1962,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.2,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "the lowest rate searched",
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 219.616,
+            "added": 0.580644,
+            "size": 0.5833
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.52,
+            "stands_over_bypassed": 3.413,
+            "added": 0.158899,
+            "size": 0.224739
+          }
+        }
       }
     },
     {
@@ -2571,7 +3272,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 2.84,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2637,6 +3340,29 @@
         "series_spread_db": 0.1083,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.31,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.31,
+            "stands_over_bypassed": 21.963,
+            "added": 0.074302,
+            "size": 0.077847
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.28,
+            "stands_over_bypassed": 8.344,
+            "added": 0.180458,
+            "size": 0.205031
+          }
+        }
       }
     },
     {
@@ -2645,7 +3371,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.49,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -2711,6 +3439,29 @@
         "series_spread_db": 0.0281,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.37,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.37,
+            "stands_over_bypassed": 690.457,
+            "added": 3.835824,
+            "size": 3.841387
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.5,
+            "stands_over_bypassed": 2.771,
+            "added": 0.127425,
+            "size": 0.199361
+          }
+        }
       }
     },
     {
@@ -2719,7 +3470,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.29,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -2785,6 +3540,32 @@
         "series_spread_db": 0.1411,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.2,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "the lowest rate searched",
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 3.224,
+            "added": 0.005908,
+            "size": 0.008564
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.55,
+            "stands_over_bypassed": 2.43,
+            "added": 0.071644,
+            "size": 0.121762
+          }
+        }
       }
     },
     {
@@ -2793,7 +3574,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 3.9,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -2859,6 +3642,29 @@
         "series_spread_db": 0.2827,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 7.73,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 7.73,
+            "stands_over_bypassed": 88141.553,
+            "added": 22.38218,
+            "size": 22.382434
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 7.73,
+            "stands_over_bypassed": 736.418,
+            "added": 2.738817,
+            "size": 2.742541
+          }
+        }
       }
     },
     {
@@ -2867,7 +3673,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -2947,6 +3758,31 @@
         "explains": 0.806,
         "apart_by": 0.013,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.23,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.23,
+            "stands_over_bypassed": 32971.649,
+            "added": 97.920983,
+            "size": 97.923953
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 7.78,
+            "stands_over_bypassed": 552.869,
+            "added": 2.406654,
+            "size": 2.411015
+          }
+        }
       }
     },
     {
@@ -2955,7 +3791,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 1.3,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3005,7 +3843,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": "the whole voice"
+      "the_level_swing_is": "the whole voice",
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 1.3,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 1.3,
+            "stands_over_bypassed": 33770.312,
+            "added": 34.631509,
+            "size": 34.632534
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 1.3,
+            "stands_over_bypassed": 511.874,
+            "added": 3.56502,
+            "size": 3.571999
+          }
+        }
+      }
     },
     {
       "type": "01 71",
@@ -3013,7 +3874,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.29,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3063,7 +3928,32 @@
         }
       },
       "moves": false,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.29,
+        "moves": false,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.51,
+            "stands_over_bypassed": 1.566,
+            "added": 0.003335,
+            "size": 0.009229
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 2.053,
+            "added": 0.024992,
+            "size": 0.048729
+          }
+        }
+      }
     },
     {
       "type": "01 72",
@@ -3071,7 +3961,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.21,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3137,6 +4031,29 @@
         "series_spread_db": 0.0729,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.31,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.31,
+            "stands_over_bypassed": 895.172,
+            "added": 3.169346,
+            "size": 3.172891
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.23,
+            "stands_over_bypassed": 8.377,
+            "added": 0.222724,
+            "size": 0.252914
+          }
+        }
       }
     },
     {
@@ -3145,7 +4062,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3211,6 +4133,32 @@
         "series_spread_db": 0.1164,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.2,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "the lowest rate searched",
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 14106.047,
+            "added": 37.462923,
+            "size": 37.465579
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.5,
+            "stands_over_bypassed": 4.639,
+            "added": 0.261788,
+            "size": 0.333724
+          }
+        }
       }
     },
     {
@@ -3219,7 +4167,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.44,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3300,6 +4250,29 @@
         "apart_by": 0.0694,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.45,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 1581.196,
+            "added": 11.954755,
+            "size": 11.96232
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.48,
+            "stands_over_bypassed": 114.383,
+            "added": 1.48275,
+            "size": 1.495827
+          }
+        }
       }
     },
     {
@@ -3308,7 +4281,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.59,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3389,6 +4364,29 @@
         "apart_by": 0.1129,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.59,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.59,
+            "stands_over_bypassed": 2217.423,
+            "added": 5.280016,
+            "size": 5.282398
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 6.59,
+            "stands_over_bypassed": 63.86,
+            "added": 0.915766,
+            "size": 0.930334
+          }
+        }
       }
     },
     {
@@ -3397,7 +4395,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.62,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3447,7 +4447,30 @@
         }
       },
       "moves": true,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.62,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.62,
+            "stands_over_bypassed": 3.885,
+            "added": 0.00243,
+            "size": 0.003272
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.27,
+            "stands_over_bypassed": 2.229,
+            "added": 0.031843,
+            "size": 0.057743
+          }
+        }
+      }
     },
     {
       "type": "02 03",
@@ -3455,7 +4478,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3535,6 +4560,29 @@
         "explains": 0.8289,
         "apart_by": 0.5793,
         "closer_to": "triangle"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.45,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 1700.283,
+            "added": 12.855696,
+            "size": 12.863261
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.49,
+            "stands_over_bypassed": 166.256,
+            "added": 1.445445,
+            "size": 1.454192
+          }
+        }
       }
     },
     {
@@ -3543,7 +4591,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.21,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3624,6 +4676,29 @@
         "apart_by": 0.0664,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.59,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.59,
+            "stands_over_bypassed": 123.085,
+            "added": 0.290833,
+            "size": 0.293216
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.61,
+            "stands_over_bypassed": 108.455,
+            "added": 1.667477,
+            "size": 1.682995
+          }
+        }
       }
     },
     {
@@ -3632,7 +4707,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 3.65,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3698,6 +4775,29 @@
         "series_spread_db": 0.1172,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 3.65,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 3.65,
+            "stands_over_bypassed": 30.44,
+            "added": 0.011781,
+            "size": 0.012181
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.64,
+            "stands_over_bypassed": 18.754,
+            "added": 0.077764,
+            "size": 0.082144
+          }
+        }
       }
     },
     {
@@ -3706,7 +4806,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.45,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3786,6 +4888,29 @@
         "explains": 0.9255,
         "apart_by": 0.5426,
         "closer_to": "triangle"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.45,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 574.313,
+            "added": 4.33732,
+            "size": 4.344885
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 6.73,
+            "stands_over_bypassed": 69.871,
+            "added": 0.448926,
+            "size": 0.455444
+          }
+        }
       }
     },
     {
@@ -3794,7 +4919,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.59,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -3875,6 +5002,29 @@
         "apart_by": 0.0421,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.59,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.59,
+            "stands_over_bypassed": 13970.289,
+            "added": 33.277966,
+            "size": 33.280348
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.79,
+            "stands_over_bypassed": 6.322,
+            "added": 0.869447,
+            "size": 1.032816
+          }
+        }
       }
     },
     {
@@ -3883,7 +5033,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.26,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -3933,7 +5087,32 @@
         }
       },
       "moves": false,
-      "the_level_swing_is": null
+      "the_level_swing_is": null,
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.24,
+        "moves": false,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 2.799,
+            "added": 0.004779,
+            "size": 0.007435
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.24,
+            "stands_over_bypassed": 2.682,
+            "added": 0.048946,
+            "size": 0.078043
+          }
+        }
+      }
     },
     {
       "type": "02 09",
@@ -3941,7 +5120,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.35,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4022,6 +5203,29 @@
         "apart_by": 0.0323,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.5,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.5,
+            "stands_over_bypassed": 1246.704,
+            "added": 7.86855,
+            "size": 7.874867
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.99,
+            "stands_over_bypassed": 11.926,
+            "added": 0.348394,
+            "size": 0.38028
+          }
+        }
       }
     },
     {
@@ -4030,7 +5234,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.59,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4111,6 +5317,29 @@
         "apart_by": 0.0494,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.59,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.59,
+            "stands_over_bypassed": 13978.769,
+            "added": 33.298166,
+            "size": 33.300548
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.79,
+            "stands_over_bypassed": 7.31,
+            "added": 1.030794,
+            "size": 1.194163
+          }
+        }
       }
     },
     {
@@ -4119,7 +5348,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.6,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4200,6 +5431,29 @@
         "apart_by": 0.0276,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.54,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.54,
+            "stands_over_bypassed": 7580.784,
+            "added": 37.490546,
+            "size": 37.495492
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.79,
+            "stands_over_bypassed": 9.058,
+            "added": 1.316458,
+            "size": 1.479827
+          }
+        }
       }
     },
     {
@@ -4208,7 +5462,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4289,6 +5548,29 @@
         "apart_by": 0.0073,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.33,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.33,
+            "stands_over_bypassed": 5536.353,
+            "added": 21.841736,
+            "size": 21.845682
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.85,
+            "stands_over_bypassed": 126.203,
+            "added": 2.21178,
+            "size": 2.229446
+          }
+        }
       }
     },
     {
@@ -4297,7 +5579,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 2.24,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4377,6 +5661,29 @@
         "explains": 0.9695,
         "apart_by": 0.5031,
         "closer_to": "triangle"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 3.61,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 3.61,
+            "stands_over_bypassed": 101.793,
+            "added": 0.048175,
+            "size": 0.048653
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 1.35,
+            "stands_over_bypassed": 44.219,
+            "added": 0.356397,
+            "size": 0.364643
+          }
+        }
       }
     },
     {
@@ -4385,7 +5692,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 3.64,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -4447,6 +5756,29 @@
         "series_spread_db": 0.03,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 1.91,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 1.91,
+            "stands_over_bypassed": 31.109,
+            "added": 0.018595,
+            "size": 0.019212
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.64,
+            "stands_over_bypassed": 47.587,
+            "added": 0.204051,
+            "size": 0.208431
+          }
+        }
       }
     },
     {
@@ -4455,7 +5787,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 3.65,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -4517,6 +5851,29 @@
         "series_spread_db": 0.0723,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 3.65,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 3.65,
+            "stands_over_bypassed": 102.707,
+            "added": 0.0407,
+            "size": 0.041101
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.65,
+            "stands_over_bypassed": 106.737,
+            "added": 0.531693,
+            "size": 0.536721
+          }
+        }
       }
     },
     {
@@ -4525,7 +5882,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.44,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4606,6 +5965,29 @@
         "apart_by": 0.0108,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.45,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.45,
+            "stands_over_bypassed": 2577.715,
+            "added": 19.493788,
+            "size": 19.501354
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 2.24,
+            "stands_over_bypassed": 437.758,
+            "added": 1.551129,
+            "size": 1.55468
+          }
+        }
       }
     },
     {
@@ -4614,7 +5996,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.39,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4695,6 +6079,29 @@
         "apart_by": 0.0713,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.49,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.49,
+            "stands_over_bypassed": 27444.848,
+            "added": 184.227179,
+            "size": 184.233892
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 1.49,
+            "stands_over_bypassed": 1496.427,
+            "added": 8.305255,
+            "size": 8.310809
+          }
+        }
       }
     },
     {
@@ -4703,7 +6110,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.9,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4783,6 +6192,29 @@
         "explains": 0.9679,
         "apart_by": 0.299,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 1.79,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 1.79,
+            "stands_over_bypassed": 223.003,
+            "added": 0.108492,
+            "size": 0.108981
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.61,
+            "stands_over_bypassed": 66.753,
+            "added": 1.020339,
+            "size": 1.035857
+          }
+        }
       }
     },
     {
@@ -4791,7 +6223,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.44,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4872,6 +6306,29 @@
         "apart_by": 0.375,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.84,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.84,
+            "stands_over_bypassed": 17762.661,
+            "added": 37.897273,
+            "size": 37.899406
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.05,
+            "stands_over_bypassed": 523.411,
+            "added": 2.270575,
+            "size": 2.274922
+          }
+        }
       }
     },
     {
@@ -4880,7 +6337,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.3,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -4960,6 +6419,31 @@
         "explains": 0.816,
         "apart_by": 0.0676,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.28,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.28,
+            "stands_over_bypassed": 75046.902,
+            "added": 247.336176,
+            "size": 247.339471
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.88,
+            "stands_over_bypassed": 141.821,
+            "added": 2.132707,
+            "size": 2.147852
+          }
+        }
       }
     },
     {
@@ -4968,7 +6452,11 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.22,
+      "stands_on_the_edge_of_the_search": [
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -5048,6 +6536,29 @@
         "explains": 0.7453,
         "apart_by": 0.0962,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.47,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.47,
+            "stands_over_bypassed": 33.043,
+            "added": 0.017408,
+            "size": 0.017952
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.29,
+            "stands_over_bypassed": 4.09,
+            "added": 0.073348,
+            "size": 0.097085
+          }
+        }
       }
     },
     {
@@ -5056,7 +6567,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.59,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -5137,6 +6650,29 @@
         "apart_by": 0.0303,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 4.8,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 4.8,
+            "stands_over_bypassed": 24.422,
+            "added": 0.015012,
+            "size": 0.015653
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 5.98,
+            "stands_over_bypassed": 31.254,
+            "added": 0.114742,
+            "size": 0.118535
+          }
+        }
       }
     },
     {
@@ -5145,7 +6681,12 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.2,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -5225,6 +6766,29 @@
         "explains": 0.6227,
         "apart_by": 0.0765,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.59,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.59,
+            "stands_over_bypassed": 33823.519,
+            "added": 80.572792,
+            "size": 80.575174
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 4.79,
+            "stands_over_bypassed": 15.56,
+            "added": 2.378584,
+            "size": 2.541953
+          }
+        }
       }
     },
     {
@@ -5233,7 +6797,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 4.77,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": true,
       "phase": {
         "peak": {
@@ -5299,6 +6865,29 @@
         "series_spread_db": 0.022,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 3.64,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 3.64,
+            "stands_over_bypassed": 74.525,
+            "added": 0.030308,
+            "size": 0.03072
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 3.63,
+            "stands_over_bypassed": 47.547,
+            "added": 0.191711,
+            "size": 0.19583
+          }
+        }
       }
     },
     {
@@ -5307,7 +6896,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 1.08,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -5373,6 +6964,32 @@
         "series_spread_db": 0.0484,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.2,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "the lowest rate searched",
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 539.146,
+            "added": 1.429313,
+            "size": 1.431969
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.36,
+            "stands_over_bypassed": 52.269,
+            "added": 2.324067,
+            "size": 2.369398
+          }
+        }
       }
     },
     {
@@ -5381,7 +6998,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.84,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -5447,6 +7066,29 @@
         "series_spread_db": 0.0784,
         "excursion_ms": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.85,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 0.85,
+            "stands_over_bypassed": 220.272,
+            "added": 0.474234,
+            "size": 0.476397
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.85,
+            "stands_over_bypassed": 224.42,
+            "added": 3.946857,
+            "size": 3.964523
+          }
+        }
       }
     },
     {
@@ -5455,7 +7097,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 2.05,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -5532,6 +7176,29 @@
         "apart_by": 0.0252,
         "closer_to": null,
         "why": "the fit does not account for the series it was taken on, so what it returned is not read"
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 2.05,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 127989.563,
+            "added": 41.021541,
+            "size": 41.021862
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 2045.443,
+            "added": 7.683599,
+            "size": 7.687357
+          }
+        }
       }
     },
     {
@@ -5540,7 +7207,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.84,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -5620,6 +7289,32 @@
         "explains": 0.95,
         "apart_by": 0.0258,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 0.2,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": [
+          "the lowest rate searched",
+          "at or under the slowest rate this take could carry two cycles of"
+        ],
+        "phase": {
+          "peak": {
+            "hz": 0.2,
+            "stands_over_bypassed": 12882.743,
+            "added": 34.213834,
+            "size": 34.21649
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 0.83,
+            "stands_over_bypassed": 128.993,
+            "added": 2.249904,
+            "size": 2.267482
+          }
+        }
       }
     },
     {
@@ -5628,7 +7323,9 @@
       "orders": 8,
       "sounded_s": 6.795,
       "rates_are_separated_by": 0.1472,
+      "slowest_measurable_hz": 0.2943,
       "read_at_hz": 0.85,
+      "stands_on_the_edge_of_the_search": null,
       "the_two_peaks_are_separated": false,
       "phase": {
         "peak": {
@@ -5704,6 +7401,29 @@
         "explains": 0.7412,
         "apart_by": 0.0062,
         "closer_to": null
+      },
+      "also_on_the_other_output": {
+        "channel": 3,
+        "read_at_hz": 2.05,
+        "moves": true,
+        "slowest_measurable_hz": 0.2943,
+        "stands_on_the_edge_of_the_search": null,
+        "phase": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 629534.804,
+            "added": 201.771522,
+            "size": 201.771842
+          }
+        },
+        "level": {
+          "peak": {
+            "hz": 2.05,
+            "stands_over_bypassed": 2434.014,
+            "added": 9.143962,
+            "size": 9.147721
+          }
+        }
       }
     }
   ],
