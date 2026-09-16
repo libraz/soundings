@@ -1,652 +1,813 @@
 {
-  "inference": {
-    "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
-    "state": "standing",
-    "made_at": "2026-09-15T11:22:22.843351+00:00",
-    "made_by": "backup/is-the-damping-the-same-section.py, backup/which-way-is-the-pre-filter-pole-written.py, backup/write-the-damping-inference.py, backup/does-the-damping-compound.py, backup/which-side-of-the-loop-the-damping-is.py, backup/fold-in-which-side-of-the-loop.py",
-    "rounds": 2,
-    "about": {
-      "scope": "slot",
-      "types": [
-        "01 50"
-      ],
-      "addresses": [
-        "40 03 0A"
-      ]
-    }
-  },
-  "claim": "A delay's damping byte is one pole inside the delay's own feedback loop, and it is the pole written the cheapest way there is: a running average, one multiply and one state, with no zero at half the rate. Inside rather than once on the way out, which is read off how a held note builds: with the byte at the position the page prints as the filter out the build is 18.3 dB and it is the same in every band, and with the filter in it falls away above a frequency that moves more than four octaves across the byte. A filter outside the loop is the same shape in both windows and cancels between them. That is not the section the same part's chorus filter byte sits on. A pole put through the bilinear transform keeps a zero at half the rate and its skirt bends steeper as it climbs towards it; this one has no zero, so its skirt stops cutting and levels off -- and the profile does level off, on every one of the ten settings the run asked, at a different depth each time. Where a profile levels off names the pole outright with nothing fitted, because the depth is one minus the coefficient over one plus it. Scored through the same takes the cheap pole is sixteen times the bilinear one's median and is the only candidate of eight whose residual does not lean. And it names the clock a fourth time, by a route none of the first three used: the coefficient that puts the corner where the page prints it depends on the rate, so a corner fitted freely from each setting's own skirt lands on the printed third octaves to a five-hundredth of an octave at thirty-two kilohertz and a twentieth at forty-four -- high at every setting, which is a lean and not a scatter.",
-  "named": "a one-multiply pole, the running average a fixed-point part damps a delay's repeats with",
-  "rests_on": {
-    "measurements": [
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-the-range-that-prints-its-own-null-in-twelfths.json",
-        "keys": [
-          "readings[value=0].steepest_db_per_octave",
-          "readings[value=32].steepest_db_per_octave",
-          "readings[value=64].steepest_db_per_octave",
-          "readings[value=112].steepest_db_per_octave",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          -5.8,
-          -5.46,
-          -4.67,
-          -2.27,
-          57.2
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-early-window.json",
-        "keys": [
-          "reference.above_the_silence_db",
-          "readings[value=0].largest_db",
-          "readings[value=0].above_the_silence_db",
-          "readings[value=96].largest_db",
-          "readings[value=96].above_the_silence_db"
-        ],
-        "values": [
-          64.5,
-          -28.85,
-          45.6,
-          -7.17,
-          61.2
-        ],
-        "why": "The first part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-late-window.json",
-        "keys": [
-          "reference.above_the_silence_db",
-          "readings[value=0].largest_db",
-          "readings[value=0].above_the_silence_db",
-          "readings[value=96].largest_db",
-          "readings[value=96].above_the_silence_db"
-        ],
-        "values": [
-          64.5,
-          -38.78,
-          45.6,
-          -15.21,
-          61.2
-        ],
-        "why": "The last part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
-      }
-    ],
-    "document_rows": [
-      {
-        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
-        "rows": [
-          "Stereo Delay, parameter 8, HF Damp, 315 - 8k/Bypass",
-          "Stereo Delay, parameter 3, +Feedback (Feedback level), -98% - +98%"
-        ],
-        "why": "Which byte this is and what the page prints against it. The range is what the corners are held against and the Bypass is what the run took its flat reference at; neither is evidence about a section, and the section is read off the shape of the skirt. The feedback row is here because it is the reason this byte exists and the reason the run held it at its centre."
-      }
-    ],
-    "era_priors": [
-      {
-        "claim": "A pole written as a running average costs one multiply and one state; put through the bilinear transform it costs two multiplies and a sample of the input kept beside the sample of the output. What the cheap one gives up is the zero at half the rate, which is a defect in a filter meant to shape a signal and nothing at all in one meant to take the top off a delay's repeats.",
-        "why": "It says why one part would hold both forms rather than one, which is what the two records together show and what the class's own prior argued against. The prior that a section is written once and reached from more than one byte holds inside a type here and not across the part.",
-        "would_be_wrong_if": "This byte's skirt had gone on cutting past the corner instead of levelling off, or the chorus's filter byte had levelled off too. Both were measured and each record puts the other's section twelve to sixteen decibels out, so the prior is being carried by a difference rather than by a habit."
-      }
-    ],
-    "community": []
-  },
-  "adds": "The record says what this byte did to each twelfth-octave band at ten settings, and carries the steepest slope each was running at. What is read out of it here is that the section is one pole, that the pole is written without the bilinear transform's zero, that this is not the section another type's filter byte sits on, and that the rate the coefficient implies is thirty-two kilohertz. The record names no section, no coefficient and no clock, and says so.",
-  "what_the_corner_table_is": {
-    "what": "Not this claim's, and cited rather than fitted. Where these corners are is the frequency class's and is closed. What is done with them here is the other way round: each candidate fits its own corner freely from one setting's own skirt, and the printed series is then used to ask which candidate's corners landed on it. A section written the wrong way has no reason to put a freely fitted corner on a series nobody handed the fitter.",
-    "at_each_setting": [
-      {
-        "setting": 0,
-        "entry": 0,
-        "printed_hz": 315,
-        "fitted_hz": 316.1,
-        "apart_octaves": 0.0049
-      },
-      {
-        "setting": 8,
-        "entry": 1,
-        "printed_hz": 400,
-        "fitted_hz": 400.2,
-        "apart_octaves": 0.0006
-      },
-      {
-        "setting": 16,
-        "entry": 2,
-        "printed_hz": 500,
-        "fitted_hz": 500.7,
-        "apart_octaves": 0.0021
-      },
-      {
-        "setting": 24,
-        "entry": 3,
-        "printed_hz": 630,
-        "fitted_hz": 630.4,
-        "apart_octaves": 0.0009
-      },
-      {
-        "setting": 32,
-        "entry": 4,
-        "printed_hz": 800,
-        "fitted_hz": 799.4,
-        "apart_octaves": -0.0012
-      },
-      {
-        "setting": 48,
-        "entry": 6,
-        "printed_hz": 1250,
-        "fitted_hz": 1251.9,
-        "apart_octaves": 0.0022
-      },
-      {
-        "setting": 64,
-        "entry": 8,
-        "printed_hz": 2000,
-        "fitted_hz": 2004.3,
-        "apart_octaves": 0.0031
-      },
-      {
-        "setting": 80,
-        "entry": 10,
-        "printed_hz": 3150,
-        "fitted_hz": 3154.9,
-        "apart_octaves": 0.0022
-      },
-      {
-        "setting": 96,
-        "entry": 12,
-        "printed_hz": 5000,
-        "fitted_hz": 5016.9,
-        "apart_octaves": 0.0049
-      },
-      {
-        "setting": 112,
-        "entry": 14,
-        "printed_hz": 8000,
-        "fitted_hz": 8025.9,
-        "apart_octaves": 0.0047
-      }
-    ],
-    "median_octaves_from_the_printed_series": 0.0022,
-    "worst_octaves": 0.0049,
-    "and_agrees_with": "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json",
-    "which_read_the_same_range_another_way": "That claim read this range off the profiles directly and put its entries a median 0.0053 octaves from the printed series. This fit, through a section rather than through a crossing, puts them a median 0.0022. Two readings of one table by two methods agreeing to a few thousandths of an octave is what says the section and the table are both right, since a wrong section would have had to be wrong in a way that happened to land on the other reading."
-  },
-  "alternatives": [
-    {
-      "reading": "The same cheap pole clocked at the converter's rate rather than the part's.",
-      "candidate": "one-multiply-pole-at-44k1",
-      "standing": false,
-      "ruled_out_by": "Where its corners land. The coefficient that puts a corner at a given frequency depends on the rate, so a corner fitted freely to each setting's skirt and then held against the third octaves the page prints is a reading of the rate. At thirty-two the ten settings land a median 0.0022 octaves from the series with no sign to them; at forty-four they land a median 0.0548 away and every one of the ten is high, growing from 0.042 octaves at the bottom entry to 0.087 near the top. That is a lean in a quantity the other reading of this same range resolves to about five thousandths of an octave."
-    },
-    {
-      "reading": "The section is the bilinear pole the chorus's filter byte sits on, and what levels off at the top of the band is the chain's own floor rather than the section.",
-      "candidate": "one-pole-sections-at-32k",
-      "standing": false,
-      "ruled_out_by": "The bands where the floor is were taken out before any candidate saw the record, on the record's own admission rule -- a band is scored only where every setting's reading stands ten decibels over the same chain's silence in it, which drops 2 of 113. The bilinear pole is still 11.69 dB out at its worst on what is left, and its freely fitted corners land a median 0.4677 octaves from the printed series -- a third of an octave and more, high at every setting. A floor does not move a corner."
-    },
-    {
-      "reading": "Two of the cheap poles cascaded rather than one, which would level off twice as deep.",
-      "candidate": "two-one-multiply-poles-at-32k",
-      "standing": false,
-      "ruled_out_by": "The skirt, which the reading resolves several times over. Two poles run at twelve decibels an octave where the record's own steepest figures are between two and six, and scored through the same takes the pair is 0.445 against the winner's 0.03 and leans."
-    },
-    {
-      "reading": "The damping sits once on the way out of the delay's feedback loop rather than inside it. Queued the other way round, because the record that closed the section could not tell them apart and either was the thing to ask.",
-      "candidate": "one-multiply-pole-at-32k",
-      "standing": false,
-      "ruled_out_by": "The run it queued. A filter on the way out is the same shape in both windows of one take and cancels between them, so it says the build is one number in every band at every setting of the byte -- which is what the position the page prints as the filter out does, at 18.3 dB across the whole band set. Every setting with the filter in departs from that, upward in frequency and by more as the corner comes down: 9.18 dB at setting 32 and 12500 Hz, against 0.41 dB of floor there. And where each setting's build falls through half its depth moves from between 125 and 160 Hz at the lowest setting to between 2500 and 3150 at the highest, which is more than four octaves of something a filter outside the loop cannot move at all."
-    }
-  ],
-  "reproduces": {
-    "model": "inferences/models/0150-one-multiply-pole-at-32k.json",
-    "compared_against": {
-      "records": [
-        "data/units/roland-sc8850-01/efx-bands/01-50-0A-the-range-that-prints-its-own-null-in-twelfths.json"
-      ],
-      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 50 at address 40 03 0A at the twelfth-octave resolution",
-      "filter": {
-        "index": "data/units/roland-sc8850-01/index.json",
-        "stage": "efx-bands",
-        "type": "01 50",
-        "address_in": [
-          "40 03 0A"
-        ],
-        "file_ends_with": "-in-twelfths.json"
-      },
-      "then_dropped": [],
-      "excluded": []
-    },
-    "domain": "dB",
-    "residual": {
-      "median_abs_db": 0.03,
-      "worst_abs_db": 0.87,
-      "worst_at": {
-        "value": 8,
-        "hz": 29.5
-      },
-      "structured": false
-    },
-    "how_the_model_is_read": "Rendered through the very takes the record was read from and then measured on the same band set, with the chain's own silence added back where the model cuts below it -- and with the bands no reading stands ten decibels over that silence in taken out before any candidate saw the record. That last is not a convenience. The deepest settings of this byte arrive at the floor somewhere above ten kilohertz and stop falling, and a section clocked faster has a shallower skirt up there, so a reading that kept those bands would hand the rate to whichever candidate best imitated a profile that had stopped being a profile.",
-    "gates": {
-      "measured_in": "dB",
-      "gross": {
-        "verdict": "reproduces",
-        "why": "median 0.03 dB against the 30.5 dB this byte commands, and a worst band of 0.87 dB -- under the 1.4 dB the run's own repeats spread at their worst band, and at the bottom of the band set rather than anywhere the section is doing something."
-      },
-      "properties": {
-        "verdict": "reproduces",
-        "why": "Two properties, and neither is the residual. The skirt is one pole's: the record's own steepest figures run from 5.80 decibels an octave at the bottom setting to 2.27 at the top, where a second pole would put twelve. And the corners this candidate fits freely, one per setting from that setting's own skirt, land on the third octaves the page prints against this address -- 315, 400, 500, 630, 800, 1250, 2000, 3150, 5000 and 8000 -- a median 0.0022 octaves away and a worst of 0.0049. No candidate is handed that series, and the losing ones do not land on it.",
-        "where_the_corners_land": {
-          "one-pole-sections-at-32k": {
-            "median_octaves": 0.4677,
-            "worst_octaves": 0.7517,
-            "every_one_the_same_sign": true
-          },
-          "one-pole-sections-at-44k1": {
-            "median_octaves": 0.2433,
-            "worst_octaves": 0.3836,
-            "every_one_the_same_sign": true
-          },
-          "one-pole-sections-at-48k": {
-            "median_octaves": 0.2176,
-            "worst_octaves": 0.343,
-            "every_one_the_same_sign": true
-          },
-          "one-multiply-pole-at-32k": {
-            "median_octaves": 0.0022,
-            "worst_octaves": 0.0049,
-            "every_one_the_same_sign": false
-          },
-          "one-multiply-pole-at-44k1": {
-            "median_octaves": 0.0548,
-            "worst_octaves": 0.0867,
-            "every_one_the_same_sign": true
-          }
-        }
-      },
-      "power": {
-        "verdict": "separated",
-        "beaten": {
-          "one-pole-sections-at-32k": {
-            "median_abs_db": 0.48,
-            "worst_abs_db": 11.69,
-            "worst_at": {
-              "value": 48,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "one-pole-sections-at-44k1": {
-            "median_abs_db": 0.335,
-            "worst_abs_db": 5.59,
-            "worst_at": {
-              "value": 16,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "one-pole-sections-at-48k": {
-            "median_abs_db": 0.31,
-            "worst_abs_db": 4.98,
-            "worst_at": {
-              "value": 16,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "two-one-pole-sections-at-32k": {
-            "median_abs_db": 0.76,
-            "worst_abs_db": 18.69,
-            "worst_at": {
-              "value": 48,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "butterworth-pairs-at-32k": {
-            "median_abs_db": 0.83,
-            "worst_abs_db": 19.72,
-            "worst_at": {
-              "value": 48,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "one-multiply-pole-at-44k1": {
-            "median_abs_db": 0.13,
-            "worst_abs_db": 1.34,
-            "worst_at": {
-              "value": 16,
-              "hz": 14254.4
-            },
-            "structured": true
-          },
-          "two-one-multiply-poles-at-32k": {
-            "median_abs_db": 0.445,
-            "worst_abs_db": 6.28,
-            "worst_at": {
-              "value": 0,
-              "hz": 11986.5
-            },
-            "structured": true
-          }
-        },
-        "how": "contradicted on the shape and on where the corners land",
-        "why": "Every other candidate in the class was scored on this record and every one of them leans. The bilinear pole at the same rate is the worst of the single-pole readings here, which is the reverse of how it came out on the chorus's filter byte -- the two records each put the other's section twelve to sixteen decibels out, so what separates them is not a preference but a contradiction. The two-pole and resonant-pair candidates lose on the skirt, which is what they lost on there too."
-      },
-      "breakdown": {
-        "verdict": "reproduces",
-        "why": "the signed median swings 0.04 dB across the settings and 0.75 dB across the readings within one, against the run's own floor of 1.4 dB",
-        "read_as": "The only candidate of the eight that comes back without structure. Its worst band is at 30 Hz, which is the bottom of the band set and three decades under anything this byte moves, and it is under the run's own floor there."
-      }
-    },
-    "verdict": "reproduces"
-  },
-  "refuted_by": "A setting of this byte whose skirt went on cutting past its corner instead of levelling off, which would put the bilinear zero back. Or the depth it levels off at failing to follow the corner the page prints, which is the one thing about this section that is fixed rather than fitted. Or the same sweep on another type's damping byte coming back bilinear, which would make the section this slot's rather than the part's damping routine.",
-  "what_it_would_change": [
-    "inferences/roland-sc8850-01/0142-a-filter-byte-sits-on-one-pole.json",
-    "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json"
-  ],
-  "what_this_does_not_settle": [
-    "Whether the other fourteen slots that print this range answer the same way. Every one of them is a delay's or a reverb's damping, which is what makes one routine the thing to expect -- but expecting is not measuring, and one slot was read.",
-    "What the coefficient's own quantum is. The corners land on the printed series to a few thousandths of an octave, which bounds the stored number from above but does not say what grid it sits on; that is the kind of question the level class answered with a scan over denominators and this reading has ten points rather than a hundred and twenty-eight.",
-    "Whether the part's high-pass damping, if it has one, is written the same way. Only the low side was swept here, and the cheap pole's high side is its own complement rather than a second routine -- which is a thing to check and not a thing to assume.",
-    "What the loop gain was while this was read. The feedback byte was put near the top of its printed range so that there would be passes to compound over, and nothing here reads what that byte is worth -- so the size of the build is not a figure about the loop, only about there being one. Which side of it the filter is on does not depend on that and is what is claimed.",
-    "Where inside the loop. A filter before the delay line and one after it are the same thing once round, and a held note read over two windows cannot separate them: both put one helping of the filter in every pass. What would is the first arrival, which carries the filter under one reading and not under the other -- and at half a second of delay that is one repeat of one take rather than a profile."
-  ],
-  "and_which_side_of_the_loop_it_is_on": {
-    "what": "Read off two windows of one set of takes, with the feedback near the top of its printed range rather than at the centre where the run that closed the section parked it. Nothing is fitted: what is compared is the band profile of the last part of a held note against the first part, for each setting, against the same thing at the position the page prints as the filter out.",
-    "with_no_filter_anywhere": {
-      "build_db": [
-        17.33,
-        17.44,
-        19.44,
-        18.29,
-        18.56,
-        20.75,
-        18.25,
-        17.43,
-        19.13,
-        17.71,
-        18.3,
-        18.2,
-        18.34,
-        18.25,
-        18.01,
-        18.61,
-        18.73,
-        18.64,
-        17.93,
-        18.18,
-        18.5,
-        18.74
-      ],
-      "bands_hz": [
-        100,
-        125,
-        160,
-        200,
-        250,
-        315,
-        400,
-        500,
-        630,
-        800,
-        1000,
-        1250,
-        1600,
-        2000,
-        2500,
-        3150,
-        4000,
-        5000,
-        6300,
-        8000,
-        10000,
-        12500
-      ],
-      "median_db": 18.3,
-      "and_it_is_flat": "The loop builds by one number of decibels and the same number in every band, which is what a loop with nothing in it does and is the control this reading needs."
-    },
-    "with_the_filter_in": {
-      "build_against_no_filter_db": {
-        "0": [
-          -2.07,
-          -1.78,
-          -5.16,
-          -3.03,
-          -5.08,
-          -7.35,
-          -6.4,
-          -6.76,
-          -8.16,
-          -7.48,
-          -7.6,
-          -8.21,
-          -8.63,
-          -8.55,
-          -8.35,
-          -8.64,
-          -8.25,
-          -8.56,
-          -8.49,
-          -8.67,
-          -8.89,
-          -9.93
-        ],
-        "32": [
-          -1.65,
-          0.14,
-          -1.47,
-          -0.76,
-          -2.81,
-          -2.44,
-          -3.63,
-          -4.73,
-          -4.15,
-          -5.76,
-          -6.45,
-          -7.18,
-          -8.2,
-          -8.19,
-          -8.15,
-          -8.58,
-          -8.27,
-          -8.53,
-          -8.62,
-          -8.81,
-          -8.88,
-          -9.18
-        ],
-        "64": [
-          0.74,
-          0.37,
-          0.18,
-          0.36,
-          -0.16,
-          -0.61,
-          0.88,
-          -0.35,
-          -1.97,
-          -1.66,
-          -2.23,
-          -3.48,
-          -5.34,
-          -5.94,
-          -6.24,
-          -7.32,
-          -7.54,
-          -8.0,
-          -8.05,
-          -8.43,
-          -8.53,
-          -8.72
-        ],
-        "96": [
-          0.02,
-          0.42,
-          0.33,
-          0.42,
-          0.4,
-          0.47,
-          0.24,
-          0.05,
-          -0.22,
-          -0.09,
-          -0.88,
-          -1.36,
-          -1.91,
-          -1.92,
-          -3.51,
-          -4.06,
-          -5.48,
-          -5.96,
-          -6.5,
-          -7.18,
-          -7.65,
-          -8.04
-        ]
-      },
-      "admitted": {
-        "0": [
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          false
-        ],
-        "32": [
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true
-        ],
-        "64": [
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true
-        ],
-        "96": [
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true
-        ]
-      },
-      "why_some_bands_are_not_read": "A band has to stand ten decibels over the same chain's silence in both windows before it is read, which is the rule this byte's own claim already uses, applied to the window rather than to the take. At the lowest settings the bottom of the band is under it, and a window at the floor returns the converter's own shape -- stably, which is what makes it dangerous.",
-      "largest_admitted_db": 9.18,
-      "at": {
-        "setting": 32,
-        "hz": 12500
-      },
-      "against_a_floor_of_db": 0.41
-    },
-    "and_where_it_hinges_moves_with_the_byte": {
-      "what": "Where each setting's build falls through half its own depth, read as a bracket between two bands rather than interpolated. It is not the filter's own corner -- the loop's gain pulls it down -- and what matters is that it moves at all.",
-      "at_each_setting": {
-        "0": {
-          "deepest_db": -8.89,
-          "crosses_between_hz": [
-            125,
-            160
-          ]
-        },
-        "32": {
-          "deepest_db": -9.18,
-          "crosses_between_hz": [
-            400,
-            500
-          ]
-        },
-        "64": {
-          "deepest_db": -8.72,
-          "crosses_between_hz": [
-            1250,
-            1600
-          ]
-        },
-        "96": {
-          "deepest_db": -8.04,
-          "crosses_between_hz": [
-            2500,
-            3150
-          ]
-        }
-      }
-    }
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-16T22:10:03.425300+00:00",
+  "made_by": "backup/is-the-damping-the-same-section.py, backup/which-way-is-the-pre-filter-pole-written.py, backup/write-the-damping-inference.py, backup/does-the-damping-compound.py, backup/which-side-of-the-loop-the-damping-is.py, backup/fold-in-which-side-of-the-loop.py, backup/fold-in-the-damping-on-two-more-types.py",
+  "rounds": 2,
+  "about": {
+   "scope": "slot",
+   "types": [
+    "01 50"
+   ],
+   "addresses": [
+    "40 03 0A"
+   ],
+   "checked_on_types": [
+    "01 51",
+    "11 00"
+   ]
   }
+ },
+ "claim": "A delay's damping byte is one pole inside the delay's own feedback loop, and it is the pole written the cheapest way there is: a running average, one multiply and one state, with no zero at half the rate. Inside rather than once on the way out, which is read off how a held note builds: with the byte at the position the page prints as the filter out the build is 18.3 dB and it is the same in every band, and with the filter in it falls away above a frequency that moves more than four octaves across the byte. A filter outside the loop is the same shape in both windows and cancels between them. That is not the section the same part's chorus filter byte sits on. A pole put through the bilinear transform keeps a zero at half the rate and its skirt bends steeper as it climbs towards it; this one has no zero, so its skirt stops cutting and levels off -- and the profile does level off, on every one of the ten settings the run asked, at a different depth each time. Where a profile levels off names the pole outright with nothing fitted, because the depth is one minus the coefficient over one plus it. Scored through the same takes the cheap pole is sixteen times the bilinear one's median and is the only candidate of eight whose residual does not lean. And it names the clock a fourth time, by a route none of the first three used: the coefficient that puts the corner where the page prints it depends on the rate, so a corner fitted freely from each setting's own skirt lands on the printed third octaves to a five-hundredth of an octave at thirty-two kilohertz and a twentieth at forty-four -- high at every setting, which is a lean and not a scatter. Read on two more types the same byte does one of two things. On the modulated delay it is the same byte doing the same thing: over ten settings and a hundred and thirteen bands the two profiles sit a median 0.045 dB apart, which is under what either run failed to repeat, and the corners agree to a fifteenth of an octave. Nothing was refitted for it -- the claim was closed on one type and reproduced on a second it had never seen. Inside the chorus-and-delay pair it is not. There the profiles sit a median 10.04 dB apart, and the shape is the thing that differs rather than the depth: on both delays the skirt is still falling at the top of the band, by 10.15 dB over the last two octaves at the byte's bottom, while in the pair it has flattened to -0.08 and sits at -24.38 dB from two kilohertz upward. Two explanations for that were tried and both are refused. It is not the run's floor: restricted to the bands where each setting's own take stands twelve decibels clear of its own silence the disagreement is still 10.04 dB. And it is not the held block meaning different things -- the delay time and the feedback on all three types are printed on one conversion column and one hex range, so the same byte is the same quantity, and what differs in the print is each type's own default. What the pair's profile is, is not read here. The claim is a claim about one slot and it now has one type it reaches and one it does not.",
+ "named": "a one-multiply pole, the running average a fixed-point part damps a delay's repeats with",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-the-range-that-prints-its-own-null-in-twelfths.json",
+    "keys": [
+     "readings[value=0].steepest_db_per_octave",
+     "readings[value=32].steepest_db_per_octave",
+     "readings[value=64].steepest_db_per_octave",
+     "readings[value=112].steepest_db_per_octave",
+     "reference.above_the_silence_db"
+    ],
+    "values": [
+     -5.8,
+     -5.46,
+     -4.67,
+     -2.27,
+     57.2
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-early-window.json",
+    "keys": [
+     "reference.above_the_silence_db",
+     "readings[value=0].largest_db",
+     "readings[value=0].above_the_silence_db",
+     "readings[value=96].largest_db",
+     "readings[value=96].above_the_silence_db"
+    ],
+    "values": [
+     64.5,
+     -28.85,
+     45.6,
+     -7.17,
+     61.2
+    ],
+    "why": "The first part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-50-0A-does-the-damping-compound-late-window.json",
+    "keys": [
+     "reference.above_the_silence_db",
+     "readings[value=0].largest_db",
+     "readings[value=0].above_the_silence_db",
+     "readings[value=96].largest_db",
+     "readings[value=96].above_the_silence_db"
+    ],
+    "values": [
+     64.5,
+     -38.78,
+     45.6,
+     -15.21,
+     61.2
+    ],
+    "why": "The last part of each held note, read as a band profile of its own. Neither record says anything on its own -- a profile over part of a take is what the effect had done by then -- and what they are for is the difference between them, which is the loop's own build and is a derivation made here and not there."
+   }
+  ],
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+    "rows": [
+     "Stereo Delay, parameter 8, HF Damp, 315 - 8k/Bypass",
+     "Stereo Delay, parameter 3, +Feedback (Feedback level), -98% - +98%"
+    ],
+    "why": "Which byte this is and what the page prints against it. The range is what the corners are held against and the Bypass is what the run took its flat reference at; neither is evidence about a section, and the section is read off the shape of the skirt. The feedback row is here because it is the reason this byte exists and the reason the run held it at its centre."
+   }
+  ],
+  "era_priors": [
+   {
+    "claim": "A pole written as a running average costs one multiply and one state; put through the bilinear transform it costs two multiplies and a sample of the input kept beside the sample of the output. What the cheap one gives up is the zero at half the rate, which is a defect in a filter meant to shape a signal and nothing at all in one meant to take the top off a delay's repeats.",
+    "why": "It says why one part would hold both forms rather than one, which is what the two records together show and what the class's own prior argued against. The prior that a section is written once and reached from more than one byte holds inside a type here and not across the part.",
+    "would_be_wrong_if": "This byte's skirt had gone on cutting past the corner instead of levelling off, or the chorus's filter byte had levelled off too. Both were measured and each record puts the other's section twelve to sixteen decibels out, so the prior is being carried by a difference rather than by a habit."
+   }
+  ],
+  "community": []
+ },
+ "adds": "The record says what this byte did to each twelfth-octave band at ten settings, and carries the steepest slope each was running at. What is read out of it here is that the section is one pole, that the pole is written without the bilinear transform's zero, that this is not the section another type's filter byte sits on, and that the rate the coefficient implies is thirty-two kilohertz. The record names no section, no coefficient and no clock, and says so.",
+ "what_the_corner_table_is": {
+  "what": "Not this claim's, and cited rather than fitted. Where these corners are is the frequency class's and is closed. What is done with them here is the other way round: each candidate fits its own corner freely from one setting's own skirt, and the printed series is then used to ask which candidate's corners landed on it. A section written the wrong way has no reason to put a freely fitted corner on a series nobody handed the fitter.",
+  "at_each_setting": [
+   {
+    "setting": 0,
+    "entry": 0,
+    "printed_hz": 315,
+    "fitted_hz": 316.1,
+    "apart_octaves": 0.0049
+   },
+   {
+    "setting": 8,
+    "entry": 1,
+    "printed_hz": 400,
+    "fitted_hz": 400.2,
+    "apart_octaves": 0.0006
+   },
+   {
+    "setting": 16,
+    "entry": 2,
+    "printed_hz": 500,
+    "fitted_hz": 500.7,
+    "apart_octaves": 0.0021
+   },
+   {
+    "setting": 24,
+    "entry": 3,
+    "printed_hz": 630,
+    "fitted_hz": 630.4,
+    "apart_octaves": 0.0009
+   },
+   {
+    "setting": 32,
+    "entry": 4,
+    "printed_hz": 800,
+    "fitted_hz": 799.4,
+    "apart_octaves": -0.0012
+   },
+   {
+    "setting": 48,
+    "entry": 6,
+    "printed_hz": 1250,
+    "fitted_hz": 1251.9,
+    "apart_octaves": 0.0022
+   },
+   {
+    "setting": 64,
+    "entry": 8,
+    "printed_hz": 2000,
+    "fitted_hz": 2004.3,
+    "apart_octaves": 0.0031
+   },
+   {
+    "setting": 80,
+    "entry": 10,
+    "printed_hz": 3150,
+    "fitted_hz": 3154.9,
+    "apart_octaves": 0.0022
+   },
+   {
+    "setting": 96,
+    "entry": 12,
+    "printed_hz": 5000,
+    "fitted_hz": 5016.9,
+    "apart_octaves": 0.0049
+   },
+   {
+    "setting": 112,
+    "entry": 14,
+    "printed_hz": 8000,
+    "fitted_hz": 8025.9,
+    "apart_octaves": 0.0047
+   }
+  ],
+  "median_octaves_from_the_printed_series": 0.0022,
+  "worst_octaves": 0.0049,
+  "and_agrees_with": "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json",
+  "which_read_the_same_range_another_way": "That claim read this range off the profiles directly and put its entries a median 0.0053 octaves from the printed series. This fit, through a section rather than through a crossing, puts them a median 0.0022. Two readings of one table by two methods agreeing to a few thousandths of an octave is what says the section and the table are both right, since a wrong section would have had to be wrong in a way that happened to land on the other reading."
+ },
+ "alternatives": [
+  {
+   "reading": "The same cheap pole clocked at the converter's rate rather than the part's.",
+   "candidate": "one-multiply-pole-at-44k1",
+   "standing": false,
+   "ruled_out_by": "Where its corners land. The coefficient that puts a corner at a given frequency depends on the rate, so a corner fitted freely to each setting's skirt and then held against the third octaves the page prints is a reading of the rate. At thirty-two the ten settings land a median 0.0022 octaves from the series with no sign to them; at forty-four they land a median 0.0548 away and every one of the ten is high, growing from 0.042 octaves at the bottom entry to 0.087 near the top. That is a lean in a quantity the other reading of this same range resolves to about five thousandths of an octave."
+  },
+  {
+   "reading": "The section is the bilinear pole the chorus's filter byte sits on, and what levels off at the top of the band is the chain's own floor rather than the section.",
+   "candidate": "one-pole-sections-at-32k",
+   "standing": false,
+   "ruled_out_by": "The bands where the floor is were taken out before any candidate saw the record, on the record's own admission rule -- a band is scored only where every setting's reading stands ten decibels over the same chain's silence in it, which drops 2 of 113. The bilinear pole is still 11.69 dB out at its worst on what is left, and its freely fitted corners land a median 0.4677 octaves from the printed series -- a third of an octave and more, high at every setting. A floor does not move a corner."
+  },
+  {
+   "reading": "Two of the cheap poles cascaded rather than one, which would level off twice as deep.",
+   "candidate": "two-one-multiply-poles-at-32k",
+   "standing": false,
+   "ruled_out_by": "The skirt, which the reading resolves several times over. Two poles run at twelve decibels an octave where the record's own steepest figures are between two and six, and scored through the same takes the pair is 0.445 against the winner's 0.03 and leans."
+  },
+  {
+   "reading": "The damping sits once on the way out of the delay's feedback loop rather than inside it. Queued the other way round, because the record that closed the section could not tell them apart and either was the thing to ask.",
+   "candidate": "one-multiply-pole-at-32k",
+   "standing": false,
+   "ruled_out_by": "The run it queued. A filter on the way out is the same shape in both windows of one take and cancels between them, so it says the build is one number in every band at every setting of the byte -- which is what the position the page prints as the filter out does, at 18.3 dB across the whole band set. Every setting with the filter in departs from that, upward in frequency and by more as the corner comes down: 9.18 dB at setting 32 and 12500 Hz, against 0.41 dB of floor there. And where each setting's build falls through half its depth moves from between 125 and 160 Hz at the lowest setting to between 2500 and 3150 at the highest, which is more than four octaves of something a filter outside the loop cannot move at all."
+  }
+ ],
+ "reproduces": {
+  "model": "inferences/models/0150-one-multiply-pole-at-32k.json",
+  "compared_against": {
+   "records": [
+    "data/units/roland-sc8850-01/efx-bands/01-50-0A-the-range-that-prints-its-own-null-in-twelfths.json"
+   ],
+   "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 50 at address 40 03 0A at the twelfth-octave resolution",
+   "filter": {
+    "index": "data/units/roland-sc8850-01/index.json",
+    "stage": "efx-bands",
+    "type": "01 50",
+    "address_in": [
+     "40 03 0A"
+    ],
+    "file_ends_with": "-in-twelfths.json"
+   },
+   "then_dropped": [],
+   "excluded": []
+  },
+  "domain": "dB",
+  "residual": {
+   "median_abs_db": 0.03,
+   "worst_abs_db": 0.87,
+   "worst_at": {
+    "value": 8,
+    "hz": 29.5
+   },
+   "structured": false
+  },
+  "how_the_model_is_read": "Rendered through the very takes the record was read from and then measured on the same band set, with the chain's own silence added back where the model cuts below it -- and with the bands no reading stands ten decibels over that silence in taken out before any candidate saw the record. That last is not a convenience. The deepest settings of this byte arrive at the floor somewhere above ten kilohertz and stop falling, and a section clocked faster has a shallower skirt up there, so a reading that kept those bands would hand the rate to whichever candidate best imitated a profile that had stopped being a profile.",
+  "gates": {
+   "measured_in": "dB",
+   "gross": {
+    "verdict": "reproduces",
+    "why": "median 0.03 dB against the 30.5 dB this byte commands, and a worst band of 0.87 dB -- under the 1.4 dB the run's own repeats spread at their worst band, and at the bottom of the band set rather than anywhere the section is doing something."
+   },
+   "properties": {
+    "verdict": "reproduces",
+    "why": "Two properties, and neither is the residual. The skirt is one pole's: the record's own steepest figures run from 5.80 decibels an octave at the bottom setting to 2.27 at the top, where a second pole would put twelve. And the corners this candidate fits freely, one per setting from that setting's own skirt, land on the third octaves the page prints against this address -- 315, 400, 500, 630, 800, 1250, 2000, 3150, 5000 and 8000 -- a median 0.0022 octaves away and a worst of 0.0049. No candidate is handed that series, and the losing ones do not land on it.",
+    "where_the_corners_land": {
+     "one-pole-sections-at-32k": {
+      "median_octaves": 0.4677,
+      "worst_octaves": 0.7517,
+      "every_one_the_same_sign": true
+     },
+     "one-pole-sections-at-44k1": {
+      "median_octaves": 0.2433,
+      "worst_octaves": 0.3836,
+      "every_one_the_same_sign": true
+     },
+     "one-pole-sections-at-48k": {
+      "median_octaves": 0.2176,
+      "worst_octaves": 0.343,
+      "every_one_the_same_sign": true
+     },
+     "one-multiply-pole-at-32k": {
+      "median_octaves": 0.0022,
+      "worst_octaves": 0.0049,
+      "every_one_the_same_sign": false
+     },
+     "one-multiply-pole-at-44k1": {
+      "median_octaves": 0.0548,
+      "worst_octaves": 0.0867,
+      "every_one_the_same_sign": true
+     }
+    }
+   },
+   "power": {
+    "verdict": "separated",
+    "beaten": {
+     "one-pole-sections-at-32k": {
+      "median_abs_db": 0.48,
+      "worst_abs_db": 11.69,
+      "worst_at": {
+       "value": 48,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "one-pole-sections-at-44k1": {
+      "median_abs_db": 0.335,
+      "worst_abs_db": 5.59,
+      "worst_at": {
+       "value": 16,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "one-pole-sections-at-48k": {
+      "median_abs_db": 0.31,
+      "worst_abs_db": 4.98,
+      "worst_at": {
+       "value": 16,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "two-one-pole-sections-at-32k": {
+      "median_abs_db": 0.76,
+      "worst_abs_db": 18.69,
+      "worst_at": {
+       "value": 48,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "butterworth-pairs-at-32k": {
+      "median_abs_db": 0.83,
+      "worst_abs_db": 19.72,
+      "worst_at": {
+       "value": 48,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "one-multiply-pole-at-44k1": {
+      "median_abs_db": 0.13,
+      "worst_abs_db": 1.34,
+      "worst_at": {
+       "value": 16,
+       "hz": 14254.4
+      },
+      "structured": true
+     },
+     "two-one-multiply-poles-at-32k": {
+      "median_abs_db": 0.445,
+      "worst_abs_db": 6.28,
+      "worst_at": {
+       "value": 0,
+       "hz": 11986.5
+      },
+      "structured": true
+     }
+    },
+    "how": "contradicted on the shape and on where the corners land",
+    "why": "Every other candidate in the class was scored on this record and every one of them leans. The bilinear pole at the same rate is the worst of the single-pole readings here, which is the reverse of how it came out on the chorus's filter byte -- the two records each put the other's section twelve to sixteen decibels out, so what separates them is not a preference but a contradiction. The two-pole and resonant-pair candidates lose on the skirt, which is what they lost on there too."
+   },
+   "breakdown": {
+    "verdict": "reproduces",
+    "why": "the signed median swings 0.04 dB across the settings and 0.75 dB across the readings within one, against the run's own floor of 1.4 dB",
+    "read_as": "The only candidate of the eight that comes back without structure. Its worst band is at 30 Hz, which is the bottom of the band set and three decades under anything this byte moves, and it is under the run's own floor there."
+   }
+  },
+  "verdict": "reproduces"
+ },
+ "refuted_by": "A setting of this byte whose skirt went on cutting past its corner instead of levelling off, which would put the bilinear zero back. Or the depth it levels off at failing to follow the corner the page prints, which is the one thing about this section that is fixed rather than fitted. Or the same sweep on another type's damping byte coming back bilinear, which would make the section this slot's rather than the part's damping routine.",
+ "what_it_would_change": [
+  "inferences/roland-sc8850-01/0142-a-filter-byte-sits-on-one-pole.json",
+  "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json"
+ ],
+ "what_this_does_not_settle": [
+  "Whether the other fourteen slots that print this range answer the same way. Every one of them is a delay's or a reverb's damping, which is what makes one routine the thing to expect -- but expecting is not measuring, and one slot was read.",
+  "What the coefficient's own quantum is. The corners land on the printed series to a few thousandths of an octave, which bounds the stored number from above but does not say what grid it sits on; that is the kind of question the level class answered with a scan over denominators and this reading has ten points rather than a hundred and twenty-eight.",
+  "Whether the part's high-pass damping, if it has one, is written the same way. Only the low side was swept here, and the cheap pole's high side is its own complement rather than a second routine -- which is a thing to check and not a thing to assume.",
+  "What the loop gain was while this was read. The feedback byte was put near the top of its printed range so that there would be passes to compound over, and nothing here reads what that byte is worth -- so the size of the build is not a figure about the loop, only about there being one. Which side of it the filter is on does not depend on that and is what is claimed.",
+  "Where inside the loop. A filter before the delay line and one after it are the same thing once round, and a held note read over two windows cannot separate them: both put one helping of the filter in every pass. What would is the first arrival, which carries the filter under one reading and not under the other -- and at half a second of delay that is one repeat of one take rather than a profile."
+ ],
+ "and_which_side_of_the_loop_it_is_on": {
+  "what": "Read off two windows of one set of takes, with the feedback near the top of its printed range rather than at the centre where the run that closed the section parked it. Nothing is fitted: what is compared is the band profile of the last part of a held note against the first part, for each setting, against the same thing at the position the page prints as the filter out.",
+  "with_no_filter_anywhere": {
+   "build_db": [
+    17.33,
+    17.44,
+    19.44,
+    18.29,
+    18.56,
+    20.75,
+    18.25,
+    17.43,
+    19.13,
+    17.71,
+    18.3,
+    18.2,
+    18.34,
+    18.25,
+    18.01,
+    18.61,
+    18.73,
+    18.64,
+    17.93,
+    18.18,
+    18.5,
+    18.74
+   ],
+   "bands_hz": [
+    100,
+    125,
+    160,
+    200,
+    250,
+    315,
+    400,
+    500,
+    630,
+    800,
+    1000,
+    1250,
+    1600,
+    2000,
+    2500,
+    3150,
+    4000,
+    5000,
+    6300,
+    8000,
+    10000,
+    12500
+   ],
+   "median_db": 18.3,
+   "and_it_is_flat": "The loop builds by one number of decibels and the same number in every band, which is what a loop with nothing in it does and is the control this reading needs."
+  },
+  "with_the_filter_in": {
+   "build_against_no_filter_db": {
+    "0": [
+     -2.07,
+     -1.78,
+     -5.16,
+     -3.03,
+     -5.08,
+     -7.35,
+     -6.4,
+     -6.76,
+     -8.16,
+     -7.48,
+     -7.6,
+     -8.21,
+     -8.63,
+     -8.55,
+     -8.35,
+     -8.64,
+     -8.25,
+     -8.56,
+     -8.49,
+     -8.67,
+     -8.89,
+     -9.93
+    ],
+    "32": [
+     -1.65,
+     0.14,
+     -1.47,
+     -0.76,
+     -2.81,
+     -2.44,
+     -3.63,
+     -4.73,
+     -4.15,
+     -5.76,
+     -6.45,
+     -7.18,
+     -8.2,
+     -8.19,
+     -8.15,
+     -8.58,
+     -8.27,
+     -8.53,
+     -8.62,
+     -8.81,
+     -8.88,
+     -9.18
+    ],
+    "64": [
+     0.74,
+     0.37,
+     0.18,
+     0.36,
+     -0.16,
+     -0.61,
+     0.88,
+     -0.35,
+     -1.97,
+     -1.66,
+     -2.23,
+     -3.48,
+     -5.34,
+     -5.94,
+     -6.24,
+     -7.32,
+     -7.54,
+     -8.0,
+     -8.05,
+     -8.43,
+     -8.53,
+     -8.72
+    ],
+    "96": [
+     0.02,
+     0.42,
+     0.33,
+     0.42,
+     0.4,
+     0.47,
+     0.24,
+     0.05,
+     -0.22,
+     -0.09,
+     -0.88,
+     -1.36,
+     -1.91,
+     -1.92,
+     -3.51,
+     -4.06,
+     -5.48,
+     -5.96,
+     -6.5,
+     -7.18,
+     -7.65,
+     -8.04
+    ]
+   },
+   "admitted": {
+    "0": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "32": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "64": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "96": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ]
+   },
+   "why_some_bands_are_not_read": "A band has to stand ten decibels over the same chain's silence in both windows before it is read, which is the rule this byte's own claim already uses, applied to the window rather than to the take. At the lowest settings the bottom of the band is under it, and a window at the floor returns the converter's own shape -- stably, which is what makes it dangerous.",
+   "largest_admitted_db": 9.18,
+   "at": {
+    "setting": 32,
+    "hz": 12500
+   },
+   "against_a_floor_of_db": 0.41
+  },
+  "and_where_it_hinges_moves_with_the_byte": {
+   "what": "Where each setting's build falls through half its own depth, read as a bracket between two bands rather than interpolated. It is not the filter's own corner -- the loop's gain pulls it down -- and what matters is that it moves at all.",
+   "at_each_setting": {
+    "0": {
+     "deepest_db": -8.89,
+     "crosses_between_hz": [
+      125,
+      160
+     ]
+    },
+    "32": {
+     "deepest_db": -9.18,
+     "crosses_between_hz": [
+      400,
+      500
+     ]
+    },
+    "64": {
+     "deepest_db": -8.72,
+     "crosses_between_hz": [
+      1250,
+      1600
+     ]
+    },
+    "96": {
+     "deepest_db": -8.04,
+     "crosses_between_hz": [
+      2500,
+      3150
+     ]
+    }
+   }
+  }
+ },
+ "read_on_two_more_types": {
+  "what": "The same address swept the same way on a second delay and inside a pair, compared band by band where each setting's own take stands clear of its own silence.",
+  "measured_in": "dB",
+  "the_modulated_delay": {
+   "type": "01 51",
+   "record": "data/units/roland-sc8850-01/efx-bands/01-51-0A-the-damping-range-on-a-delay-of-its-own.json",
+   "against_the_type_the_claim_was_closed_on": {
+    "per_setting": {
+     "0": {
+      "bands_both_takes_could_see": 110,
+      "median_db": 0.04,
+      "widest_db": 1.12
+     },
+     "8": {
+      "bands_both_takes_could_see": 111,
+      "median_db": 0.04,
+      "widest_db": 1.17
+     },
+     "16": {
+      "bands_both_takes_could_see": 112,
+      "median_db": 0.05,
+      "widest_db": 2.13
+     },
+     "24": {
+      "bands_both_takes_could_see": 112,
+      "median_db": 0.03,
+      "widest_db": 1.09
+     },
+     "32": {
+      "bands_both_takes_could_see": 112,
+      "median_db": 0.05,
+      "widest_db": 0.68
+     },
+     "48": {
+      "bands_both_takes_could_see": 113,
+      "median_db": 0.05,
+      "widest_db": 1.04
+     },
+     "64": {
+      "bands_both_takes_could_see": 113,
+      "median_db": 0.06,
+      "widest_db": 1.38
+     },
+     "80": {
+      "bands_both_takes_could_see": 113,
+      "median_db": 0.05,
+      "widest_db": 1.46
+     },
+     "96": {
+      "bands_both_takes_could_see": 113,
+      "median_db": 0.04,
+      "widest_db": 0.99
+     },
+     "112": {
+      "bands_both_takes_could_see": 113,
+      "median_db": 0.04,
+      "widest_db": 2.21
+     }
+    },
+    "median_of_the_medians_db": 0.045
+   },
+   "what_it_means": "A held-out type. The claim was closed before this record existed and predicts every figure in it; the profiles agree at the level the runs repeat to. Nothing in the model moved, so this is not a round -- it is where the claim has been checked."
+  },
+  "the_delay_inside_a_pair": {
+   "type": "11 00",
+   "record": "data/units/roland-sc8850-01/efx-bands/11-00-0A-the-damping-range-on-a-delay-inside-a-pair.json",
+   "against_the_type_the_claim_was_closed_on": {
+    "per_setting": {
+     "0": {
+      "bands_both_takes_could_see": 74,
+      "median_db": 10.125,
+      "widest_db": 22.81
+     },
+     "8": {
+      "bands_both_takes_could_see": 78,
+      "median_db": 10.55,
+      "widest_db": 21.91
+     },
+     "16": {
+      "bands_both_takes_could_see": 80,
+      "median_db": 10.48,
+      "widest_db": 20.05
+     },
+     "24": {
+      "bands_both_takes_could_see": 81,
+      "median_db": 10.37,
+      "widest_db": 18.3
+     },
+     "32": {
+      "bands_both_takes_could_see": 83,
+      "median_db": 10.65,
+      "widest_db": 17.06
+     },
+     "48": {
+      "bands_both_takes_could_see": 86,
+      "median_db": 9.955,
+      "widest_db": 14.12
+     },
+     "64": {
+      "bands_both_takes_could_see": 88,
+      "median_db": 8.375,
+      "widest_db": 10.3
+     },
+     "80": {
+      "bands_both_takes_could_see": 88,
+      "median_db": 6.27,
+      "widest_db": 7.26
+     },
+     "96": {
+      "bands_both_takes_could_see": 89,
+      "median_db": 3.93,
+      "widest_db": 5.45
+     },
+     "112": {
+      "bands_both_takes_could_see": 91,
+      "median_db": 2.34,
+      "widest_db": 3.61
+     }
+    },
+    "median_of_the_medians_db": 10.04
+   },
+   "how_the_shape_differs": {
+    "measured_in": "dB",
+    "how_much_further_it_falls_over_the_top_two_octaves": {
+     "01 50 at the byte's bottom": 10.15,
+     "01 51 at the byte's bottom": 10.07,
+     "11 00 at the byte's bottom": -0.08
+    },
+    "where_it_settles_above_two_kilohertz": {
+     "01 50": {
+      "0": -24.65,
+      "32": -16.63,
+      "64": -9.2,
+      "96": -3.51
+     },
+     "11 00": {
+      "0": -24.38,
+      "32": -16.76,
+      "64": -9.83,
+      "96": -4.48
+     }
+    },
+    "why_that_is_the_reading_and_not_the_depth": "The claim names the pole off where a profile levels off, so a shallower level-off would only be a different coefficient. This is not that: the pair's profile has stopped falling where both delays' are still falling, and at the byte's centre it is flat across the whole band set rather than any kind of skirt. A different coefficient does not make a filter flat."
+   },
+   "what_was_tried_and_refused": [
+    {
+     "reading": "The run is floor-limited, and the shallower profile is silence.",
+     "refused_by": "Restricting every comparison to the bands where each setting's own take stands twelve decibels clear of that run's own silence -- not merely where the reference does, which is the weaker test and the one a record makes by default. The disagreement barely moves: 10.04 dB over 74 bands at the byte's bottom."
+    },
+    {
+     "reading": "The two runs held the same byte values but those values mean different quantities on a pair, so the delay and the feedback were not matched.",
+     "refused_by": "The page. All three types print their delay time on conversion column four and their feedback over the hex range 0F to 71, so one byte is one quantity on all three. What differs in the printed ranges is the middle number, which is each type's own power-on default and not a scale."
+    }
+   ],
+   "what_would_answer_it": "The pair's delay block read with its chorus block removed by a route the chorus balance does not provide -- the part routed through a delay type carrying the same held block, against the pair, at one setting of the damping byte. If the two then agree, what this record holds is the pair's other block reaching the output; if they still differ, the pair's delay has a damping section of its own."
+  }
+ }
 }
