@@ -5,7 +5,7 @@
     "state": "standing",
     "made_at": "2026-09-14T18:27:58.739066+00:00",
     "made_by": "backup/write-time-candidates.py, backup/write-time-inference.py",
-    "rounds": 1,
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -22,7 +22,7 @@
       ]
     }
   },
-  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. The range the page prints picks which ladder. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ.",
+  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. Which ladder a slot is on is picked by the conversion column the effect list cites beside it, not by the range the page prints -- two slots print the same range and cite different columns, and they return ladders fifty milliseconds apart. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ.",
   "named": null,
   "why_not_named": "The ladder is the claim and it is written out. A name for it would be a name for a table somebody laid out by hand, and there is nothing to call it but the numbers.",
   "rests_on": {
@@ -817,6 +817,22 @@
           4.92,
           6.0
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-54-03-the-ladder-nobody-read.json",
+        "keys": [
+          "readings[value=0].ms",
+          "readings[value=60].ms",
+          "readings[value=80].ms",
+          "readings[value=120].ms"
+        ],
+        "values": [
+          198.4375,
+          496.1042,
+          563.5625,
+          960.4583
+        ],
+        "read_as": "The slot the two rules part on, at thirty-four settings. What it rests the selection rule on is which column it follows; what it opens is the ratio and the constant left over."
       }
     ],
     "document_rows": [
@@ -890,47 +906,11 @@
       }
     },
     {
-      "reading": "What picks the ladder is the conversion column the effect list cites beside the parameter, not the range the page prints. The two agree on every slot read so far because the ends separate four of the five columns, and the page prints one parameter where they do not.",
-      "candidate": "the-column-the-page-cites-picks-the-ladder",
-      "standing": true,
+      "reading": "The range the page prints picks which ladder, which is what this claim said before the one slot that could tell the two apart was read.",
+      "candidate": "the-printed-range-picks-the-ladder",
+      "standing": false,
       "equivalent_under_this_test": false,
-      "why_it_stands": "It is not beaten by anything read here. Every slot this claim rests on is a slot the two rules agree about, so the readings cannot tell them apart, and the one slot that would is on a type nothing has measured.",
-      "what_the_claim_still_holds": "Each of the five ladders, at every setting it was read at, and the cut to a whole step of a clock at 32000 Hz. Those are readings and this alternative is about which of them a slot nobody read uses.",
-      "separated_by": {
-        "observable": "The time the copy comes back at, at settings 80 to 115 of 40 03 03 on type 01 54.",
-        "predicts": {
-          "the-printed-range-picks-the-ladder": "the 2. Delay Time 1 ladder: 650.0 ms at setting 80",
-          "the-column-the-page-cites-picks-the-ladder": "the 3. Delay Time 2 ladder: 600.0 ms at setting 80"
-        },
-        "sensitivity_here": "The two ladders are 50.0 ms apart at every one of 36 settings. What that is measured against is not the clock but what this stage reports having resolved: two peaks are told apart at 0.0625 ms, and the one setting taken twice came back at the same time both times. Read off data/units/roland-sc8850-01/efx-time/01-52-03-every-step-of-a-three-tap-delay.json.",
-        "margin": 800.0,
-        "run": {
-          "stage": "efx-time",
-          "type": "01 54",
-          "slot": "40 03 03",
-          "settings": [
-            0,
-            64,
-            80,
-            96,
-            115
-          ],
-          "taken_twice": 80,
-          "held": {
-            "40 03 04": 0,
-            "40 03 05": 64,
-            "40 03 06": 127,
-            "40 03 07": 64,
-            "40 03 12": 64,
-            "40 03 13": 64,
-            "40 03 14": 64,
-            "40 03 16": 127
-          },
-          "minutes": 10,
-          "why_these_settings": "80, 96 and 115 are inside the window where the two ladders stand furthest apart, and it is the same distance at each, so any one of them answers and three of them say whether the answer is the same shape all along. 0 and 64 are the control: both ladders put the same time there, so a run that misses them is not reading this slot at all and its disagreement higher up would be about the run. One setting is taken twice, which is where the floor a difference has to clear comes from.",
-          "what_it_has_to_hold": "This type glides to a delay time rather than arriving at it, and the acceleration byte is what decides how long that takes. It is held at the bottom of its printed range and the take begins after arrival -- and how long arrival is, is measured at that value by taking one setting at two waits, not assumed from which end of the range the byte is at. A reading taken before arrival is a reading of the way there, and on an accelerating type one has already come back most of the way wrong."
-        }
-      }
+      "ruled_out_by": "data/units/roland-sc8850-01/efx-time/01-54-03-the-ladder-nobody-read.json at settings 68 to 127, where the reading follows the cited column and stands thirteen per cent off the one the printed range would pick -- and by the page itself, which prints one range against two slots and cites a different column against each."
     }
   ],
   "refuted_by": "A reading at any setting of any of these slots that is not its range's ladder entry for it, by more than that setting's own resolution. Or a slot on another type one of these ranges is printed against whose ladder has different steps, which would make the printed range the wrong thing to index by. Or the same sweep on a unit whose delay is not clocked at 32000 Hz coming back with the heights split the same way, which would mean the split is not the grid.",
@@ -1355,5 +1335,109 @@
         }
       }
     }
+  },
+  "the_slot_the_two_rules_part_on": {
+    "what_was_asked": "The one slot in the manual where the two rules part, at every fourth setting of its byte and at two more the stride misses.",
+    "the_page_alone_settles_which_rule_is_possible": {
+      "the_two_slots": {
+        "01 52": {
+          "printed_range": "200ms–300ms–990ms/1sec",
+          "cited_column": "*2"
+        },
+        "01 54": {
+          "printed_range": "200ms–500ms–990ms/1sec",
+          "cited_column": "*3"
+        }
+      },
+      "read_as": "Both slots are `40 03 03`, both print `200ms - 990ms/1sec`, and the list cites a different conversion column against each. A rule that picks the ladder from the printed range has one answer for the pair; the two ladders are fifty milliseconds apart over a third of the byte. So the printed range cannot be what picks, whatever any slot returns."
+    },
+    "what_the_slot_returned": {
+      "settings_read": 34,
+      "nearest_column": 3,
+      "worst_against_the_cited_column_percent": 6.66,
+      "worst_against_the_other_percent": 13.3,
+      "read_as": "The cited column is the one this slot is on, and the other is out by thirteen per cent. What is left over is not noise and not a ladder: it has two regimes with the break at the setting the type powers up at."
+    },
+    "what_is_left_over": {
+      "up_to_the_power_on_setting": {
+        "settings": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60
+        ],
+        "of_every_printed_value": 0.9922,
+        "spread": 5e-05,
+        "read_as": "A constant ratio over sixteen settings spanning two hundred to five hundred milliseconds. To the precision this stage reports it is 127/128, and what puts it there is not read here."
+      },
+      "above_it": {
+        "settings": [
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96,
+          100,
+          104,
+          108,
+          112,
+          115,
+          116,
+          120,
+          124,
+          127
+        ],
+        "milliseconds_missing": 31.75,
+        "spread_ms": 0.02,
+        "read_as": "The same number missing at five hundred and forty milliseconds and at a thousand, on top of the ratio above. A constant, not a share."
+      },
+      "the_setting_just_above_it": {
+        "setting": 64,
+        "ms": 496.1042,
+        "the_power_on_setting_ms": 496.1042,
+        "read_as": "Sent twenty milliseconds up from what it was holding, the delay came back at exactly what it was holding. It did not move at all."
+      }
+    },
+    "the_control": {
+      "file": "data/units/roland-sc8850-01/efx-time/01-52-03-every-step-of-a-three-tap-delay.json",
+      "keys": [
+        "readings[value=0].ms",
+        "readings[value=60].ms",
+        "readings[value=127].ms"
+      ],
+      "values": [
+        200.0,
+        500.0,
+        1000.0208
+      ],
+      "read_as": "The slot on the other type that prints the same range and cites the other column, read at all hundred and twenty-eight settings, sits on its own cited column with a worst error of nought per cent. So neither the ratio nor the missing constant is this stage's."
+    },
+    "what_the_acceleration_byte_did": {
+      "at_setting_80": {
+        "at nought": 563.5625,
+        "10": 579.4375,
+        "15": 579.4375
+      },
+      "read_as": "The byte the page prints as an acceleration moves where the delay ends up, which a table cannot do. Off nought the missing constant halves, and one place of an arithmetic shift is exactly what halves it -- the idiom `0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short` reads off the rotary, on a second quantity."
+    },
+    "which_way_it_was_reached": {
+      "read_as": "Not yet. What would settle whether the missing constant is a lag is the same setting reached from above rather than from below: a shift that underflows climbing arrives when it descends, and a ladder does not care which way it was reached."
+    },
+    "the_alternative_that_became_the_claim": "the-column-the-page-cites-picks-the-ladder"
   }
 }
