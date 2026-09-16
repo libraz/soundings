@@ -33,20 +33,20 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-01-71-inmap/control-routing.json",
-      "--prepare",
-      "40 03 00=01 71",
-      "--prepare",
-      "40 42 22=01",
-      "--out",
-      "data/units/roland-sc8850-01/efx-params/01-71.json",
       "--states-from",
       "documents/roland-sc-8850-owners-manual-en/effect-list.json",
       "--first-parameter",
       "40 03 03",
       "--supersede",
-      "40 03 11=.cache/enum-states/01-71/40-03-11.json"
+      "40 03 11=.cache/enum-states/01-71/40-03-11.json",
+      "--prepare",
+      "40 03 00=01 71",
+      "--prepare",
+      "40 42 22=01",
+      "--out",
+      "data/units/roland-sc8850-01/efx-params/01-71.json"
     ],
-    "measured_at": "2026-09-16T08:00:36+00:00",
+    "measured_at": "2026-09-16T09:09:11+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -77,7 +77,8 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "not audible under the note asked": 19,
+    "asked twice at one setting of its parameter, so not asked": 1,
+    "not audible under the note asked": 18,
     "audible": 1,
     "asked": 20
   },
@@ -102,7 +103,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked twice at one setting of its parameter, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -116,7 +117,13 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*13",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": true,
+      "printed_settings": [
+        "R180(=L180)",
+        "L180(=R180)"
+      ],
+      "why": "Both settings name the same setting of the parameter. The page's value column refers this address to a column of the conversion grid, that column comes back to where it started, and the grid prints each of the two ends as equal to the other -- which is the page saying the byte's two ends are one place. So the two sets of takes are takes of one setting and they differ by what a setting differs from itself by, which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that it was asked twice in the same place. Asked again at the value the unit powers up holding against one end."
     },
     {
       "type": "01 71",
