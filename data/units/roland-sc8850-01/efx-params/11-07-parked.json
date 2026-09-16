@@ -33,10 +33,6 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-11-07-parked-inmap/control-routing.json",
-      "--states-from",
-      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-      "--first-parameter",
-      "40 03 03",
       "--prepare",
       "40 03 00=11 07",
       "--prepare",
@@ -46,9 +42,13 @@
       "--prepare",
       "40 03 15=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/11-07-parked.json"
+      "data/units/roland-sc8850-01/efx-params/11-07-parked.json",
+      "--states-from",
+      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-16T08:03:02+00:00",
+    "measured_at": "2026-09-16T18:29:22+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -88,7 +88,8 @@
   },
   "results": {
     "audible": 6,
-    "not audible under the note asked": 12,
+    "asked with its own stage's modulation at nothing, so not asked": 1,
+    "asked with its own stage out of the output, so not asked": 11,
     "asked": 18
   },
   "coverage": {
@@ -130,7 +131,20 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*12",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "100",
+        "8000"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 07",
@@ -142,7 +156,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage's modulation at nothing, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -156,7 +170,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "10.00"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "The stage was in the output and its modulation was at nothing: a byte the page prints as that stage's depth or sensitivity stood at nought while the pair was compared. What this parameter describes is how that modulation runs, and a modulation at no depth runs the same however it is described -- a rate scales nothing, a waveform shapes nothing. So the two sets of takes are two takes of one sound. Read as a null it would say the parameter does nothing; what it says is that there was nothing for it to do. The byte that decides how much of the stage reaches the output is not read this way, because a stage at no depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is audible."
     },
     {
       "type": "11 07",
@@ -182,7 +210,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 07",
@@ -220,7 +256,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -234,7 +270,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "10.00"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -246,7 +296,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -260,7 +310,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "10.00",
+        "0.05"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -272,7 +336,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -286,7 +350,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*14",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0",
+        "15"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -298,7 +376,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -312,7 +390,16 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -324,7 +411,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -338,7 +425,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "10.00"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -350,7 +451,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -364,7 +465,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "10.00",
+        "0.05"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -376,7 +491,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -390,7 +505,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*14",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "15",
+        "0"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -402,7 +531,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -416,7 +545,16 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -428,7 +566,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -442,7 +580,16 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -454,7 +601,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -468,7 +615,16 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "00/7F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",
@@ -494,7 +650,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 07",
@@ -533,7 +697,7 @@
         0
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage out of the output, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -547,7 +711,16 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 15",
+          "parameter": "RT Level",
+          "leaves": "its stage out of the output",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "Every address but the one being asked sat where this run left it, and for this parameter that was its own stage taken out of the output: a byte the page prints as that stage's level, mix or switch stood at nought while the pair was compared. A parameter behind it reaches the output at neither of its settings, so the two sets of takes are two takes of the same sound without that stage in it, and they differ by what a sound differs from itself by -- which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that the run could not have heard it either way. Which byte it was, and whether this run wrote it down or the unit powers up holding it there, is beside the verdict."
     },
     {
       "type": "11 07",

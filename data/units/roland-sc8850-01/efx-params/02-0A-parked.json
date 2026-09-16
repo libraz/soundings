@@ -33,10 +33,6 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-02-0A-parked-inmap/control-routing.json",
-      "--states-from",
-      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-      "--first-parameter",
-      "40 03 03",
       "--prepare",
       "40 03 00=02 0A",
       "--prepare",
@@ -44,9 +40,13 @@
       "--prepare",
       "40 03 05=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/02-0A-parked.json"
+      "data/units/roland-sc8850-01/efx-params/02-0A-parked.json",
+      "--states-from",
+      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-16T10:45:09+00:00",
+    "measured_at": "2026-09-16T18:29:18+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -82,7 +82,8 @@
   },
   "results": {
     "audible": 9,
-    "not audible under the note asked": 9,
+    "asked with its own stage's modulation at nothing, so not asked": 1,
+    "not audible under the note asked": 8,
     "asked": 18
   },
   "coverage": {
@@ -145,6 +146,14 @@
       "printed_settings": [
         "0.0",
         "100"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "FL Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
       ]
     },
     {
@@ -157,7 +166,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage's modulation at nothing, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -176,7 +185,16 @@
       "printed_settings": [
         "0.05",
         "10.00"
-      ]
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "FL Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "The stage was in the output and its modulation was at nothing: a byte the page prints as that stage's depth or sensitivity stood at nought while the pair was compared. What this parameter describes is how that modulation runs, and a modulation at no depth runs the same however it is described -- a rate scales nothing, a waveform shapes nothing. So the two sets of takes are two takes of one sound. Read as a null it would say the parameter does nothing; what it says is that there was nothing for it to do. The byte that decides how much of the stage reaches the output is not read this way, because a stage at no depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is audible."
     },
     {
       "type": "02 0A",
@@ -202,7 +220,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "0F\u201371",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "FL Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "02 0A",
@@ -228,7 +254,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "FL Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "02 0A",

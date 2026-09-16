@@ -33,10 +33,6 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-11-08-parked-inmap/control-routing.json",
-      "--states-from",
-      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-      "--first-parameter",
-      "40 03 03",
       "--supersede",
       "40 03 08=.cache/enum-states/11-08-parked/40-03-08.json",
       "--supersede",
@@ -50,9 +46,13 @@
       "--prepare",
       "40 03 0D=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/11-08-parked.json"
+      "data/units/roland-sc8850-01/efx-params/11-08-parked.json",
+      "--states-from",
+      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-16T08:03:00+00:00",
+    "measured_at": "2026-09-16T18:29:22+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -92,7 +92,8 @@
   },
   "results": {
     "audible": 13,
-    "not audible under the note asked": 5,
+    "asked with its own stage's modulation at nothing, so not asked": 2,
+    "not audible under the note asked": 3,
     "asked": 18
   },
   "coverage": {
@@ -134,7 +135,20 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*12",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "100",
+        "8000"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -146,7 +160,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage's modulation at nothing, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -160,7 +174,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "10.00"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "The stage was in the output and its modulation was at nothing: a byte the page prints as that stage's depth or sensitivity stood at nought while the pair was compared. What this parameter describes is how that modulation runs, and a modulation at no depth runs the same however it is described -- a rate scales nothing, a waveform shapes nothing. So the two sets of takes are two takes of one sound. Read as a null it would say the parameter does nothing; what it says is that there was nothing for it to do. The byte that decides how much of the stage reaches the output is not read this way, because a stage at no depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is audible."
     },
     {
       "type": "11 08",
@@ -186,7 +214,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -239,6 +275,20 @@
       "changed_the_level": false,
       "printed_values": "00/01",
       "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
       "withdrawn_pair": {
         "values": [
           0,
@@ -272,7 +322,15 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -298,7 +356,21 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -324,7 +396,21 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -336,7 +422,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage's modulation at nothing, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -350,7 +436,27 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*6",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "10.00"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "The stage was in the output and its modulation was at nothing: a byte the page prints as that stage's depth or sensitivity stood at nought while the pair was compared. What this parameter describes is how that modulation runs, and a modulation at no depth runs the same however it is described -- a rate scales nothing, a waveform shapes nothing. So the two sets of takes are two takes of one sound. Read as a null it would say the parameter does nothing; what it says is that there was nothing for it to do. The byte that decides how much of the stage reaches the output is not read this way, because a stage at no depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is audible."
     },
     {
       "type": "11 08",
@@ -377,6 +483,20 @@
       "changed_the_level": true,
       "printed_values": "00/01",
       "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
       "withdrawn_pair": {
         "values": [
           0,
@@ -482,7 +602,15 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",
@@ -534,7 +662,21 @@
       "changed_the_shape": true,
       "changed_the_level": true,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 09",
+          "parameter": "AW Sens",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "the value the unit powers up holding"
+        },
+        {
+          "address": "40 03 0D",
+          "parameter": "AW Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "11 08",

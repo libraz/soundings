@@ -33,10 +33,6 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-05-00-parked-inmap/control-routing.json",
-      "--states-from",
-      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-      "--first-parameter",
-      "40 03 03",
       "--supersede",
       "40 03 07=.cache/enum-states/05-00-parked/40-03-07.json",
       "--supersede",
@@ -56,9 +52,13 @@
       "--prepare",
       "40 03 10=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/05-00-parked.json"
+      "data/units/roland-sc8850-01/efx-params/05-00-parked.json",
+      "--states-from",
+      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-16T08:03:01+00:00",
+    "measured_at": "2026-09-16T18:29:20+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -101,8 +101,9 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "not audible under the note asked": 5,
+    "not audible under the note asked": 4,
     "audible": 12,
+    "asked with its own stage's modulation at nothing, so not asked": 1,
     "asked": 17
   },
   "coverage": {
@@ -197,7 +198,12 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*10",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "200",
+        "6300"
+      ]
     },
     {
       "type": "05 00",
@@ -411,7 +417,20 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*12",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "100",
+        "8000"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 10",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "05 00",
@@ -423,7 +442,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked with its own stage's modulation at nothing, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -437,7 +456,21 @@
       "changed_the_shape": false,
       "changed_the_level": false,
       "printed_values": "*7",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0.05",
+        "6.40"
+      ],
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 10",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
+      "why": "The stage was in the output and its modulation was at nothing: a byte the page prints as that stage's depth or sensitivity stood at nought while the pair was compared. What this parameter describes is how that modulation runs, and a modulation at no depth runs the same however it is described -- a rate scales nothing, a waveform shapes nothing. So the two sets of takes are two takes of one sound. Read as a null it would say the parameter does nothing; what it says is that there was nothing for it to do. The byte that decides how much of the stage reaches the output is not read this way, because a stage at no depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is audible."
     },
     {
       "type": "05 00",
@@ -463,7 +496,15 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "00\u20137F",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 10",
+          "parameter": "PH Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ]
     },
     {
       "type": "05 00",
@@ -515,7 +556,12 @@
       "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*5",
-      "asked_inside_its_printed_values": true
+      "asked_inside_its_printed_values": true,
+      "the_pair_names_one_setting": false,
+      "printed_settings": [
+        "0",
+        "635"
+      ]
     },
     {
       "type": "05 00",

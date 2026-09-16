@@ -33,10 +33,6 @@
       "data/units/roland-sc8850-01/efx-map/types.json",
       "--control",
       ".cache/efx-params-01-40-parked-inmap/control-routing.json",
-      "--states-from",
-      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-      "--first-parameter",
-      "40 03 03",
       "--prepare",
       "40 03 00=01 40",
       "--prepare",
@@ -44,9 +40,13 @@
       "--prepare",
       "40 03 05=00",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/01-40-parked.json"
+      "data/units/roland-sc8850-01/efx-params/01-40-parked.json",
+      "--states-from",
+      "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-16T09:13:26+00:00",
+    "measured_at": "2026-09-16T18:29:12+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -216,6 +216,14 @@
       "changed_the_level": false,
       "printed_values": "2C\u201354",
       "asked_inside_its_printed_values": true,
+      "at_nought_while_this_was_asked": [
+        {
+          "address": "40 03 05",
+          "parameter": "Depth",
+          "leaves": "its stage in the output and its modulation at nothing",
+          "at_nought_by": "this run's prepare block"
+        }
+      ],
       "why": "The change does not clear this address's own repeatability, so nothing here is a difference between the settings. What separates them is that one setting repeats and the other does not. A free-running modulator makes the difference method blind, and the asymmetry is what is left to read."
     },
     {
