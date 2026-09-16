@@ -39,7 +39,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import partials, takes
+from . import partials, rates, takes
 
 METHOD = (
     "One take per type of a held tone, with the type written and nothing else, so every "
@@ -257,6 +257,7 @@ def limits(floor: Floor, found: list[dict]) -> dict:
     return {
         "why_the_orders_come_from_the_bypassed_take": WHY_THE_ORDERS_COME_FROM_THE_BYPASSED_TAKE,
         "why_a_grid_and_not_a_line": WHY_A_GRID_AND_NOT_A_LINE,
+        "why_a_rate_at_the_edge_of_the_search_is_the_search": WHY_THE_EDGE_IS_NOT_A_RATE,
         "why_the_phase_and_the_level_are_read_apart": WHY_TWO_QUANTITIES,
         "why_the_excursion_off_the_phase_is_a_floor": WHY_THE_PHASE_EXCURSION_IS_A_FLOOR,
         "why_the_comb_needs_the_partials_to_disagree": WHY_THE_PARTIALS_MUST_DISAGREE,
@@ -388,6 +389,36 @@ def seeds_from(*peaks: dict) -> tuple[float, ...]:
     return tuple(sorted(found, reverse=True))
 
 
+WHY_THE_EDGE_IS_NOT_A_RATE = (
+    "Two ways a rate here can be the reading's own limit rather than the unit's, and both are "
+    "stated per reading rather than left for a reader to work out. A projection walked across a "
+    "grid reports where it was largest, and largest *at an end of the grid* means the largest "
+    "thing seen was at the boundary -- the maximum may be outside it, and a held tone drifting "
+    "slowly over the take puts its energy exactly there. `rates_are_separated_by` bounds how "
+    "close two rates can be and says nothing about this. Separately, a take holds only so many "
+    "cycles of a slow rate: `slowest_measurable_hz` is the rate two cycles of which fill the "
+    "part of the take that sounded, and the same figure computed the same way elsewhere in this "
+    "harness was measured to matter -- an injected sweep at 0.15 Hz, one cycle of which does not "
+    "fit in seven seconds, came back as 0.28. A reading on either count is reported with the "
+    "figure that bounds it and is not withheld, because which of them disqualifies a reading is "
+    "a judgement and this record does not make judgements."
+)
+
+
+def _on_the_edge(at_hz: float | None, grid: np.ndarray, slowest: float) -> list[str] | None:
+    """Whether this rate is the search's own limit, and by which of the two counts."""
+    if at_hz is None:
+        return None
+    against = []
+    if abs(at_hz - float(grid[0])) <= 1e-9:
+        against.append("the lowest rate searched")
+    if abs(at_hz - float(grid[-1])) <= 1e-9:
+        against.append("the highest rate searched")
+    if at_hz <= slowest:
+        against.append("at or under the slowest rate this take could carry two cycles of")
+    return against or None
+
+
 def measure_one(
     body: np.ndarray,
     rate: int,
@@ -412,11 +443,14 @@ def measure_one(
     # can separate, that is a finding and it is reported rather than averaged away.
     at_hz = phase_peak["hz"] if phase_moves else level_peak["hz"]
     apart = abs(phase_peak["hz"] - level_peak["hz"])
+    slowest = round(rates.CYCLES_WANTED / held.sounded_s, 4)
     out = {
         "orders": held.orders,
         "sounded_s": round(held.sounded_s, 4),
         "rates_are_separated_by": round(held.rates_are_separated_by, 4),
+        "slowest_measurable_hz": slowest,
         "read_at_hz": at_hz,
+        "stands_on_the_edge_of_the_search": _on_the_edge(at_hz, grid, slowest),
         "the_two_peaks_are_separated": bool(
             phase_moves and level_moves and apart > held.rates_are_separated_by
         ),

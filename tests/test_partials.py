@@ -110,6 +110,62 @@ def test_a_rate_is_placed_against_the_take_with_nothing_in_the_path() -> None:
     assert found["stands_over_bypassed"] > efxpartials.STANDS_OVER_BYPASSED
 
 
+def test_a_rate_at_the_bottom_of_the_grid_is_reported_as_the_bottom_of_the_grid() -> None:
+    """A slow drift with no modulator in it, read on a grid that starts too low.
+
+    This is the reading that got published: a projection walked from 0.2 Hz over a
+    take six and three quarter seconds long reported 0.2 Hz on thirteen types, and
+    nothing beside the figure said that 0.2 was the lowest rate looked at or that
+    two cycles of it do not fit in the take. A drifting tone puts its energy at the
+    bottom of any grid, so the peak lands on the boundary and stands enormously
+    over the bypassed take while naming no modulator at all.
+    """
+    seconds = 3.0
+    t = np.arange(int(seconds * SR)) / SR
+    # A monotonic drift and nothing periodic: the phase walks once across the take.
+    drifting = sum(
+        np.sin(2 * np.pi * F0 * k * t + k + k * 0.6 * t / seconds) / k for k in range(1, 9)
+    )
+    grid = grid_of(lo=0.2)
+    floor = efxpartials.Floor(tone(seconds), SR, carrier_hz=F0, grid=grid)
+    found = efxpartials.measure_one(drifting, SR, carrier_hz=F0, floor=floor, fit_comb=False)
+    assert found is not None
+    assert found["slowest_measurable_hz"] == pytest.approx(2.0 / found["sounded_s"], rel=1e-3)
+    # The drift reports a rate, it stands over the bypassed take, and there is no
+    # modulator in the signal at all. What marks it is the figure beside it.
+    assert found["phase"]["peak"]["hz"] < found["slowest_measurable_hz"]
+    against = found["stands_on_the_edge_of_the_search"]
+    assert against is not None
+    assert any("two cycles" in line for line in against)
+
+
+def test_the_lowest_rate_searched_is_named_as_the_lowest_rate_searched() -> None:
+    """Largest at the boundary means the largest seen, not the largest there is.
+
+    Eight of the thirteen readings arrived this way: exactly on the grid's first
+    point, which is where a maximum outside the search lands.
+    """
+    grid = grid_of(lo=0.2, hi=8.0)
+    assert efxpartials._on_the_edge(0.2, grid, slowest=0.1) == ["the lowest rate searched"]
+    assert efxpartials._on_the_edge(8.0, grid, slowest=0.1) == ["the highest rate searched"]
+    assert efxpartials._on_the_edge(1.3, grid, slowest=0.1) is None
+    assert efxpartials._on_the_edge(None, grid, slowest=0.1) is None
+
+
+def test_a_rate_the_take_can_carry_is_not_called_an_edge() -> None:
+    """The guard above must not put a caveat on the readings that are fine."""
+    dry = tone()
+    keep = read(dry).kept
+    grid = grid_of()
+    floor = efxpartials.Floor(dry, SR, carrier_hz=F0, grid=grid)
+    floor.keep = keep
+    wet = partials.swept(dry, SR, 3.0, 1.0, 1.3, 1.0)
+    found = efxpartials.measure_one(wet, SR, carrier_hz=F0, floor=floor, fit_comb=False)
+    assert found is not None
+    assert found["phase"]["peak"]["hz"] == pytest.approx(1.3, abs=0.05)
+    assert found["stands_on_the_edge_of_the_search"] is None
+
+
 def test_a_take_with_nothing_in_it_does_not_stand_over_itself() -> None:
     """The floor is what a peak has to beat, and against itself it is one."""
     dry = tone()
