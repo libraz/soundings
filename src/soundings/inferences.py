@@ -303,7 +303,10 @@ def closed(root: str | Path) -> list[dict]:
         out.append(
             {
                 "inference": str(path.relative_to(root)),
-                "types": claim["inference"]["about"]["types"],
+                # A claim whose `about` is short of a key is a defect the layout test
+            # names; a query over every claim is not the place to raise it, because
+            # then one malformed file hides the other forty.
+            "types": claim["inference"]["about"].get("types", []),
                 "claim": claim["claim"],
                 "equivalent_readings": [
                     a["reading"] for a in claim["alternatives"]

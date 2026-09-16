@@ -52,6 +52,18 @@ def test_a_claim_carries_its_envelope(path: Path):
         assert key in head, f"{path.name} envelope has no {key}"
     assert head["schema_version"] == inferences.SCHEMA_VERSION
     assert head["state"] in set(SCHEMA["properties"]["inference"]["properties"]["state"]["enum"])
+    # One level further in than this used to reach. `about` is how a reader or a
+    # query asks whether a claim covers the type in front of them, and a claim short
+    # of one of its keys answers that question with nothing -- which is not what the
+    # claim says, and which took `soundings inferences closed` down over every other
+    # claim rather than being caught here, where a defect in a claim belongs.
+    about = head["about"]
+    for key in SCHEMA["properties"]["inference"]["properties"]["about"]["required"]:
+        assert key in about, (
+            f"{path.name} has an `about` block with no {key!r}. A claim that cannot say "
+            "which types and which addresses it is about cannot be checked against a "
+            "unit by anything except a reader."
+        )
 
 
 @pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
