@@ -139,6 +139,22 @@ def test_a_rate_at_the_bottom_of_the_grid_is_reported_as_the_bottom_of_the_grid(
     assert any("two cycles" in line for line in against)
 
 
+def test_an_idle_input_is_not_the_unit_s_other_output() -> None:
+    """The rule this replaces would have read a rate out of a lead nobody plugged in.
+
+    On the rig this was measured on, the interface's unused inputs sit around
+    thirty decibels under the unit's own pair and are not silent, so "the loudest
+    channel that is not the one read" names one of them. The unit's two outputs
+    reached within 1.4 dB of each other.
+    """
+    reached = [-69.9, -75.1, -37.6, -39.0, -240.0, -240.0]
+    assert efxpartials._the_other_output(2, reached) == 3
+    assert efxpartials._the_other_output(3, reached) == 2
+    # The same rig with one lead out: the question is not answered off an idle input.
+    assert efxpartials._the_other_output(2, [-69.9, -75.1, -37.6, -240.0]) is None
+    assert efxpartials._the_other_output(0, [-37.6, -39.0]) == 1
+
+
 def test_the_lowest_rate_searched_is_named_as_the_lowest_rate_searched() -> None:
     """Largest at the boundary means the largest seen, not the largest there is.
 

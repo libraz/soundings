@@ -533,6 +533,71 @@ comb fit does there is what this route says when the other one is the one that
 applies, and it has to be a refusal."""
 
 
+WHY_THE_RATE_IS_READ_ON_BOTH_OUTPUTS = (
+    "One channel decides a level series and it does not decide a rate, so the rate is read on "
+    "both of the unit's outputs and both are reported. A stereo modulator runs the two outputs "
+    "against each other, which makes a level read on one of them incomparable with a level read "
+    "on the other -- that is why everything else here is read on the single channel named above. "
+    "A rate is a different quantity and the two outputs were measured to disagree about it: over "
+    "one survey of sixty-five types, five returned the lowest rate anybody searched on the "
+    "channel the run reads and a rate on the other, and four returned one output at twice the "
+    "other, which is the projection's own largest landing on a different multiple of the same "
+    "modulator rather than two modulators. Reported side by side rather than resolved here, "
+    "because choosing between them is a reading and this record does not make readings. The "
+    "second output is measured for its rates alone: no comb is fitted to it and no level series "
+    "is taken from it, both of which belong to the one channel."
+)
+
+
+PAIRED_WITHIN_DB = 30.0
+"""How far below the channel that was read the unit's other output may reach.
+
+Not "the loudest channel that is not the one read": on this rig the interface's
+unused inputs sit around thirty decibels under the unit's own pair and are not
+silent, so that rule names an input nothing is plugged into as the second output
+and reads a rate out of its noise. The unit's two outputs reached within 1.4 dB
+of each other across the survey, so any bar between those two figures separates
+them; thirty is set where it is because it is the gap that was measured and not
+the margin that was wanted.
+"""
+
+
+def _the_other_output(on: int, reached: list[float]) -> int | None:
+    """The unit's second output, named by which channel of the interface it reached on.
+
+    Returned as None where no other channel is close enough to be one, so a mono
+    rig -- or a stereo one with a lead out -- produces a record that says the
+    question was not asked rather than one that answers it off an idle input.
+    """
+    order = sorted(range(len(reached)), key=lambda i: -reached[i])
+    for index in order:
+        if index != on and reached[index] >= reached[on] - PAIRED_WITHIN_DB:
+            return index
+    return None
+
+
+def _rate_on(take, *, carrier_hz: float, floor: Floor, channel: int) -> dict:
+    """What the other output says about the rate, and nothing else.
+
+    The comb is not fitted here and the level series is not published from here.
+    What this answers is whether the channel the run reads could carry the rate at
+    all, which is a question the one channel cannot be asked about itself.
+    """
+    body, at = take
+    reading = measure_one(body, at, carrier_hz=carrier_hz, floor=floor, fit_comb=False)
+    if reading is None:
+        return {"channel": channel, "why": "nothing to read on this output"}
+    return {
+        "channel": channel,
+        "read_at_hz": reading["read_at_hz"],
+        "moves": reading["moves"],
+        "slowest_measurable_hz": reading["slowest_measurable_hz"],
+        "stands_on_the_edge_of_the_search": reading["stands_on_the_edge_of_the_search"],
+        "phase": {"peak": reading["phase"]["peak"]},
+        "level": {"peak": reading["level"]["peak"]},
+    }
+
+
 def survey(
     root: str | Path,
     *,
@@ -555,11 +620,13 @@ def survey(
 
     every = sorted({*where["controls"], *where["types"].values()})
     on, reached = takes.channel_reaching(root, every)
+    beside = _the_other_output(on, reached)
     elsewhere: list[str] = []
 
-    def read(name: str):
-        body, rate, own = body_of(root / name, lead_s, hold_s, on=on)
-        if own != on:
+    def read(name: str, channel: int | None = None):
+        here = on if channel is None else channel
+        body, rate, own = body_of(root / name, lead_s, hold_s, on=here)
+        if channel is None and own != on:
             elsewhere.append(name)
         return body, rate
 
@@ -567,11 +634,22 @@ def survey(
     floor = Floor(body, rate, carrier_hz=carrier_hz, grid=grid)
     others = [(name, read(name)[0]) for name in where["controls"][1:]]
 
+    # The unit's other output gets its own floor, because a floor built on one
+    # channel of the bypassed take does not bound a reading made on the other.
+    aside = None
+    if beside is not None:
+        alongside, at = read(where["controls"][0], beside)
+        aside = Floor(alongside, at, carrier_hz=carrier_hz, grid=grid)
+
     found = []
     for type_id, name in sorted(where["types"].items()):
         take, _ = read(name)
         reading = measure_one(take, rate, carrier_hz=carrier_hz, floor=floor)
         row = {"type": type_id, "take": name, **(reading or {"why": "nothing to read"})}
+        if aside is not None:
+            row["also_on_the_other_output"] = _rate_on(
+                read(name, beside), carrier_hz=carrier_hz, floor=aside, channel=beside
+            )
         found.append(row)
         if progress:
             progress(row)
@@ -583,6 +661,9 @@ def survey(
             "reached_db": [round(value, 1) for value in reached],
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_ONE_CHANNEL,
+            "the_other_output": beside,
+            "why_the_rate_is_read_on_both": WHY_THE_RATE_IS_READ_ON_BOTH_OUTPUTS,
+            "paired_within_db": PAIRED_WITHIN_DB,
         },
         "grid_hz": list(grid_hz),
         "grid_step_hz": step_hz,
