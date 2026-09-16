@@ -450,6 +450,16 @@ def register(sub) -> None:
         "one parameter fewer than it has. Given rather than derived because which address is "
         "which slot is a fact about the unit",
     )
+    p.add_argument(
+        "--states-from",
+        help="an effect-list document, so a null taken at a value the parameter has no state "
+        "for is reported as a slot nobody asked rather than as one that answered nothing. It "
+        "decides nothing about what was heard",
+    )
+    p.add_argument(
+        "--first-parameter",
+        help="the address this type's first printed parameter sits at, for --states-from",
+    )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_params)
 
@@ -891,6 +901,13 @@ def cmd_efx_params(args) -> int:
     if not loads:
         print(f"{args.types_from} has no type {args.type}")
         return 1
+    states = None
+    if args.states_from:
+        if not args.first_parameter:
+            print("--states-from needs --first-parameter to know which address is which row")
+            return 1
+        states = _printed_states(args.states_from, args.type, args.first_parameter)
+
     found = efxparams.read_directory(
         args.records,
         args.type,
@@ -899,6 +916,7 @@ def cmd_efx_params(args) -> int:
         [{"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare],
         supersede=dict(s.split("=", 1) for s in args.supersede),
         slots=args.slots or None,
+        states=states,
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")
