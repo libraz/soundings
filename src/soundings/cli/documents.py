@@ -36,11 +36,17 @@ TABLES = {
     "effect-list": {
         "read": documents.read_effect_list,
         "carry": documents.type_above,
+        # A type's parameters sort by whatever its printing gives them: a number
+        # where the list is set as a description, and an address where it is set as
+        # a table. The two are not converted into each other, here or anywhere --
+        # one page states which parameter of a type this is and the other states
+        # which byte it is written to, and neither says the other.
         "order": lambda row: (
             row["page"],
             row["msb"],
             row["lsb"],
             int(row.get("parameter_number", -1)),
+            int(row.get("address_lsb", "-1"), 16) if "address_lsb" in row else -1,
         ),
         "line": lambda row: (
             f"{row['type']:>3}: {row['effect']:<24} "
@@ -48,6 +54,9 @@ TABLES = {
             + (
                 f"[{row['parameter_number']:>2}] {row['parameter']:<34} {row['data']}"
                 if "parameter_number" in row
+                else f"[{row['address_lsb']}] {row['parameter']:<16} "
+                f"{row['data']:<26} {row['values_hex']}"
+                if "address_lsb" in row
                 else ""
             )
         ),

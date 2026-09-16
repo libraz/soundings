@@ -28,14 +28,25 @@ def load(document_id: str, name: str):
     return json.loads(path.read_text()) if path.is_file() else None
 
 
+def by_hand(document_id: str, table: str) -> list[dict]:
+    """The rows a person read off the pages the parser refused, for one table.
+
+    Per table, as the parsed files are and as the ledger is. A residue read for one
+    table says nothing about another, and one list of rows covering both would have
+    the table somebody finished stand in for the table nobody has started.
+    """
+    held = load(document_id, "by-hand.json") or {"tables": {}}
+    return held["tables"].get(table, [])
+
+
 def rows_of(document_id: str) -> list[dict]:
     parsed = load(document_id, "address-map.json") or {"rows": []}
-    hand = load(document_id, "by-hand.json") or {"rows": []}
-    return [*parsed["rows"], *hand["rows"]]
+    return [*parsed["rows"], *by_hand(document_id, "address-map")]
 
 
 def effects_of(document_id: str) -> list[dict]:
-    return (load(document_id, "effect-list.json") or {"rows": []})["rows"]
+    parsed = load(document_id, "effect-list.json") or {"rows": []}
+    return [*parsed["rows"], *by_hand(document_id, "effect-list")]
 
 
 @pytest.mark.parametrize("document_id", IDS)
@@ -97,15 +108,18 @@ def test_no_row_is_both_parsed_and_hand_kept(document_id: str) -> None:
     to read belongs in one place, and whichever of the two is right, showing one
     and dropping the other would hide that they disagree.
     """
-    parsed = {
-        (row["page"], row["address"])
-        for row in (load(document_id, "address-map.json") or {"rows": []})["rows"]
-    }
-    hand = {
-        (row["page"], row["address"])
-        for row in (load(document_id, "by-hand.json") or {"rows": []})["rows"]
-    }
-    assert not parsed & hand, f"{document_id}: in both files: {sorted(parsed & hand)[:5]}"
+    for table, named in (
+        ("address-map", lambda row: row["address"]),
+        ("effect-list", lambda row: f"{row['msb']} {row['lsb']} {row.get('address_lsb', '')}"),
+    ):
+        parsed = {
+            (row["page"], named(row))
+            for row in (load(document_id, f"{table}.json") or {"rows": []})["rows"]
+        }
+        hand = {(row["page"], named(row)) for row in by_hand(document_id, table)}
+        assert not parsed & hand, (
+            f"{document_id}: in both files for {table}: {sorted(parsed & hand)[:5]}"
+        )
 
 
 @pytest.mark.parametrize("document_id", IDS)
@@ -230,16 +244,25 @@ def test_every_effect_type_is_held_down_to_the_parameter_its_list_ends_at(docume
     rows = effects_of(document_id)
     if not rows:
         pytest.skip(f"{document_id} has no effect list")
-    held: dict[tuple[str, str], set[int]] = {}
-    for row in rows:
-        if "parameter_number" in row:
-            held.setdefault((row["msb"], row["lsb"]), set()).add(int(row["parameter_number"]))
-    last = max(number for numbers in held.values() for number in numbers)
-    cut = sorted(key for key, numbers in held.items() if last not in numbers)
-    assert not cut, (
-        f"{document_id}: these types stop before parameter {last}, which every other type "
-        f"reaches, so their lists were cut off: {cut}"
-    )
+    # Asked of whichever the printing gives a parameter -- its number under the type,
+    # or the byte of its own address. Both end at the output level and neither is
+    # converted into the other, here or in the record.
+    for key, of in (
+        ("parameter_number", int),
+        ("address_lsb", lambda printed: int(printed, 16)),
+    ):
+        held: dict[tuple[str, str], set[int]] = {}
+        for row in rows:
+            if key in row:
+                held.setdefault((row["msb"], row["lsb"]), set()).add(of(row[key]))
+        if not held:
+            continue
+        last = max(number for numbers in held.values() for number in numbers)
+        cut = sorted(name for name, numbers in held.items() if last not in numbers)
+        assert not cut, (
+            f"{document_id}: these types stop before {key} {last}, which every other type "
+            f"reaches, so their lists were cut off: {cut}"
+        )
 
 
 @pytest.mark.parametrize("document_id", IDS)
@@ -252,9 +275,10 @@ def test_an_effect_parameter_stated_twice_is_stated_the_same_way(document_id: st
     """
     ranges: dict[tuple[str, str, str], set[str]] = {}
     for row in effects_of(document_id):
-        if "parameter_number" in row:
-            key = (row["msb"], row["lsb"], row["parameter_number"])
-            ranges.setdefault(key, set()).add(row["data"])
+        for named in ("parameter_number", "address_lsb"):
+            if named in row:
+                key = (row["msb"], row["lsb"], f"{named} {row[named]}")
+                ranges.setdefault(key, set()).add(row["data"])
     disagree = {key: sorted(seen) for key, seen in ranges.items() if len(seen) > 1}
     assert not disagree, f"{document_id}: one parameter, two ranges: {disagree}"
 

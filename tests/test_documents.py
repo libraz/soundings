@@ -564,3 +564,104 @@ def test_an_index_whose_headings_do_not_come_out_in_order_is_left_unread() -> No
     out = documents.read_value_conversion("\n".join([*scrambled, *GRID]), 224)
     assert not [row for row in out.rows if "type" in row]
     assert [missed["why"] for missed in out.not_extracted] == [documents.INDEX_OUT_OF_ORDER]
+
+
+#: The appendix's printing of the same list: a table with its columns named over
+#: them, a type opening a block with the two bytes that select it, and each
+#: parameter under it giving the values its range maps to and its own address.
+#: Set twice across, and the two halves hold unrelated types.
+APPENDIX = [
+    "Parameter      Setting Value       Value (Hex.)   MSB/LSB (H)   "
+    "Parameter        Setting Value           Value (Hex.)   MSB/LSB (H)",
+    "09 : Rotary                                       01   22       "
+    "15 : Limiter                                                01   31",
+    "  Low Slow      0.05–0.35–10.0      *6                   03      "
+    "  Threshold      0–85–127                00–7F                03",
+    "+ Speed         Slow/Fast           00/7F                13      "
+    "  Ratio          1/1.5,1/2,1/4,1/100     00/01/02/03          04",
+    "# Level         0–127               00–7F                16      "
+    "  Level          0–127                   00–7F                16",
+]
+
+
+def test_the_appendixs_printing_of_the_list_is_read_as_a_table() -> None:
+    out = documents.read_effect_list("\n".join(APPENDIX), 217)
+    rotary = [row for row in out.rows if row["lsb"] == "22"]
+    assert rotary[0] == {
+        "type": "9",
+        "effect": "Rotary",
+        "msb": "01",
+        "lsb": "22",
+        "page": 217,
+        "read_by": "parser",
+    }
+    assert [
+        (row["address_lsb"], row["parameter"], row["data"], row["values_hex"]) for row in rotary[1:]
+    ] == [
+        ("03", "Low Slow", "0.05–0.35–10.0", "*6"),
+        ("13", "+ Speed", "Slow/Fast", "00/7F"),
+        ("16", "# Level", "0–127", "00–7F"),
+    ]
+    assert not out.not_extracted
+
+
+def test_a_parameters_address_is_not_read_as_the_first_thing_in_the_column_beside_it() -> None:
+    """The gutter a page is split at by counting what crosses where lands left of
+    this list's last column, which puts every address in the wrong half."""
+    out = documents.read_effect_list("\n".join(APPENDIX), 217)
+    limiter = [row for row in out.rows if row["lsb"] == "31"]
+    assert limiter[0]["effect"] == "Limiter"
+    assert [(row["address_lsb"], row["parameter"], row["values_hex"]) for row in limiter[1:]] == [
+        ("03", "Threshold", "00–7F"),
+        ("04", "Ratio", "00/01/02/03"),
+        ("16", "Level", "00–7F"),
+    ]
+
+
+def test_a_type_whose_bytes_are_printed_below_its_name_is_still_a_type() -> None:
+    """A name on one line and its two bytes on another is a heading to anybody
+    looking at the page and nothing at all to a reader wanting both on one row --
+    and the parameters under it then go silently under the type before it."""
+    split = [
+        APPENDIX[0],
+        "09 : Rotary                                       01   22       03 : Enhancer",
+        "  Low Slow      0.05–0.35–10.0      *6                   03                    "
+        "                                       01   02",
+        "                                                                  "
+        "+ Sens           0–64–127                00–7F                03",
+    ]
+    out = documents.read_effect_list("\n".join(split), 216)
+    assert [
+        (row["type"], row["msb"], row["lsb"]) for row in out.rows if "address_lsb" not in row
+    ] == [
+        ("9", "01", "22"),
+        ("3", "01", "02"),
+    ]
+    sens = [row for row in out.rows if row.get("parameter") == "+ Sens"]
+    assert sens[0]["lsb"] == "02"
+
+
+def test_a_row_whose_printing_ran_two_cells_together_is_refused_under_its_type() -> None:
+    """Half a name read as a range is a range nobody would query, so the boundary
+    is put back by hand -- and the refusal carries the type so that the hand does
+    not have to work it out again off a page set in two columns."""
+    joined = [*APPENDIX[:3], "  OD Amp Sw Off/On                  00/01                06"]
+    out = documents.read_effect_list("\n".join(joined), 219)
+    assert len(out.not_extracted) == 1
+    missed = out.not_extracted[0]
+    assert missed["why"] == documents.PARAMETER_MISCOUNTS
+    assert missed["under"] == {"type": "9", "effect": "Rotary", "msb": "01", "lsb": "22"}
+    assert not [row for row in out.rows if row.get("address_lsb") == "06"]
+
+
+def test_the_two_printings_of_the_list_are_told_apart_by_the_page() -> None:
+    """One reader, and which printing a page is set in is read off the page.
+
+    The description gives a parameter its number under the type and the table
+    gives it the byte of its own address. Neither is derived from the other, so a
+    page read by the wrong one comes back with the wrong key on every row.
+    """
+    described = documents.read_effect_list("\n".join(WAH), 59)
+    assert all("parameter_number" in row for row in described.rows if "parameter" in row)
+    tabled = documents.read_effect_list("\n".join(APPENDIX), 217)
+    assert all("address_lsb" in row for row in tabled.rows if "parameter" in row)

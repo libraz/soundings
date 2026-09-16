@@ -868,8 +868,213 @@ def type_above(page_text_of: Callable[[int], str], page: int) -> dict | None:
     return None
 
 
+#: What an appendix prints over the four columns of an insertion effect list, in
+#: order. A line holding these and nothing else is that list's header, and one
+#: holding them twice is a page set with the list in two columns.
+EFFECT_COLUMNS = ("Parameter", "Setting Value", "Value (Hex.)", "MSB/LSB (H)")
+
+#: How the appendix numbers and names a type in its first column: `41 : EH → Chorus`.
+_APPENDIX_TYPE = re.compile(r"^(\d+)\s*:\s*(.+)$")
+
+#: One byte as the appendix prints it, in the column that gives a type's two or a
+#: parameter's one.
+_BYTE = re.compile(r"^[0-9A-F]{2}$")
+
+#: What the printing marks a section of the list with. It groups the types by what
+#: they do and it is not a row, so the line it is on is not cut into one.
+SECTION = "❍"
+
+PARAMETER_MISCOUNTS = (
+    "this line ends in the byte of an address, which is how a row of this list ends, and "
+    "does not hold one cell for each of the columns the header names. The printing left no "
+    "space between two of them and they came out as one. Cut by hand rather than at a "
+    "guess: the cell that swallowed its neighbour is the one saying which byte values a "
+    "parameter's states are, and half of it read as a range is a range nobody would query."
+)
+
+
+def _effect_groups(text: str) -> list[int]:
+    """Where each column group of an appendix effect list begins, off the headers.
+
+    Gathered over the whole page rather than from one line. The page sets the list
+    twice across and heads each half with the same four labels, but it does not
+    always print the two headers on one line: where a section opens in the middle
+    of a page, one half carries its heading a few lines below the other's. Read a
+    line at a time, the half whose header came first is the only half found, and
+    every row of the other is folded into it.
+
+    Found by the first label and the last rather than by all four together, because
+    the four are not always on one line either: the first page of the list carries
+    one half's `Parameter` in the running head and the other three labels below the
+    type it opens with. What is asked instead is that the two labels alternate down
+    the page -- a start, then the end of that group, then the next start -- which is
+    what a page set in columns prints and a page that merely uses the word does not.
+    """
+    opens = _where_labelled(text, EFFECT_COLUMNS[0])
+    closes = _where_labelled(text, EFFECT_COLUMNS[-1])
+    if not opens or len(opens) != len(closes):
+        return []
+    for index, at in enumerate(opens):
+        if not at < closes[index] and (index + 1 == len(opens) or closes[index] < opens[index + 1]):
+            return []
+    return opens
+
+
+def _where_labelled(text: str, label: str) -> list[int]:
+    """Every printed column a cell holding exactly this label begins at, once each."""
+    found: list[int] = []
+    for line in text.splitlines():
+        for at, value in cells_in(line):
+            if value == label and not any(abs(at - already) <= NEARBY for already in found):
+                found.append(at)
+    return sorted(found)
+
+
+def _effect_grid(cells: list[tuple[int, str]]) -> list[int] | None:
+    """Where each column group of an appendix effect list begins, off the header.
+
+    Only the groups, and deliberately not the four fields inside one. The header's
+    labels are set against each other and the rows under them against their own
+    contents, so a field boundary taken from a label lands a character or two off
+    and cuts the first digit of a range onto the end of a name -- which does not
+    look like a failure, it looks like a parameter called `Cho Dly 0`. Inside a
+    group the fields are counted instead: a row holds one cell per column and the
+    cells are the columns in printed order.
+
+    What the header is needed for is the split between the groups, and there it is
+    exact: the page sets the list twice across and prints the whole set of labels
+    over each half, so the second `Parameter` is where the second half starts. A
+    gutter found by counting what crosses where puts that split a column too far
+    left on this list, and every address in the left half is then read as the first
+    thing in the right one.
+    """
+    values = [value for _, value in cells]
+    if not values or len(values) % len(EFFECT_COLUMNS):
+        return None
+    if values != list(EFFECT_COLUMNS) * (len(values) // len(EFFECT_COLUMNS)):
+        return None
+    return [at for at, value in cells if value == EFFECT_COLUMNS[0]]
+
+
+def _read_appendix_effect_list(text: str, page: int, carried: dict | None) -> Reading:
+    """An insertion effect list set as a table, read under the header it prints.
+
+    Four columns: a parameter's name, the range it is set over, the values that
+    range maps to in hexadecimal, and the low byte of the address it is written
+    to. A type opens a block with its number and name in the first column and the
+    two bytes that select it in the last, and every parameter after it belongs to
+    it until the next one opens.
+
+    Held apart from the parameter number the other printing of this list gives,
+    because they are not the same fact: one page states which parameter of a type
+    this is and the other states which address it is at. Neither is derived from
+    the other here.
+
+    The value column is what makes this printing worth reading twice over. Where a
+    parameter is a list of states it gives the states' own byte values, so a state
+    is a number the page states rather than a position counted off a list of names
+    -- and two states are not always nought and one. Where the setting is a
+    quantity the part does not store, it gives a column of the conversion grid
+    instead, by the number printed over that column.
+
+    The page is read column group by column group and not line by line, because a
+    type's block runs down one group and the group beside it holds a different
+    type's. `carried` is the type the previous page left open.
+    """
+    out = Reading()
+    starts = _effect_groups(text)
+    groups: list[list[list[str]]] = [[] for _ in starts]
+    for line in text.splitlines():
+        cells = cells_in(line)
+        held: list[list[str]] = [[] for _ in starts]
+        for at, value in cells:
+            index = max(0, sum(1 for start in starts if start <= at) - 1)
+            held[index].append(value)
+        for index, values in enumerate(held):
+            if values:
+                groups[index].append(values)
+
+    kind = carried
+    for group in groups:
+        # A type whose name leaves no room for its two bytes has them printed on a
+        # later line of its own, with the column header in between. Held rather than
+        # matched on one line, because a name read as a heading by anybody looking at
+        # the page is nothing at all to a reader that wants both on one row -- and
+        # the parameters under it then go silently under the type before it.
+        waiting: re.Match | None = None
+        for values in group:
+            if values[0].startswith(SECTION) or values == list(EFFECT_COLUMNS):
+                continue
+            numbered = _APPENDIX_TYPE.match(values[0])
+            if numbered and len(values) == 1:
+                waiting = numbered
+                continue
+            if waiting and len(values) == 2 and all(_BYTE.match(value) for value in values):
+                numbered, values = waiting, [waiting.group(0), *values]
+                waiting = None
+            if numbered and len(values) == 3 and all(_BYTE.match(value) for value in values[1:]):
+                kind = {
+                    # The leading zero the appendix sets a type number with is taken
+                    # off, as it is off the same number in the conversion grid's
+                    # index. The other printing of this list sets it without one, and
+                    # a zero is the typesetting of a number rather than a different
+                    # number -- so keeping it would leave three printings of one fact
+                    # that no reader could join.
+                    "type": str(int(numbered.group(1))),
+                    "effect": numbered.group(2).strip(),
+                    "msb": values[1],
+                    "lsb": values[2],
+                }
+                out.rows.append({**kind, "page": page, "read_by": "parser"})
+                continue
+            if not _BYTE.match(values[-1]):
+                continue
+            if len(values) != len(EFFECT_COLUMNS):
+                # The type is carried into the refusal because the reader knows it
+                # and whoever cuts the row by hand would otherwise work it out again
+                # by eye, off a page set in two columns where the block above a row
+                # is not always the block the row belongs to. Which is not the cut
+                # -- the cut is the thing being refused -- it is the context the
+                # refusal would be useless without.
+                out.not_extracted.append(
+                    {
+                        "page": page,
+                        "line": "  ".join(values),
+                        "why": PARAMETER_MISCOUNTS,
+                        **({"under": kind} if kind else {}),
+                    }
+                )
+                continue
+            name, setting, values_hex, address = values
+            if kind is None:
+                out.not_extracted.append(
+                    {"page": page, "line": "  ".join(values), "why": PARAMETER_UNDER_NO_TYPE}
+                )
+                continue
+            out.rows.append(
+                {
+                    **kind,
+                    "address_lsb": address,
+                    "parameter": name,
+                    "data": setting,
+                    "values_hex": values_hex,
+                    "page": page,
+                    "read_by": "parser",
+                }
+            )
+    return out
+
+
 def read_effect_list(text: str, page: int, carried: dict | None = None) -> Reading:
     """Every effect type and effect parameter the list prints on one page.
+
+    One list, printed two ways, and which way this page is set is read off the page
+    rather than configured: an appendix sets it as a table with a header naming its
+    four columns, and a chapter sets it as a description with each parameter's
+    range right-aligned beside its name. Both give a type its two bytes and every
+    parameter under it a name and a range; what the table adds is the byte values
+    a range maps to, and what the description adds is the prose around them, which
+    is not read.
 
     Two kinds of row, and the second is meaningless without the first. A type row
     says the list numbers and names a type and which two bytes select it; a
@@ -892,6 +1097,8 @@ def read_effect_list(text: str, page: int, carried: dict | None = None) -> Readi
 
     `carried` is the type the previous page left open, from `type_above`.
     """
+    if _effect_groups(text):
+        return _read_appendix_effect_list(text, page, carried)
     out = Reading()
     kind = carried
     for column in in_columns(text):
