@@ -169,13 +169,19 @@ WHY_THE_EXCURSION_CARRIES_A_SPAN = (
     "A comb fit returns one excursion and the surface it was found on has a minimum wherever the "
     "notches line up, so the number alone says which minimum was deepest and not how much deeper. "
     "Beside each excursion is the range of excursions that explain the series to within a "
-    "twentieth of its own spread, measured over every candidate this fit refined. Read on "
-    "injected combs whose excursion is known, that range closes onto the answer at two, five and "
-    "ten milliseconds and opens from four hundredths to half a millisecond at half of one -- "
-    "which is where the returned figures scatter too, 0.43 to 0.51 against a true 0.50. So the "
-    "span is a property of how far the notches sweep and not of the fit's patience, and a type "
-    "whose span is wide has not been measured to a number however much of its series the fit "
-    "explains."
+    "twentieth of its own spread, measured over every candidate this fit refined. A wide span "
+    "settles the reading the one way that matters: the type has not been measured to a number, "
+    "however much of its series the fit explains. "
+    "What the span was read against is twenty-four injected combs of known excursion, over "
+    "centres of three to thirteen milliseconds, excursions of half a millisecond to five, and "
+    "both a third wet and an even mix, with no feedback anywhere so the model is exactly right "
+    "and nothing in the material is outside it. The span held the injected excursion in seventeen "
+    "of the twenty-four. Where it did not, the sweep is shallow and the two paths are mixed "
+    "evenly -- a millisecond at half wet came back half again too large at two centres -- and one "
+    "of those closed its span and still sat a fifth away from the answer. "
+    "So a closed span is not a warrant. It bounds what this fit's own candidates could not tell "
+    "apart, which is a smaller thing than how far the answer could be from the truth, and the two "
+    "come apart exactly where a complete notch makes the level series a cusp rather than a curve."
 )
 
 WHY_AN_EQUIVALENT_AND_NOT_A_LENGTH = (
@@ -530,8 +536,13 @@ def named_an_excursion(found: list[dict]) -> list[dict]:
     Each carries the span of excursions that explain the series about as well as
     the winner does. Reading the winner without it is reading a best fit as though
     it were the only one, and on this material that is usually wrong: the span
-    closes onto the answer where the notches sweep far enough to shape the series
-    and opens to a factor of two or more where they do not.
+    opens to a factor of two or more wherever the notches do not sweep far enough
+    to shape the series.
+
+    `settled_to_one_excursion` says the span closed and does not say the answer is
+    right. On injections where the model is exactly right it closed on a figure a
+    fifth away from the truth once, in the corner where a shallow sweep meets an
+    even mix. What the span bounds is this fit's own ambiguity.
     """
     out = []
     for row in found:
