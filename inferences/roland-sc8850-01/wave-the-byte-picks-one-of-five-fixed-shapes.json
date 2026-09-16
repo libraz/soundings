@@ -1,537 +1,927 @@
 {
-  "inference": {
-    "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
-    "state": "standing",
-    "made_at": "2026-09-16T21:20:21.543435+00:00",
-    "made_by": "backup/what-shape-the-modulator-has.py, backup/which-shape-each-entry-is.py, backup/write-the-wave-shape-inference.py",
-    "rounds": 1,
-    "about": {
-      "scope": "class",
-      "types": [
-        "01 25",
-        "01 26"
-      ],
-      "addresses": [
-        "40 03 03"
-      ]
-    }
-  },
-  "claim": "A modulation wave byte indexes five fixed shapes and computes nothing, and four of the five are the shapes the page names them. Read on two types that drive different quantities with the same byte -- one swinging its output's level by more than the whole of its own mean, the other swinging the balance between its channels by forty decibels -- the entry printed `Tri` returns a triangle, `Sqr` a square and `Saw1` and `Saw2` a sawtooth, each nearer the shape it is named after than any other by both of the two readings taken, on both types, 8 readings out of 8. `Saw1` and `Saw2` are one shape run two ways: no reading of magnitudes can separate them, which the two candidates sitting exactly zero apart under both scores says outright, and what separates them is that one spends nine tenths of its cycle climbing and the other one tenth. The fifth entry is not what it is printed. `Sin` carries a third harmonic of four to six hundredths where a sine has none and a triangle has a ninth, and a fifth harmonic of two thousandths where a triangle has a twenty-fifth -- so it is neither, and it is a sine made cheaply. Which cheap sine is not settled and is queued. The shape is a shape of a multiplier and not of a level: the same cycles come back clean read in amplitude and warped read in decibels, which is what a gain swung linearly does to a logarithm and not what a gain swung in decibels would do to either.",
-  "named": "a table of five fixed modulator shapes, indexed by a byte, multiplying",
-  "rests_on": {
-    "measurements": [
-      {
-        "file": "data/units/roland-sc8850-01/efx-sway/01-25-03-what-shape-the-modulator-has.json",
-        "keys": [
-          "readings[value=0].level.harmonics_of_the_first",
-          "readings[value=1].level.harmonics_of_the_first",
-          "readings[value=2].level.harmonics_of_the_first",
-          "readings[value=3].level.going_up_fraction",
-          "readings[value=4].level.going_up_fraction",
-          "control.shallowest_recovered_db.level"
-        ],
-        "values": [
-          [
-            0.05097,
-            0.09253,
-            0.00917,
-            0.01859,
-            0.00425,
-            0.0103
-          ],
-          [
-            0.01828,
-            0.30783,
-            0.01601,
-            0.15489,
-            0.017,
-            0.08451
-          ],
-          [
-            0.03775,
-            0.05716,
-            0.01224,
-            0.00034,
-            0.00192,
-            0.00113
-          ],
-          0.875,
-          0.1094,
-          0.75
-        ],
-        "why": "The byte read on the type whose modulator drives the output's level. The harmonics are what name three of the entries and the slope is what separates the other two; the control is the depth this was shown able to find on this material."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-sway/01-26-03-what-shape-the-modulator-has.json",
-        "keys": [
-          "readings[value=0].balance.harmonics_of_the_first",
-          "readings[value=1].balance.harmonics_of_the_first",
-          "readings[value=2].balance.harmonics_of_the_first",
-          "readings[value=3].balance.going_up_fraction",
-          "readings[value=4].balance.going_up_fraction",
-          "control.shallowest_recovered_db.balance"
-        ],
-        "values": [
-          [
-            0.03373,
-            0.18756,
-            0.01966,
-            0.06544,
-            0.01267,
-            0.0272
-          ],
-          [
-            0.01908,
-            0.29694,
-            0.01684,
-            0.13935,
-            0.00929,
-            0.06753
-          ],
-          [
-            0.04936,
-            0.05378,
-            0.01359,
-            0.00277,
-            0.00193,
-            0.00349
-          ],
-          0.8906,
-          0.1094,
-          0.75
-        ],
-        "why": "The same byte on the type whose modulator drives the balance between the channels instead. A second type, a different quantity, and the same five shapes -- which is what makes this a table rather than one type's modulator."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-sway/01-25-03-what-shape-the-modulator-has.json",
-        "keys": [
-          "readings[value=0].level.depth",
-          "readings[value=0].balance.depth"
-        ],
-        "values": [
-          1.6808,
-          3.33
-        ],
-        "why": "Which quantity this type drives, read off the two depths rather than assumed from the type's name."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-sway/01-26-03-what-shape-the-modulator-has.json",
-        "keys": [
-          "readings[value=0].level.depth",
-          "readings[value=0].balance.depth"
-        ],
-        "values": [
-          0.1084,
-          40.6355
-        ],
-        "why": "The same, the other way round."
-      }
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-16T22:47:00.416050+00:00",
+  "made_by": "backup/what-shape-the-modulator-has.py, backup/which-shape-each-entry-is.py, backup/write-the-wave-shape-inference.py, backup/which-cheap-sine-the-sin-entry-is.py, backup/fold-in-what-the-sin-entry-turned-out-to-be.py",
+  "rounds": 2,
+  "about": {
+   "scope": "class",
+   "types": [
+    "01 25",
+    "01 26",
+    "04 06"
+   ],
+   "addresses": [
+    "40 03 03",
+    "40 03 12"
+   ]
+  }
+ },
+ "claim": "A modulation wave byte indexes five fixed shapes and computes nothing, and four of the five are the shapes the page names them. Read on two types that drive different quantities with the same byte -- one swinging its output's level by more than the whole of its own mean, the other swinging the balance between its channels by forty decibels -- the entry printed `Tri` returns a triangle, `Sqr` a square and `Saw1` and `Saw2` a sawtooth, each nearer the shape it is named after than any other by both of the two readings taken, on both types, 8 readings out of 8. `Saw1` and `Saw2` are one shape run two ways: no reading of magnitudes can separate them, which the two candidates sitting exactly zero apart under both scores says outright, and what separates them is that one spends nine tenths of its cycle climbing and the other one tenth. The fifth entry is not what it is printed. `Sin` carries a third harmonic of four to six hundredths where a sine has none and a triangle has a ninth, and a fifth harmonic of two thousandths where a triangle has a twenty-fifth -- so it is neither, and it is a sine made cheaply. Which cheap sine is not settled and is queued. The shape is a shape of a multiplier and not of a level: the same cycles come back clean read in amplitude and warped read in decibels, which is what a gain swung linearly does to a logarithm and not what a gain swung in decibels would do to either. Three readings stood against this and each had a run; all three ran. The five shapes are not these two types': the third place the same five names are printed returns the same five, entry for entry, no further apart than 0.0122 in any harmonic either reading carries, with both sawtooths climbing the same way round. The depth byte scales the cycle rather than reshaping it, and what looked like a shape moving with depth was the reading's own logarithm: read as a difference between two channels in decibels the third harmonic sits a median 0.0582 from the linear reading at the top of the byte and 0.0166 at a quarter of it, converging on it as the swing shrinks and the logarithm straightens. And the entry printed `Sin` is not the parabola. It is not the parabola, and it is refused from both sides at once. Rendered onto one of this unit's own takes and read back through the whole stage, the parabola returns a third harmonic of 0.0409 where the unit returns 0.0600, and a fifth of 0.0054 where the unit returns 0.0029 -- too little of the one and more than twice too much of the other, which no scaling of a candidate can fix in both directions at once. What fits is a sine carrying a small third harmonic and almost nothing above it: a sine carrying a fifteenth of its third lands 0.0038 away where the parabola lands 0.0112, 3.0 times as far. That is a description of the cycle and not a name for what makes it, and this file does not give it one.",
+ "named": "a table of five fixed modulator shapes, indexed by a byte, multiplying",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-sway/01-25-03-what-shape-the-modulator-has.json",
+    "keys": [
+     "readings[value=0].level.harmonics_of_the_first",
+     "readings[value=1].level.harmonics_of_the_first",
+     "readings[value=2].level.harmonics_of_the_first",
+     "readings[value=3].level.harmonics_of_the_first",
+     "readings[value=4].level.harmonics_of_the_first",
+     "readings[value=3].level.going_up_fraction",
+     "readings[value=4].level.going_up_fraction"
     ],
-    "document_rows": [
-      {
-        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
-        "rows": [
-          "Tremolo, parameter 1, Mod Wave (Modulation wave), Tri/Sqr/Sin/Saw1/Saw2",
-          "Auto Pan, parameter 1, Mod Wave (Modulation wave), Tri/Sqr/Sin/Saw1/Saw2",
-          "Rhodes Multi, parameter 16, TP Mod WV (TP Modulation Wave), Tri/Sqr/Sin/Saw1/Saw2"
-        ],
-        "why": "Every row whose data column prints this set of names. It is what says the question is about one table rather than about one type, and it is what the shapes are held against -- evidence about a page, and the one thing here that is not a measurement of the unit."
-      }
+    "values": [
+     [
+      0.03432,
+      0.08966,
+      0.01361,
+      0.02476,
+      0.00494,
+      0.01065
+     ],
+     [
+      0.01904,
+      0.31782,
+      0.01984,
+      0.16895,
+      0.02248,
+      0.0996
+     ],
+     [
+      0.03865,
+      0.05864,
+      0.01202,
+      0.0015,
+      0.00096,
+      0.00122
+     ],
+     [
+      0.45052,
+      0.30374,
+      0.21821,
+      0.15579,
+      0.13167,
+      0.09659
+     ],
+     [
+      0.48307,
+      0.3097,
+      0.22324,
+      0.16378,
+      0.13514,
+      0.09669
+     ],
+     0.9062,
+     0.0781
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-sway/01-26-03-what-shape-the-modulator-has.json",
+    "keys": [
+     "readings[value=0].balance.harmonics_of_the_first",
+     "readings[value=1].balance.harmonics_of_the_first",
+     "readings[value=2].balance.harmonics_of_the_first",
+     "readings[value=3].balance.harmonics_of_the_first",
+     "readings[value=4].balance.harmonics_of_the_first",
+     "readings[value=3].balance.going_up_fraction",
+     "readings[value=4].balance.going_up_fraction"
     ],
-    "era_priors": [
-      {
-        "claim": "A modulator on a fixed-point part of this period is a phase accumulator and a shape read off it. A triangle, a square and a sawtooth are each one or two operations on the accumulator itself and cost nothing; a sine is the only one of the five that has to be stored or approximated, and it is the only one that came back as something other than its name.",
-        "why": "It says why four of five would be exact and the fifth would not, which is the shape of what was found rather than something read into it. It carries none of the claim: every entry was measured.",
-        "would_be_wrong_if": "The triangle or the sawtooth had come back inexact too, which would point at the reading rather than at the part. They did not: the sawtooth's harmonics fall as one over the order to within a few hundredths and the square's to within a twentieth."
-      }
+    "values": [
+     [
+      0.03546,
+      0.18761,
+      0.01767,
+      0.07034,
+      0.01299,
+      0.03367
+     ],
+     [
+      0.03028,
+      0.29363,
+      0.02367,
+      0.14778,
+      0.01424,
+      0.07909
+     ],
+     [
+      0.06339,
+      0.06301,
+      0.01363,
+      0.00364,
+      0.00682,
+      0.00459
+     ],
+     [
+      0.55582,
+      0.36199,
+      0.25928,
+      0.19118,
+      0.13907,
+      0.10546
+     ],
+     [
+      0.56194,
+      0.37125,
+      0.271,
+      0.19377,
+      0.14694,
+      0.11222
+     ],
+     0.9062,
+     0.0781
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-sway/04-06-12-the-five-names-a-third-time-as-a-tremolo.json",
+    "keys": [
+     "readings[value=0].level.harmonics_of_the_first",
+     "readings[value=1].level.harmonics_of_the_first",
+     "readings[value=2].level.harmonics_of_the_first",
+     "readings[value=3].level.harmonics_of_the_first",
+     "readings[value=4].level.harmonics_of_the_first",
+     "readings[value=3].level.going_up_fraction",
+     "readings[value=4].level.going_up_fraction"
     ],
-    "community": []
-  },
-  "adds": "Each record says what one cycle of one setting's modulator looks like, as a curve and as harmonics, and puts no name on it. What is read out of them here is which of five named shapes each cycle is -- which is a comparison against a page and against four analytic shapes, neither of which is in either record -- and that the five are one table because two types driving different quantities return them.",
-  "the_entries": {
-    "0": {
-      "printed": "Tri",
-      "read_as": "triangle",
-      "on_each_type": {
-        "01 25": {
-          "nearest_by_curve": "triangle",
-          "nearest_by_harmonics": "triangle",
-          "residual_over_the_cycle": 0.0205,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 0.398,
-            "by_harmonics": 0.401
-          },
-          "going_up_fraction": 0.5,
-          "harmonics_of_the_first": [
-            0.05053,
-            0.09336,
-            0.01039,
-            0.01894
-          ]
-        },
-        "01 26": {
-          "nearest_by_curve": "triangle",
-          "nearest_by_harmonics": "triangle",
-          "residual_over_the_cycle": 0.0276,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 0.841,
-            "by_harmonics": 0.949
-          },
-          "going_up_fraction": 0.5,
-          "harmonics_of_the_first": [
-            0.03523,
-            0.18792,
-            0.0182,
-            0.06666
-          ]
-        }
-      }
-    },
-    "1": {
-      "printed": "Sqr",
-      "read_as": "square",
-      "on_each_type": {
-        "01 25": {
-          "nearest_by_curve": "square",
-          "nearest_by_harmonics": "square",
-          "residual_over_the_cycle": 0.0849,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 0.301,
-            "by_harmonics": 0.546
-          },
-          "going_up_fraction": 0.375,
-          "harmonics_of_the_first": [
-            0.01828,
-            0.30783,
-            0.01601,
-            0.15489
-          ]
-        },
-        "01 26": {
-          "nearest_by_curve": "square",
-          "nearest_by_harmonics": "square",
-          "residual_over_the_cycle": 0.0907,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 0.271,
-            "by_harmonics": 0.389
-          },
-          "going_up_fraction": 0.3281,
-          "harmonics_of_the_first": [
-            0.01908,
-            0.29694,
-            0.01684,
-            0.13935
-          ]
-        }
-      }
-    },
-    "2": {
-      "printed": "Sin",
-      "read_as": "sine",
-      "on_each_type": {
-        "01 25": {
-          "nearest_by_curve": "sine",
-          "nearest_by_harmonics": "sine",
-          "residual_over_the_cycle": 0.0281,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 1.125,
-            "by_harmonics": 0.097
-          },
-          "going_up_fraction": 0.4375,
-          "harmonics_of_the_first": [
-            0.03775,
-            0.05716,
-            0.01224,
-            0.00034
-          ]
-        },
-        "01 26": {
-          "nearest_by_curve": "sine",
-          "nearest_by_harmonics": "sine",
-          "residual_over_the_cycle": 0.0265,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": 0.153,
-            "by_harmonics": 0.111
-          },
-          "going_up_fraction": 0.5,
-          "harmonics_of_the_first": [
-            0.04936,
-            0.05378,
-            0.01359,
-            0.00277
-          ]
-        }
-      }
-    },
-    "3": {
-      "printed": "Saw1",
-      "read_as": "sawtooth rising",
-      "on_each_type": {
-        "01 25": {
-          "nearest_by_curve": "sawtooth rising",
-          "nearest_by_harmonics": "sawtooth rising",
-          "residual_over_the_cycle": 0.0814,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": null,
-            "by_harmonics": null
-          },
-          "going_up_fraction": 0.875,
-          "harmonics_of_the_first": [
-            0.44046,
-            0.28597,
-            0.20214,
-            0.14049
-          ]
-        },
-        "01 26": {
-          "nearest_by_curve": "sawtooth rising",
-          "nearest_by_harmonics": "sawtooth rising",
-          "residual_over_the_cycle": 0.0743,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": null,
-            "by_harmonics": null
-          },
-          "going_up_fraction": 0.8906,
-          "harmonics_of_the_first": [
-            0.55334,
-            0.36392,
-            0.25495,
-            0.18206
-          ]
-        }
-      }
-    },
-    "4": {
-      "printed": "Saw2",
-      "read_as": "sawtooth falling",
-      "on_each_type": {
-        "01 25": {
-          "nearest_by_curve": "sawtooth rising",
-          "nearest_by_harmonics": "sawtooth rising",
-          "residual_over_the_cycle": 0.0816,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": null,
-            "by_harmonics": null
-          },
-          "going_up_fraction": 0.1094,
-          "harmonics_of_the_first": [
-            0.49045,
-            0.33231,
-            0.22759,
-            0.16596
-          ]
-        },
-        "01 26": {
-          "nearest_by_curve": "sawtooth rising",
-          "nearest_by_harmonics": "sawtooth rising",
-          "residual_over_the_cycle": 0.0729,
-          "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
-            "by_curve": null,
-            "by_harmonics": null
-          },
-          "going_up_fraction": 0.1094,
-          "harmonics_of_the_first": [
-            0.5568,
-            0.3684,
-            0.25773,
-            0.18339
-          ]
-        }
-      }
-    }
-  },
-  "what_the_reading_can_tell_apart": {
-    "how_far_the_named_shapes_sit_from_each_other": {
-      "by_curve": {
-        "triangle vs square": 0.1414,
-        "triangle vs sine": 0.0352,
-        "triangle vs sawtooth rising": 0.1913,
-        "triangle vs sawtooth falling": 0.1913,
-        "square vs sine": 0.2091,
-        "square vs sawtooth rising": 0.2422,
-        "square vs sawtooth falling": 0.2422,
-        "sine vs sawtooth rising": 0.2216,
-        "sine vs sawtooth falling": 0.2216,
-        "sawtooth rising vs sawtooth falling": 0.0
-      },
-      "by_harmonics": {
-        "triangle vs square": 0.1217,
-        "triangle vs sine": 0.0494,
-        "triangle vs sawtooth rising": 0.2688,
-        "triangle vs sawtooth falling": 0.2688,
-        "square vs sine": 0.1686,
-        "square vs sawtooth rising": 0.2233,
-        "square vs sawtooth falling": 0.2233,
-        "sine vs sawtooth rising": 0.2933,
-        "sine vs sawtooth falling": 0.2933,
-        "sawtooth rising vs sawtooth falling": 0.0
-      }
-    },
-    "read_as": "A residual says nothing on its own. What bounds a lean here is how far the candidates themselves sit, and two pairs of them are close: a sawtooth and its mirror image are exactly zero apart under both readings, and a triangle and a sine are 0.0352 apart by curve against residuals of 0.02 to 0.03. So the curve reading barely separates a triangle from a sine, the harmonics do it better, and neither does anything at all for the two sawtooths.",
-    "both_readings_agreed_on": "10 of 10",
-    "on_the_four_entries_this_claim_names": "8 of 8",
-    "why_the_fifth_is_counted_apart": "The entry printed `Sin` is nearest a sine of the five candidates offered and is claimed below not to be one. Both readings agreeing that it is nearer a sine than a square is true and is not support for the name; counting it with the other four would read as though it were."
-  },
-  "the_entry_the_page_prints_sin_against": {
-    "what_it_is_not": "Not a sine, and not a triangle. Its third harmonic is measured at 0.05716 on one type and 0.05378 on the other, against nought for a sine and 0.1111 for a triangle; its fifth is 0.002 on both, against nought and 0.04. Both figures sit between the two candidates and the fifth sits nowhere near the triangle's, so this is not a triangle read badly.",
-    "the_entry_beside_it_is_the_control": "The entry printed `Tri` on the same takes returns a third harmonic of 0.09336 and 0.18792, which is two to four times this one's on the same run. Whatever puts a third harmonic into a reading here does not put the same amount into every entry, so the difference between the two entries is the byte and not the method.",
-    "what_a_part_of_this_period_makes_a_sine_out_of": {
-      "a sine": {
-        "h2": 0.0,
-        "h3": 0.0,
-        "h4": 0.0,
-        "h5": 0.0,
-        "h6": 0.0,
-        "h7": 0.0
-      },
-      "a parabola, 4x(1-|x|)": {
-        "h2": 0.0,
-        "h3": 0.037,
-        "h4": 0.0,
-        "h5": 0.008,
-        "h6": 0.0,
-        "h7": 0.0029
-      },
-      "a parabola with its own square added back": {
-        "h2": 0.0,
-        "h3": 0.0001,
-        "h4": 0.0,
-        "h5": 0.0007,
-        "h6": 0.0,
-        "h7": 0.0003
-      },
-      "a triangle": {
-        "h2": 0.0,
-        "h3": 0.1111,
-        "h4": 0.0,
-        "h5": 0.04,
-        "h6": 0.0,
-        "h7": 0.0204
-      }
-    },
-    "which_of_those_it_is_nearest": "The parabola. Its third harmonic is 0.037 where the measurement puts 0.05716 to 0.05378. Its fifth is 0.008 where the measurement puts 0.002, which is four times out and is the reason this is named as a narrowing and not as an answer."
-  },
-  "which_quantity_each_type_drives": {
-    "read_as": "Off the depths, not off the names. The record reports a level track and a balance track for every take, and on one type the level swings by more than its own mean while the balance moves a few decibels; on the other the balance swings forty decibels while the level moves a fifth of its mean. An order apart, each way round.",
-    "01 25": "The depths say so. This type's level swings by more than the whole of its own mean while its balance moves a few decibels, which is an order apart and is what the record reports both tracks for.",
-    "01 26": "The depths say so. This type's level swings by a fifth of its mean while its balance swings forty decibels, which is an order apart and is what the record reports both tracks for.",
-    "one_more_thing_the_pan_says": "On the two symmetric shapes the pan's level track finds twice the rate its balance track finds. A pan sweeping across and back crosses the middle twice in a cycle, and a level that dips at each crossing is two channels that do not sum flat. It is reported because it is in the record and because it is the kind of thing a renderer gets wrong; nothing here rests on it."
-  },
-  "a_prediction_the_rate_class_already_made": {
-    "the_byte_written": 49,
-    "what_the_closed_class_puts_there_hz": 2.5,
-    "what_came_back_hz": {
-      "01 25": 2.4926,
-      "01 26": 2.4926
-    },
-    "read_as": "Held out and not fitted. The rate byte was parked at one setting for this whole run and nothing here was tuned to it; the rate the modulator came back at is the entry the rate class closed on, to about a quarter of a per cent, on two types that class had not read. It is not evidence for anything in this file -- it is that file's evidence, arriving free."
-  },
-  "alternatives": [
-    {
-      "reading": "The entry printed `Sin` is a sine after all, and the third harmonic is something the reading put there.",
-      "candidate": "the-sine-entry-is-a-sine",
-      "standing": false,
-      "ruled_out_by": "The entry beside it on the same takes. `Tri` returns two to four times this one's third harmonic through the same frames, the same fold and the same detrend, so the method does not hand every entry the same amount -- and a reading that added a fortieth of a third harmonic to everything would have moved the sawtooth's away from one over the order, which it did not."
-    },
-    {
-      "reading": "The entry printed `Sin` is the parabola a part of this period reaches for when it has no room for a table: one multiply-and-subtract on the phase.",
-      "candidate": "the-sine-entry-is-a-parabola",
-      "standing": true,
-      "separated_by": {
-        "observable": "The fifth and seventh harmonics of that entry's cycle, read off a longer take at a slower rate so more cycles fold into one. The third already agrees; a parabola puts 0.008 in the fifth and 0.003 in the seventh, and a parabola with its own square added back puts under a thousandth in either.",
-        "predicts": {
-          "a parabola": "h5 0.008 and h7 0.003.",
-          "a parabola corrected by its own square": "h5 and h7 both under 0.001.",
-          "a stored table": "Whatever the table holds, which is not predicted -- but a table fine enough to be called a sine puts nothing measurable in either."
-        },
-        "divergence": "0.007 in the fifth harmonic, which is the gap between the two candidates that are not a table.",
-        "sensitivity_here": "0.002, what this run's fifth harmonic came back at on a cycle folded from eighteen. Four times as many cycles is half of that, which is where the margin below comes from.",
-        "margin": 3.5,
-        "run": {
-          "stage": "efx-sway",
-          "type": "01 26",
-          "address": "40 03 03",
-          "settings": [
-            2
-          ],
-          "stimulus": "the same held note with the rate byte at the slowest setting the take can still carry three cycles of, and the take lengthened",
-          "takes": 4,
-          "minutes": 5
-        }
-      }
-    },
-    {
-      "reading": "The five shapes are these two types', and the one other place the same five names are printed reaches a table of its own.",
-      "candidate": "a-table-per-type",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same sweep on `04 06 / 40 03 12`, which is the only other place this unit prints these five names -- a tremolo and pan stage inside a multi-effect rather than a type of its own, reached at a different parameter number, with four stages in front of it.",
-        "predicts": {
-          "one table": "The same five cycles, to the harmonics already reported.",
-          "a table per type": "At least one entry whose harmonics are not these, by more than the two types here differ from each other."
-        },
-        "divergence": "0.12, how far a triangle sits from a square under the harmonic reading, taken as what a different table would have to be worth.",
-        "sensitivity_here": "0.02, how far the two types already read differ from each other on the entry they differ most on.",
-        "margin": 6,
-        "run": {
-          "stage": "efx-sway",
-          "type": "04 06",
-          "address": "40 03 12",
-          "settings": [
-            0,
-            1,
-            2,
-            3,
-            4
-          ],
-          "stimulus": "the same held note with this type's compressor, overdrive, equaliser and phaser stages switched out or held flat",
-          "takes": 12,
-          "minutes": 8
-        }
-      }
-    },
-    {
-      "reading": "The depth byte beside this one scales the cycle, so the shape is the same shape at every depth.",
-      "candidate": "a-depth-that-only-scales",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same five entries at a depth well below full. Every cycle was read at 127 here, so nothing in this file says what the shape is anywhere else on that byte.",
-        "predicts": {
-          "a depth that scales": "The same harmonics at every depth, since a harmonic is reported relative to the first.",
-          "a depth that reshapes": "Harmonics that move with it -- which is what a depth applied by clipping the modulator rather than by scaling it would do."
-        },
-        "divergence": "0.11, a triangle's own third harmonic, taken as what a reshaping worth the name would be.",
-        "sensitivity_here": "0.02, how far the two types here differ on one entry's harmonics.",
-        "margin": 5,
-        "run": {
-          "stage": "efx-sway",
-          "type": "01 26",
-          "address": "40 03 03",
-          "settings": [
-            0,
-            1,
-            2,
-            3,
-            4
-          ],
-          "stimulus": "the same held note with the depth byte at 32 and at 96",
-          "takes": 22,
-          "minutes": 14
-        }
-      }
-    }
+    "values": [
+     [
+      0.03465,
+      0.09185,
+      0.01223,
+      0.02511,
+      0.00694,
+      0.01033
+     ],
+     [
+      0.01437,
+      0.3229,
+      0.01703,
+      0.17213,
+      0.02179,
+      0.10111
+     ],
+     [
+      0.04119,
+      0.06136,
+      0.00869,
+      0.00423,
+      0.00222,
+      0.0025
+     ],
+     [
+      0.45659,
+      0.30742,
+      0.21915,
+      0.15944,
+      0.13407,
+      0.09781
+     ],
+     [
+      0.47733,
+      0.32187,
+      0.23176,
+      0.15734,
+      0.1343,
+      0.09888
+     ],
+     0.8906,
+     0.0781
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-sway/01-26-03-the-same-five-shapes-at-a-quarter-depth.json",
+    "keys": [
+     "readings[value=0].balance.harmonics_of_the_first",
+     "readings[value=1].balance.harmonics_of_the_first",
+     "readings[value=2].balance.harmonics_of_the_first",
+     "readings[value=3].balance.harmonics_of_the_first",
+     "readings[value=4].balance.harmonics_of_the_first"
+    ],
+    "values": [
+     [
+      0.0121,
+      0.08629,
+      0.05738,
+      0.02491,
+      0.01722,
+      0.01551
+     ],
+     [
+      0.00394,
+      0.33437,
+      0.04097,
+      0.17055,
+      0.0098,
+      0.11265
+     ],
+     [
+      0.01768,
+      0.05482,
+      0.05216,
+      0.00733,
+      0.00875,
+      0.00788
+     ],
+     [
+      0.55101,
+      0.34929,
+      0.27727,
+      0.17144,
+      0.14741,
+      0.12389
+     ],
+     [
+      0.40657,
+      0.27631,
+      0.15158,
+      0.16715,
+      0.12382,
+      0.09932
+     ]
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-sway/01-26-03-the-same-five-shapes-read-at-a-fifth-the-rate.json",
+    "keys": [
+     "readings[value=2].balance.harmonics_of_the_first",
+     "readings[value=2].balance.rate_hz"
+    ],
+    "values": [
+     [
+      0.05489,
+      0.04755,
+      0.01942,
+      0.00256,
+      0.00387,
+      0.00466
+     ],
+     0.9975
+    ]
+   }
   ],
-  "refuted_by": "A sixth setting of the byte returning a sixth shape, which would make this a range rather than a table of five. Or any of the four named entries coming back as something else on a third type, by more than the two types here differ from each other. Or the harmonics moving with the depth byte, which would mean the cycles reported are one point of a surface and the table is not a table of shapes at all.",
-  "what_it_would_change": [
-    "A modulator is five entries and an accumulator. There is nothing to fit, nothing to tune, and no per-type constant: two types driving different quantities return the same five cycles from the same byte.",
-    "`Saw1` and `Saw2` are one shape and its mirror, not two. A renderer that made them two ramps with different slopes would be wrong about both.",
-    "The modulator multiplies. A renderer that swung a level in decibels would put a second harmonic into every one of the five, which is what the decibel reading of these very takes shows and the amplitude reading does not."
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+    "rows": [
+     "Tremolo, parameter 1, Mod Wave (Modulation wave), Tri/Sqr/Sin/Saw1/Saw2",
+     "Auto Pan, parameter 1, Mod Wave (Modulation wave), Tri/Sqr/Sin/Saw1/Saw2",
+     "Rhodes Multi, parameter 16, TP Mod WV (TP Modulation Wave), Tri/Sqr/Sin/Saw1/Saw2"
+    ],
+    "why": "Every row whose data column prints this set of names. It is what says the question is about one table rather than about one type, and it is what the shapes are held against -- evidence about a page, and the one thing here that is not a measurement of the unit."
+   }
   ],
-  "what_this_does_not_settle": [
-    "What the sine entry actually is. It is narrowed to something with a third harmonic near a parabola's and a fifth well under one, and the run that would close it is queued.",
-    "What the depth byte does to the shape. Every cycle here was read at full depth.",
-    "How the shape is stored -- a table of samples, a few operations on the phase, or a quarter table mirrored. Nothing leaving the sockets separates those for the four exact shapes, because all three ways of writing a triangle return a triangle.",
-    "The one other place these five names are printed. This unit prints them three times and two were read; the third is a stage inside a multi-effect rather than a type of its own, and the third alternative above has the run for it."
-  ]
+  "era_priors": [
+   {
+    "claim": "A modulator on a fixed-point part of this period is a phase accumulator and a shape read off it. A triangle, a square and a sawtooth are each one or two operations on the accumulator itself and cost nothing; a sine is the only one of the five that has to be stored or approximated, and it is the only one that came back as something other than its name.",
+    "why": "It says why four of five would be exact and the fifth would not, which is the shape of what was found rather than something read into it. It carries none of the claim: every entry was measured.",
+    "would_be_wrong_if": "The triangle or the sawtooth had come back inexact too, which would point at the reading rather than at the part. They did not: the sawtooth's harmonics fall as one over the order to within a few hundredths and the square's to within a twentieth."
+   }
+  ],
+  "community": []
+ },
+ "adds": "Each record says what one cycle of one setting's modulator looks like, as a curve and as harmonics, and puts no name on it. What is read out of them here is which of five named shapes each cycle is -- which is a comparison against a page and against four analytic shapes, neither of which is in either record -- and that the five are one table because two types driving different quantities return them.",
+ "the_entries": {
+  "0": {
+   "printed": "Tri",
+   "read_as": "triangle",
+   "on_each_type": {
+    "01 25": {
+     "nearest_by_curve": "triangle",
+     "nearest_by_harmonics": "triangle",
+     "residual_over_the_cycle": 0.0205,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 0.398,
+      "by_harmonics": 0.401
+     },
+     "going_up_fraction": 0.5,
+     "harmonics_of_the_first": [
+      0.05053,
+      0.09336,
+      0.01039,
+      0.01894
+     ]
+    },
+    "01 26": {
+     "nearest_by_curve": "triangle",
+     "nearest_by_harmonics": "triangle",
+     "residual_over_the_cycle": 0.0276,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 0.841,
+      "by_harmonics": 0.949
+     },
+     "going_up_fraction": 0.5,
+     "harmonics_of_the_first": [
+      0.03523,
+      0.18792,
+      0.0182,
+      0.06666
+     ]
+    }
+   }
+  },
+  "1": {
+   "printed": "Sqr",
+   "read_as": "square",
+   "on_each_type": {
+    "01 25": {
+     "nearest_by_curve": "square",
+     "nearest_by_harmonics": "square",
+     "residual_over_the_cycle": 0.0849,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 0.301,
+      "by_harmonics": 0.546
+     },
+     "going_up_fraction": 0.375,
+     "harmonics_of_the_first": [
+      0.01828,
+      0.30783,
+      0.01601,
+      0.15489
+     ]
+    },
+    "01 26": {
+     "nearest_by_curve": "square",
+     "nearest_by_harmonics": "square",
+     "residual_over_the_cycle": 0.0907,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 0.271,
+      "by_harmonics": 0.389
+     },
+     "going_up_fraction": 0.3281,
+     "harmonics_of_the_first": [
+      0.01908,
+      0.29694,
+      0.01684,
+      0.13935
+     ]
+    }
+   }
+  },
+  "2": {
+   "printed": "Sin",
+   "read_as": "sine",
+   "on_each_type": {
+    "01 25": {
+     "nearest_by_curve": "sine",
+     "nearest_by_harmonics": "sine",
+     "residual_over_the_cycle": 0.0281,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 1.125,
+      "by_harmonics": 0.097
+     },
+     "going_up_fraction": 0.4375,
+     "harmonics_of_the_first": [
+      0.03775,
+      0.05716,
+      0.01224,
+      0.00034
+     ]
+    },
+    "01 26": {
+     "nearest_by_curve": "sine",
+     "nearest_by_harmonics": "sine",
+     "residual_over_the_cycle": 0.0265,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": 0.153,
+      "by_harmonics": 0.111
+     },
+     "going_up_fraction": 0.5,
+     "harmonics_of_the_first": [
+      0.04936,
+      0.05378,
+      0.01359,
+      0.00277
+     ]
+    }
+   }
+  },
+  "3": {
+   "printed": "Saw1",
+   "read_as": "sawtooth rising",
+   "on_each_type": {
+    "01 25": {
+     "nearest_by_curve": "sawtooth rising",
+     "nearest_by_harmonics": "sawtooth rising",
+     "residual_over_the_cycle": 0.0814,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": null,
+      "by_harmonics": null
+     },
+     "going_up_fraction": 0.875,
+     "harmonics_of_the_first": [
+      0.44046,
+      0.28597,
+      0.20214,
+      0.14049
+     ]
+    },
+    "01 26": {
+     "nearest_by_curve": "sawtooth rising",
+     "nearest_by_harmonics": "sawtooth rising",
+     "residual_over_the_cycle": 0.0743,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": null,
+      "by_harmonics": null
+     },
+     "going_up_fraction": 0.8906,
+     "harmonics_of_the_first": [
+      0.55334,
+      0.36392,
+      0.25495,
+      0.18206
+     ]
+    }
+   }
+  },
+  "4": {
+   "printed": "Saw2",
+   "read_as": "sawtooth falling",
+   "on_each_type": {
+    "01 25": {
+     "nearest_by_curve": "sawtooth rising",
+     "nearest_by_harmonics": "sawtooth rising",
+     "residual_over_the_cycle": 0.0816,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": null,
+      "by_harmonics": null
+     },
+     "going_up_fraction": 0.1094,
+     "harmonics_of_the_first": [
+      0.49045,
+      0.33231,
+      0.22759,
+      0.16596
+     ]
+    },
+    "01 26": {
+     "nearest_by_curve": "sawtooth rising",
+     "nearest_by_harmonics": "sawtooth rising",
+     "residual_over_the_cycle": 0.0729,
+     "lead_over_the_next_as_a_fraction_of_how_far_those_two_sit_apart": {
+      "by_curve": null,
+      "by_harmonics": null
+     },
+     "going_up_fraction": 0.1094,
+     "harmonics_of_the_first": [
+      0.5568,
+      0.3684,
+      0.25773,
+      0.18339
+     ]
+    }
+   }
+  }
+ },
+ "what_the_reading_can_tell_apart": {
+  "how_far_the_named_shapes_sit_from_each_other": {
+   "by_curve": {
+    "triangle vs square": 0.1414,
+    "triangle vs sine": 0.0352,
+    "triangle vs sawtooth rising": 0.1913,
+    "triangle vs sawtooth falling": 0.1913,
+    "square vs sine": 0.2091,
+    "square vs sawtooth rising": 0.2422,
+    "square vs sawtooth falling": 0.2422,
+    "sine vs sawtooth rising": 0.2216,
+    "sine vs sawtooth falling": 0.2216,
+    "sawtooth rising vs sawtooth falling": 0.0
+   },
+   "by_harmonics": {
+    "triangle vs square": 0.1217,
+    "triangle vs sine": 0.0494,
+    "triangle vs sawtooth rising": 0.2688,
+    "triangle vs sawtooth falling": 0.2688,
+    "square vs sine": 0.1686,
+    "square vs sawtooth rising": 0.2233,
+    "square vs sawtooth falling": 0.2233,
+    "sine vs sawtooth rising": 0.2933,
+    "sine vs sawtooth falling": 0.2933,
+    "sawtooth rising vs sawtooth falling": 0.0
+   }
+  },
+  "read_as": "A residual says nothing on its own. What bounds a lean here is how far the candidates themselves sit, and two pairs of them are close: a sawtooth and its mirror image are exactly zero apart under both readings, and a triangle and a sine are 0.0352 apart by curve against residuals of 0.02 to 0.03. So the curve reading barely separates a triangle from a sine, the harmonics do it better, and neither does anything at all for the two sawtooths.",
+  "both_readings_agreed_on": "10 of 10",
+  "on_the_four_entries_this_claim_names": "8 of 8",
+  "why_the_fifth_is_counted_apart": "The entry printed `Sin` is nearest a sine of the five candidates offered and is claimed below not to be one. Both readings agreeing that it is nearer a sine than a square is true and is not support for the name; counting it with the other four would read as though it were."
+ },
+ "the_entry_the_page_prints_sin_against": {
+  "what": "A sine carrying a third harmonic near a seventeenth of the fundamental and almost nothing above it. Not a sine, not a triangle, and not the parabola the first reading put it nearest -- which is refused from both sides rather than outscored.",
+  "measured_in": "harmonics of the first, as the stage reports them",
+  "how_it_was_read": "Off the level track of a tremolo, which is the one reading of the three with no warp in it: a tremolo multiplies, so its envelope is the wave and not a logarithm of it. Read on the two types that carry a tremolo, at a rate slow enough that the fifth harmonic is inside what the frame can hold, and through a rate no longer quantised to the bin it was found in.",
+  "what_the_unit_returns": {
+   "on 01 25": {
+    "h2": 0.0386,
+    "h3": 0.0586,
+    "h4": 0.012,
+    "h5": 0.0015,
+    "h6": 0.001,
+    "h7": 0.0012
+   },
+   "on 04 06": {
+    "h2": 0.0412,
+    "h3": 0.0614,
+    "h4": 0.0087,
+    "h5": 0.0042,
+    "h6": 0.0022,
+    "h7": 0.0025
+   },
+   "the_two_disagree_by": {
+    "h2": 0.0025,
+    "h3": 0.0027,
+    "h4": 0.0033,
+    "h5": 0.0027,
+    "h6": 0.0013,
+    "h7": 0.0013
+   }
+  },
+  "candidates_rendered_onto_a_take_of_this_unit": {
+   "a sine": {
+    "h2": 0.0081,
+    "h3": 0.003,
+    "h4": 0.0023,
+    "h5": 0.0024,
+    "h6": 0.0012,
+    "h7": 0.001
+   },
+   "a triangle": {
+    "h2": 0.0116,
+    "h3": 0.1018,
+    "h4": 0.0071,
+    "h5": 0.0315,
+    "h6": 0.0042,
+    "h7": 0.0156
+   },
+   "a parabola, 4x(1-|x|)": {
+    "h2": 0.0122,
+    "h3": 0.0409,
+    "h4": 0.0058,
+    "h5": 0.0054,
+    "h6": 0.0035,
+    "h7": 0.0033
+   },
+   "a parabola with its square added back": {
+    "h2": 0.0119,
+    "h3": 0.0052,
+    "h4": 0.0063,
+    "h5": 0.0062,
+    "h6": 0.0035,
+    "h7": 0.0018
+   },
+   "a cubic on a triangle, 1.5t - 0.5t^3": {
+    "h2": 0.0118,
+    "h3": 0.0072,
+    "h4": 0.0064,
+    "h5": 0.005,
+    "h6": 0.0036,
+    "h7": 0.0018
+   },
+   "a sine carrying a twentieth of its third": {
+    "h2": 0.0083,
+    "h3": 0.0502,
+    "h4": 0.0022,
+    "h5": 0.0022,
+    "h6": 0.0011,
+    "h7": 0.0009
+   },
+   "a sine carrying a fifteenth of its third": {
+    "h2": 0.0084,
+    "h3": 0.0664,
+    "h4": 0.0022,
+    "h5": 0.0021,
+    "h6": 0.0011,
+    "h7": 0.0009
+   },
+   "a sine carrying a tenth of its third": {
+    "h2": 0.0086,
+    "h3": 0.0978,
+    "h4": 0.0022,
+    "h5": 0.0019,
+    "h6": 0.001,
+    "h7": 0.0009
+   }
+  },
+  "ranked_on_the_odd_harmonics": [
+   {
+    "candidate": "a sine carrying a fifteenth of its third",
+    "off_by": 0.00376
+   },
+   {
+    "candidate": "a sine carrying a twentieth of its third",
+    "off_by": 0.00568
+   },
+   {
+    "candidate": "a parabola, 4x(1-|x|)",
+    "off_by": 0.01117
+   },
+   {
+    "candidate": "a sine carrying a tenth of its third",
+    "off_by": 0.02181
+   },
+   {
+    "candidate": "a triangle",
+    "off_by": 0.03029
+   },
+   {
+    "candidate": "a cubic on a triangle, 1.5t - 0.5t^3",
+    "off_by": 0.03052
+   },
+   {
+    "candidate": "a parabola with its square added back",
+    "off_by": 0.03169
+   },
+   {
+    "candidate": "a sine",
+    "off_by": 0.0329
+   }
+  ],
+  "why_only_the_odd_ones": "Every entry comes back with a second harmonic near a thirtieth, including the square and the triangle, whose printed shapes have none at all -- and a rendered sine put through the same take returns one too. The even harmonics are the reading's own asymmetry and they are the same size on every entry, so they cannot separate candidates and are not asked to.",
+  "why_rendered_rather_than_computed": "The reading does not pass a harmonic through unchanged. Put a triangle through this take and the stage returns 0.1018 at the third where the series says 0.1111, so a candidate compared against its own algebra is compared against something the unit was never going to return. Both sides go through the take, the frame, the fold and the same harmonic reader.",
+  "what_is_not_claimed": "What generates it. A sine with a seventeenth of a third harmonic describes the cycle and names no arithmetic, and several things a part of this period might do -- a short table read with a coarse interpolation, a polynomial fit over a quarter cycle, a sine stored at low precision -- would all produce a small odd distortion. Telling those apart needs a reading of what sits between the harmonics, not of the harmonics."
+ },
+ "which_quantity_each_type_drives": {
+  "read_as": "Off the depths, not off the names. The record reports a level track and a balance track for every take, and on one type the level swings by more than its own mean while the balance moves a few decibels; on the other the balance swings forty decibels while the level moves a fifth of its mean. An order apart, each way round.",
+  "01 25": "The depths say so. This type's level swings by more than the whole of its own mean while its balance moves a few decibels, which is an order apart and is what the record reports both tracks for.",
+  "01 26": "The depths say so. This type's level swings by a fifth of its mean while its balance swings forty decibels, which is an order apart and is what the record reports both tracks for.",
+  "one_more_thing_the_pan_says": "On the two symmetric shapes the pan's level track finds twice the rate its balance track finds. A pan sweeping across and back crosses the middle twice in a cycle, and a level that dips at each crossing is two channels that do not sum flat. It is reported because it is in the record and because it is the kind of thing a renderer gets wrong; nothing here rests on it."
+ },
+ "a_prediction_the_rate_class_already_made": {
+  "the_byte_written": 49,
+  "what_the_closed_class_puts_there_hz": 2.5,
+  "what_came_back_hz": {
+   "01 25": 2.4926,
+   "01 26": 2.4926
+  },
+  "read_as": "Held out and not fitted. The rate byte was parked at one setting for this whole run and nothing here was tuned to it; the rate the modulator came back at is the entry the rate class closed on, to about a quarter of a per cent, on two types that class had not read. It is not evidence for anything in this file -- it is that file's evidence, arriving free."
+ },
+ "alternatives": [
+  {
+   "reading": "The entry printed `Sin` is a sine after all, and the third harmonic is something the reading put there.",
+   "candidate": "the-sine-entry-is-a-sine",
+   "standing": false,
+   "ruled_out_by": "The entry beside it on the same takes. `Tri` returns two to four times this one's third harmonic through the same frames, the same fold and the same detrend, so the method does not hand every entry the same amount -- and a reading that added a fortieth of a third harmonic to everything would have moved the sawtooth's away from one over the order, which it did not."
+  },
+  {
+   "reading": "The entry printed `Sin` is the parabola a part of this period reaches for when it has no room for a table: one multiply-and-subtract on the phase.",
+   "candidate": "the-sine-entry-is-a-parabola",
+   "standing": false,
+   "separated_by": {
+    "observable": "The fifth and seventh harmonics of that entry's cycle, read off a longer take at a slower rate so more cycles fold into one. The third already agrees; a parabola puts 0.008 in the fifth and 0.003 in the seventh, and a parabola with its own square added back puts under a thousandth in either.",
+    "predicts": {
+     "a parabola": "h5 0.008 and h7 0.003.",
+     "a parabola corrected by its own square": "h5 and h7 both under 0.001.",
+     "a stored table": "Whatever the table holds, which is not predicted -- but a table fine enough to be called a sine puts nothing measurable in either."
+    },
+    "divergence": "0.007 in the fifth harmonic, which is the gap between the two candidates that are not a table.",
+    "sensitivity_here": "0.002, what this run's fifth harmonic came back at on a cycle folded from eighteen. Four times as many cycles is half of that, which is where the margin below comes from.",
+    "margin": 3.5,
+    "run": {
+     "stage": "efx-sway",
+     "type": "01 26",
+     "address": "40 03 03",
+     "settings": [
+      2
+     ],
+     "stimulus": "the same held note with the rate byte at the slowest setting the take can still carry three cycles of, and the take lengthened",
+     "takes": 4,
+     "minutes": 5
+    }
+   },
+   "ruled_out_by": "Both of its harmonics, in opposite directions. Rendered onto one of this unit's own takes and read back through the whole stage it returns 0.0409 at the third harmonic where the unit returns 0.0600, and 0.0054 at the fifth where the unit returns 0.0029. Too little of one and more than twice too much of the other is not a candidate that needs scaling; the two errors cannot be reduced together. The two types carrying this entry agree with each other to 0.0027 at the third harmonic and 0.0027 at the fifth, so the gap is many times what the reading fails to repeat.",
+   "shown_in": [
+    "data/units/roland-sc8850-01/efx-sway/01-25-03-what-shape-the-modulator-has.json",
+    "data/units/roland-sc8850-01/efx-sway/04-06-12-the-five-names-a-third-time-as-a-tremolo.json",
+    "data/units/roland-sc8850-01/efx-sway/01-26-03-the-same-five-shapes-read-at-a-fifth-the-rate.json"
+   ]
+  },
+  {
+   "reading": "The five shapes are these two types', and the one other place the same five names are printed reaches a table of its own.",
+   "candidate": "a-table-per-type",
+   "standing": false,
+   "separated_by": {
+    "observable": "The same sweep on `04 06 / 40 03 12`, which is the only other place this unit prints these five names -- a tremolo and pan stage inside a multi-effect rather than a type of its own, reached at a different parameter number, with four stages in front of it.",
+    "predicts": {
+     "one table": "The same five cycles, to the harmonics already reported.",
+     "a table per type": "At least one entry whose harmonics are not these, by more than the two types here differ from each other."
+    },
+    "divergence": "0.12, how far a triangle sits from a square under the harmonic reading, taken as what a different table would have to be worth.",
+    "sensitivity_here": "0.02, how far the two types already read differ from each other on the entry they differ most on.",
+    "margin": 6,
+    "run": {
+     "stage": "efx-sway",
+     "type": "04 06",
+     "address": "40 03 12",
+     "settings": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "stimulus": "the same held note with this type's compressor, overdrive, equaliser and phaser stages switched out or held flat",
+     "takes": 12,
+     "minutes": 8
+    }
+   },
+   "ruled_out_by": "The third place read. Entry for entry the five shapes land no further apart than 0.0122 in any harmonic either reading carries, and both sawtooths climb the same way round -- on a type reached at a different parameter number with four stages in front of it.",
+   "shown_in": "data/units/roland-sc8850-01/efx-sway/04-06-12-the-five-names-a-third-time-as-a-tremolo.json"
+  },
+  {
+   "reading": "The depth byte beside this one scales the cycle, so the shape is the same shape at every depth.",
+   "candidate": "a-depth-that-only-scales",
+   "standing": false,
+   "separated_by": {
+    "observable": "The same five entries at a depth well below full. Every cycle was read at 127 here, so nothing in this file says what the shape is anywhere else on that byte.",
+    "predicts": {
+     "a depth that scales": "The same harmonics at every depth, since a harmonic is reported relative to the first.",
+     "a depth that reshapes": "Harmonics that move with it -- which is what a depth applied by clipping the modulator rather than by scaling it would do."
+    },
+    "divergence": "0.11, a triangle's own third harmonic, taken as what a reshaping worth the name would be.",
+    "sensitivity_here": "0.02, how far the two types here differ on one entry's harmonics.",
+    "margin": 5,
+    "run": {
+     "stage": "efx-sway",
+     "type": "01 26",
+     "address": "40 03 03",
+     "settings": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "stimulus": "the same held note with the depth byte at 32 and at 96",
+     "takes": 22,
+     "minutes": 14
+    }
+   },
+   "ruled_out_by": "Upheld rather than refuted, and recorded as what it turned out to be. Read at three settings of the depth byte the cycle is the same cycle; the decibel reading's own warp accounts for the whole of the apparent change, sitting 0.0582 from the unwarped reading at the top of the byte and 0.0166 at a quarter of it.",
+   "shown_in": [
+    "data/units/roland-sc8850-01/efx-sway/01-26-03-the-same-five-shapes-at-a-quarter-depth.json",
+    "data/units/roland-sc8850-01/efx-sway/01-26-03-the-same-five-shapes-at-three-quarters-depth.json"
+   ]
+  },
+  {
+   "reading": "The small third harmonic is the unit's, but what puts it there is a short sine table read coarsely rather than a sine deliberately softened.",
+   "candidate": "a-short-table-read-coarsely",
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Where the energy sits above the seventh harmonic. A table of N points joined by straight lines puts its error at harmonics near N and its multiples, not at the third; a softened sine puts a third harmonic and nothing else. The reading cannot go there: the amplitude track is taken on a twenty millisecond frame, so at the slowest rate this modulator runs the eighth harmonic is already at the frame's own corner.",
+    "predicts": {
+     "a softened sine": "a third harmonic and nothing above the seventh",
+     "a short table": "a third harmonic and a rise again near the table's length"
+    },
+    "sensitivity_here": "0.0027, what the two types carrying this entry fail to agree on.",
+    "margin": 0,
+    "why_not_separable": "Not by this stage on this unit. A modulator running at a few hertz has its eighth harmonic in the tens of hertz, and the envelope is read on a frame chosen to hold the lowest note the run uses. Reading higher would need the modulation applied to something whose envelope can be tracked faster, which is a different stimulus rather than a different setting."
+   }
+  }
+ ],
+ "refuted_by": "A sixth setting of the byte returning a sixth shape, which would make this a range rather than a table of five. Or any of the four named entries coming back as something else on a third type, by more than the two types here differ from each other. Or the harmonics moving with the depth byte, which would mean the cycles reported are one point of a surface and the table is not a table of shapes at all.",
+ "what_it_would_change": [
+  "A modulator is five entries and an accumulator. There is nothing to fit, nothing to tune, and no per-type constant: two types driving different quantities return the same five cycles from the same byte.",
+  "`Saw1` and `Saw2` are one shape and its mirror, not two. A renderer that made them two ramps with different slopes would be wrong about both.",
+  "The modulator multiplies. A renderer that swung a level in decibels would put a second harmonic into every one of the five, which is what the decibel reading of these very takes shows and the amplitude reading does not."
+ ],
+ "what_this_does_not_settle": [
+  "What the sine entry actually is. It is narrowed to something with a third harmonic near a parabola's and a fifth well under one, and the run that would close it is queued.",
+  "What the depth byte does to the shape. Every cycle here was read at full depth.",
+  "How the shape is stored -- a table of samples, a few operations on the phase, or a quarter table mirrored. Nothing leaving the sockets separates those for the four exact shapes, because all three ways of writing a triangle return a triangle.",
+  "The one other place these five names are printed. This unit prints them three times and two were read; the third is a stage inside a multi-effect rather than a type of its own, and the third alternative above has the run for it.",
+  "What makes the `Sin` entry's cycle. It is measured as a sine with a third harmonic near a seventeenth, and the arithmetic behind it is not read -- several cheap constructions would return a small odd distortion and the reading cannot see where they differ."
+ ],
+ "the_same_five_in_a_third_place": {
+  "what": "`04 06` is a multi-effect with a tremolo-and-pan stage inside it, reached at a different parameter number with four stages in front of it, and its selector offers both the level modulation one type is and the placement modulation the other is. Asked as a tremolo it returns the same five shapes the standalone tremolo does.",
+  "measured_in": "harmonics of the first",
+  "entry_by_entry": {
+   "Tri": {
+    "apart_at_the_third_harmonic": 0.0022,
+    "apart_at_the_fifth": 0.0003,
+    "climbing_here": 0.4844,
+    "climbing_there": 0.5
+   },
+   "Sqr": {
+    "apart_at_the_third_harmonic": 0.0051,
+    "apart_at_the_fifth": 0.0032,
+    "climbing_here": 0.375,
+    "climbing_there": 0.3594
+   },
+   "Sin": {
+    "apart_at_the_third_harmonic": 0.0027,
+    "apart_at_the_fifth": 0.0027,
+    "climbing_here": 0.4688,
+    "climbing_there": 0.4375
+   },
+   "Saw1": {
+    "apart_at_the_third_harmonic": 0.0037,
+    "apart_at_the_fifth": 0.0036,
+    "climbing_here": 0.9062,
+    "climbing_there": 0.8906
+   },
+   "Saw2": {
+    "apart_at_the_third_harmonic": 0.0122,
+    "apart_at_the_fifth": 0.0064,
+    "climbing_here": 0.0781,
+    "climbing_there": 0.0781
+   }
+  },
+  "widest_apart_in_any_harmonic": 0.0122,
+  "why_it_settles_the_alternative": "A table belonging to a type would have no reason to land this close to another type's at all five entries, and the two sawtooths would have no reason to climb the same way round -- which is the one reading nothing about magnitude can fake, because the two of them sit exactly together under every harmonic score.",
+  "and_as_a_pan": "Asked the other way the same stage moves the balance instead: 40.2 dB of it, with the level track returning nothing the stage would report -- which is what a pan is, and what the same selector's other position is not. One byte in one stage drives either quantity, which is what the two standalone types do with two bytes in two stages."
+ },
+ "what_the_depth_byte_does_to_the_cycle": {
+  "what": "Scales it. The same five entries read at the whole of the depth byte, at three quarters and at a quarter return the same shapes; what moves is the reading, not the cycle.",
+  "measured_in": "dB of swing, and harmonics of the first",
+  "at_each_depth": {
+   "the whole byte": {
+    "Tri": {
+     "swing_db": 40.1953,
+     "third_harmonic": 0.18761,
+     "against_the_linear_reading": 0.0979
+    },
+    "Sqr": {
+     "swing_db": 46.0279,
+     "third_harmonic": 0.29363,
+     "against_the_linear_reading": -0.0242
+    },
+    "Sin": {
+     "swing_db": 45.405,
+     "third_harmonic": 0.06301,
+     "against_the_linear_reading": 0.0044
+    },
+    "Saw1": {
+     "swing_db": 36.7031,
+     "third_harmonic": 0.36199,
+     "against_the_linear_reading": 0.0582
+    },
+    "Saw2": {
+     "swing_db": 37.4555,
+     "third_harmonic": 0.37125,
+     "against_the_linear_reading": 0.0616
+    }
+   },
+   "three quarters of it": {
+    "Tri": {
+     "swing_db": 16.7501,
+     "third_harmonic": 0.11718,
+     "against_the_linear_reading": 0.0275
+    },
+    "Sqr": {
+     "swing_db": 18.1705,
+     "third_harmonic": 0.32106,
+     "against_the_linear_reading": 0.0032
+    },
+    "Sin": {
+     "swing_db": 17.371,
+     "third_harmonic": 0.01576,
+     "against_the_linear_reading": -0.0429
+    },
+    "Saw1": {
+     "swing_db": 15.4851,
+     "third_harmonic": 0.32917,
+     "against_the_linear_reading": 0.0254
+    },
+    "Saw2": {
+     "swing_db": 15.4813,
+     "third_harmonic": 0.32288,
+     "against_the_linear_reading": 0.0132
+    }
+   },
+   "a quarter of it": {
+    "Tri": {
+     "swing_db": 3.3136,
+     "third_harmonic": 0.08629,
+     "against_the_linear_reading": -0.0034
+    },
+    "Sqr": {
+     "swing_db": 3.5378,
+     "third_harmonic": 0.33437,
+     "against_the_linear_reading": 0.0166
+    },
+    "Sin": {
+     "swing_db": 3.1335,
+     "third_harmonic": 0.05482,
+     "against_the_linear_reading": -0.0038
+    },
+    "Saw1": {
+     "swing_db": 2.9773,
+     "third_harmonic": 0.34929,
+     "against_the_linear_reading": 0.0455
+    },
+    "Saw2": {
+     "swing_db": 2.815,
+     "third_harmonic": 0.27631,
+     "against_the_linear_reading": -0.0334
+    }
+   }
+  },
+  "against_the_unwarped_reading": {
+   "at_the_whole_byte": 0.0582,
+   "at_a_quarter_of_it": 0.0166,
+   "why_that_is_the_argument": "A pan's two channels are read as a difference in decibels, which is a logarithm of the wave, and a logarithm of a large swing is a warped version of it while a logarithm of a small one is nearly the wave itself. If the byte reshaped the cycle the decibel reading would wander away from the tremolo's linear reading as the byte moved. It does the opposite: it converges on it."
+  }
+ }
 }
