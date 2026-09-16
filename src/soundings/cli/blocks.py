@@ -16,6 +16,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .. import documents
 from . import options, report
 
 BAND_SET_NAMES = ("third-octave", "twelfth-octave")
@@ -501,6 +502,32 @@ def _printed_values(path: str, type_id: str, block: str) -> dict[str, str]:
     return out
 
 
+#: Where a referral in an effect list's value column points. A `*n` is a reference
+#: inside the document that prints it, so it is resolved from that document's own
+#: directory rather than from a flag -- a grid handed in from somewhere else would
+#: be a different publisher's table answering this one's footnote.
+CONVERSION_GRID = "value-conversion.json"
+
+
+def _printed_settings(path: str, states: dict[str, str]) -> dict[str, dict[int, str]]:
+    """For each address whose value column refers to the grid, what the grid prints.
+
+    Empty where the document has no grid beside it, which is not a failure: a page
+    read for its effect list alone still plans, and every address keeps the pair its
+    measured range gives it.
+    """
+    grid = Path(path).parent / CONVERSION_GRID
+    if not grid.is_file():
+        return {}
+    rows = json.loads(grid.read_text())["rows"]
+    out = {}
+    for address, cell in states.items():
+        each = documents.settings_printed(cell, rows)
+        if each:
+            out[address] = each
+    return out
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
     """Turn a write probe's measured ranges into the pair each address is asked at."""
     from .. import plan
@@ -515,8 +542,9 @@ def cmd_plan(args: argparse.Namespace) -> int:
             print(f"{args.states_from} prints no values against any parameter of {args.type!r}")
             return 1
 
+    each = _printed_settings(args.states_from, states) if states else {}
     record = json.loads(Path(args.write_probe).read_text())
-    asks, skipped = plan.plan_block(record, args.block, states)
+    asks, skipped = plan.plan_block(record, args.block, states, each)
     if not asks and not skipped:
         print(f"no address under {args.block!r} in {args.write_probe}")
         return 1
@@ -535,6 +563,15 @@ def cmd_plan(args: argparse.Namespace) -> int:
             "type": args.type,
             "block": args.block,
             "addresses": len(states),
+            "referred_to_the_conversion_grid": sorted(each),
+            "why_the_grid_is_read": (
+                "A value column that refers to the grid narrows nothing, because the grid gives a "
+                "setting at all 128 values. What it does answer is whether the pair chosen for the "
+                "address names two settings or one of them twice, which a column that wraps does "
+                "not: the one such column here prints each end as equal to the other, and a null "
+                "read off that pair says the two values are one setting and not that the parameter "
+                "does nothing."
+            ),
         }
     report.write_json(args.out, out)
     return 0
@@ -910,12 +947,13 @@ def cmd_efx_params(args) -> int:
     if not loads:
         print(f"{args.types_from} has no type {args.type}")
         return 1
-    printed = None
+    printed, each = None, None
     if args.states_from:
         if not args.first_parameter:
             print("--states-from needs --first-parameter to know which block those bytes sit in")
             return 1
         printed = _printed_values(args.states_from, args.type, args.first_parameter)
+        each = _printed_settings(args.states_from, printed)
 
     found = efxparams.read_directory(
         args.records,
@@ -926,6 +964,7 @@ def cmd_efx_params(args) -> int:
         supersede=dict(s.split("=", 1) for s in args.supersede),
         slots=args.slots or None,
         printed=printed,
+        settings=each,
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")

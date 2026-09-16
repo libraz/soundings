@@ -80,6 +80,17 @@ WHY_OUTSIDE_ITS_PRINTED_VALUES = (
     "over its own yardstick and a vowel at forty-four."
 )
 
+#: An address whose two settings are one setting of its parameter, twice.
+WHY_ASKED_AT_ONE_SETTING = (
+    "Both settings name the same setting of the parameter. The page's value column refers this "
+    "address to a column of the conversion grid, that column comes back to where it started, and "
+    "the grid prints each of the two ends as equal to the other -- which is the page saying the "
+    "byte's two ends are one place. So the two sets of takes are takes of one setting and they "
+    "differ by what a setting differs from itself by, which is the number a null is. Read as a "
+    "null it would say the parameter does nothing; what it says is that it was asked twice in the "
+    "same place. Asked again at the value the unit powers up holding against one end."
+)
+
 #: What a pass at two settings does not establish.
 LIMITS = (
     "What any audible parameter is, or by how much it moves anything. Two settings were "
@@ -167,6 +178,8 @@ UNREADABLE = "started something that does not repeat"
 NO_YARDSTICK = "no yardstick under the note asked, so not asked"
 OUTSIDE_ITS_PRINTED_VALUES = "asked at a value its parameter is not printed as having, so not asked"
 
+ASKED_AT_ONE_SETTING = "asked twice at one setting of its parameter, so not asked"
+
 #: Repeatability worse than this leaves a setting with no usable yardstick of its
 #: own, so a verdict resting on it is reported with the asymmetry rather than as a
 #: difference. Not a threshold on the unit -- a threshold on what can be read.
@@ -201,8 +214,32 @@ def asked_outside_its_printed_values(record: dict, printed_values: str | None) -
     return any(int(value) not in here for value in record.get("values", []))
 
 
+def asked_at_one_setting(record: dict, settings: dict[int, str] | None) -> bool:
+    """Whether the pair names one setting of the parameter rather than two.
+
+    A value column referring to the conversion grid narrows nothing -- the grid
+    gives a setting at all 128 -- so `asked_outside_its_printed_values` returns
+    false here however the pair was chosen, and correctly. The other question is
+    whether the two values the pair names are the same setting, which one column
+    of the grid answers yes to: it comes back to where it began, and the page
+    prints each of its ends as equal to the other.
+
+    Only the pair is read, not the verdict. A parameter heard at such a pair was
+    heard, and would be the page being wrong about the unit rather than the reverse.
+    """
+    if not settings:
+        return False
+    values = [int(value) for value in record.get("values", [])]
+    if len(values) != 2:
+        return False
+    return documents.one_setting(settings.get(values[0]), settings.get(values[1]))
+
+
 def _verdict(
-    record: dict, stimulus: dict, outside_its_printed_values: bool = False
+    record: dict,
+    stimulus: dict,
+    outside_its_printed_values: bool = False,
+    at_one_setting: bool = False,
 ) -> tuple[str, str | None]:
     """What this address answered, and the sentence that qualifies it.
 
@@ -225,6 +262,8 @@ def _verdict(
         # arrive the same way, and only one of them is a fact about the parameter.
         if outside_its_printed_values:
             return OUTSIDE_ITS_PRINTED_VALUES, WHY_OUTSIDE_ITS_PRINTED_VALUES
+        if at_one_setting:
+            return ASKED_AT_ONE_SETTING, WHY_ASKED_AT_ONE_SETTING
         return NULL, None
     heard_as_a_difference = stimulus.get("changed_the_shape") or stimulus.get("changed_the_level")
     if not heard_as_a_difference:
@@ -244,11 +283,13 @@ def row(
     record: dict,
     withdrawn: dict | None,
     printed_values: str | None = None,
+    printed_settings: dict[int, str] | None = None,
 ) -> dict:
     """One parameter's verdict, with the figures a reader needs to check it."""
     stimulus = _first(record)
     outside = asked_outside_its_printed_values(record, printed_values)
-    verdict, why = _verdict(record, stimulus, outside)
+    one_place = asked_at_one_setting(record, printed_settings)
+    verdict, why = _verdict(record, stimulus, outside, one_place)
     out = {
         "type": type_id,
         "parameter": slot,
@@ -273,6 +314,15 @@ def row(
         # be this module's reading of it standing where the reading's input belongs.
         out["printed_values"] = printed_values
         out["asked_inside_its_printed_values"] = not outside
+        if printed_settings:
+            # Two different questions and a row that carries only the first reads as
+            # a pair that was asked properly. Inside its printed values it was: the
+            # referral gives every value a setting. Both of them the same setting is
+            # the other thing, and it is stated here as the page states it.
+            out["the_pair_names_one_setting"] = one_place
+            out["printed_settings"] = [
+                printed_settings.get(int(value)) for value in record.get("values", [])
+            ]
     if why:
         out["why"] = why
     if withdrawn:
@@ -350,6 +400,7 @@ def read_directory(
     supersede: dict[str, str] | None = None,
     slots: list[str] | None = None,
     printed: dict[str, str] | None = None,
+    settings: dict[str, dict[int, str]] | None = None,
 ) -> dict:
     """Assemble from a directory of per-address contrast records.
 
@@ -370,10 +421,16 @@ def read_directory(
     decides nothing about what was heard: a null taken at a value the parameter
     has no state for is reported as a slot nobody asked rather than as a slot
     that answered nothing.
+
+    `settings` is what a value column that refers to the conversion grid says, by
+    address: the setting printed at each of the 128. It answers the question the
+    referral leaves open -- not how many values are settings, which is all of them,
+    but whether the two the pair names are two of them or one of them twice.
     """
     where = Path(where)
     supersede = supersede or {}
     printed = printed or {}
+    settings = settings or {}
     superseding = {str(Path(p).resolve()) for p in supersede.values()}
     # Keyed by the address the record states rather than by the file name, so a
     # run asked again writes a second file without becoming a second parameter.
@@ -409,19 +466,19 @@ def read_directory(
         record, withdrawn = found[address], None
         if address in supersede:
             # Why the first pair was withdrawn is read off that pair rather than
-            # assumed. Two things send an address round again and they are not the
-            # same finding: a setting that left the part silent, and a setting the
-            # page gives the parameter none of. Naming one of them for both would
-            # put the wrong reason on the row, and the reason is the whole of what
-            # a withdrawn pair carries.
-            withdrawn = {
-                "values": record["values"],
-                "why": (
-                    WHY_OUTSIDE_ITS_PRINTED_VALUES
-                    if asked_outside_its_printed_values(record, printed.get(address))
-                    else WHY_SILENT_PAIR
-                ),
-            }
+            # assumed. Three things send an address round again and they are not
+            # the same finding: a setting that left the part silent, a setting the
+            # page gives the parameter none of, and a pair whose two values are one
+            # setting of it. Naming one of them for all three would put the wrong
+            # reason on the row, and the reason is the whole of what a withdrawn
+            # pair carries.
+            if asked_outside_its_printed_values(record, printed.get(address)):
+                why_again = WHY_OUTSIDE_ITS_PRINTED_VALUES
+            elif asked_at_one_setting(record, settings.get(address)):
+                why_again = WHY_ASKED_AT_ONE_SETTING
+            else:
+                why_again = WHY_SILENT_PAIR
+            withdrawn = {"values": record["values"], "why": why_again}
             record = json.loads(Path(supersede[address]).read_text())
         # A refused run holds no takes to read a verdict out of, so it cannot
         # become a row. It is not missing either, and the difference is the
@@ -429,7 +486,17 @@ def read_directory(
         if record.get("refused"):
             refused.append({"parameter": slot, "address": address, **record["refused"]})
             continue
-        rows.append(row(type_id, slot, defaults[slot], record, withdrawn, printed.get(address)))
+        rows.append(
+            row(
+                type_id,
+                slot,
+                defaults[slot],
+                record,
+                withdrawn,
+                printed.get(address),
+                settings.get(address),
+            )
+        )
     coverage = None
     if slots:
         coverage = {

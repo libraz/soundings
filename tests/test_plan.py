@@ -144,6 +144,48 @@ def test_a_parameter_pointed_at_a_conversion_table_keeps_the_measured_pair() -> 
     assert "printed_values" not in asks[0].to_json()
 
 
+#: One column of the conversion grid wraps: it reaches the same place from both
+#: directions and the page says so in each of the two cells rather than leaving it
+#: to be noticed. Trimmed to the values a pair is ever chosen from.
+WRAPS = {0: "L180(=R180)", 64: "0", 127: "R180(=L180)"}
+
+
+def test_a_column_that_comes_back_to_itself_is_not_asked_at_both_of_its_ends() -> None:
+    """The two ends of that byte are one setting, and the takes of one setting
+    differ by nothing -- which is exactly what the run reports for a parameter that
+    does nothing. One such pair is published, conclusive, and wrong about the
+    unit."""
+    record = probe(row("40 11 04", "40", "00..7F"))
+
+    asks, _ = plan.plan_block(record, "40 11", {"40 11 04": "*13"}, {"40 11 04": WRAPS})
+
+    assert asks[0].values == (64, 127)
+    assert asks[0].values_from == plan.FROM_THE_POWER_ON_VALUE
+
+
+def test_a_column_whose_ends_are_two_settings_keeps_the_pair_its_range_gives() -> None:
+    """The rule has to leave the other thirteen columns alone, or it is a rewrite of
+    every referred parameter wearing one column's justification."""
+    record = probe(row("40 11 04", "40", "00..7F"))
+    rates = {0: "0.05", 64: "2.60", 127: "10.00"}
+
+    asks, _ = plan.plan_block(record, "40 11", {"40 11 04": "*6"}, {"40 11 04": rates})
+
+    assert asks[0].values == (127, 0)
+    assert asks[0].values_from == plan.FROM_THE_RANGE
+
+
+def test_a_wrapped_column_whose_power_on_is_also_that_setting_cannot_be_asked() -> None:
+    """The replacement is the unit's own power-on value, so where that is printed as
+    the setting the ends already give, there is no pair left to name and saying so
+    beats asking it somewhere chosen for the sake of having a pair."""
+    record = probe(row("40 11 04", "00", "00..7F"))
+
+    _, skipped = plan.plan_block(record, "40 11", {"40 11 04": "*13"}, {"40 11 04": WRAPS})
+
+    assert [s.why for s in skipped] == [plan.ENDS_ARE_ONE_SETTING]
+
+
 def test_a_printed_value_the_address_will_not_take_is_not_written() -> None:
     """A page and a unit disagreeing is a finding, not a licence to write past the
     range this unit was measured to accept."""

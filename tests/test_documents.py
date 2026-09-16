@@ -665,3 +665,29 @@ def test_the_two_printings_of_the_list_are_told_apart_by_the_page() -> None:
     assert all("parameter_number" in row for row in described.rows if "parameter" in row)
     tabled = documents.read_effect_list("\n".join(APPENDIX), 217)
     assert all("address_lsb" in row for row in tabled.rows if "parameter" in row)
+
+
+def test_a_setting_printed_as_equal_to_another_carries_both_names() -> None:
+    """One column of the conversion grid wraps, and the page writes the equality
+    into the cell rather than leaving a reader to spot it. Read as plain text the
+    two ends are two different strings, which is how a pair taken from them passed
+    for a pair of settings."""
+    assert documents.named_by("L180(=R180)") == {"L180", "R180"}
+    assert documents.named_by("R12") == {"R12"}
+    assert documents.one_setting("L180(=R180)", "R180(=L180)")
+    assert not documents.one_setting("L168", "R168")
+    assert not documents.one_setting("L168", None)
+
+
+def test_a_referral_resolves_to_the_setting_the_grid_prints_at_each_value() -> None:
+    """`values_printed` answers how many values a parameter has and a referral
+    narrows nothing. Which of them are the same setting is the other question, and
+    the grid is where it is answered."""
+    grid = [
+        {"column": 13, "decimal": "0", "setting": "L180(=R180)"},
+        {"column": 13, "decimal": "127", "setting": "R180(=L180)"},
+        {"column": 6, "decimal": "0", "setting": "0.05"},
+    ]
+    assert documents.settings_printed("*13", grid) == {0: "L180(=R180)", 127: "R180(=L180)"}
+    assert documents.settings_printed("00/01", grid) is None
+    assert documents.settings_printed("*9", grid) is None

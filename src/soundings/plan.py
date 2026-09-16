@@ -91,6 +91,22 @@ RANGE_UNREAD = (
 
 NO_RANGE = "the write probe recorded no range for it"
 
+FROM_THE_POWER_ON_VALUE = (
+    "the value the unit powers up holding, against the end of the range whose printed setting "
+    "differs from it. Taken because the page prints one setting at both ends of what this address "
+    "accepts, so the pair the ends give asks the parameter twice in the same place -- and a null "
+    "read off that pair would say the parameter does nothing when what it says is that the two "
+    "values are the same setting of it. Which of the two settings is furthest from which is a "
+    "reading of what the column means and is not made here, so the second value is the unit's own "
+    "power-on setting rather than a point chosen along the column"
+)
+
+ENDS_ARE_ONE_SETTING = (
+    "is printed with one setting at both ends of what the address accepts, and the value the unit "
+    "powers up holding is printed as that same setting, so no pair this planner can name asks it "
+    "in two places"
+)
+
 
 @dataclass(frozen=True)
 class Ask:
@@ -184,8 +200,33 @@ def _unread(record: dict, prefix: str) -> list[str]:
     return out
 
 
+def _tells_the_pair_apart(
+    values: tuple[int, int], settings: dict[int, str], power_on: int | None
+) -> tuple[tuple[int, int], str] | None:
+    """A pair the page prints two settings for, where the given one is printed as one.
+
+    Only one column of one grid read here needs this, and the page says so in its own
+    notation: the quantity wraps, so its two ends are the same place and it prints each
+    of them as equal to the other. Asking a wrapped quantity at the ends of its byte
+    asks it twice where it is, and the answer is a null that reads exactly like a
+    parameter that does nothing.
+
+    Returns None where the pair already names two settings -- which is every other
+    column -- so nothing that is asked correctly today is moved.
+    """
+    first, second = values
+    if not documents.one_setting(settings.get(first), settings.get(second)):
+        return None
+    if power_on is None or documents.one_setting(settings.get(power_on), settings.get(first)):
+        return None
+    return (power_on, first), FROM_THE_POWER_ON_VALUE
+
+
 def plan_block(
-    record: dict, prefix: str, printed: dict[str, str] | None = None
+    record: dict,
+    prefix: str,
+    printed: dict[str, str] | None = None,
+    settings: dict[str, dict[int, str]] | None = None,
 ) -> tuple[list[Ask], list[Skip]]:
     """Every address under `prefix`, sorted into the askable and the rest.
 
@@ -194,9 +235,12 @@ def plan_block(
     gives, rather than at the ends of what the address accepts, and its row says so.
 
     A column referring the reader to a table of 128 entries narrows nothing, so the
-    address keeps the pair its measured range gives it.
+    address keeps the pair its measured range gives it. `settings` carries what such
+    a column does say -- the setting printed at each of the 128 -- which answers a
+    different question: whether the pair names two settings or one twice.
     """
     printed = printed or {}
+    settings = settings or {}
     asks: list[Ask] = []
     skipped: list[Skip] = []
     for row in _rows(record, prefix):
@@ -212,6 +256,10 @@ def plan_block(
         power_on = int(str(row["original"]), 16) if row.get("original") else None
         cell = printed.get(address)
         here = documents.values_printed(cell) if cell else None
+        # What a referral says about this address is kept even though it narrows
+        # nothing: which values are the same setting is a separate question from
+        # which values are settings, and it is asked below once the pair is chosen.
+        each = settings.get(address) if here == documents.EVERY_VALUE else None
         if here == documents.EVERY_VALUE:
             cell, here = None, None
         if here is not None:
@@ -228,6 +276,13 @@ def plan_block(
             came_from = FROM_THE_PRINTED_VALUES
         else:
             values, came_from = _ordered(low, high, power_on), FROM_THE_RANGE
+        if each:
+            moved = _tells_the_pair_apart(values, each, power_on)
+            if moved is not None:
+                values, came_from = moved
+            elif documents.one_setting(each.get(values[0]), each.get(values[1])):
+                skipped.append(Skip(address, ENDS_ARE_ONE_SETTING))
+                continue
         asks.append(
             Ask(
                 address=address,

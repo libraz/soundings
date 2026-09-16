@@ -369,3 +369,82 @@ def test_a_parameter_heard_at_such_a_pair_was_still_heard() -> None:
     verdict = efxparams.row("01 00", 16, 64, record, None, "34–4C")
     assert verdict["verdict"] == efxparams.AUDIBLE
     assert verdict["asked_inside_its_printed_values"] is False
+
+
+WRAPS = {0: "L180(=R180)", 64: "0", 127: "R180(=L180)"}
+"""One column of the conversion grid comes back to where it began, at the two
+values a pair is otherwise taken from."""
+
+
+def test_a_null_at_two_values_the_page_calls_one_setting_is_not_a_null(tmp_path) -> None:
+    """The takes are takes of one setting, so they differ by what a setting differs
+    from itself by -- which is the number a null is, arriving the same way and
+    meaning something else. One such row was published conclusive."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 71",
+        [64],
+        control,
+        [],
+        printed={"40 03 03": "*13"},
+        settings={"40 03 03": WRAPS},
+    )
+
+    row = found["parameters"][0]
+    assert row["verdict"] == efxparams.ASKED_AT_ONE_SETTING
+    assert row["the_pair_names_one_setting"] is True
+    # The referral does give every value a setting, so the other question's answer
+    # stays yes and a row carrying only it reads as a pair asked properly.
+    assert row["asked_inside_its_printed_values"] is True
+
+
+def test_a_pair_the_page_calls_two_settings_is_still_read_as_a_null(tmp_path) -> None:
+    """Thirteen of the grid's fourteen columns do not come back on themselves, and
+    the rule has to leave every one of their nulls standing."""
+    _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 20",
+        [64],
+        control,
+        [],
+        printed={"40 03 03": "*6"},
+        settings={"40 03 03": {0: "0.05", 64: "2.60", 127: "10.00"}},
+    )
+
+    assert found["parameters"][0]["verdict"] == efxparams.NULL
+    assert found["parameters"][0]["the_pair_names_one_setting"] is False
+
+
+def test_a_pair_withdrawn_for_being_one_setting_twice_says_that_and_not_silence(
+    tmp_path,
+) -> None:
+    """Three things send an address round again now, and a row that names the wrong
+    one reports a finding the run never made."""
+    _write(tmp_path, "first.json", _record("40 03 03", audible=False, shape=False, level=False))
+    again = tmp_path / "again.json"
+    again.write_text(json.dumps(_record("40 03 03", audible=True, shape=True, level=False)))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 71",
+        [64],
+        control,
+        [],
+        supersede={"40 03 03": str(again)},
+        printed={"40 03 03": "*13"},
+        settings={"40 03 03": WRAPS},
+    )
+
+    row = found["parameters"][0]
+    assert row["why_asked_again"] == efxparams.WHY_ASKED_AT_ONE_SETTING
+    assert "silent" not in row["why_asked_again"]

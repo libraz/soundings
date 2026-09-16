@@ -967,6 +967,54 @@ def values_printed(values_hex: str) -> frozenset[int] | None:
     return None
 
 
+def settings_printed(values_hex: str, grid: list[dict]) -> dict[int, str] | None:
+    """The setting a conversion grid prints at each byte value, for a referral cell.
+
+    `values_printed` answers which values a parameter has and a referral narrows
+    nothing, because the grid gives a setting at every one of the 128. What the
+    grid does say is which of them are the *same* setting, and that is a different
+    question from how many there are: a column may print one setting over a run of
+    values, and it may print the same setting at both ends of the byte.
+
+    None where the cell is not a referral, or where the grid holds no such column.
+    """
+    referral = _PRINTED_COLUMN.match(values_hex.strip())
+    if not referral:
+        return None
+    wanted = int(referral.group(1))
+    out: dict[int, str] = {}
+    for row in grid:
+        if row.get("column") != wanted or "decimal" not in row or "setting" not in row:
+            continue
+        out[int(row["decimal"])] = str(row["setting"]).strip()
+    return out or None
+
+
+_PRINTED_ALIAS = re.compile(r"^(?P<is>.+?)\s*\(\s*=\s*(?P<also>.+?)\s*\)$")
+
+
+def named_by(setting: str) -> frozenset[str]:
+    """Every name a printed setting gives itself, including the one in brackets.
+
+    A column whose quantity wraps reaches the same place from both directions, and
+    this grid says so where it happens rather than leaving a reader to notice: the
+    cell is printed `L180(=R180)`. Two cells are the same setting when they share a
+    name, which is a reading of the page's own notation and not of what the quantity
+    means -- nothing here knows these are degrees or that they go round.
+    """
+    found = _PRINTED_ALIAS.match(setting.strip())
+    if not found:
+        return frozenset({setting.strip()})
+    return frozenset({found.group("is"), found.group("also")})
+
+
+def one_setting(first: str | None, second: str | None) -> bool:
+    """Whether two printed cells are the page's name for the same setting."""
+    if first is None or second is None:
+        return False
+    return bool(named_by(first) & named_by(second))
+
+
 def _where_labelled(text: str, label: str) -> list[int]:
     """Every printed column a cell holding exactly this label begins at, once each."""
     found: list[int] = []
