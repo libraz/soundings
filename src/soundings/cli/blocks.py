@@ -502,6 +502,39 @@ def _printed_values(path: str, type_id: str, block: str) -> dict[str, str]:
     return out
 
 
+#: The marks an effect list prints in front of a parameter's name. They are about
+#: where the row sits on the page -- which column of a two-column table it was set
+#: in -- and not about what the parameter is called.
+_PRINTED_MARKS = "+#* "
+
+
+def _printed_names(path: str, type_id: str, block: str) -> dict[str, str]:
+    """What an effect list calls each of a type's parameters, keyed by address.
+
+    The same rows `_printed_values` reads, taken from the other column. What the
+    name is for is the grouping: a multi-stage type is printed with a short tag in
+    front of every parameter of each stage, which is the only statement anywhere
+    about which addresses are one place in the signal path.
+    """
+    where = Path(path)
+    rows = json.loads(where.read_text())["rows"]
+    hand = where.parent / "by-hand.json"
+    if hand.is_file():
+        rows = rows + json.loads(hand.read_text())["tables"].get(where.stem, [])
+    head = block.replace(" ", "").upper()
+    wanted = type_id.replace(" ", "").upper()
+    out: dict[str, str] = {}
+    for row in rows:
+        if "address_lsb" not in row or not row.get("parameter"):
+            continue
+        if (row["msb"] + row["lsb"]).upper() != wanted:
+            continue
+        name = str(row["parameter"]).lstrip(_PRINTED_MARKS).strip()
+        if name:
+            out[f"{head[0:2]} {head[2:4]} {row['address_lsb']}"] = name
+    return out
+
+
 #: Where a referral in an effect list's value column points. A `*n` is a reference
 #: inside the document that prints it, so it is resolved from that document's own
 #: directory rather than from a flag -- a grid handed in from somewhere else would
@@ -947,13 +980,14 @@ def cmd_efx_params(args) -> int:
     if not loads:
         print(f"{args.types_from} has no type {args.type}")
         return 1
-    printed, each = None, None
+    printed, each, names = None, None, None
     if args.states_from:
         if not args.first_parameter:
             print("--states-from needs --first-parameter to know which block those bytes sit in")
             return 1
         printed = _printed_values(args.states_from, args.type, args.first_parameter)
         each = _printed_settings(args.states_from, printed)
+        names = _printed_names(args.states_from, args.type, args.first_parameter)
 
     found = efxparams.read_directory(
         args.records,
@@ -965,6 +999,7 @@ def cmd_efx_params(args) -> int:
         slots=args.slots or None,
         printed=printed,
         settings=each,
+        names=names,
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")

@@ -448,3 +448,197 @@ def test_a_pair_withdrawn_for_being_one_setting_twice_says_that_and_not_silence(
     row = found["parameters"][0]
     assert row["why_asked_again"] == efxparams.WHY_ASKED_AT_ONE_SETTING
     assert "silent" not in row["why_asked_again"]
+
+
+#: Two stages of one type as the page prints them, with the gate of each named the
+#: way the effect list names it: a short tag, then the quantity.
+TWO_STAGES = {
+    "40 03 08": "W/P Sel",
+    "40 03 09": "W/P LPF",
+    "40 03 0A": "W/P Level",
+    "40 03 0B": "Disc Type",
+    "40 03 0D": "Disc Nz Lev",
+}
+
+
+def test_a_null_taken_with_its_own_stage_switched_off_is_not_a_null(tmp_path) -> None:
+    """The filter of a noise generator whose level powers up at nought had nothing to
+    pass, so the two settings are two takes of the same silence. Read as a null it
+    would say the filter does nothing; what it says is that the run could not have
+    heard it."""
+    _write(tmp_path, "a.json", _record("40 03 09", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 73",
+        [1, 127, 0, 0, 0],
+        control,
+        [],
+        slots=list(TWO_STAGES),
+        names=TWO_STAGES,
+    )
+
+    # One record in the directory, so one row: the rest of the type is `never_asked`.
+    row = found["parameters"][0]
+    assert row["address"] == "40 03 09"
+    assert row["verdict"] == efxparams.ITS_STAGE_WAS_SHUT
+    assert row["audible"] is False
+    shut = row["at_nought_while_this_was_asked"]
+    assert [g["address"] for g in shut] == ["40 03 0A"]
+    assert shut[0]["at_nought_by"] == efxparams.BY_THE_UNIT
+
+
+def test_a_gate_shut_by_another_stage_leaves_the_null_standing(tmp_path) -> None:
+    """The page groups a type's parameters by printing a tag in front of each, and a
+    gate reaches its own stage and no other. A disc generator at nought says nothing
+    about the filter of the noise generator beside it."""
+    _write(tmp_path, "a.json", _record("40 03 09", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 73",
+        [127, 127, 0],
+        control,
+        [],
+        slots=["40 03 09", "40 03 0A", "40 03 0D"],
+        # The W/P generator is up; only the disc one is at nought.
+        names={"40 03 09": "W/P LPF", "40 03 0A": "W/P Level", "40 03 0D": "Disc Nz Lev"},
+    )
+
+    row = found["parameters"][0]
+    assert row["verdict"] == efxparams.NULL
+    assert "at_nought_while_this_was_asked" not in row
+
+
+def test_a_gate_asked_at_its_own_two_settings_is_asked(tmp_path) -> None:
+    """A level byte resting at nought is what makes the parameters behind it unasked.
+    It does not make the level byte itself unasked: what it was asked at is the pair,
+    not what it rests at, and a rule that read otherwise would withdraw every gate on
+    the unit."""
+    _write(tmp_path, "a.json", _record("40 03 0A", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 73",
+        [1, 127, 0, 0, 0],
+        control,
+        [],
+        slots=list(TWO_STAGES),
+        names=TWO_STAGES,
+    )
+
+    assert found["parameters"][0]["address"] == "40 03 0A"
+    assert found["parameters"][0]["verdict"] == efxparams.NULL
+
+
+def test_a_stage_the_run_itself_shut_says_which_of_the_two_it_was(tmp_path) -> None:
+    """A parked run holds a modulator's depth at nought on purpose and the type's other
+    record answers what sits behind it; a value nobody chose is a state no record
+    mentions. Both are reported and they are not the same finding."""
+    _write(tmp_path, "a.json", _record("40 03 09", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "01 73",
+        [1, 127, 127, 0, 0],
+        control,
+        # The unit powers the generator up at full; this run wrote it down.
+        [{"address": "40 03 0A", "bytes": "00"}],
+        slots=list(TWO_STAGES),
+        names=TWO_STAGES,
+    )
+
+    row = found["parameters"][0]
+    assert row["address"] == "40 03 09"
+    assert row["verdict"] == efxparams.ITS_STAGE_WAS_SHUT
+    assert row["at_nought_while_this_was_asked"][0]["at_nought_by"] == efxparams.BY_THIS_RUN
+
+
+#: A chorus stage as the page prints it: a mix deciding how much of it reaches the
+#: output, a depth deciding how far its modulation travels, and two parameters.
+ONE_CHORUS = {
+    "40 03 0F": "CF Rate",
+    "40 03 10": "CF Depth",
+    "40 03 11": "CF Fb",
+    "40 03 12": "CF Mix",
+}
+
+
+def test_a_modulation_at_nothing_is_not_a_stage_out_of_the_output(tmp_path) -> None:
+    """The two silence different things and the verdict says which. A rate byte with
+    its depth at nought scales nothing, which is what the parked runs were made to
+    leave -- and it is not the same statement as a stage that is not there."""
+    _write(tmp_path, "a.json", _record("40 03 0F", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "04 02",
+        [8, 0, 89, 50],
+        control,
+        [],
+        slots=list(ONE_CHORUS),
+        names=ONE_CHORUS,
+    )
+
+    row = found["parameters"][0]
+    assert row["verdict"] == efxparams.ITS_MODULATION_WAS_STILL
+    assert row["at_nought_while_this_was_asked"][0]["leaves"] == efxparams.MODULATION_STILL
+
+
+def test_a_mix_is_not_silenced_by_the_depth_beside_it(tmp_path) -> None:
+    """A chorus at no depth is a fixed delay, so turning its mix up is still audible.
+    A rule that read a depth as silencing everything in the stage would withdraw the
+    one byte the run could most certainly hear."""
+    _write(tmp_path, "a.json", _record("40 03 12", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "04 02",
+        [8, 0, 89, 50],
+        control,
+        [],
+        slots=list(ONE_CHORUS),
+        names=ONE_CHORUS,
+    )
+
+    row = found["parameters"][0]
+    assert row["address"] == "40 03 12"
+    assert row["verdict"] == efxparams.NULL
+    assert "at_nought_while_this_was_asked" not in row
+
+
+def test_a_level_inside_a_stage_that_is_not_there_is_not_asked_either(tmp_path) -> None:
+    """A rotary's own per-band level cannot be heard while the byte deciding how much
+    of the rotary reaches the output is at nought. A gate is only exempt from its own
+    reading, not from another gate's."""
+    names = {"40 03 0B": "RT Lo Lev", "40 03 15": "RT Level", "40 03 14": "RT Pan"}
+    _write(tmp_path, "a.json", _record("40 03 0B", audible=False, shape=False, level=False))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+
+    found = efxparams.read_directory(
+        tmp_path,
+        "11 04",
+        [127, 127, 0],
+        control,
+        [{"address": "40 03 15", "bytes": "00"}],
+        slots=["40 03 0B", "40 03 14", "40 03 15"],
+        names=names,
+    )
+
+    row = found["parameters"][0]
+    assert row["address"] == "40 03 0B"
+    assert row["verdict"] == efxparams.ITS_STAGE_WAS_SHUT
+    assert row["at_nought_while_this_was_asked"][0]["address"] == "40 03 15"

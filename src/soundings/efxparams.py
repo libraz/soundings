@@ -91,6 +91,32 @@ WHY_ASKED_AT_ONE_SETTING = (
     "same place. Asked again at the value the unit powers up holding against one end."
 )
 
+#: An address asked while the stage it belongs to was not in the signal path.
+WHY_ITS_STAGE_WAS_SHUT = (
+    "Every address but the one being asked sat where this run left it, and for this parameter "
+    "that was its own stage taken out of the output: a byte the page prints as that stage's "
+    "level, mix or switch stood at nought while the pair was compared. A parameter behind it "
+    "reaches the output at neither of its settings, so the two sets of takes are two takes of "
+    "the same sound without that stage in it, and they differ by what a sound differs from "
+    "itself by -- which is the number a null is. Read as a null it would say the parameter "
+    "does nothing; what it says is that the run could not have heard it either way. Which byte "
+    "it was, and whether this run wrote it down or the unit powers up holding it there, is "
+    "beside the verdict."
+)
+
+#: An address describing a modulation that was not running while it was asked.
+WHY_ITS_MODULATION_WAS_STILL = (
+    "The stage was in the output and its modulation was at nothing: a byte the page prints as "
+    "that stage's depth or sensitivity stood at nought while the pair was compared. What this "
+    "parameter describes is how that modulation runs, and a modulation at no depth runs the "
+    "same however it is described -- a rate scales nothing, a waveform shapes nothing. So the "
+    "two sets of takes are two takes of one sound. Read as a null it would say the parameter "
+    "does nothing; what it says is that there was nothing for it to do. The byte that decides "
+    "how much of the stage reaches the output is not read this way, because a stage at no "
+    "depth is still a stage -- a chorus at none of it is a fixed delay, and mixing that in is "
+    "audible."
+)
+
 #: What a pass at two settings does not establish.
 LIMITS = (
     "What any audible parameter is, or by how much it moves anything. Two settings were "
@@ -180,6 +206,9 @@ OUTSIDE_ITS_PRINTED_VALUES = "asked at a value its parameter is not printed as h
 
 ASKED_AT_ONE_SETTING = "asked twice at one setting of its parameter, so not asked"
 
+ITS_STAGE_WAS_SHUT = "asked with its own stage out of the output, so not asked"
+ITS_MODULATION_WAS_STILL = "asked with its own stage's modulation at nothing, so not asked"
+
 #: Repeatability worse than this leaves a setting with no usable yardstick of its
 #: own, so a verdict resting on it is reported with the asymmetry rather than as a
 #: difference. Not a threshold on the unit -- a threshold on what can be read.
@@ -235,11 +264,82 @@ def asked_at_one_setting(record: dict, settings: dict[int, str] | None) -> bool:
     return documents.one_setting(settings.get(values[0]), settings.get(values[1]))
 
 
+#: Where a byte that shut a stage got the value it was shut at. The two are not
+#: one finding: a run that parks a modulator's depth says so and the type's other
+#: record answers the parameters behind it, where a value nobody chose is a state
+#: no record mentions at all.
+BY_THIS_RUN, BY_THE_UNIT = "this run's prepare block", "the value the unit powers up holding"
+
+#: What a gate at nought leaves behind it. The stage out of the output, or the
+#: stage in it and not moving -- which silence different parameters and are
+#: therefore two verdicts rather than one.
+STAGE_ABSENT = "its stage out of the output"
+MODULATION_STILL = "its stage in the output and its modulation at nothing"
+
+
+def gates_at_nought(
+    address: str,
+    names: dict[str, str] | None,
+    held: dict[str, int] | None,
+    resting: dict[str, int | None] | None,
+) -> list[dict]:
+    """The gates of this address's own stage that sat at nought while it was asked.
+
+    `names` is what the page calls each of the type's parameters, `held` is what
+    the run overrode and at what value, and `resting` is what the unit powers each
+    address up holding. Together they are what every other address stood at while
+    this one was being compared.
+
+    Two kinds are reported and they do not silence the same things. A level, a mix
+    or a switch at nought leaves the stage out of the output, so nothing in it can
+    be heard. A depth or a sensitivity at nought leaves the stage in the output and
+    still, so what cannot be heard is what the modulation does -- which is every
+    parameter describing it, and not the byte that decides how much of the stage
+    reaches the output. A byte of the second kind is therefore only ever reported
+    against the first.
+
+    The address itself is never among them: what it rests at is not what it was
+    asked at, and a gate asked at nought against full is asked properly.
+    """
+    if not names:
+        return []
+    held, resting = held or {}, resting or {}
+    here = names.get(address)
+    if here is None:
+        return []
+    # A byte that decides how much of its stage is in the output is not silenced by
+    # one that decides how far the stage's modulation travels: a chorus at no depth
+    # is a fixed delay, and turning its mix up is still audible.
+    only_absence = documents.takes_the_stage_out(here)
+    stage = documents.stage_named(here)
+    out = []
+    for other, name in sorted(names.items()):
+        if other == address or not documents.names_a_gate(name):
+            continue
+        if documents.stage_named(name) != stage:
+            continue
+        absent = documents.takes_the_stage_out(name)
+        if only_absence and not absent:
+            continue
+        standing = held[other] if other in held else resting.get(other)
+        if standing == 0:
+            out.append(
+                {
+                    "address": other,
+                    "parameter": name,
+                    "leaves": STAGE_ABSENT if absent else MODULATION_STILL,
+                    "at_nought_by": BY_THIS_RUN if other in held else BY_THE_UNIT,
+                }
+            )
+    return out
+
+
 def _verdict(
     record: dict,
     stimulus: dict,
     outside_its_printed_values: bool = False,
     at_one_setting: bool = False,
+    shut_gates: list[dict] | None = None,
 ) -> tuple[str, str | None]:
     """What this address answered, and the sentence that qualifies it.
 
@@ -264,6 +364,12 @@ def _verdict(
             return OUTSIDE_ITS_PRINTED_VALUES, WHY_OUTSIDE_ITS_PRINTED_VALUES
         if at_one_setting:
             return ASKED_AT_ONE_SETTING, WHY_ASKED_AT_ONE_SETTING
+        # A stage out of the output is read before a stage that is in it and
+        # still, because it is the stronger statement and both can be true at once.
+        if any(g["leaves"] == STAGE_ABSENT for g in shut_gates or ()):
+            return ITS_STAGE_WAS_SHUT, WHY_ITS_STAGE_WAS_SHUT
+        if shut_gates:
+            return ITS_MODULATION_WAS_STILL, WHY_ITS_MODULATION_WAS_STILL
         return NULL, None
     heard_as_a_difference = stimulus.get("changed_the_shape") or stimulus.get("changed_the_level")
     if not heard_as_a_difference:
@@ -284,12 +390,13 @@ def row(
     withdrawn: dict | None,
     printed_values: str | None = None,
     printed_settings: dict[int, str] | None = None,
+    shut_gates: list[dict] | None = None,
 ) -> dict:
     """One parameter's verdict, with the figures a reader needs to check it."""
     stimulus = _first(record)
     outside = asked_outside_its_printed_values(record, printed_values)
     one_place = asked_at_one_setting(record, printed_settings)
-    verdict, why = _verdict(record, stimulus, outside, one_place)
+    verdict, why = _verdict(record, stimulus, outside, one_place, shut_gates)
     out = {
         "type": type_id,
         "parameter": slot,
@@ -323,6 +430,11 @@ def row(
             out["printed_settings"] = [
                 printed_settings.get(int(value)) for value in record.get("values", [])
             ]
+    if shut_gates:
+        # Named whatever the verdict came out as, so a reader can check the reading
+        # rather than take it: which byte, what the page calls it, what it leaves
+        # behind it, and whether this run wrote it down or the unit powers up there.
+        out["at_nought_while_this_was_asked"] = shut_gates
     if why:
         out["why"] = why
     if withdrawn:
@@ -401,6 +513,7 @@ def read_directory(
     slots: list[str] | None = None,
     printed: dict[str, str] | None = None,
     settings: dict[str, dict[int, str]] | None = None,
+    names: dict[str, str] | None = None,
 ) -> dict:
     """Assemble from a directory of per-address contrast records.
 
@@ -426,11 +539,17 @@ def read_directory(
     address: the setting printed at each of the 128. It answers the question the
     referral leaves open -- not how many values are settings, which is all of them,
     but whether the two the pair names are two of them or one of them twice.
+
+    `names` is what the page calls each parameter. It is what says which addresses
+    are one stage and which of them gate it, so a null taken with that stage not in
+    the signal path is reported as a slot the run could not have heard rather than
+    as a slot that answered nothing.
     """
     where = Path(where)
     supersede = supersede or {}
     printed = printed or {}
     settings = settings or {}
+    names = names or {}
     superseding = {str(Path(p).resolve()) for p in supersede.values()}
     # Keyed by the address the record states rather than by the file name, so a
     # run asked again writes a second file without becoming a second parameter.
@@ -455,6 +574,20 @@ def read_directory(
     # Read off `prepared` rather than passed separately, because the value it was
     # held at is published there and a second list would be one to keep in step.
     holding = [entry["address"] for entry in prepared if entry["address"] in set(ordered)]
+    # What every address stood at while any one of them was being asked. The run's
+    # own prepare block where it overrode a value; the unit's power-on value, which
+    # `defaults` is, everywhere else. A byte the prepare block writes as more than
+    # one value is not a setting of one parameter and is left out rather than cut.
+    held = {
+        entry["address"]: int(entry["bytes"], 16)
+        for entry in prepared
+        if len(entry.get("bytes", "").split()) == 1
+    }
+    resting = {
+        address: defaults[slot]
+        for slot, address in enumerate(ordered)
+        if slot < len(defaults)
+    }
     rows = []
     missing = []
     refused = []
@@ -495,6 +628,7 @@ def read_directory(
                 withdrawn,
                 printed.get(address),
                 settings.get(address),
+                gates_at_nought(address, names, held, resting),
             )
         )
     coverage = None

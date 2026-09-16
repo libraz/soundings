@@ -1015,6 +1015,75 @@ def one_setting(first: str | None, second: str | None) -> bool:
     return bool(named_by(first) & named_by(second))
 
 
+TAKES_THE_STAGE_OUT = frozenset({"level", "lev", "mix", "sw", "switch", "send"})
+"""The last word of a printed parameter name that decides whether the stage in
+front of it reaches the output at all. At nought there is nothing of that stage
+in the output and no setting of anything in it can be heard.
+
+A balance is deliberately not here. It names where between two paths the output
+sits, so one end of it is one stage absent and the other end is the other -- which
+is not a gate at nought, it is a setting, and both ends are settings a run may
+legitimately ask at."""
+
+STOPS_THE_MODULATOR = frozenset({"depth", "dep", "sens", "amount"})
+"""The last word of a name that decides how far the stage's own modulation
+travels, rather than whether the stage is there. At nought the stage is still in
+the output -- a chorus at no depth is a fixed delay, and a filter at no
+sensitivity is a filter -- so what cannot be heard is what the modulation does
+and not what the stage does.
+
+Kept apart from the list above because the two silence different things, and a
+rule that ran them together would say a mix byte cannot be heard because the
+depth beside it is at nought."""
+
+#: Both, for asking whether a name is one at all.
+GATE_WORDS = TAKES_THE_STAGE_OUT | STOPS_THE_MODULATOR
+
+_STAGE_PREFIX = 5
+"""How long a first word may be and still be a prefix rather than a name. The
+effect list groups a multi-stage type's parameters by printing a short tag in
+front of each -- `CF Dly`, `CF Rate`, `CF Mix` -- and the tags it uses are two to
+five characters. A longer first word is the parameter's own name."""
+
+
+def _last_word(parameter: str) -> str:
+    """The word a printed parameter name ends in, which is what it names.
+
+    The page puts the stage in front and the quantity at the end: `CF Mix` and
+    `W/P Level` name a gate, `Mod Wave` names a waveform.
+    """
+    words = parameter.replace("/", " ").split()
+    return words[-1].lower().strip(".") if words else ""
+
+
+def names_a_gate(parameter: str) -> bool:
+    """Whether a printed parameter name decides whether anything else is heard."""
+    return _last_word(parameter) in GATE_WORDS
+
+
+def takes_the_stage_out(parameter: str) -> bool:
+    """Whether this name, at nought, leaves its stage out of the output."""
+    return _last_word(parameter) in TAKES_THE_STAGE_OUT
+
+
+def stops_the_modulator(parameter: str) -> bool:
+    """Whether this name, at nought, leaves its stage in the output but still."""
+    return _last_word(parameter) in STOPS_THE_MODULATOR
+
+
+def stage_named(parameter: str) -> str:
+    """Which stage a printed parameter name says it belongs to.
+
+    The empty string where the name carries no stage tag, which is the answer for
+    a type that is one stage: everything in it is in the same place, and every
+    gate in it reaches everything, which is what comparing empty strings gives.
+    """
+    words = parameter.split()
+    if not words:
+        return ""
+    return words[0] if len(words[0]) <= _STAGE_PREFIX else ""
+
+
 def _where_labelled(text: str, label: str) -> list[int]:
     """Every printed column a cell holding exactly this label begins at, once each."""
     found: list[int] = []

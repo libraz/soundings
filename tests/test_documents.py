@@ -691,3 +691,31 @@ def test_a_referral_resolves_to_the_setting_the_grid_prints_at_each_value() -> N
     assert documents.settings_printed("*13", grid) == {0: "L180(=R180)", 127: "R180(=L180)"}
     assert documents.settings_printed("00/01", grid) is None
     assert documents.settings_printed("*9", grid) is None
+
+
+def test_a_printed_parameter_name_says_which_stage_it_belongs_to() -> None:
+    """A multi-stage type is printed with a short tag in front of every parameter of
+    each stage, and that is the only statement anywhere about which addresses are one
+    place in the signal path."""
+    assert documents.stage_named("CF Mix") == "CF"
+    assert documents.stage_named("W/P LPF") == "W/P"
+    assert documents.stage_named("Disc Nz Lev") == "Disc"
+    # A type that is one stage prints no tag, and everything in it is in one place.
+    assert documents.stage_named("Cutoff") == ""
+    assert documents.stage_named("Feedback") == ""
+    assert documents.stage_named("") == ""
+
+
+def test_a_gate_is_read_off_the_last_word_and_not_the_first() -> None:
+    """The page puts the stage in front and the quantity at the end, so what decides
+    whether a stage reaches the output is the last word."""
+    assert documents.names_a_gate("W/P Level") is True
+    assert documents.names_a_gate("OD Amp Sw") is True
+    assert documents.names_a_gate("CF Mix") is True
+    assert documents.names_a_gate("Disc Nz Lev") is True
+    assert documents.names_a_gate("W/P LPF") is False
+    assert documents.names_a_gate("Mod Wave") is False
+    # A balance names where between two paths the output sits, so both of its ends
+    # are settings and neither is the stage being absent.
+    assert documents.names_a_gate("Cho Bal") is False
+    assert documents.names_a_gate("") is False
