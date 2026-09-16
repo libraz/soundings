@@ -52,6 +52,17 @@ METHOD = (
     "its rate free, started from every whole submultiple of both peaks."
 )
 
+WHY_ONE_CHANNEL = (
+    "Which channel of the interface every take was read on, and the highest each channel reached "
+    "across them. One channel for the run rather than the loudest of each take, because on this "
+    "stage the input decides the answer twice over. An interface carries inputs the unit is not "
+    "on which are not silent, and an idle input carries no modulation -- which is what a type "
+    "without one also returns. And the unit's own two outputs carry a stereo modulator in "
+    "antiphase, so a level series read on one is not the level series read on the other, and two "
+    "types read on different ones are not comparable however loud both were. `loudest_elsewhere` "
+    "names every take whose own loudest channel was not the one read."
+)
+
 WHY_THE_ORDERS_COME_FROM_THE_BYPASSED_TAKE = (
     "Which orders are read is decided by the take with nothing in the path and never by the take "
     "being read. An effect that adds sidebands raises its own take's quiet orders over the "
@@ -299,17 +310,37 @@ def rows_of(root: str | Path, setting: re.Pattern, bypassed: str) -> dict:
     }
 
 
-def body_of(path: str | Path, lead_s: float, hold_s: float, guard_s: float = 0.5):
-    """The part of a take the note is sounding through, on its loudest channel.
+def body_of(path: str | Path, lead_s: float, hold_s: float, guard_s: float = 0.5, on: int = -1):
+    """The part of a take the note is sounding through, on one named channel.
 
     A guard is cut from each end of the held stretch: the note's attack is not the
     steady tone the partials are read out of, and its release is not either.
+
+    `on` names the channel, and a run names one for all its takes rather than
+    letting each take answer from whichever of its own is loudest. This stage reads
+    a modulation out of a take, so the input it is read from decides the answer
+    twice over: an idle input carries no modulation, which is what a type without
+    one also returns, and the unit's own two outputs carry a stereo modulator in
+    antiphase, so a series read on one is not the series read on the other. Sixty
+    seven takes of one survey answered on two different channels that way, and the
+    record it produced said nothing about any of it.
+
+    A negative `on` keeps the loudest channel of this take alone, which is what a
+    single take asked on its own has to do -- there is no run to pick from.
+
+    Returns the body, the rate, and which channel this take's own loudest was, so a
+    caller can say which takes answered somewhere other than where it read them.
     """
     samples, rate = takes.read(path)
-    whole = np.asarray(takes.loudest(samples), dtype=np.float64)
+    frames = np.asarray(samples, dtype=np.float64)
+    own = 0
+    if frames.ndim > 1:
+        own = int(np.argmax(np.sqrt(np.mean(np.square(frames), axis=0))))
+    channels = takes.loudest(samples) if on < 0 else takes.channel(samples, on)
+    whole = np.asarray(channels, dtype=np.float64)
     first = int((lead_s + guard_s) * rate)
     last = int((lead_s + hold_s - guard_s) * rate)
-    return whole[first:last], rate
+    return whole[first:last], rate, own
 
 
 class Floor:
@@ -488,13 +519,23 @@ def survey(
     grid = np.arange(grid_hz[0], grid_hz[1] + step_hz / 2, step_hz)
     root = Path(root)
 
-    body, rate = body_of(root / where["controls"][0], lead_s, hold_s)
+    every = sorted({*where["controls"], *where["types"].values()})
+    on, reached = takes.channel_reaching(root, every)
+    elsewhere: list[str] = []
+
+    def read(name: str):
+        body, rate, own = body_of(root / name, lead_s, hold_s, on=on)
+        if own != on:
+            elsewhere.append(name)
+        return body, rate
+
+    body, rate = read(where["controls"][0])
     floor = Floor(body, rate, carrier_hz=carrier_hz, grid=grid)
-    others = [(name, body_of(root / name, lead_s, hold_s)[0]) for name in where["controls"][1:]]
+    others = [(name, read(name)[0]) for name in where["controls"][1:]]
 
     found = []
     for type_id, name in sorted(where["types"].items()):
-        take, _ = body_of(root / name, lead_s, hold_s)
+        take, _ = read(name)
         reading = measure_one(take, rate, carrier_hz=carrier_hz, floor=floor)
         row = {"type": type_id, "take": name, **(reading or {"why": "nothing to read"})}
         found.append(row)
@@ -503,6 +544,12 @@ def survey(
 
     return {
         "carrier_hz": carrier_hz,
+        "channel": {
+            "read": on,
+            "reached_db": [round(value, 1) for value in reached],
+            "loudest_elsewhere": sorted(elsewhere),
+            "why": WHY_ONE_CHANNEL,
+        },
         "grid_hz": list(grid_hz),
         "grid_step_hz": step_hz,
         "bypassed_take": where["controls"][0],
