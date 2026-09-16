@@ -175,3 +175,40 @@ def test_the_control_says_which_setting_it_came_from_and_what_that_costs() -> No
     assert written["why_one_setting_carries_the_control"] == (
         vibrato.WHY_ONE_SETTING_CARRIES_THE_CONTROL
     )
+
+
+def test_a_modulation_above_the_search_is_refused_rather_than_named_at_its_top() -> None:
+    """The guard at the bottom of the band has a twin at the top, and without it a
+    run returns one figure for every take.
+
+    A track whose only periodicity is faster than the search puts its maximum in
+    the highest bin, exactly as a trend puts its maximum in the lowest. Read as a
+    peak it comes back at the top of the band on every take of a sweep -- the same
+    rate at every setting, which reads as a byte the modulator does not follow
+    rather than as a band that was searched in the wrong place.
+    """
+    fast = vibrato.measure(tone(hz=40.0, cents=60.0), RATE, search_hz=(0.5, 15.0))
+
+    assert fast.rate_hz != pytest.approx(15.0, abs=0.2)
+    assert not fast.found
+    assert vibrato.WHY_AT_THE_EDGE in fast.notes
+
+
+def test_a_modulation_inside_the_search_is_still_found() -> None:
+    """The guard refuses an edge, not a band. A rate the search covers properly has
+    to survive it, or the fix has bought a false negative for every run."""
+    inside = vibrato.measure(tone(hz=5.0, cents=60.0), RATE, search_hz=(0.5, 15.0))
+
+    assert inside.found
+    assert inside.rate_hz == pytest.approx(5.0, abs=0.2)
+    assert vibrato.WHY_AT_THE_EDGE not in inside.notes
+
+
+def test_the_two_refusals_are_told_apart_in_the_record() -> None:
+    """A row refused for sitting at the edge of the search and one refused for
+    holding too little signal bound different things, and a reader who cannot tell
+    them apart cannot tell a band chosen wrongly from a take that was too quiet."""
+    trend = vibrato.measure(tone(drift_cents=300.0, decay=3.0), RATE, search_hz=(0.5, 15.0))
+
+    assert not trend.found
+    assert trend.notes == [vibrato.WHY_AT_THE_EDGE]

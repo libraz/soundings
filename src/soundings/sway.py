@@ -175,6 +175,7 @@ class Track:
     harmonics: list[float] = field(default_factory=list)
     going_up_fraction: float = float("nan")
     cycles_folded: int = 0
+    not_found_because: str = ""
 
     @property
     def found(self) -> bool:
@@ -200,6 +201,7 @@ class Track:
                 None if np.isnan(self.going_up_fraction) else round(self.going_up_fraction, 4)
             ),
             "cycles_folded": self.cycles_folded,
+            "not_found_because": self.not_found_because or None,
         }
 
 
@@ -283,27 +285,43 @@ def _fill(series: np.ndarray) -> np.ndarray | None:
     return np.interp(np.arange(len(series)), np.flatnonzero(usable), series[usable])
 
 
+WHY_AT_THE_EDGE = (
+    "The strongest component of this track sat in the lowest or the highest bin the search "
+    "covers, which is not a peak: it is whatever leans into the band from outside it -- the "
+    "take's own decay below, the frame-to-frame noise of the track above. The whole reading is "
+    "refused rather than the one bin, because the next strongest bin on a track with nothing "
+    "modulating it returns a depth at a rate inside the band and nothing in the numbers would "
+    "say where it came from. A row refused this way bounds nothing outside `searched_hz`."
+)
+
+
 def _detrend(series: np.ndarray) -> np.ndarray:
     axis = np.arange(len(series))
     return series - np.polyval(np.polyfit(axis, series, TREND_ORDER), axis)
 
 
-def _rate_of(series: np.ndarray, hop_hz: float, search: tuple[float, float]) -> float:
-    """The strongest periodic component of a detrended track."""
+def _rate_of(series: np.ndarray, hop_hz: float, search: tuple[float, float]):
+    """The strongest periodic component of a detrended track, and why there is none."""
     n = len(series)
     spectrum = np.abs(np.fft.rfft(series * np.hanning(n)))
     freqs = np.fft.rfftfreq(n, 1.0 / hop_hz)
     lowest = max(search[0], MIN_CYCLES * hop_hz / n)
     band = (freqs >= lowest) & (freqs <= search[1])
     if not band.any():
-        return float("nan")
+        return float("nan"), WHY_FLOOR_GATE
     index = int(np.argmax(spectrum[band]))
-    # A maximum at the edge of the band is what is left of a decay leaning out of
-    # the search, not a peak. Reporting it would put every note's own settling at
-    # the slowest rate the search allows.
-    if index == 0:
-        return float("nan")
-    return float(freqs[band][index])
+    # A maximum at either edge of the band is not a peak, it is what leans into
+    # the search from outside it -- and the whole track is what is refused, not
+    # that one bin. At the bottom it is a decay, and reporting it would put every
+    # note's own settling at the slowest rate the search allows. At the top it is
+    # the track's own frame-to-frame noise, and reporting it returns one figure
+    # for every take in a run, which reads as a rate the byte does not move
+    # rather than as no reading. Taking the next strongest bin instead would be
+    # worse than either: on a track with no modulation in it that returns a large
+    # depth at a rate inside the band, with nothing in the numbers saying so.
+    if index in (0, int(band.sum()) - 1):
+        return float("nan"), WHY_AT_THE_EDGE
+    return float(freqs[band][index]), ""
 
 
 def _fold(series: np.ndarray, hop_hz: float, rate_hz: float) -> tuple[np.ndarray, int]:
@@ -350,8 +368,9 @@ def _read(series: np.ndarray, out: Track, hop_hz: float, search, least: float) -
     if filled is None:
         return out
     detrended = _detrend(filled)
-    rate_hz = _rate_of(detrended, hop_hz, search)
+    rate_hz, why = _rate_of(detrended, hop_hz, search)
     if np.isnan(rate_hz):
+        out.not_found_because = why
         return out
     cycle, cycles = _fold(detrended, hop_hz, rate_hz)
     if cycles < 2:
@@ -516,6 +535,7 @@ __all__ = [
     "HARMONICS",
     "METHOD",
     "SEARCH_HZ",
+    "WHY_AT_THE_EDGE",
     "SHALLOWER_THAN_THE_CONTROL",
     "WHY_CHANNEL",
     "WHY_CONTROL",

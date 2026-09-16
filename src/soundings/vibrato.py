@@ -80,6 +80,17 @@ WHY_FLOOR_GATE = (
     "struck note spends most of a take decaying towards it."
 )
 
+WHY_AT_THE_EDGE = (
+    "The strongest component of this track sat in the lowest or the highest bin the search "
+    "covers, which is not a peak: it is whatever leans into the band from outside it -- the "
+    "note's own settling below, the tracker's frame-to-frame noise above. The whole reading is "
+    "refused rather than the one bin, because the next strongest bin on a track with no "
+    "modulation in it returns a large depth at a rate inside the band and nothing in the "
+    "numbers would say where it came from. A row refused this way bounds nothing outside "
+    "`searched_hz`, and a run whose rows are all refused this way was searched in the wrong "
+    "band or asked a type whose modulator does not move pitch."
+)
+
 FRAME_S = 0.04
 """Long enough for two periods of the lowest note asked here, short enough for 15 Hz."""
 
@@ -230,7 +241,7 @@ def _rate_and_depth(cents: np.ndarray, hop_hz: float, search: tuple[float, float
     """
     n = len(cents)
     if n < 8:
-        return float("nan"), float("nan")
+        return float("nan"), float("nan"), WHY_FLOOR_GATE
     # Cubic rather than linear. A struck note does not settle in pitch along a
     # straight line, and a linear fit leaves the curve behind: measured on a
     # piano note with the vibrato depth at zero, what was left read as 356 cents
@@ -244,21 +255,28 @@ def _rate_and_depth(cents: np.ndarray, hop_hz: float, search: tuple[float, float
     lowest = max(search[0], MIN_CYCLES * hop_hz / n)
     band = (freqs >= lowest) & (freqs <= search[1])
     if not band.any():
-        return float("nan"), float("nan")
+        return float("nan"), float("nan"), WHY_FLOOR_GATE
     index = int(np.argmax(spectrum[band]))
-    # A maximum at the edge of the band is not a peak, it is whatever is left of
-    # a trend leaning out of the search. The same reading that survives a cubic
-    # detrend still lands there, and reporting the edge would put every note's
-    # own settling at the slowest rate the search allows.
-    if index == 0:
-        return float("nan"), float("nan")
+    # A maximum at either edge of the band is not a peak, it is whatever leans
+    # into the search from outside it -- and the whole track is what is being
+    # refused, not that one bin. At the bottom it is a trend: the same reading
+    # that survives a cubic detrend still lands there, and reporting it would put
+    # every note's own settling at the slowest rate the search allows. At the top
+    # it is the tracker's own frame-to-frame noise, and reporting it returns one
+    # figure for every take in a run, which reads as a rate the swept byte does
+    # not move rather than as no reading at all. Taking the next strongest bin
+    # instead would be worse than either: on a note with no vibrato in it that
+    # returns hundreds of cents of the note's own settling, at a rate inside the
+    # band, with nothing in the numbers saying where it came from.
+    if index in (0, int(band.sum()) - 1):
+        return float("nan"), float("nan"), WHY_AT_THE_EDGE
     rate = float(freqs[band][index])
     # Depth from the track itself at that rate, by projection, rather than from
     # the spectrum's own scale, which the window and the length both move.
     t = np.arange(n) / hop_hz
     basis = np.stack([np.cos(2 * np.pi * rate * t), np.sin(2 * np.pi * rate * t)])
     amplitude = float(np.hypot(*(basis @ detrended))) * 2.0 / n
-    return rate, amplitude * 2.0
+    return rate, amplitude * 2.0, None
 
 
 def measure(
@@ -279,8 +297,11 @@ def measure(
     filled = np.interp(np.arange(len(series)), np.flatnonzero(usable), series[usable])
     found.f0_hz = float(np.median(filled))
     cents = 1200.0 * np.log2(np.clip(filled, 1e-6, None) / found.f0_hz)
-    rate_hz, depth = _rate_and_depth(cents, 1.0 / HOP_S, search_hz)
-    if np.isnan(rate_hz) or depth < least_cents:
+    rate_hz, depth, why = _rate_and_depth(cents, 1.0 / HOP_S, search_hz)
+    if why is not None:
+        found.notes.append(why)
+        return found
+    if depth < least_cents:
         found.notes.append(WHY_FLOOR_GATE)
         return found
     found.rate_hz, found.depth_cents = rate_hz, depth
@@ -383,6 +404,7 @@ __all__ = [
     "SEARCH_HZ",
     "SHALLOWER_THAN_THE_CONTROL",
     "WHY_CONTROL",
+    "WHY_AT_THE_EDGE",
     "WHY_FLOOR_GATE",
     "WHY_ONE_SETTING_CARRIES_THE_CONTROL",
     "Wobble",
