@@ -1,0 +1,366 @@
+{
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-16T21:54:03.403889+00:00",
+  "made_by": "backup/are-the-two-low-passes-one-table.py, backup/write-the-two-low-passes-inference.py",
+  "rounds": 1,
+  "about": {
+   "scope": "slot",
+   "types": [
+    "01 73"
+   ],
+   "addresses": [
+    "40 03 05",
+    "40 03 09",
+    "40 03 0C"
+   ]
+  }
+ },
+ "claim": "Two of this type's four filters are printed on one conversion column, and the unit returns one table through both of them. The column's fifteen frequencies are the third octaves from 250 Hz to 6.3 kHz with a sixteenth entry that is the filter switched out, and read on the generator's own low pass the corners land a median 0.018 octaves off the printed entry and never more than 0.065 -- 19 per cent of one step of the column, over 16 readings of its 15 entries. The disc generator's low pass, a different byte on the same column inside the same type, returns the same corners to a median 0.053 octaves, and 15 of 16 land inside what that sparser source failed to repeat at the corner being read. Both are one pole. Rendered onto the same band set and read by the same corner reader, a single pole falls -2.97 decibels an octave at its own corner and -5.60 past it, where a pair falls -5.86 and -11.94; the generator low pass measures -3.10 and -5.90, and the disc low pass -3.05 and -5.90. The eight-value quantum is readable from inside one run rather than assumed: settings 8 and 15 fall in one printed entry and return corners 0.0018 octaves apart, while setting 0 one entry below returns one 0.415 octaves away -- a ratio of 237. What the same run says about the third filter is a negative and a structural one. The type's own filter, at 40 03 05 on the neighbouring column, moved the generators' output by no more than 0.54 decibels at any of eighteen settings and across its own off switch, on takes repeating to 0.04 decibels and standing 52 decibels over the run's silence -- material the same reader pulled 49.5 decibels of filter out of one byte away. The noise generators are not behind that filter.",
+ "named": "one sixteen-entry corner table, read by two one-pole sections",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-73-09-the-window-read-through-its-own-noise-in-twelfths.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=56].largest_db",
+     "readings[value=112].largest_db",
+     "readings[value=120].largest_db"
+    ],
+    "values": [
+     -49.45,
+     -44.45,
+     -33.92,
+     null
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-73-0C-the-disc-low-pass-with-the-disc-generator-at-its-top-in-twelfths.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=56].largest_db",
+     "readings[value=112].largest_db",
+     "readings[value=0].above_the_silence_db",
+     "readings[value=112].above_the_silence_db"
+    ],
+    "values": [
+     -34.22,
+     -31.12,
+     -24.61,
+     28.0,
+     37.1
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-73-05-the-types-own-filter-with-only-noise-in-front-in-twelfths.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=64].largest_db",
+     "readings[value=127].largest_db",
+     "readings[value=0].above_the_silence_db"
+    ],
+    "values": [
+     0.63,
+     0.59,
+     0.65,
+     52.3
+    ]
+   }
+  ],
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
+    "rows": [
+     "column 11, LPF, Hz: 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, Bypass",
+     "column 9, Cutoff Freq, Hz: 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000"
+    ],
+    "why": "That the page puts both of these bytes on one column, and that the column's entries are the ones the corners are held against. What the page prints is evidence about the page -- what makes this a measurement is that the unit returned those frequencies without any of them having been fitted to it."
+   },
+   {
+    "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+    "rows": [
+     "Lo-Fi 2, parameter 7, W/P LPF, 250 - 6.3k/Bypass",
+     "Lo-Fi 2, parameter 10, Disc LPF, 250 - 6.3k/Bypass",
+     "Lo-Fi 2, parameter 3, Cutoff, 250 - 630 - 8k",
+     "Lo-Fi 2, parameter 2, Fil Type, Off/LPF/HPF"
+    ],
+    "why": "That three of this type's filters are separate bytes with separate ranges, and that the one which did nothing here has an off state of its own -- which is what the reference every profile in that record is read against was taken at. The page does not say which of them the noise generators pass through."
+   }
+  ],
+  "era_priors": [
+   {
+    "claim": "A pole costs one stored coefficient and a conjugate pair costs two, so a sixteen-entry corner table spends sixteen numbers on one pole and thirty-two on a pair. A part that spends a filter on each of three noise generators is spending it where nobody will listen closely, which is where the cheap section goes if the part has one.",
+    "why": "The frequency class was carried by the argument that sixteen entries are affordable and a hundred and twenty-eight are not, and what an entry holds is the quantity that argument is about. These two filters sit on the least audible thing in the type, so if any section in this part is the cheap one they are, and both came back on the cheap side.",
+    "would_be_wrong_if": "Either skirt ran at twelve decibels an octave. A pair measured on a noise generator's low pass would say the part pays for one where it least needs to, after which nothing about cost bounds what any of its other tables hold."
+   }
+  ],
+  "community": []
+ },
+ "adds": "The records say what each byte did to every twelfth-octave band at eighteen settings, with the band set, the control, the silence and the channel each was read from. What is read out of them here is where the corner sits, how fast the skirt runs at it and past it, that the two bytes return the same corners, that those corners are the frequencies the page prints, and that the third filter is not in the path at all. The records name no corner, no order and no table, and say so.",
+ "what_the_column_returns": {
+  "what": "A readout and not a result. Sixteen corners read off sixteen settings could not have come out wrong however the unit behaved, so nothing here rests on the table's own residual. What the table is rested on is the four things a free table cannot arrange: that the numbers are the page's rather than fitted, that the skirt names an order, that a second byte returns them, and that two settings inside one entry return one corner while the entry below returns another.",
+  "read_at_minus_db": 3.0,
+  "smoothed_over_octaves": 0.25,
+  "one_step_of_the_column_octaves": 0.3334,
+  "entries": [
+   {
+    "byte": 0,
+    "the_page_prints_hz": 250.0,
+    "the_generator_low_pass_returns_hz": 246.8,
+    "the_disc_low_pass_returns_hz": 213.8,
+    "off_the_printed_entry_octaves": -0.018,
+    "the_two_apart_octaves": -0.207
+   },
+   {
+    "byte": 8,
+    "the_page_prints_hz": 315.0,
+    "the_generator_low_pass_returns_hz": 329.1,
+    "the_disc_low_pass_returns_hz": 304.8,
+    "off_the_printed_entry_octaves": 0.063,
+    "the_two_apart_octaves": -0.111
+   },
+   {
+    "byte": 15,
+    "the_page_prints_hz": 315.0,
+    "the_generator_low_pass_returns_hz": 329.5,
+    "the_disc_low_pass_returns_hz": 309.8,
+    "off_the_printed_entry_octaves": 0.065,
+    "the_two_apart_octaves": -0.089
+   },
+   {
+    "byte": 16,
+    "the_page_prints_hz": 400.0,
+    "the_generator_low_pass_returns_hz": 411.7,
+    "the_disc_low_pass_returns_hz": 413.4,
+    "off_the_printed_entry_octaves": 0.042,
+    "the_two_apart_octaves": 0.006
+   },
+   {
+    "byte": 24,
+    "the_page_prints_hz": 500.0,
+    "the_generator_low_pass_returns_hz": 496.1,
+    "the_disc_low_pass_returns_hz": 495.4,
+    "off_the_printed_entry_octaves": -0.011,
+    "the_two_apart_octaves": -0.002
+   },
+   {
+    "byte": 32,
+    "the_page_prints_hz": 630.0,
+    "the_generator_low_pass_returns_hz": 628.6,
+    "the_disc_low_pass_returns_hz": 625.5,
+    "off_the_printed_entry_octaves": -0.003,
+    "the_two_apart_octaves": -0.007
+   },
+   {
+    "byte": 40,
+    "the_page_prints_hz": 800.0,
+    "the_generator_low_pass_returns_hz": 807.9,
+    "the_disc_low_pass_returns_hz": 754.2,
+    "off_the_printed_entry_octaves": 0.014,
+    "the_two_apart_octaves": -0.099
+   },
+   {
+    "byte": 48,
+    "the_page_prints_hz": 1000.0,
+    "the_generator_low_pass_returns_hz": 995.6,
+    "the_disc_low_pass_returns_hz": 997.3,
+    "off_the_printed_entry_octaves": -0.006,
+    "the_two_apart_octaves": 0.002
+   },
+   {
+    "byte": 56,
+    "the_page_prints_hz": 1250.0,
+    "the_generator_low_pass_returns_hz": 1236.8,
+    "the_disc_low_pass_returns_hz": 1145.2,
+    "off_the_printed_entry_octaves": -0.015,
+    "the_two_apart_octaves": -0.111
+   },
+   {
+    "byte": 64,
+    "the_page_prints_hz": 1600.0,
+    "the_generator_low_pass_returns_hz": 1579.8,
+    "the_disc_low_pass_returns_hz": 1590.8,
+    "off_the_printed_entry_octaves": -0.018,
+    "the_two_apart_octaves": 0.01
+   },
+   {
+    "byte": 72,
+    "the_page_prints_hz": 2000.0,
+    "the_generator_low_pass_returns_hz": 1945.3,
+    "the_disc_low_pass_returns_hz": 1831.2,
+    "off_the_printed_entry_octaves": -0.04,
+    "the_two_apart_octaves": -0.087
+   },
+   {
+    "byte": 80,
+    "the_page_prints_hz": 2500.0,
+    "the_generator_low_pass_returns_hz": 2437.2,
+    "the_disc_low_pass_returns_hz": 2471.8,
+    "off_the_printed_entry_octaves": -0.037,
+    "the_two_apart_octaves": 0.02
+   },
+   {
+    "byte": 88,
+    "the_page_prints_hz": 3150.0,
+    "the_generator_low_pass_returns_hz": 3118.9,
+    "the_disc_low_pass_returns_hz": 3114.3,
+    "off_the_printed_entry_octaves": -0.014,
+    "the_two_apart_octaves": -0.002
+   },
+   {
+    "byte": 96,
+    "the_page_prints_hz": 4000.0,
+    "the_generator_low_pass_returns_hz": 3964.6,
+    "the_disc_low_pass_returns_hz": 4489.8,
+    "off_the_printed_entry_octaves": -0.013,
+    "the_two_apart_octaves": 0.179
+   },
+   {
+    "byte": 104,
+    "the_page_prints_hz": 5000.0,
+    "the_generator_low_pass_returns_hz": 4920.7,
+    "the_disc_low_pass_returns_hz": 6457.7,
+    "off_the_printed_entry_octaves": -0.023,
+    "the_two_apart_octaves": 0.392
+   },
+   {
+    "byte": 112,
+    "the_page_prints_hz": 6300.0,
+    "the_generator_low_pass_returns_hz": 6168.8,
+    "the_disc_low_pass_returns_hz": 6224.8,
+    "off_the_printed_entry_octaves": -0.03,
+    "the_two_apart_octaves": 0.013
+   }
+  ],
+  "off_the_printed_entry": {
+   "median_octaves": 0.018,
+   "widest_octaves": 0.065,
+   "widest_as_a_share_of_one_step": 0.195,
+   "entries": 16
+  }
+ },
+ "the_two_bytes_against_each_other": {
+  "median_octaves_apart": 0.0535,
+  "widest_octaves_apart": 0.392,
+  "inside_what_the_disc_source_failed_to_repeat": "15 of 16",
+  "why_the_sources_differ_and_that_is_the_point": "White noise is flat and stationary; the disc generator is sparse and reached 9 decibels less over the run's own silence. Two corners read off sources that different, landing a sixth of a printed step apart, is not two readings of one source agreeing with itself. The one setting that falls outside is where the disc profile has the least depth left to read a corner out of, and it is named rather than dropped.",
+  "the_setting_that_falls_outside": {
+   "byte": 104,
+   "apart_octaves": 0.392,
+   "what_the_disc_source_failed_to_repeat_there_octaves": 0.327,
+   "how_deep_the_disc_profile_got_db": -24.82
+  }
+ },
+ "how_many_poles": {
+  "what": "One, on both. The candidates are rendered onto the band set the unit was read on and then put through the same smoothing and the same corner reader, so whatever a twelfth-octave reading does to a skirt it does to both sides of the comparison.",
+  "measured_in": "dB per octave",
+  "one_pole": {
+   "at_the_corner": -2.97,
+   "past_the_corner": -5.6
+  },
+  "a_conjugate_pair": {
+   "at_the_corner": -5.86,
+   "past_the_corner": -11.94
+  },
+  "the_generator_low_pass": {
+   "at_the_corner": -3.1,
+   "past_the_corner": -5.9
+  },
+  "the_disc_low_pass": {
+   "at_the_corner": -3.05,
+   "past_the_corner": -5.9
+  },
+  "how_far_the_winner_wins_by": {
+   "at_the_corner": 21.4,
+   "past_the_corner": 19.9
+  },
+  "where_the_skirt_is_not_read": "Past eight times the corner the band set runs out, and a stretch cut short at the top is cut short where the source's own rolloff and the converter's are. Those settings return no figure rather than a steeper one, which is the reading that would otherwise have published a bound on the band set as a second pole.",
+  "and_agrees_with": "inferences/roland-sc8850-01/0142-a-filter-byte-sits-on-one-pole.json"
+ },
+ "the_quantum_read_from_inside_one_run": {
+  "what": "Eight settings to an entry, measured rather than carried over. Two settings the page puts in one entry return one corner; the setting one entry below returns another.",
+  "two_settings_in_one_entry": {
+   "bytes": [
+    8,
+    15
+   ],
+   "printed": "315",
+   "returned_hz": [
+    329.1,
+    329.5
+   ],
+   "apart_octaves": 0.0018
+  },
+  "the_entry_below": {
+   "byte": 0,
+   "printed": "250",
+   "returned_hz": 246.8,
+   "apart_octaves": 0.4152
+  },
+  "ratio": 236.9
+ },
+ "the_filter_the_generators_do_not_pass_through": {
+  "what": "The type's own filter at 40 03 05, with its selector at LPF, moved the white generator's output by at most 0.54 decibels at any of eighteen settings of its corner byte -- and the reference every one of those profiles is read against was taken with that selector at Off, so the figure covers switching the section in as well as moving it.",
+  "measured_in": "dB",
+  "widest_deviation_db": 0.54,
+  "the_runs_own_repeat_db": 0.04,
+  "over_the_runs_silence_db": 52.3,
+  "what_the_same_reader_pulled_out_of_the_same_noise_db": 49.5,
+  "how_much_could_have_been_seen": 92.0,
+  "why_this_is_a_result_and_not_a_failed_run": "A run that finds nothing is worth reading only if it could have found something. The generator's own low pass was read on the same noise, in the same session, by the same reader, and returned a profile deeper than this null by a factor of 92. What the null says is where the section sits, not that the byte does nothing: the same byte on the same column is what a flanger and a chorus put in front of themselves, and both of those move."
+ },
+ "alternatives": [
+  {
+   "reading": "Two tables holding the same sixteen numbers rather than one table reached by two bytes.",
+   "candidate": "two-copies-of-one-table",
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Nothing this rig can measure. Two tables holding identical entries and one table read twice return the same corner at every setting by construction, and a band profile is a reading of the corner.",
+    "predicts": {
+     "one table": "the same corner at every setting",
+     "two identical tables": "the same corner at every setting"
+    },
+    "sensitivity_here": "0.053 octaves, which is what the two bytes already agree to.",
+    "margin": 0,
+    "why_not_separable": "The two readings differ in nothing a measurement can reach. What the agreement does rule out is two tables holding different numbers, which is the thing worth ruling out: a filter given entries of its own has no reason to land within a sixth of a step of the other's at fifteen settings."
+   }
+  },
+  {
+   "reading": "The corners are sixteen frequencies at equal ratios between the printed ends rather than the printed third octaves themselves.",
+   "candidate": "sixteen-equal-ratios-between-the-ends",
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Where each entry sits, in octaves, on a range whose printed ends do not bracket a whole number of third octaves. This column's ends are 250 Hz and 6.3 kHz, which is exactly fifteen third octaves, so the two series are the same series here and no reading of this byte can tell them apart.",
+    "predicts": {
+     "the named third octaves": "250, 315, 400 ... 6300",
+     "sixteen equal ratios": "the same fifteen frequencies to within a third of a per cent"
+    },
+    "sensitivity_here": "0.018 octaves, the median this run put a corner off its printed entry.",
+    "margin": 0,
+    "why_not_separable": "It is the same alternative the frequency class carries, and it is separated on a range whose ends are not a whole number of third octaves apart rather than here. This record adds a third range to the class and cannot close it."
+   }
+  },
+  {
+   "reading": "The type's own filter is in the generators' path and its byte does nothing anywhere, rather than the generators being summed after it.",
+   "candidate": "a-corner-byte-that-does-nothing",
+   "standing": false,
+   "ruled_out_by": "The same byte on the same printed column read on a type that has a signal in front of it. A chorus's and a flanger's pre-filter sit on column nine at 40 03 03 and 40 03 04, and both move a band profile by tens of decibels across the same settings. A byte that does nothing does nothing there too.",
+   "shown_in": "data/units/roland-sc8850-01/efx-bands/01-42-04-the-same-grid-elsewhere-lpf-in-twelfths.json"
+  }
+ ],
+ "refuted_by": "A third byte on this column returning corners that are not these -- the hum generator's low pass at 40 03 0F is printed on it and has not been read, and the reason it has not is that a hum is a line spectrum whose twelfth-octave profile is a reading of where its harmonics are rather than of a filter. A skirt anywhere on this column running at twelve decibels an octave would take the order with it. And a note played through this type with 40 03 05 swept, returning nothing, would take the structural half of this back: the claim is that the generators are summed after that filter, which requires it to be somewhere.",
+ "what_it_would_change": [
+  "A Lo-Fi 2 is three noise generators summed after the signal's own filter rather than through it, so a renderer that puts the generators inside the filter is wrong at every setting of a byte the page gives no path for.",
+  "Two of this part's corner tables are one pole, which prices an entry at one coefficient and holds the cost argument the frequency class rests on."
+ ],
+ "what_this_does_not_settle": [
+  "Whether the hum generator's low pass is on the same table. It is printed on the column and a twelfth-octave reading of a line spectrum cannot answer it.",
+  "What the type's own filter does to a signal, which is the run that was meant to be made here and was made on the wrong source. A note held through this type with 40 03 05 swept is about eight minutes and reads column nine on a third type.",
+  "Whether the sixteenth entry of column nine really is 8000 Hz where column eleven's is the filter switched out. Both records here are on column eleven."
+ ]
+}

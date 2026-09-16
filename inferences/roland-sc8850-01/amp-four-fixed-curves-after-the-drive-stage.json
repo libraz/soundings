@@ -1,474 +1,760 @@
 {
-  "inference": {
-    "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
-    "state": "standing",
-    "made_at": "2026-09-16T20:49:28.585907+00:00",
-    "made_by": "backup/what-an-amp-type-is.py, backup/is-the-amp-byte-one-table.py, backup/write-the-amp-table-inference.py",
-    "rounds": 1,
-    "about": {
-      "scope": "class",
-      "types": [
-        "01 10",
-        "01 11",
-        "11 03"
-      ],
-      "addresses": [
-        "40 03 04",
-        "40 03 05",
-        "40 03 06"
-      ]
-    }
-  },
-  "claim": "The byte a page prints `Small/BltIn/2-Stk/3-Stk` against is one table of four fixed responses, written once and reached from more than one place, and it sits after the drive stage rather than shaping what goes into it. One table, because an entry read on a type that is nothing but a drive stage and the same entry read from inside a pair land a median 0.18 dB apart across a hundred and thirteen twelfth-octave bands, where the same reading puts two different entries of the table 1.96 dB apart or more -- so the reading separates the entries by better than an order of magnitude over what it says separates these. After the drive stage, because the pair was read once with each of the two drive characters its selector offers, and those characters put out measurably different spectra: a median 3.87 dB apart in shape and 9.99 dB at their widest, one carrying nine decibels more above eight kilohertz and the other seven more through the midrange. A filter shaping the input to a nonlinearity does not divide out of the result, because the nonlinearity remaps whatever spectrum it is given; a filter after one does, exactly. The ratio between two amp entries is 0.09 dB apart between the two characters, which is under the runs' own repeats -- so it divides out, and the filter is on the output. The switch beside the byte is what puts the table in the path at all: at Off the profile is its own reference to a median of a seventh of a decibel, and at On it is a bandpass, 10.7 dB down through the bottom octave and 3.2 down above eight kilohertz against 4.9 up through the two to four kilohertz octave.",
-  "named": "a fixed cabinet response, one short filter per entry, multiplying the drive stage's output",
-  "rests_on": {
-    "measurements": [
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-10-04-what-an-amp-type-is.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=1].largest_db",
-          "readings[value=2].largest_db",
-          "readings[value=3].largest_db",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          -3.43,
-          30.69,
-          27.15,
-          33.42,
-          63.4
-        ],
-        "why": "The table read where the type is a drive stage and nothing else. Entry 0 is the reference, so its figure is the run reading itself."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-11-04-what-an-amp-type-is.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=1].largest_db",
-          "readings[value=2].largest_db",
-          "readings[value=3].largest_db",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          4.29,
-          29.62,
-          26.88,
-          31.14,
-          59.7
-        ],
-        "why": "The same table on the other standalone drive type."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/11-03-05-the-same-amp-byte-inside-a-pair-odrv.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=1].largest_db",
-          "readings[value=2].largest_db",
-          "readings[value=3].largest_db",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          0.59,
-          29.07,
-          26.7,
-          31.56,
-          64.3
-        ],
-        "why": "The same table reached from inside a pair, with the selector at the overdrive character and the second stage silenced."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/11-03-05-the-same-amp-byte-inside-a-pair-dist.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=1].largest_db",
-          "readings[value=2].largest_db",
-          "readings[value=3].largest_db",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          -0.83,
-          28.89,
-          26.66,
-          31.37,
-          61.8
-        ],
-        "why": "The same slot of the same pair with the selector at the distortion character. This record and the one above it are what put the filter after the drive stage rather than before it."
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-10-05-what-the-amp-switch-takes-out.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=1].largest_db",
-          "readings[value=1].largest_at_hz",
-          "reference.above_the_silence_db"
-        ],
-        "values": [
-          3.98,
-          -19.24,
-          29.5,
-          67.2
-        ],
-        "why": "The switch beside the byte, which is what puts the table in the path. Its Off reading is against a reference taken at Off, so it is the run repeating itself and is the floor the rest of this claim is read over."
-      }
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-16T21:57:33.403155+00:00",
+  "made_by": "backup/what-an-amp-type-is.py, backup/is-the-amp-byte-one-table.py, backup/write-the-amp-table-inference.py, backup/the-amp-table-in-the-places-not-read.py, backup/fold-in-the-amp-table-elsewhere.py",
+  "rounds": 2,
+  "about": {
+   "scope": "class",
+   "types": [
+    "01 10",
+    "01 11",
+    "11 03",
+    "02 00",
+    "04 00",
+    "04 05"
+   ],
+   "addresses": [
+    "40 03 04",
+    "40 03 05",
+    "40 03 06",
+    "40 03 09"
+   ]
+  }
+ },
+ "claim": "The byte a page prints `Small/BltIn/2-Stk/3-Stk` against is one table of four fixed responses, written once and reached from more than one place, and it sits after the drive stage rather than shaping what goes into it. One table, because an entry read on a type that is nothing but a drive stage and the same entry read from inside a pair land a median 0.18 dB apart across a hundred and thirteen twelfth-octave bands, where the same reading puts two different entries of the table 1.96 dB apart or more -- so the reading separates the entries by better than an order of magnitude over what it says separates these. After the drive stage, because the pair was read once with each of the two drive characters its selector offers, and those characters put out measurably different spectra: a median 3.87 dB apart in shape and 9.99 dB at their widest, one carrying nine decibels more above eight kilohertz and the other seven more through the midrange. A filter shaping the input to a nonlinearity does not divide out of the result, because the nonlinearity remaps whatever spectrum it is given; a filter after one does, exactly. The ratio between two amp entries is 0.09 dB apart between the two characters, which is under the runs' own repeats -- so it divides out, and the filter is on the output. The switch beside the byte is what puts the table in the path at all: at Off the profile is its own reference to a median of a seventh of a decibel, and at On it is a bandpass, 10.7 dB down through the bottom octave and 3.2 down above eight kilohertz against 4.9 up through the two to four kilohertz octave. Read in five more places the table holds and in a sixth it does not. The bass multi-effect is the one place that does not reach it. Driving the stage at 4 and at 127 rather than the 48 the first run held moves each entry's response by a median 0.165 and 0.18 dB -- a thirty-two-fold change in the drive byte, against a reading that puts two entries of the table 2.3 dB apart. The two families the first run could not reach return the same four as well: the stage followed by a chorus at 0.2 dB and the same stage as one of five in a guitar chain at 0.22, both at the same three entries and on the same band set. So one table is reached from three families, two printed shapes, at three different parameter numbers, and at three drive amounts spanning almost the whole byte. The bass multi is the exception and it is not a close one: its first three entries sit a median 7.7 dB from the same three read anywhere else, which is wider than the table's own entries are from each other, and its fourth setting -- the one its row prints no name against -- returns its reference to 0.13 dB while sitting 7.81 dB from the entry below it. Not the third entry repeated, not the fourth the other rows return, and not refused: the first entry, which is what the byte would give if its top value did not reach the table.",
+ "named": "a fixed cabinet response, one short filter per entry, multiplying the drive stage's output",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-10-04-what-an-amp-type-is.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=1].largest_db",
+     "readings[value=2].largest_db",
+     "readings[value=3].largest_db",
+     "reference.above_the_silence_db"
     ],
-    "document_rows": [
-      {
-        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
-        "rows": [
-          "Overdrive, parameter 2, Amp Type (Amp simulator type), Small/BltIn/2-Stk/3-Stk",
-          "Distortion, parameter 2, Amp Type (Amp simulator type), Small/BltIn/2-Stk/3-Stk",
-          "OD → Chorus (Overdrive → Chorus), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "OD → Flanger (Overdrive → Flanger), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "OD → Delay (Overdrive → Delay), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "DS → Chorus (Distortion → Chorus), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "DS → Flanger (Distortion → Flanger), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "DS → Delay (Distortion → Delay ), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "GTR Multi 1 (Guitar Multi1), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "GTR Multi 2 (Guitar Multi2), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "GTR Multi 3 (Guitar Multi3), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "Bass Multi, parameter 7, OD Amp (OD Amp Simlation Type), Small/BltIn/2-Stk",
-          "OD1 / OD2 (Overdrive / Distortion1,2)|, parameter 3, OD1 Amp (OD1 Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "OD1 / OD2 (Overdrive / Distortion1,2)|, parameter 8, OD2 Amp (OD2 Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "OD / Rotary (Overdrive/Distortion, Rotary), parameter 3, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
-          "OD / Phaser(Overdrive/Distortion, Phaser), parameter 3, OD Amp (OD Amp Simulator Type), Smal/BltIn/ 2-Stk/3-Stk",
-          "OD / AutoWah (Overdrive/Distortion, Auto-wah), parameter 3, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk"
-        ],
-        "why": "Every row whose data column prints this set of names, which is what says the question is about one table rather than about one type. Sixteen types print it; four places on three of them were read. The bass type's row prints three of the four names and is the one printed difference in the set."
-      }
+    "values": [
+     -3.43,
+     30.69,
+     27.15,
+     33.42,
+     63.4
     ],
-    "era_priors": [
-      {
-        "claim": "A cabinet response on a fixed-point part of this period is a short fixed filter, and its entries are expensive: each is a set of coefficients rather than a number. A table four entries long is what an expensive entry looks like, and it is the reason there is no continuous control beside it -- the same reasoning that makes a frequency table sixteen entries long and a gain table a hundred and twenty-eight.",
-        "why": "It says why four, and why the four are reached by a byte with four values rather than swept. It carries nothing about where in the chain the filter sits, which is the part the measurement settled.",
-        "would_be_wrong_if": "The byte had accepted more than four values, or the response had moved continuously with it. The run asked all four printed entries and the reading separates them; a fifth was not asked and is named below as something this does not settle."
-      }
+    "why": "The table read where the type is a drive stage and nothing else. Entry 0 is the reference, so its figure is the run reading itself."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-11-04-what-an-amp-type-is.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=1].largest_db",
+     "readings[value=2].largest_db",
+     "readings[value=3].largest_db",
+     "reference.above_the_silence_db"
     ],
-    "community": []
-  },
-  "adds": "The records say four settings of one byte return four band profiles, on each of four chains. What is read out of them here is that the four profiles are the same four wherever the byte is reached from, and that the filter multiplies the drive stage's output instead of feeding it -- neither of which is in any one record, because both are a comparison between records and one of them is a comparison between two different nonlinearities.",
-  "what_the_table_is": {
-    "published_as": "a readout, and nothing is fitted to it",
-    "why_nothing_is_fitted": "Four curves read off four settings is a model with one free entry per setting. It cannot come out wrong, so it would pass every gate and mean nothing. What the claim rests on instead is the part a free table cannot arrange: four records agreeing to a seventh of a decibel where the same reading tells the entries apart by two, and two different nonlinearities cancelling.",
-    "entries_against_entry_0_by_octave_db": {
-      "BltIn": {
-        "20-60": 27.8,
-        "60-125": 26.2,
-        "125-250": 11.5,
-        "250-500": 0.7,
-        "500-1000": 4.1,
-        "1000-2000": 8.6,
-        "2000-4000": 7.9,
-        "4000-8000": 7.1,
-        "8000-16000": 11.4,
-        "16000-24000": 12.0
-      },
-      "2-Stk": {
-        "20-60": 24.6,
-        "60-125": 25.8,
-        "125-250": 11.7,
-        "250-500": 5.6,
-        "500-1000": 5.0,
-        "1000-2000": 6.4,
-        "2000-4000": 6.3,
-        "4000-8000": 2.6,
-        "8000-16000": 2.3,
-        "16000-24000": 2.4
-      },
-      "3-Stk": {
-        "20-60": 25.4,
-        "60-125": 29.0,
-        "125-250": 10.4,
-        "250-500": 1.8,
-        "500-1000": -0.3,
-        "1000-2000": 6.9,
-        "2000-4000": 8.0,
-        "4000-8000": 6.9,
-        "8000-16000": 7.5,
-        "16000-24000": 7.0
-      }
-    },
-    "read_from": "data/units/roland-sc8850-01/efx-bands/01-10-04-what-an-amp-type-is.json",
-    "entry_0_is_the_reference": "So every figure above is what that entry does relative to `Small`, not what it does relative to no amplifier at all. The switch record carries the second half: `BltIn` against the filter switched out is a bandpass, so `Small` is that bandpass less the figures above it -- about thirty-eight decibels down at the bottom octave and fifteen at the top, which is the narrowest of the four and the one the page names after the smallest box.",
-    "how_the_octave_figures_are_read": "The median of the twelfth-octave bands falling inside each octave, over the bands where the reference stands twelve decibels clear of the same chain's silence. A summary of the record and not a substitute for it."
-  },
-  "what_the_switch_beside_the_byte_does": {
-    "at_off_against_a_reference_taken_at_off_by_octave_db": {
-      "20-60": -0.0,
-      "60-125": 0.8,
-      "125-250": -0.2,
-      "250-500": -0.1,
-      "500-1000": -0.1,
-      "1000-2000": -0.0,
-      "2000-4000": 0.0,
-      "4000-8000": 0.0,
-      "8000-16000": 0.0,
-      "16000-24000": 0.2
-    },
-    "at_on_by_octave_db": {
-      "20-60": -10.7,
-      "60-125": 2.9,
-      "125-250": 2.6,
-      "250-500": -3.6,
-      "500-1000": 0.1,
-      "1000-2000": 3.8,
-      "2000-4000": 4.9,
-      "4000-8000": 3.8,
-      "8000-16000": -3.2,
-      "16000-24000": -5.1
-    },
-    "the_entry_it_was_read_at": "BltIn",
-    "read_as": "The Off reading is the run repeating itself -- its reference was taken at Off -- so it is the floor every other figure in this claim is read over, and it is a fourteenth of a decibel across the band set with one band at the very bottom reaching four. The On reading is the whole table's common shape: a bandpass, down at the bottom octave, down again above eight kilohertz, and up through the midrange. So the switch puts the filter in the path rather than choosing between two of the four entries, and entry 0 is a response rather than the absence of one."
-  },
-  "one_table_reached_from_more_than_one_place": {
-    "the_same_entry_in_two_places": {
-      "BltIn-through-odrv": {
-        "bands": 113,
-        "median_db": 0.15,
-        "widest_db": 2.73,
-        "widest_at_hz": 27.8,
-        "repeat_spread_db": 0.37
-      },
-      "2-Stk-through-odrv": {
-        "bands": 113,
-        "median_db": 0.14,
-        "widest_db": 2.49,
-        "widest_at_hz": 33.1,
-        "repeat_spread_db": 0.37
-      },
-      "3-Stk-through-odrv": {
-        "bands": 113,
-        "median_db": 0.18,
-        "widest_db": 3.1,
-        "widest_at_hz": 55.7,
-        "repeat_spread_db": 0.37
-      },
-      "BltIn-through-dist": {
-        "bands": 113,
-        "median_db": 0.16,
-        "widest_db": 2.69,
-        "widest_at_hz": 29.5,
-        "repeat_spread_db": 0.42
-      },
-      "2-Stk-through-dist": {
-        "bands": 113,
-        "median_db": 0.15,
-        "widest_db": 3.89,
-        "widest_at_hz": 33.1,
-        "repeat_spread_db": 0.42
-      },
-      "3-Stk-through-dist": {
-        "bands": 113,
-        "median_db": 0.15,
-        "widest_db": 3.2,
-        "widest_at_hz": 33.1,
-        "repeat_spread_db": 0.42
-      }
-    },
-    "the_control_two_different_entries": {
-      "BltIn-against-2-Stk": {
-        "bands": 113,
-        "median_db": 2.21,
-        "widest_db": 9.76,
-        "widest_at_hz": 16000.0,
-        "repeat_spread_db": 0.37
-      },
-      "BltIn-against-3-Stk": {
-        "bands": 113,
-        "median_db": 1.96,
-        "widest_db": 6.96,
-        "widest_at_hz": 88.4,
-        "repeat_spread_db": 0.37
-      },
-      "2-Stk-against-BltIn": {
-        "bands": 113,
-        "median_db": 2.25,
-        "widest_db": 9.57,
-        "widest_at_hz": 15102.0,
-        "repeat_spread_db": 0.37
-      },
-      "2-Stk-against-3-Stk": {
-        "bands": 113,
-        "median_db": 2.76,
-        "widest_db": 7.26,
-        "widest_at_hz": 7127.2,
-        "repeat_spread_db": 0.37
-      },
-      "3-Stk-against-BltIn": {
-        "bands": 113,
-        "median_db": 1.96,
-        "widest_db": 7.28,
-        "widest_at_hz": 88.4,
-        "repeat_spread_db": 0.37
-      },
-      "3-Stk-against-2-Stk": {
-        "bands": 113,
-        "median_db": 2.79,
-        "widest_db": 7.37,
-        "widest_at_hz": 7127.2,
-        "repeat_spread_db": 0.37
-      }
-    },
-    "why_this_is_the_control": "Comparing the two drive characters against each other does not separate -- they agree about as closely as the thing being tested, which is the finding below and not a control for the finding here. What shows the reading could have come out differently is putting one entry against another: the same bands, the same records, and between one and a half and nineteen times the disagreement.",
-    "where_the_disagreement_sits": "Every widest figure in the table above falls below about a hundred and five hertz, which is the bottom of the band set and where a held note has least energy per band. The run's own repeat of one setting is 3.98 dB at 24.8 Hz against a median of 0.14 dB over the whole set, so the bottom bands are the run disagreeing with itself rather than the two chains disagreeing."
-  },
-  "which_side_of_the_drive_stage_it_is_on": {
-    "the_same_entry_under_two_nonlinearities": {
-      "BltIn": {
-        "bands": 113,
-        "median_db": 0.09,
-        "widest_db": 1.09,
-        "widest_at_hz": 31.2,
-        "repeat_spread_db": 0.16
-      },
-      "2-Stk": {
-        "bands": 113,
-        "median_db": 0.09,
-        "widest_db": 1.36,
-        "widest_at_hz": 33.1,
-        "repeat_spread_db": 0.16
-      },
-      "3-Stk": {
-        "bands": 113,
-        "median_db": 0.08,
-        "widest_db": 1.62,
-        "widest_at_hz": 41.7,
-        "repeat_spread_db": 0.16
-      }
-    },
-    "how_different_the_two_nonlinearities_are": {
-      "bands": 113,
-      "median_db": 3.87,
-      "widest_db": 9.99,
-      "widest_at_hz": 15102.0,
-      "by_octave_db": {
-        "20-60": -2.8,
-        "60-125": -2.04,
-        "125-250": -0.76,
-        "250-500": 5.03,
-        "500-1000": 7.53,
-        "1000-2000": 6.19,
-        "2000-4000": 1.29,
-        "4000-8000": -4.03,
-        "8000-16000": -8.59,
-        "16000-24000": -9.95
-      }
-    },
-    "the_argument": "With the filter after the stage the output is the filter applied to whatever the stage produced, so the ratio of two entries is the ratio of two filters and carries no trace of the stage. With the filter before it, the stage is handed a different spectrum at each entry and folds it differently, so the ratio depends on the stage. Two stages differing by a median of 3.87 dB and up to 9.99 dB return ratios differing by 0.09 dB. The ratio does not know which stage ran.",
-    "what_it_does_not_reach": "The drive amount was held at 48 in every one of these runs. Two characters at one amount is not two amounts, and a filter before a nonlinearity could in principle be insensitive to which nonlinearity and sensitive to how hard it is driven. That is the standing alternative below and it has a run."
-  },
-  "alternatives": [
-    {
-      "reading": "The four names are four names. Each type carries its own responses and they happen to be printed the same.",
-      "candidate": "a-set-of-curves-per-type",
-      "standing": false,
-      "ruled_out_by": "The entries read in two places land a median 0.18 dB apart or closer, where the same reading puts two different entries 1.96 dB apart or further. Four records, three types, two of which are not the same kind of type at all."
-    },
-    {
-      "reading": "The filter shapes what goes into the drive stage rather than what comes out of it, which is what a real amplifier's tone stack does on one side of the valve.",
-      "candidate": "a-filter-before-the-nonlinearity",
-      "standing": false,
-      "ruled_out_by": "The two drive characters. A filter before a nonlinearity cannot divide out of the result, because the nonlinearity is handed a different spectrum at each entry; these two characters differ by a median 3.87 dB and 9.99 dB at their widest, and the ratio between amp entries is the same across both to 0.09 dB."
-    },
-    {
-      "reading": "The response is fixed against which nonlinearity precedes it and not against how hard that nonlinearity is driven, so the table is four curves at one drive amount and something else at another.",
-      "candidate": "a-response-that-moves-with-the-drive-byte",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same sweep of `01 10 / 40 03 04` at two more drive amounts, one near nought and one at full, read on the same band set. Each entry's profile against entry 0 either is the profile it was at 48 or it is not.",
-        "predicts": {
-          "a fixed response after the stage": "The same three profiles at all three drive amounts, to within the run's own repeats. A filter on the output does not know how hard the stage ahead of it was driven.",
-          "a response that moves with the drive byte": "Profiles that move between drive amounts. How far is not predicted and does not need to be: anything clearing the repeats is an answer, because the claim says the figure is zero."
-        },
-        "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading, taken as what a difference worth having would be.",
-        "sensitivity_here": "0.42 dB, the median of the run's own repeat spread across the band set on the record this would repeat.",
-        "margin": 5.2,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 10",
-          "address": "40 03 04",
-          "settings": [
-            0,
-            1,
-            2,
-            3
-          ],
-          "stimulus": "the same held note, with `40 03 03` at 0 in one pass and 127 in the other and `40 03 05` at On throughout",
-          "takes": 16,
-          "minutes": 6
-        }
-      }
-    },
-    {
-      "reading": "The bass type's table is the same four curves with the last unreachable, rather than a table of three.",
-      "candidate": "the-bass-table-is-the-same-table-truncated",
-      "standing": true,
-      "separated_by": {
-        "observable": "`04 05 / 40 03 09` at 0 to 3 on the same band set. The page prints three names there and four everywhere else, so the fourth setting either returns the third's profile, returns the `3-Stk` profile the other types return, or is refused.",
-        "predicts": {
-          "the same table truncated": "Three profiles matching the three read here, and a fourth setting that either is refused or returns the third's profile again.",
-          "a table of three of its own": "Three profiles that are not these three, by more than the spacing between two entries.",
-          "the same table, printed short": "Four profiles matching all four read here, which would make the printed row the one thing in the set that is wrong."
-        },
-        "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading.",
-        "sensitivity_here": "0.42 dB, the median repeat spread of the record this would repeat.",
-        "margin": 5.2,
-        "run": {
-          "stage": "efx-bands",
-          "type": "04 05",
-          "address": "40 03 09",
-          "settings": [
-            0,
-            1,
-            2,
-            3
-          ],
-          "stimulus": "the same held note, with the compressor and the chorus stages of this type switched out and `40 03 0A` at On",
-          "takes": 10,
-          "minutes": 4
-        }
-      }
-    },
-    {
-      "reading": "The twelve types that print this byte and were not read reach some other table.",
-      "candidate": "a-second-table-on-the-types-not-read",
-      "standing": true,
-      "separated_by": {
-        "observable": "The same sweep on one type from each of the two families not covered -- `02 00`, where the stage is followed by a chorus, and `04 00`, where it is one stage of a guitar chain. Both print the byte at a different parameter number from either place already read.",
-        "predicts": {
-          "one table everywhere": "The same three profiles on both, to within the repeats -- which is what three places already returned.",
-          "a second table on the types not read": "Profiles departing by more than the spacing between two entries on at least one of the two."
-        },
-        "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading.",
-        "sensitivity_here": "0.42 dB, the median repeat spread of the records this would extend.",
-        "margin": 5.2,
-        "run": {
-          "stage": "efx-bands",
-          "type": "02 00, 04 00",
-          "address": "40 03 05, 40 03 09",
-          "settings": [
-            0,
-            1,
-            2,
-            3
-          ],
-          "stimulus": "the same held note, with each type's other stages taken out of the path by their own switches or levels and the amp switch at On",
-          "takes": 20,
-          "minutes": 12
-        }
-      }
-    }
+    "values": [
+     4.29,
+     29.62,
+     26.88,
+     31.14,
+     59.7
+    ],
+    "why": "The same table on the other standalone drive type."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/11-03-05-the-same-amp-byte-inside-a-pair-odrv.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=1].largest_db",
+     "readings[value=2].largest_db",
+     "readings[value=3].largest_db",
+     "reference.above_the_silence_db"
+    ],
+    "values": [
+     0.59,
+     29.07,
+     26.7,
+     31.56,
+     64.3
+    ],
+    "why": "The same table reached from inside a pair, with the selector at the overdrive character and the second stage silenced."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/11-03-05-the-same-amp-byte-inside-a-pair-dist.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=1].largest_db",
+     "readings[value=2].largest_db",
+     "readings[value=3].largest_db",
+     "reference.above_the_silence_db"
+    ],
+    "values": [
+     -0.83,
+     28.89,
+     26.66,
+     31.37,
+     61.8
+    ],
+    "why": "The same slot of the same pair with the selector at the distortion character. This record and the one above it are what put the filter after the drive stage rather than before it."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-10-05-what-the-amp-switch-takes-out.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=1].largest_db",
+     "readings[value=1].largest_at_hz",
+     "reference.above_the_silence_db"
+    ],
+    "values": [
+     3.98,
+     -19.24,
+     29.5,
+     67.2
+    ],
+    "why": "The switch beside the byte, which is what puts the table in the path. Its Off reading is against a reference taken at Off, so it is the run repeating itself and is the floor the rest of this claim is read over."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-10-04-the-amp-table-barely-driven.json",
+    "keys": [
+     "readings[value=1].largest_db",
+     "readings[value=3].largest_db"
+    ],
+    "values": [
+     23.2,
+     42.57
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-10-04-the-amp-table-fully-driven.json",
+    "keys": [
+     "readings[value=1].largest_db",
+     "readings[value=3].largest_db"
+    ],
+    "values": [
+     29.41,
+     31.83
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/02-00-05-the-amp-table-after-a-chorus.json",
+    "keys": [
+     "readings[value=1].largest_db",
+     "readings[value=3].largest_db"
+    ],
+    "values": [
+     30.99,
+     31.04
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/04-00-09-the-amp-table-in-a-guitar-chain.json",
+    "keys": [
+     "readings[value=1].largest_db",
+     "readings[value=3].largest_db"
+    ],
+    "values": [
+     29.8,
+     31.43
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/04-05-09-the-amp-table-the-page-prints-short.json",
+    "keys": [
+     "readings[value=1].largest_db",
+     "readings[value=2].largest_db",
+     "readings[value=3].largest_db"
+    ],
+    "values": [
+     30.29,
+     46.93,
+     1.09
+    ]
+   }
   ],
-  "refuted_by": "An entry read in a fourth place returning a profile that is not the one the other three return, by more than the spacing between two entries of the table. Or the ratio between two entries moving with the drive byte, which would put the filter before the nonlinearity after all and make the four profiles a reading of one drive amount rather than a table. Or the switch turning out to do something other than put the filter in the path -- if its Off position were a fifth response rather than no response, the whole reading of entry 0 as a narrow box would go with it.",
-  "what_it_would_change": [
-    "Sixteen of sixty-four types stop needing their own cabinet stage. One filter bank of four fixed responses, a switch, and a byte that picks an index, serves every one of them.",
-    "The order inside a drive stage is fixed: drive, then the cabinet. A renderer that put the cabinet first would be wrong by the whole difference between two drive characters, which this unit shows is up to ten decibels of spectrum."
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+    "rows": [
+     "Overdrive, parameter 2, Amp Type (Amp simulator type), Small/BltIn/2-Stk/3-Stk",
+     "Distortion, parameter 2, Amp Type (Amp simulator type), Small/BltIn/2-Stk/3-Stk",
+     "OD → Chorus (Overdrive → Chorus), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "OD → Flanger (Overdrive → Flanger), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "OD → Delay (Overdrive → Delay), parameter 3, OD Amp (Overdrive Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "DS → Chorus (Distortion → Chorus), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "DS → Flanger (Distortion → Flanger), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "DS → Delay (Distortion → Delay ), parameter 3, DS Amp (Distortion Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "GTR Multi 1 (Guitar Multi1), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "GTR Multi 2 (Guitar Multi2), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "GTR Multi 3 (Guitar Multi3), parameter 7, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "Bass Multi, parameter 7, OD Amp (OD Amp Simlation Type), Small/BltIn/2-Stk",
+     "OD1 / OD2 (Overdrive / Distortion1,2)|, parameter 3, OD1 Amp (OD1 Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "OD1 / OD2 (Overdrive / Distortion1,2)|, parameter 8, OD2 Amp (OD2 Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "OD / Rotary (Overdrive/Distortion, Rotary), parameter 3, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk",
+     "OD / Phaser(Overdrive/Distortion, Phaser), parameter 3, OD Amp (OD Amp Simulator Type), Smal/BltIn/ 2-Stk/3-Stk",
+     "OD / AutoWah (Overdrive/Distortion, Auto-wah), parameter 3, OD Amp (OD Amp Simulator Type), Small/BltIn/2-Stk/3-Stk"
+    ],
+    "why": "Every row whose data column prints this set of names, which is what says the question is about one table rather than about one type. Sixteen types print it; four places on three of them were read. The bass type's row prints three of the four names and is the one printed difference in the set."
+   }
   ],
-  "what_this_does_not_settle": [
-    "What each response is as a filter. Four band profiles say what the responses do at a twelfth of an octave; they do not say how many poles are in one, where its corners are, or whether the four are one filter with four coefficient sets or four different structures.",
-    "Whether the drive stage's own nonlinearity is the same in the two places the table was read from. The comparison here divides that out deliberately, which is what makes it work, and it means nothing was learnt about it.",
-    "What the drive byte does. It was held at one value throughout so that the amp byte was the only thing moving.",
-    "Whether the second slot of the pair -- the byte the page prints as `OD2 Amp` -- reaches the same table. It was held at entry 0 with its own stage silenced, so the run says nothing about it."
-  ]
+  "era_priors": [
+   {
+    "claim": "A cabinet response on a fixed-point part of this period is a short fixed filter, and its entries are expensive: each is a set of coefficients rather than a number. A table four entries long is what an expensive entry looks like, and it is the reason there is no continuous control beside it -- the same reasoning that makes a frequency table sixteen entries long and a gain table a hundred and twenty-eight.",
+    "why": "It says why four, and why the four are reached by a byte with four values rather than swept. It carries nothing about where in the chain the filter sits, which is the part the measurement settled.",
+    "would_be_wrong_if": "The byte had accepted more than four values, or the response had moved continuously with it. The run asked all four printed entries and the reading separates them; a fifth was not asked and is named below as something this does not settle."
+   }
+  ],
+  "community": []
+ },
+ "adds": "The records say four settings of one byte return four band profiles, on each of four chains. What is read out of them here is that the four profiles are the same four wherever the byte is reached from, and that the filter multiplies the drive stage's output instead of feeding it -- neither of which is in any one record, because both are a comparison between records and one of them is a comparison between two different nonlinearities.",
+ "what_the_table_is": {
+  "published_as": "a readout, and nothing is fitted to it",
+  "why_nothing_is_fitted": "Four curves read off four settings is a model with one free entry per setting. It cannot come out wrong, so it would pass every gate and mean nothing. What the claim rests on instead is the part a free table cannot arrange: four records agreeing to a seventh of a decibel where the same reading tells the entries apart by two, and two different nonlinearities cancelling.",
+  "entries_against_entry_0_by_octave_db": {
+   "BltIn": {
+    "20-60": 27.8,
+    "60-125": 26.2,
+    "125-250": 11.5,
+    "250-500": 0.7,
+    "500-1000": 4.1,
+    "1000-2000": 8.6,
+    "2000-4000": 7.9,
+    "4000-8000": 7.1,
+    "8000-16000": 11.4,
+    "16000-24000": 12.0
+   },
+   "2-Stk": {
+    "20-60": 24.6,
+    "60-125": 25.8,
+    "125-250": 11.7,
+    "250-500": 5.6,
+    "500-1000": 5.0,
+    "1000-2000": 6.4,
+    "2000-4000": 6.3,
+    "4000-8000": 2.6,
+    "8000-16000": 2.3,
+    "16000-24000": 2.4
+   },
+   "3-Stk": {
+    "20-60": 25.4,
+    "60-125": 29.0,
+    "125-250": 10.4,
+    "250-500": 1.8,
+    "500-1000": -0.3,
+    "1000-2000": 6.9,
+    "2000-4000": 8.0,
+    "4000-8000": 6.9,
+    "8000-16000": 7.5,
+    "16000-24000": 7.0
+   }
+  },
+  "read_from": "data/units/roland-sc8850-01/efx-bands/01-10-04-what-an-amp-type-is.json",
+  "entry_0_is_the_reference": "So every figure above is what that entry does relative to `Small`, not what it does relative to no amplifier at all. The switch record carries the second half: `BltIn` against the filter switched out is a bandpass, so `Small` is that bandpass less the figures above it -- about thirty-eight decibels down at the bottom octave and fifteen at the top, which is the narrowest of the four and the one the page names after the smallest box.",
+  "how_the_octave_figures_are_read": "The median of the twelfth-octave bands falling inside each octave, over the bands where the reference stands twelve decibels clear of the same chain's silence. A summary of the record and not a substitute for it."
+ },
+ "what_the_switch_beside_the_byte_does": {
+  "at_off_against_a_reference_taken_at_off_by_octave_db": {
+   "20-60": -0.0,
+   "60-125": 0.8,
+   "125-250": -0.2,
+   "250-500": -0.1,
+   "500-1000": -0.1,
+   "1000-2000": -0.0,
+   "2000-4000": 0.0,
+   "4000-8000": 0.0,
+   "8000-16000": 0.0,
+   "16000-24000": 0.2
+  },
+  "at_on_by_octave_db": {
+   "20-60": -10.7,
+   "60-125": 2.9,
+   "125-250": 2.6,
+   "250-500": -3.6,
+   "500-1000": 0.1,
+   "1000-2000": 3.8,
+   "2000-4000": 4.9,
+   "4000-8000": 3.8,
+   "8000-16000": -3.2,
+   "16000-24000": -5.1
+  },
+  "the_entry_it_was_read_at": "BltIn",
+  "read_as": "The Off reading is the run repeating itself -- its reference was taken at Off -- so it is the floor every other figure in this claim is read over, and it is a fourteenth of a decibel across the band set with one band at the very bottom reaching four. The On reading is the whole table's common shape: a bandpass, down at the bottom octave, down again above eight kilohertz, and up through the midrange. So the switch puts the filter in the path rather than choosing between two of the four entries, and entry 0 is a response rather than the absence of one."
+ },
+ "one_table_reached_from_more_than_one_place": {
+  "the_same_entry_in_two_places": {
+   "BltIn-through-odrv": {
+    "bands": 113,
+    "median_db": 0.15,
+    "widest_db": 2.73,
+    "widest_at_hz": 27.8,
+    "repeat_spread_db": 0.37
+   },
+   "2-Stk-through-odrv": {
+    "bands": 113,
+    "median_db": 0.14,
+    "widest_db": 2.49,
+    "widest_at_hz": 33.1,
+    "repeat_spread_db": 0.37
+   },
+   "3-Stk-through-odrv": {
+    "bands": 113,
+    "median_db": 0.18,
+    "widest_db": 3.1,
+    "widest_at_hz": 55.7,
+    "repeat_spread_db": 0.37
+   },
+   "BltIn-through-dist": {
+    "bands": 113,
+    "median_db": 0.16,
+    "widest_db": 2.69,
+    "widest_at_hz": 29.5,
+    "repeat_spread_db": 0.42
+   },
+   "2-Stk-through-dist": {
+    "bands": 113,
+    "median_db": 0.15,
+    "widest_db": 3.89,
+    "widest_at_hz": 33.1,
+    "repeat_spread_db": 0.42
+   },
+   "3-Stk-through-dist": {
+    "bands": 113,
+    "median_db": 0.15,
+    "widest_db": 3.2,
+    "widest_at_hz": 33.1,
+    "repeat_spread_db": 0.42
+   }
+  },
+  "the_control_two_different_entries": {
+   "BltIn-against-2-Stk": {
+    "bands": 113,
+    "median_db": 2.21,
+    "widest_db": 9.76,
+    "widest_at_hz": 16000.0,
+    "repeat_spread_db": 0.37
+   },
+   "BltIn-against-3-Stk": {
+    "bands": 113,
+    "median_db": 1.96,
+    "widest_db": 6.96,
+    "widest_at_hz": 88.4,
+    "repeat_spread_db": 0.37
+   },
+   "2-Stk-against-BltIn": {
+    "bands": 113,
+    "median_db": 2.25,
+    "widest_db": 9.57,
+    "widest_at_hz": 15102.0,
+    "repeat_spread_db": 0.37
+   },
+   "2-Stk-against-3-Stk": {
+    "bands": 113,
+    "median_db": 2.76,
+    "widest_db": 7.26,
+    "widest_at_hz": 7127.2,
+    "repeat_spread_db": 0.37
+   },
+   "3-Stk-against-BltIn": {
+    "bands": 113,
+    "median_db": 1.96,
+    "widest_db": 7.28,
+    "widest_at_hz": 88.4,
+    "repeat_spread_db": 0.37
+   },
+   "3-Stk-against-2-Stk": {
+    "bands": 113,
+    "median_db": 2.79,
+    "widest_db": 7.37,
+    "widest_at_hz": 7127.2,
+    "repeat_spread_db": 0.37
+   }
+  },
+  "why_this_is_the_control": "Comparing the two drive characters against each other does not separate -- they agree about as closely as the thing being tested, which is the finding below and not a control for the finding here. What shows the reading could have come out differently is putting one entry against another: the same bands, the same records, and between one and a half and nineteen times the disagreement.",
+  "where_the_disagreement_sits": "Every widest figure in the table above falls below about a hundred and five hertz, which is the bottom of the band set and where a held note has least energy per band. The run's own repeat of one setting is 3.98 dB at 24.8 Hz against a median of 0.14 dB over the whole set, so the bottom bands are the run disagreeing with itself rather than the two chains disagreeing."
+ },
+ "which_side_of_the_drive_stage_it_is_on": {
+  "the_same_entry_under_two_nonlinearities": {
+   "BltIn": {
+    "bands": 113,
+    "median_db": 0.09,
+    "widest_db": 1.09,
+    "widest_at_hz": 31.2,
+    "repeat_spread_db": 0.16
+   },
+   "2-Stk": {
+    "bands": 113,
+    "median_db": 0.09,
+    "widest_db": 1.36,
+    "widest_at_hz": 33.1,
+    "repeat_spread_db": 0.16
+   },
+   "3-Stk": {
+    "bands": 113,
+    "median_db": 0.08,
+    "widest_db": 1.62,
+    "widest_at_hz": 41.7,
+    "repeat_spread_db": 0.16
+   }
+  },
+  "how_different_the_two_nonlinearities_are": {
+   "bands": 113,
+   "median_db": 3.87,
+   "widest_db": 9.99,
+   "widest_at_hz": 15102.0,
+   "by_octave_db": {
+    "20-60": -2.8,
+    "60-125": -2.04,
+    "125-250": -0.76,
+    "250-500": 5.03,
+    "500-1000": 7.53,
+    "1000-2000": 6.19,
+    "2000-4000": 1.29,
+    "4000-8000": -4.03,
+    "8000-16000": -8.59,
+    "16000-24000": -9.95
+   }
+  },
+  "the_argument": "With the filter after the stage the output is the filter applied to whatever the stage produced, so the ratio of two entries is the ratio of two filters and carries no trace of the stage. With the filter before it, the stage is handed a different spectrum at each entry and folds it differently, so the ratio depends on the stage. Two stages differing by a median of 3.87 dB and up to 9.99 dB return ratios differing by 0.09 dB. The ratio does not know which stage ran.",
+  "what_it_does_not_reach": "The drive amount was held at 48 in every one of these runs. Two characters at one amount is not two amounts, and a filter before a nonlinearity could in principle be insensitive to which nonlinearity and sensitive to how hard it is driven. That is the standing alternative below and it has a run."
+ },
+ "alternatives": [
+  {
+   "reading": "The four names are four names. Each type carries its own responses and they happen to be printed the same.",
+   "candidate": "a-set-of-curves-per-type",
+   "standing": false,
+   "ruled_out_by": "The entries read in two places land a median 0.18 dB apart or closer, where the same reading puts two different entries 1.96 dB apart or further. Four records, three types, two of which are not the same kind of type at all."
+  },
+  {
+   "reading": "The filter shapes what goes into the drive stage rather than what comes out of it, which is what a real amplifier's tone stack does on one side of the valve.",
+   "candidate": "a-filter-before-the-nonlinearity",
+   "standing": false,
+   "ruled_out_by": "The two drive characters. A filter before a nonlinearity cannot divide out of the result, because the nonlinearity is handed a different spectrum at each entry; these two characters differ by a median 3.87 dB and 9.99 dB at their widest, and the ratio between amp entries is the same across both to 0.09 dB."
+  },
+  {
+   "reading": "The response is fixed against which nonlinearity precedes it and not against how hard that nonlinearity is driven, so the table is four curves at one drive amount and something else at another.",
+   "candidate": "a-response-that-moves-with-the-drive-byte",
+   "standing": false,
+   "separated_by": {
+    "observable": "The same sweep of `01 10 / 40 03 04` at two more drive amounts, one near nought and one at full, read on the same band set. Each entry's profile against entry 0 either is the profile it was at 48 or it is not.",
+    "predicts": {
+     "a fixed response after the stage": "The same three profiles at all three drive amounts, to within the run's own repeats. A filter on the output does not know how hard the stage ahead of it was driven.",
+     "a response that moves with the drive byte": "Profiles that move between drive amounts. How far is not predicted and does not need to be: anything clearing the repeats is an answer, because the claim says the figure is zero."
+    },
+    "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading, taken as what a difference worth having would be.",
+    "sensitivity_here": "0.42 dB, the median of the run's own repeat spread across the band set on the record this would repeat.",
+    "margin": 5.2,
+    "run": {
+     "stage": "efx-bands",
+     "type": "01 10",
+     "address": "40 03 04",
+     "settings": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "stimulus": "the same held note, with `40 03 03` at 0 in one pass and 127 in the other and `40 03 05` at On throughout",
+     "takes": 16,
+     "minutes": 6
+    }
+   },
+   "ruled_out_by": "The same sweep at a drive of 4 and at a drive of 127. Each entry's response moved by a median 0.165 and 0.18 dB against the 48 the first run held, on a reading that separates two entries of the table by 2.3 dB -- 13.9 and 12.8 times larger. The drive byte spans almost its whole range between those two and the table does not follow it.",
+   "shown_in": [
+    "data/units/roland-sc8850-01/efx-bands/01-10-04-the-amp-table-barely-driven.json",
+    "data/units/roland-sc8850-01/efx-bands/01-10-04-the-amp-table-fully-driven.json"
+   ]
+  },
+  {
+   "reading": "The bass type's table is the same four curves with the last unreachable, rather than a table of three.",
+   "candidate": "the-bass-table-is-the-same-table-truncated",
+   "standing": false,
+   "separated_by": {
+    "observable": "`04 05 / 40 03 09` at 0 to 3 on the same band set. The page prints three names there and four everywhere else, so the fourth setting either returns the third's profile, returns the `3-Stk` profile the other types return, or is refused.",
+    "predicts": {
+     "the same table truncated": "Three profiles matching the three read here, and a fourth setting that either is refused or returns the third's profile again.",
+     "a table of three of its own": "Three profiles that are not these three, by more than the spacing between two entries.",
+     "the same table, printed short": "Four profiles matching all four read here, which would make the printed row the one thing in the set that is wrong."
+    },
+    "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading.",
+    "sensitivity_here": "0.42 dB, the median repeat spread of the record this would repeat.",
+    "margin": 5.2,
+    "run": {
+     "stage": "efx-bands",
+     "type": "04 05",
+     "address": "40 03 09",
+     "settings": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "stimulus": "the same held note, with the compressor and the chorus stages of this type switched out and `40 03 0A` at On",
+     "takes": 10,
+     "minutes": 4
+    }
+   },
+   "ruled_out_by": "Its first three entries are a median 7.7 dB from the same three elsewhere, which is wider than the table's own entries are from each other, so it is not that table truncated or otherwise. Its fourth setting returns its reference rather than the third entry or the fourth -- so the reading was wrong about the table and about the setting both, and the second half of it was wrong in a way none of the three named answers covered.",
+   "shown_in": "data/units/roland-sc8850-01/efx-bands/04-05-09-the-amp-table-the-page-prints-short.json"
+  },
+  {
+   "reading": "The twelve types that print this byte and were not read reach some other table. Upheld for one of them and refused for two: this is recorded as the reading it turned out to be rather than as one that fell.",
+   "candidate": "a-second-table-on-the-types-not-read",
+   "standing": false,
+   "separated_by": {
+    "observable": "The same sweep on one type from each of the two families not covered -- `02 00`, where the stage is followed by a chorus, and `04 00`, where it is one stage of a guitar chain. Both print the byte at a different parameter number from either place already read.",
+    "predicts": {
+     "one table everywhere": "The same three profiles on both, to within the repeats -- which is what three places already returned.",
+     "a second table on the types not read": "Profiles departing by more than the spacing between two entries on at least one of the two."
+    },
+    "divergence": "2.2 dB, the closest two entries of the table come to each other under this reading.",
+    "sensitivity_here": "0.42 dB, the median repeat spread of the records this would extend.",
+    "margin": 5.2,
+    "run": {
+     "stage": "efx-bands",
+     "type": "02 00, 04 00",
+     "address": "40 03 05, 40 03 09",
+     "settings": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "stimulus": "the same held note, with each type's other stages taken out of the path by their own switches or levels and the amp switch at On",
+     "takes": 20,
+     "minutes": 12
+    }
+   },
+   "ruled_out_by": "Answered rather than refuted, and it split. The two guitar-side families read -- the stage followed by a chorus and the stage inside a guitar chain -- return the same four curves as the standalone type, a median 0.2 and 0.22 dB apart. The bass multi does not, at 7.7 dB. So there is a second table on this unit and it is on the one type whose printed row is short, which is the place a second table was least surprising and was still worth measuring rather than assuming."
+  },
+  {
+   "reading": "On the bass type the response sits before the drive stage rather than after it, and what its entries read as is the guitar table remapped through the nonlinearity rather than a table of its own.",
+   "candidate": "the-bass-response-is-in-front-of-its-drive",
+   "standing": true,
+   "separated_by": {
+    "observable": "Whether each entry's ratio to entry 0 divides out of two drive amounts, which is the same test that put the guitar table after the stage and is the one reading of this record that would explain the disagreement without a second table. `04 05 / 40 03 09` at all four settings with the drive byte at 4 and again at 127.",
+    "predicts": {
+     "a table of its own, after the stage": "the entries land where they landed at 48, to the tenth of a decibel the other five places managed",
+     "the guitar table in front of the stage": "the entries move with the drive amount, because a filter before a nonlinearity does not divide out of what leaves it"
+    },
+    "divergence": "7.7 dB, the amount this type already sits from the shared table -- which is what a remapping would have to account for and what it would have to move by when the remapping changes.",
+    "sensitivity_here": "0.47 dB, this record's own repeat spread.",
+    "margin": 16.4,
+    "run": {
+     "stage": "efx-bands",
+     "type": "04 05",
+     "address": "40 03 09",
+     "settings": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "stimulus": "a note held through the effect with every other stage of the type taken out of the path, at 40 03 08 = 4 and again at 127",
+     "takes": 20,
+     "minutes": 8
+    }
+   }
+  }
+ ],
+ "refuted_by": "An entry read in a fourth place returning a profile that is not the one the other three return, by more than the spacing between two entries of the table. Or the ratio between two entries moving with the drive byte, which would put the filter before the nonlinearity after all and make the four profiles a reading of one drive amount rather than a table. Or the switch turning out to do something other than put the filter in the path -- if its Off position were a fifth response rather than no response, the whole reading of entry 0 as a narrow box would go with it.",
+ "what_it_would_change": [
+  "Sixteen of sixty-four types stop needing their own cabinet stage. One filter bank of four fixed responses, a switch, and a byte that picks an index, serves every one of them.",
+  "The order inside a drive stage is fixed: drive, then the cabinet. A renderer that put the cabinet first would be wrong by the whole difference between two drive characters, which this unit shows is up to ten decibels of spectrum."
+ ],
+ "what_this_does_not_settle": [
+  "What each response is as a filter. Four band profiles say what the responses do at a twelfth of an octave; they do not say how many poles are in one, where its corners are, or whether the four are one filter with four coefficient sets or four different structures.",
+  "Whether the drive stage's own nonlinearity is the same in the two places the table was read from. The comparison here divides that out deliberately, which is what makes it work, and it means nothing was learnt about it.",
+  "What the drive byte does. It was held at one value throughout so that the amp byte was the only thing moving.",
+  "Whether the second slot of the pair -- the byte the page prints as `OD2 Amp` -- reaches the same table. It was held at entry 0 with its own stage silenced, so the run says nothing about it.",
+  "What the bass type's three entries are. They are measured and published as profiles and they are not the shared table's; nothing here says whether they are a second table of four with one unreachable, a table of three, or three entries of a longer one.",
+  "The other ten types that print this byte. Three families are covered and the two that disagreed and agreed are one type each, so a family is represented rather than exhausted."
+ ],
+ "the_same_table_in_five_more_places": {
+  "what": "The same three entries, each against that record's own entry 0, compared band by band with the first run's. A profile is already relative to its own reference, so everything else in the chain divides out; a band is read only where both records' references sit clear of their own silence.",
+  "measured_in": "dB",
+  "how_far_apart_the_same_entry_lands": {
+   "the drive near nought": {
+    "1": {
+     "bands_read": 80,
+     "widest_db": 0.87,
+     "median_db": 0.165,
+     "the_runs_own_repeat_spread_db": 0.315,
+     "widest_repeat_spread_db": 1.77
+    },
+    "2": {
+     "bands_read": 80,
+     "widest_db": 1.77,
+     "median_db": 0.15,
+     "the_runs_own_repeat_spread_db": 0.315,
+     "widest_repeat_spread_db": 1.77
+    },
+    "3": {
+     "bands_read": 80,
+     "widest_db": 4.77,
+     "median_db": 0.175,
+     "the_runs_own_repeat_spread_db": 0.315,
+     "widest_repeat_spread_db": 1.77
+    }
+   },
+   "the drive at full": {
+    "1": {
+     "bands_read": 113,
+     "widest_db": 4.16,
+     "median_db": 0.16,
+     "the_runs_own_repeat_spread_db": 0.45,
+     "widest_repeat_spread_db": 4.78
+    },
+    "2": {
+     "bands_read": 113,
+     "widest_db": 3.51,
+     "median_db": 0.21,
+     "the_runs_own_repeat_spread_db": 0.45,
+     "widest_repeat_spread_db": 4.78
+    },
+    "3": {
+     "bands_read": 113,
+     "widest_db": 3.79,
+     "median_db": 0.18,
+     "the_runs_own_repeat_spread_db": 0.45,
+     "widest_repeat_spread_db": 4.78
+    }
+   },
+   "the stage followed by a chorus": {
+    "1": {
+     "bands_read": 113,
+     "widest_db": 2.79,
+     "median_db": 0.19,
+     "the_runs_own_repeat_spread_db": 0.43,
+     "widest_repeat_spread_db": 5.24
+    },
+    "2": {
+     "bands_read": 113,
+     "widest_db": 3.38,
+     "median_db": 0.2,
+     "the_runs_own_repeat_spread_db": 0.43,
+     "widest_repeat_spread_db": 5.24
+    },
+    "3": {
+     "bands_read": 113,
+     "widest_db": 4.13,
+     "median_db": 0.22,
+     "the_runs_own_repeat_spread_db": 0.43,
+     "widest_repeat_spread_db": 5.24
+    }
+   },
+   "the stage inside a guitar chain": {
+    "1": {
+     "bands_read": 113,
+     "widest_db": 5.82,
+     "median_db": 0.22,
+     "the_runs_own_repeat_spread_db": 0.4,
+     "widest_repeat_spread_db": 6.27
+    },
+    "2": {
+     "bands_read": 113,
+     "widest_db": 4.77,
+     "median_db": 0.19,
+     "the_runs_own_repeat_spread_db": 0.4,
+     "widest_repeat_spread_db": 6.27
+    },
+    "3": {
+     "bands_read": 113,
+     "widest_db": 3.41,
+     "median_db": 0.23,
+     "the_runs_own_repeat_spread_db": 0.4,
+     "widest_repeat_spread_db": 6.27
+    }
+   }
+  },
+  "what_the_tables_own_entries_do": {
+   "1 against 2": {
+    "bands_read": 113,
+    "median_db": 2.3,
+    "widest_db": 9.65
+   },
+   "1 against 3": {
+    "bands_read": 113,
+    "median_db": 1.83,
+    "widest_db": 8.82
+   },
+   "2 against 3": {
+    "bands_read": 113,
+    "median_db": 2.91,
+    "widest_db": 7.31
+   }
+  },
+  "the_widest_of_the_agreements_db": 0.22,
+  "the_narrowest_of_the_agreements_db": 0.165,
+  "the_entries_own_separation_db": 2.3,
+  "how_much_larger_the_separation_is": 10.5,
+  "why_the_drive_amounts_matter_most": "The first run held the drive at 48 throughout on purpose, so that the amp byte was the only thing moving -- which left the whole claim resting on two drive characters at one amount. A character and an amount are different questions: a filter could be blind to which nonlinearity precedes it and not to how hard that one is pushed, and nothing already measured said otherwise. The byte was moved from 4 to 127 and the response did not follow."
+ },
+ "the_bass_multi_has_a_table_of_its_own": {
+  "what": "Three entries that are not the three read everywhere else, and a fourth setting that returns the first. This was queued as the reading that the bass row's three printed names are the four-entry table with its last entry unreachable, and it is not that.",
+  "measured_in": "dB",
+  "its_first_three_against_the_same_three_elsewhere": {
+   "1": {
+    "bands_read": 109,
+    "widest_db": 24.18,
+    "median_db": 5.58,
+    "the_runs_own_repeat_spread_db": 0.47,
+    "widest_repeat_spread_db": 4.78
+   },
+   "2": {
+    "bands_read": 109,
+    "widest_db": 24.11,
+    "median_db": 9.47,
+    "the_runs_own_repeat_spread_db": 0.47,
+    "widest_repeat_spread_db": 4.78
+   },
+   "3": {
+    "bands_read": 109,
+    "widest_db": 33.16,
+    "median_db": 7.7,
+    "the_runs_own_repeat_spread_db": 0.47,
+    "widest_repeat_spread_db": 4.78
+   }
+  },
+  "median_db": 7.7,
+  "against_what_the_table_s_own_entries_do_db": 2.3,
+  "why_that_settles_it": "A disagreement wider than the thing being compared is not a disagreement about precision. The same reading that puts two entries of the guitar table 2.3 dB apart puts this type's entries 7.7 dB from them, so whatever the bass row indexes, it is not the table the other five places reach.",
+  "what_the_fourth_setting_returns": {
+   "against the entry below it": {
+    "median_db": 7.81,
+    "widest_db": 46.63
+   },
+   "against the reference, which is entry 0": {
+    "median_db": 0.13,
+    "widest_db": 2.39
+   },
+   "against what entry 0 itself returns": {
+    "median_db": 0.16,
+    "widest_db": 2.22
+   },
+   "against the same entry on a type that prints four names": {
+    "median_db": 7.8,
+    "widest_db": 31.14
+   },
+   "what its own entries do": {
+    "1 against 2": {
+     "bands_read": 109,
+     "median_db": 6.41,
+     "widest_db": 25.94
+    },
+    "1 against 3": {
+     "bands_read": 109,
+     "median_db": 2.45,
+     "widest_db": 31.01
+    },
+    "2 against 3": {
+     "bands_read": 109,
+     "median_db": 7.81,
+     "widest_db": 46.63
+    }
+   }
+  },
+  "which_of_the_named_answers_it_is": "None of the three. Before the run the fourth setting was expected to return the third entry's profile, to return the profile the other types' fourth entry returns, or to be refused. It sits 7.81 dB from the entry below it and 7.8 dB from the fourth entry elsewhere, and it was not refused -- the take was made and is in the record. What it does is return the reference, to 0.13 dB, which is inside what entry 0 itself returns against the reference (0.16 dB). Naming a mechanism for that is not done here; what is measured is that the top of this byte lands where its bottom does."
+ }
 }
