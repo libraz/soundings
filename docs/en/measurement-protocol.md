@@ -345,26 +345,36 @@ one made on broadband level cannot see a parameter that changed one channel's
 shape while leaving its level alone. Which of the three was asked is therefore
 part of what a null from this stage means.
 
-**`vibrato` needs a stimulus whose pitch survives the type it is read through.**
-Its reading is a pitch track, and a pitch track is only a reading of the note
-while the note still has the partials a pitch is estimated from. On a type whose
-output at the effect-alone balance is a delayed copy of itself, a delay of a few
-tenths of a millisecond puts a comb's notches through the middle of a struck
-tone's own partials, and the track jumps between whichever are left: measured on
-two runs across three pre-delays, the track wandered by hundreds to thousands of
-cents on every take -- **including the takes made with the depth byte at nought
-and nothing modulating at all**. What comes out of such a track repeats badly,
-does not rise with the byte, and is not a depth.
+**A reading that weighs every frame the same hands itself to the wrong ones.** A
+pitch estimator loses the note now and then -- a comb's notch takes the partial it
+was following, or it lands an octave out -- and it comes back a few frames later.
+Those frames sit hundreds of cents from their neighbours on a track that is
+otherwise steady to a cent, and two steps of `vibrato` used to weigh them in full:
+a cubic trend fitted by least squares over every frame, and a depth read by
+projecting every frame onto a sinusoid. Neither has any notion of an outlier, so a
+run of lost frames outvoted the modulation. The trend is now fitted on the frames
+inside the track's own middle, and the depth is the swing between the track's
+fifth and ninety-fifth percentile.
 
-The stage's own control does not catch that and is not built to. It injects a
-known modulation into one take and reports which depths came back, so what it
-establishes is that the search can find a periodic component in that series. It
-does not establish that the series is the note's pitch. A control passing is
-therefore not a track being sound, and on a type that combs its own output the
-one take the control is injected into -- the setting with nothing sweeping -- is
-the least like the rows it is bounding. Before reading a depth out of this stage,
-look at what the track does over a take the parameter was held at nought in: if
-that wanders, nothing above it is a reading.
+What it was worth: four takes of one part-level vibrato setting read 112.72,
+147.97, 102.83 and 233.31 cents under the old reading and 80.89, 80.14, 80.84 and
+80.91 under this one, and the shallowest depth the injected control reaches on
+those records went from 50 cents to 3.
+
+**A control that passes is not a track that is sound.** The stage injects a known
+modulation into one take and reports which depths came back, so what it
+establishes is that the *search* can find a periodic component in that series --
+not that the series is the note's pitch, and not that the reading taken off it is
+robust. It recovered three cents on a run whose every published figure was wrong.
+The take it is injected into is also the one setting where nothing is sweeping,
+which is the least like the rows it bounds.
+
+So the check that catches this is not the control. It is to look at the series
+itself over a take the swept parameter was held at nought in, **with a statistic
+one frame cannot decide**: an end-to-end span over sixteen hundred frames says
+whatever the worst of them says, and reading those same takes end to end is what
+produced a published claim that their tracks were unusable when they were flat to
+eight tenths of a cent.
 
 `phase` carries a control the others do not need. It measures between two takes of
 one note, which works only where the two takes are the same waveform, so every
