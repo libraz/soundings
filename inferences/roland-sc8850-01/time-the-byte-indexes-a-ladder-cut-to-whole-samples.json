@@ -22,7 +22,7 @@
       ]
     }
   },
-  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. Which ladder a slot is on is picked by the conversion column the effect list cites beside it, not by the range the page prints -- two slots print the same range and cite different columns, and they return ladders fifty milliseconds apart. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ.",
+  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. Which ladder a slot is on is picked by the conversion column the effect list cites beside it, not by the range the page prints -- two slots print the same range and cite different columns, and they return ladders fifty milliseconds apart. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ. One slot of the five does not read its ladder from wherever it is asked. On the type whose delay glides, a setting reached from below is short of its cited column by a thousand and sixteen whole samples of the same clock, and the same setting reached from above returns that column times a hundred and twenty-seven over a hundred and twenty-eight exactly -- the same one-byte ratio every entry here carries. So the shortfall the sweep found is the sweep's own direction and not a second regime in the table, and the byte the page prints beside it as an acceleration is worth exactly half of it, from its top bit alone and from no other bit in the nibble.",
   "named": null,
   "why_not_named": "The ladder is the claim and it is written out. A name for it would be a name for a table somebody laid out by hand, and there is nothing to call it but the numbers.",
   "rests_on": {
@@ -1494,8 +1494,66 @@
       },
       "read_as": "The byte the page prints as an acceleration moves where the delay ends up, which a table cannot do. Off nought the missing constant halves, and one place of an arithmetic shift is exactly what halves it -- the idiom `0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short` reads off the rotary, on a second quantity."
     },
+    "the_whole_acceleration_byte": {
+      "record": "data/units/roland-sc8850-01/efx-time/01-54-04-what-the-acceleration-byte-is-worth.json",
+      "at_setting_80_ms": {
+        "0": 563.5625,
+        "1": 563.5625,
+        "2": 563.5625,
+        "3": 563.5625,
+        "4": 563.5625,
+        "5": 563.5625,
+        "6": 563.5625,
+        "7": 563.5625,
+        "8": 579.4375,
+        "9": 579.4375,
+        "10": 579.4375,
+        "11": 579.4375,
+        "12": 579.4375,
+        "13": 579.4375,
+        "14": 579.4375,
+        "15": 579.4375
+      },
+      "places_it_returns": [
+        563.5625,
+        579.4375
+      ],
+      "the_step_ms": 15.875,
+      "the_value_it_changes_at": 8,
+      "read_as": "Sixteen settings and two places. The byte the page prints `0 - 15` -- a nibble -- returns one arrival for its bottom half and another for its top, and it changes at 8, which is the nibble's own top bit and nothing else in it. Every other bit is dead here. A table indexed by an acceleration would have sixteen entries or one; a top bit that reaches a delay and twelve settings either side of it that do not is a bit tested, not a value looked up.",
+      "against_the_missing_constant": {
+        "the_step_ms": 15.875,
+        "the_constant_the_sweep_was_short_ms": 31.748538,
+        "the_step_over_the_constant": 0.500023,
+        "in_samples_at_32k": {
+          "the_constant": 1015.9532,
+          "the_step": 508.0
+        },
+        "read_as": "Exactly a half. The step the top bit of the acceleration nibble makes is half the constant the sweep came back short of, to six figures, which is one place of an arithmetic right shift and not a coincidence of two fitted numbers -- neither was fitted. At the rate this archive has closed on four times over, the step is 508 whole samples and the difference between reaching the setting from below and from above is 1016 of them, both exact; the constant beside them is 1015.95 because it is a mean over sixteen settings and carries their scatter. Four hundred and twenty-seven is what 508 is, and eight of them is what 1016 is -- the denominator this unit's tables keep turning out to be cut on."
+      }
+    },
     "which_way_it_was_reached": {
-      "read_as": "Not yet. What would settle whether the missing constant is a lag is the same setting reached from above rather than from below: a shift that underflows climbing arrives when it descends, and a ladder does not care which way it was reached."
+      "at_setting_80_ms": {
+        "below": 563.5625,
+        "from where it powers up": 563.5625,
+        "above": 595.3125
+      },
+      "how_far_apart_ms": 31.75,
+      "against_the_missing_constant": {
+        "the_constant_the_sweep_was_short_ms": 31.748538,
+        "the_difference_over_the_constant": 1.000046,
+        "in_samples_at_32k": 1016.0
+      },
+      "what_the_cited_column_puts_at_80": {
+        "the_column_entry_ms": 600.0,
+        "times_the_ratio_below_the_power_on_setting_ms": 595.321847,
+        "what_came_back_from_above_ms": 595.3125,
+        "off_by_ms": -0.009347,
+        "times_127_over_128_ms": 595.3125,
+        "off_that_by_ms": 0.0,
+        "read_as": "The column entry times a hundred and twenty-seven over a hundred and twenty-eight, exactly. The ratio was read off the settings below the power-on value and reported as 0.99219 there; asked for the digit it is 127/128, and this setting reached from above returns the column entry times that to the last place the reading has. So there is no second regime and no missing constant. The slot is on its cited column like the other five, scaled by the same one-byte ratio, and what the sweep found above the power-on setting was the sweep's own direction."
+      },
+      "read_as": "The same setting, the same held block, the same twenty seconds of settling, and the only thing that differs is what the byte held when it was written. Two of the three agree and the third does not, which is not what a table does. What separates them is 31.75 ms -- the constant the sweep came back short of above the power-on setting, to the digit, and nothing here was fitted to make it so. So the constant is not missing from a table: the sweep was made climbing, every setting above the power-on value was arrived at from below, and a setting arrived at from below is short by exactly this. Reached from above the same setting lands where its cited column puts it."
     },
     "the_alternative_that_became_the_claim": "the-column-the-page-cites-picks-the-ladder"
   }
