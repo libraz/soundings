@@ -1,0 +1,151 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "motion",
+    "invocation": [
+      "motion",
+      ".cache/takes/what-shape-the-modulator-has/0125/held-16-dry-00-00.wav",
+      ".cache/takes/what-shape-the-modulator-has/0125/held-16-wave-004-00.wav",
+      "--lead",
+      "0.6",
+      "--out",
+      "data/units/roland-sc8850-01/motion/01-25-03-what-shape-the-modulator-has-004.json"
+    ],
+    "measured_at": "2026-09-16T20:39:11+00:00",
+    "elapsed_s": 1.2,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "dry": ".cache/takes/what-shape-the-modulator-has/0125/held-16-dry-00-00.wav",
+  "wet": ".cache/takes/what-shape-the-modulator-has/0125/held-16-wave-004-00.wav",
+  "sample_rate": 48000,
+  "channel": {
+    "read": 2,
+    "reached_db": [
+      -69.9,
+      -75.2,
+      -48.9,
+      -49.1,
+      -240.0,
+      -240.0
+    ],
+    "why": "Which channel of the interface both takes were read from, and the highest each channel reached across the two. One channel for the pair rather than the loudest of each take: this measurement subtracts one take from the other, and an interface carries inputs the unit is not on which are not silent, so a take whose output fell below one of them would be answered from that input and subtracted from a different one -- leaving a residual of nothing that reads as an effect doing nothing."
+  },
+  "searched_rate_hz": [
+    0.05,
+    20.0
+  ],
+  "lead_s": 0.6,
+  "positive_control": {
+    "injected_rate_hz": 1.3,
+    "injected_depths_ms": [
+      24.0,
+      12.0,
+      6.0,
+      3.0,
+      1.5,
+      0.75,
+      0.375
+    ],
+    "injected_ms_hz": [
+      31.2,
+      15.6,
+      7.8,
+      3.9,
+      1.95,
+      0.975,
+      0.488
+    ],
+    "why_ms_hz": "Rate times depth, which is the quantity that bounds this tracker from above rather than either on its own. A delay that moves during a frame smears that frame's correlation peak, and how far it moves is the product: a deep slow sweep and a shallow fast one are lost to the same thing. On broadband material, whose correlation peak is a couple of samples wide, the boundary was mapped at roughly four to five millisecond-hertz -- so the deepest rungs of this ladder sit far outside it and cannot recover on any material, which is why sensitivity here is reported as a band closed at both ends.",
+    "return_level_db": -11.13,
+    "no_return_to_carry_a_control": false,
+    "attempts": [
+      {
+        "injected_depth_ms": 24.0,
+        "injected_ms_hz": 31.2,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 12.0,
+        "injected_ms_hz": 15.6,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 6.0,
+        "injected_ms_hz": 7.8,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 3.0,
+        "injected_ms_hz": 3.9,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 1.5,
+        "injected_ms_hz": 1.95,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.75,
+        "injected_ms_hz": 0.975,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      },
+      {
+        "injected_depth_ms": 0.375,
+        "injected_ms_hz": 0.488,
+        "recovered_rate_hz": null,
+        "recovered_depth": null,
+        "recovered": false
+      }
+    ],
+    "detectable_ms": null,
+    "detectable_why": "No rung of the ladder recovered, so these takes have no measured sensitivity and the band is absent rather than wide. What that silence is not is a reason: the ladder closes at both ends and for different ones. Below it there is too little return to follow. Above it the delay moves too far inside a single tracking frame, which smears that frame's correlation peak until nothing clears the confidence threshold. A ladder that failed at every depth failed for at least one of those and does not say which, so it cannot be read as the return having been too quiet.",
+    "recovered": false,
+    "tolerance": 0.25,
+    "why": "Modulations of known rate and a ladder of known depths were built from this run's own dry take and put through the same tracker, each at the level the real return was measured to have. Without it a null here is unreadable: a track that found no line because the effect stands still and one that found no line because the tracker could not follow it are the same empty result, and the second is not rare -- a quiet send, a diffuse return or a short take all look like it. What the ladder adds is the bound the null holds inside. It is a bound on a null and only on a null: where the effect already moves, the sweep is added to a motion that was there, and a recovered line cannot be told from the one the effect was making anyway."
+  },
+  "control_failed": "No injected swing was recovered at any depth on the ladder, so this pair of takes was never shown able to report a modulation at all. Nothing here is a finding about the effect: an effect that moves and an effect that stands still would both be reported as standing still.",
+  "track": {
+    "frames": 1793,
+    "frames_found": 1605,
+    "coverage": 1.0,
+    "duty": 0.895,
+    "sounded_s": 8.025,
+    "slowest_rate_hz": 0.374,
+    "why_slowest_rate": "The slowest modulation this pair of takes could have shown, which is three cycles across the longest unbroken stretch the note sounded for. A line is not read under three cycles because a series with a bend in it -- an envelope decaying and then flattening onto the noise -- puts all its leftover energy in the lowest bins, where it presents as a very slow and very convincing oscillation. The floor that follows is a fact about the take's length and not about the band the run was asked for, and the two are routinely far apart. It has to be read beside any null here: a type reported as showing no modulation may be one that does not modulate, or one whose modulator was slower than its take was long.",
+    "frame_ms": 10.0,
+    "frame_rate_hz": 200.0,
+    "searched_ms": [
+      0.0,
+      60.0
+    ],
+    "excursion_ms": 59.104,
+    "input_repeats_every_ms": 2.273,
+    "input_periodicity": 0.999,
+    "may_have_wrapped": true,
+    "trigger_scatter_ms": 0.128,
+    "noise_floor_db": -110.65,
+    "frames_below_floor": 179,
+    "frames_gated_on_level": "Frames were dropped for holding no signal as well as for finding no peak. The per-frame correlation is normalised, so it says how well two frames match and not how much sound was in them, and a frame of the recorder's own noise matches itself: it clears the confidence gate and reports a delay at whatever lag that noise happened to peak. A take that decays into silence is mostly such frames, and their delays are scattered across the whole searched range, which is enough to bury a real line. Each frame is therefore also required to stand over the noise floor measured in this take's own silent lead-in."
+  },
+  "delay_lfo": null,
+  "level_lfo": null,
+  "moves": false,
+  "delay_answered": false,
+  "track_readable": false,
+  "method": "The wet take is aligned to the dry take as a whole, the best scalar copy of the dry take is subtracted to leave the effect's return alone, and the return's delay against the dry signal is measured in independent frames. A periodic motion is a line in that track's spectrum standing clear of the rest of the searched band. Level is searched the same way, for effects that move no delay. A null names the rates and delays that were looked in, and is withheld for the delay when the input's own period folded the track, since a search that could not have found a line reports the same emptiness as one that looked.",
+  "conclusive": false
+}
