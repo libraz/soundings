@@ -1,6 +1,6 @@
 {
   "record": {
-    "schema_version": 1,
+    "schema_version": 2,
     "unit_id": "roland-sc8850-01",
     "stage": "efx-params",
     "invocation": [
@@ -38,11 +38,20 @@
       "--prepare",
       "40 42 22=01",
       "--out",
-      "data/units/roland-sc8850-01/efx-params/01-00.json"
+      "data/units/roland-sc8850-01/efx-params/01-00.json",
+      "--states-from",
+      "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03",
+      "--states-from",
+      "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+      "--first-parameter",
+      "40 03 03"
     ],
-    "measured_at": "2026-09-10T03:00:24+00:00",
+    "measured_at": "2026-09-16T02:23:26+00:00",
     "elapsed_s": 0.0,
-    "midi_device_id": null
+    "midi_device_id": null,
+    "midi_model_id": null
   },
   "question": "Which of one insertion effect type's parameters change the sound, asked at the parameter rather than at the type.",
   "type": "01 00",
@@ -70,14 +79,17 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "not audible under the note asked": 13,
+    "asked at a value its parameter has no state for, so not asked": 4,
     "audible": 7,
+    "not audible under the note asked": 9,
     "asked": 20
   },
   "coverage": {
     "slots": 20,
     "answered": 20,
     "never_asked": [],
+    "held_still": [],
+    "refused": [],
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
@@ -93,7 +105,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked at a value its parameter has no state for, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -105,7 +117,10 @@
       "across_setting_level_db": -0.02,
       "noise_floor_db": -53.45,
       "changed_the_shape": false,
-      "changed_the_level": false
+      "changed_the_level": false,
+      "printed_states": 2,
+      "asked_inside_its_states": false,
+      "why": "The pair was the two ends of what this address was measured to accept, and this address accepts every seven-bit value while its parameter is printed with a short list of states. So one of the two settings names no state of it, and whatever the engine did with that value is not one of this parameter's settings. Read as a null it would say the parameter does nothing; what it says is that the pair was not two of its settings. Two such parameters asked again at two of their own states, under the same note and the same routing that had returned the null, were both audible at once -- a reverb type at twenty-nine decibels over its own yardstick and a vowel at forty-four."
     },
     {
       "type": "01 00",
@@ -141,7 +156,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked at a value its parameter has no state for, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -153,7 +168,10 @@
       "across_setting_level_db": 0.019,
       "noise_floor_db": -51.42,
       "changed_the_shape": false,
-      "changed_the_level": false
+      "changed_the_level": false,
+      "printed_states": 2,
+      "asked_inside_its_states": false,
+      "why": "The pair was the two ends of what this address was measured to accept, and this address accepts every seven-bit value while its parameter is printed with a short list of states. So one of the two settings names no state of it, and whatever the engine did with that value is not one of this parameter's settings. Read as a null it would say the parameter does nothing; what it says is that the pair was not two of its settings. Two such parameters asked again at two of their own states, under the same note and the same routing that had returned the null, were both audible at once -- a reverb type at twenty-nine decibels over its own yardstick and a vowel at forty-four."
     },
     {
       "type": "01 00",
@@ -213,7 +231,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked at a value its parameter has no state for, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -225,7 +243,10 @@
       "across_setting_level_db": 0.021,
       "noise_floor_db": -53.45,
       "changed_the_shape": false,
-      "changed_the_level": false
+      "changed_the_level": false,
+      "printed_states": 5,
+      "asked_inside_its_states": false,
+      "why": "The pair was the two ends of what this address was measured to accept, and this address accepts every seven-bit value while its parameter is printed with a short list of states. So one of the two settings names no state of it, and whatever the engine did with that value is not one of this parameter's settings. Read as a null it would say the parameter does nothing; what it says is that the pair was not two of its settings. Two such parameters asked again at two of their own states, under the same note and the same routing that had returned the null, were both audible at once -- a reverb type at twenty-nine decibels over its own yardstick and a vowel at forty-four."
     },
     {
       "type": "01 00",
@@ -285,7 +306,7 @@
         127
       ],
       "audible": false,
-      "verdict": "not audible under the note asked",
+      "verdict": "asked at a value its parameter has no state for, so not asked",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
@@ -297,7 +318,10 @@
       "across_setting_level_db": 0.015,
       "noise_floor_db": -53.59,
       "changed_the_shape": false,
-      "changed_the_level": false
+      "changed_the_level": false,
+      "printed_states": 5,
+      "asked_inside_its_states": false,
+      "why": "The pair was the two ends of what this address was measured to accept, and this address accepts every seven-bit value while its parameter is printed with a short list of states. So one of the two settings names no state of it, and whatever the engine did with that value is not one of this parameter's settings. Read as a null it would say the parameter does nothing; what it says is that the pair was not two of its settings. Two such parameters asked again at two of their own states, under the same note and the same routing that had returned the null, were both audible at once -- a reverb type at twenty-nine decibels over its own yardstick and a vowel at forty-four."
     },
     {
       "type": "01 00",
@@ -569,7 +593,8 @@
     "What any audible parameter is, or by how much it moves anything. Two settings were compared and no curve was measured between them.",
     "Anything about the types not asked. The parameter addresses are shared across types and what each of them holds is not, so this is one type's answer at those addresses.",
     "That a null does nothing. A parameter heard only on a longer note, at another velocity, under another type's settings, or between two values neither of which is an end of its range would read as inaudible here.",
-    "That a parameter which broke its own yardstick does nothing besides. Whatever else it does sits behind the thing that removed the yardstick."
+    "That a parameter which broke its own yardstick does nothing besides. Whatever else it does sits behind the thing that removed the yardstick.",
+    "How many states a parameter has, where a row carries `printed_states`. That count was read off a page and never measured here, and on this unit the page belongs to a neighbouring model because this one's own effect list has not been read. It decides nothing about what was heard: it only separates a slot whose pair named two of its states from one whose pair named a value it has none for, and a slot of the second kind is reported as unasked rather than as answering nothing."
   ],
   "reproduced": "Every address carries the take-to-take figure of each of its two settings beside the comparison, so a verdict resting on a broken yardstick can be seen to be one. An address asked a second time names the pair that was withdrawn and why.",
   "found_by": "Asking the parameters of one type, after the sort that was meant to bound them passed every type the unit has."
