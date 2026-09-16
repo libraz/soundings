@@ -1,0 +1,386 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing_untested",
+    "made_at": "2026-09-16T09:18:43.308878+00:00",
+    "made_by": "backup/write-the-azimuth-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "slot",
+      "types": [
+        "01 70",
+        "01 71"
+      ],
+      "addresses": [
+        "40 03 03"
+      ]
+    }
+  },
+  "claim": "An azimuth byte does not scale an angle and does not have 128 values. Two is added to it, the result is shifted right two places, the centre is taken off, and what is left is stopped at 15 either way -- so the byte reaches 31 positions 12 degrees apart, from L180 through 0 to R180. The added two is the rounding of a divide by four and nothing else: without it every position would sit a byte off the one the page prints. Twenty nine of the positions are 4 byte values wide and the two poles are 6, which is not a widening of those positions but the clamp taking the two values at each end of the byte the shift would have carried past them. The two poles are one place: half a turn to the left is half a turn to the right, and the page writes that into both cells rather than leaving it to be noticed.",
+  "named": null,
+  "why_not_named": "There is nothing to call it. A shift, a rounding term and a clamp are three lines of whatever the part is written in, and naming them would be naming arithmetic.",
+  "rests_on": {
+    "measurements": [],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
+        "rows": [
+          "column 13, Azimuth, all 128 settings"
+        ],
+        "read_as": "The whole column is the data and every one of its settings is a place the rule can be wrong. A rule with a free number per position would fit it and mean nothing; this one has no free number at all -- the centre, the step and the stop are each read off the page's own labels, not fitted -- so it had 128 chances to miss and missed none."
+      },
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "3D Auto, Azimuth, 180/L168–0–R168",
+          "3D Manual, + Azimuth, 180/L168–0–R168"
+        ],
+        "read_as": "Which addresses the column belongs to. Both are the first parameter of a three-dimensional placement type, and no other row of the list refers to this column."
+      }
+    ],
+    "era_priors": [
+      {
+        "prior": "A placement of this period is stored as an index into a short table of positions, not as an angle, and the index is got out of the byte with a shift rather than a divide.",
+        "would_be_wrong_if": "Positions that are not evenly spaced in the byte, or a count of them that is not one more than twice a power of two minus one -- either would say the byte is being divided rather than shifted."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The page states a setting at each of the byte's values and says nothing about how one becomes the other. What is added is that it is a shift and not a divide, that the rounding term is two, that the ends are a clamp rather than two wider positions, and that the whole column is 31 positions and not 128. A reader rendering this parameter needs the rule; a reader checking it needs to know which part of the shape was fitted, and none of it was.",
+  "what_it_would_change": "Anything rendering these two types has to put the sound somewhere, and the byte it is handed reaches thirty-one places rather than a continuum. Round it the other way and every position sits one byte off; leave the clamp out and the two byte values at each end of the range land past the pole.",
+  "a_pair_that_is_one_setting": {
+    "what": "The two ends of this byte are the same place, which is why a screen asking a parameter at the two ends of what its address accepts asks this one twice where it is. One such null was published conclusive before the column was read.",
+    "where": "data/units/roland-sc8850-01/efx-params/01-71.json",
+    "why_it_is_not_evidence_for_this_claim": "It is evidence that two byte values sound alike, which is the weakest thing the rule says and the one thing a run at the ends could have found. It is named here so that a reader does not take it for a test of the rule."
+  },
+  "refuted_by": "A reading of either slot that puts the output somewhere else at any setting: a change between two byte values this rule puts on one position, or no change between two it puts on neighbouring ones, judged against what the same pair of takes says a position differs from itself by. One position out of thirty-one landing elsewhere refutes it, because nothing in it was fitted to be moved.",
+  "could_have_been_refuted_by": "A sweep of the azimuth byte on either type, reading the two outputs against each other -- their levels and the phase between them -- at the byte values either side of each of the thirty boundaries this rule puts in. The rule says the pair of readings moves at those boundaries and nowhere else, so it is wrong if it moves inside a position or stands still across one. That run has not been made: the stage this archive would make it with reads one channel for a level and the claim is about two, and the one thing that has been asked of this byte was asked at its two ends, which this rule says are one place.",
+  "alternatives": [
+    {
+      "reading": "The unit does not hold the table its manual prints. What is claimed here is a reading of a page, and a page is the publisher's account rather than the part's.",
+      "candidate": "the-part-does-not-hold-the-printed-table",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "why_it_stands": "Nothing has been measured on this byte except a pair at its two ends, which this rule and every alternative to it call one place. The page cannot settle it and no reading has been taken.",
+      "separated_by": {
+        "observable": "Where the sound sits between the two outputs, at the byte values either side of each boundary.",
+        "predicts": {
+          "a-byte-rounded-to-a-quarter-and-clamped": "31 positions, moving at 30 boundaries and nowhere else",
+          "the-part-does-not-hold-the-printed-table": "anything else"
+        },
+        "why_not_separable": "Not by a run this rig makes today. The stage that reads a placement here reads one channel, named for the whole run, because a level read on one of the unit's outputs is not comparable with a level read on the other. What this needs is the two read against each other, which is a reading the archive has for phase alone and not beside a level. It is left open with the reason rather than queued behind a run that could not answer it."
+      }
+    },
+    {
+      "reading": "The column is a table of 31 entries the byte's top bits index, written out rather than computed.",
+      "candidate": "a-table-of-thirty-one-positions",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "why_it_is_equivalent": "A shift with a rounding term and a table holding what the shift returns give the same position at every one of the byte's values, so no reading of the output can tell them apart -- which is the same shape as the open alternative on the effect-level class and is answered the same way. What argues for the shift is the two poles: a written table would hold thirty-one entries of equal width and this column has two that are wider by exactly the two values a clamp absorbs at each end. That is an argument from the era and it carries the claim; it does not close it.",
+      "separated_by": {
+        "observable": "Nothing the output carries.",
+        "why_not_separable": "Two ways of arriving at one number differ in where the number comes from and in nothing that comes out. The claim does not rest on the difference: what it states is the thirty-one positions, their spacing and the clamp, and both readings give all three."
+      }
+    }
+  ],
+  "the_column_in_full": [
+    {
+      "position": -15,
+      "printed": "L180(=R180)",
+      "settings": [
+        0,
+        5
+      ],
+      "degrees": -180
+    },
+    {
+      "position": -14,
+      "printed": "L168",
+      "settings": [
+        6,
+        9
+      ],
+      "degrees": -168
+    },
+    {
+      "position": -13,
+      "printed": "L156",
+      "settings": [
+        10,
+        13
+      ],
+      "degrees": -156
+    },
+    {
+      "position": -12,
+      "printed": "L144",
+      "settings": [
+        14,
+        17
+      ],
+      "degrees": -144
+    },
+    {
+      "position": -11,
+      "printed": "L132",
+      "settings": [
+        18,
+        21
+      ],
+      "degrees": -132
+    },
+    {
+      "position": -10,
+      "printed": "L120",
+      "settings": [
+        22,
+        25
+      ],
+      "degrees": -120
+    },
+    {
+      "position": -9,
+      "printed": "L108",
+      "settings": [
+        26,
+        29
+      ],
+      "degrees": -108
+    },
+    {
+      "position": -8,
+      "printed": "L96",
+      "settings": [
+        30,
+        33
+      ],
+      "degrees": -96
+    },
+    {
+      "position": -7,
+      "printed": "L84",
+      "settings": [
+        34,
+        37
+      ],
+      "degrees": -84
+    },
+    {
+      "position": -6,
+      "printed": "L72",
+      "settings": [
+        38,
+        41
+      ],
+      "degrees": -72
+    },
+    {
+      "position": -5,
+      "printed": "L60",
+      "settings": [
+        42,
+        45
+      ],
+      "degrees": -60
+    },
+    {
+      "position": -4,
+      "printed": "L48",
+      "settings": [
+        46,
+        49
+      ],
+      "degrees": -48
+    },
+    {
+      "position": -3,
+      "printed": "L36",
+      "settings": [
+        50,
+        53
+      ],
+      "degrees": -36
+    },
+    {
+      "position": -2,
+      "printed": "L24",
+      "settings": [
+        54,
+        57
+      ],
+      "degrees": -24
+    },
+    {
+      "position": -1,
+      "printed": "L12",
+      "settings": [
+        58,
+        61
+      ],
+      "degrees": -12
+    },
+    {
+      "position": 0,
+      "printed": "0",
+      "settings": [
+        62,
+        65
+      ],
+      "degrees": 0
+    },
+    {
+      "position": 1,
+      "printed": "R12",
+      "settings": [
+        66,
+        69
+      ],
+      "degrees": 12
+    },
+    {
+      "position": 2,
+      "printed": "R24",
+      "settings": [
+        70,
+        73
+      ],
+      "degrees": 24
+    },
+    {
+      "position": 3,
+      "printed": "R36",
+      "settings": [
+        74,
+        77
+      ],
+      "degrees": 36
+    },
+    {
+      "position": 4,
+      "printed": "R48",
+      "settings": [
+        78,
+        81
+      ],
+      "degrees": 48
+    },
+    {
+      "position": 5,
+      "printed": "R60",
+      "settings": [
+        82,
+        85
+      ],
+      "degrees": 60
+    },
+    {
+      "position": 6,
+      "printed": "R72",
+      "settings": [
+        86,
+        89
+      ],
+      "degrees": 72
+    },
+    {
+      "position": 7,
+      "printed": "R84",
+      "settings": [
+        90,
+        93
+      ],
+      "degrees": 84
+    },
+    {
+      "position": 8,
+      "printed": "R96",
+      "settings": [
+        94,
+        97
+      ],
+      "degrees": 96
+    },
+    {
+      "position": 9,
+      "printed": "R108",
+      "settings": [
+        98,
+        101
+      ],
+      "degrees": 108
+    },
+    {
+      "position": 10,
+      "printed": "R120",
+      "settings": [
+        102,
+        105
+      ],
+      "degrees": 120
+    },
+    {
+      "position": 11,
+      "printed": "R132",
+      "settings": [
+        106,
+        109
+      ],
+      "degrees": 132
+    },
+    {
+      "position": 12,
+      "printed": "R144",
+      "settings": [
+        110,
+        113
+      ],
+      "degrees": 144
+    },
+    {
+      "position": 13,
+      "printed": "R156",
+      "settings": [
+        114,
+        117
+      ],
+      "degrees": 156
+    },
+    {
+      "position": 14,
+      "printed": "R168",
+      "settings": [
+        118,
+        121
+      ],
+      "degrees": 168
+    },
+    {
+      "position": 15,
+      "printed": "R180(=L180)",
+      "settings": [
+        122,
+        127
+      ],
+      "degrees": 180
+    }
+  ],
+  "the_slots_it_is_printed_against": [
+    {
+      "type": "01 70",
+      "effect": "3D Auto",
+      "parameter": "Azimuth",
+      "address": "40 03 03",
+      "printed_range": "180/L168–0–R168",
+      "page": 219
+    },
+    {
+      "type": "01 71",
+      "effect": "3D Manual",
+      "parameter": "+ Azimuth",
+      "address": "40 03 03",
+      "printed_range": "180/L168–0–R168",
+      "page": 219
+    }
+  ]
+}
