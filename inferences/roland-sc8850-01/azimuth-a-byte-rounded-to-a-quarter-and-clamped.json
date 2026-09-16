@@ -2,10 +2,10 @@
   "inference": {
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
-    "state": "standing_untested",
-    "made_at": "2026-09-16T09:18:43.308878+00:00",
-    "made_by": "backup/write-the-azimuth-inference.py",
-    "rounds": 1,
+    "state": "standing",
+    "made_at": "2026-09-16T18:41:10.076291+00:00",
+    "made_by": "backup/fold-in-what-the-azimuth-byte-did.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -21,7 +21,56 @@
   "named": null,
   "why_not_named": "There is nothing to call it. A shift, a rounding term and a clamp are three lines of whatever the part is written in, and naming them would be naming arithmetic.",
   "rests_on": {
-    "measurements": [],
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/balance/40-03-03-where-the-azimuth-puts-it-01-71-phones.json",
+        "keys": [
+          "runs[name=01-71-phones].moved_between_settings",
+          "runs[name=01-71-phones].did_not_repeat_within_a_setting",
+          "runs[name=01-71-phones].by_setting[setting=005].balance_db",
+          "runs[name=01-71-phones].by_setting[setting=006].balance_db",
+          "runs[name=01-71-phones].by_setting[setting=000].balance_db",
+          "runs[name=01-71-phones].by_setting[setting=127].balance_db"
+        ],
+        "values": [
+          true,
+          false,
+          [
+            0.14,
+            0.16
+          ],
+          [
+            2.07,
+            2.07
+          ],
+          [
+            0.13,
+            0.14,
+            0.12,
+            0.12
+          ],
+          [
+            0.16,
+            0.12
+          ]
+        ],
+        "read_as": "The byte at all 128 of its settings on the type that does nothing else, read between the two outputs rather than in one of them. Every one of the byte's 127 steps is a place the rule says the reading either moves or stands still, and nothing in the rule was fitted to anything measured, so the sweep had 127 chances to contradict it."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/balance-bands/40-03-03-where-the-azimuth-puts-it-01-71-phones.json",
+        "keys": [
+          "runs[name=01-71-phones].flattest_setting_spreads_db",
+          "runs[name=01-71-phones].widest_setting_spreads_db",
+          "runs[name=01-71-phones].separation_depends_on_frequency"
+        ],
+        "values": [
+          2.86,
+          23.38,
+          true
+        ],
+        "read_as": "The same takes read per band. It is what says the placement is a filtering of each channel rather than a gain on it: the flattest setting already spreads 2.86 decibels over the bands and the widest spreads 23.38, so the broadband figure above is an average over a separation that is not one number. A gain moved between two outputs would spread the same amount at every setting."
+      }
+    ],
     "document_rows": [
       {
         "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
@@ -55,12 +104,12 @@
     "why_it_is_not_evidence_for_this_claim": "It is evidence that two byte values sound alike, which is the weakest thing the rule says and the one thing a run at the ends could have found. It is named here so that a reader does not take it for a test of the rule."
   },
   "refuted_by": "A reading of either slot that puts the output somewhere else at any setting: a change between two byte values this rule puts on one position, or no change between two it puts on neighbouring ones, judged against what the same pair of takes says a position differs from itself by. One position out of thirty-one landing elsewhere refutes it, because nothing in it was fitted to be moved.",
-  "could_have_been_refuted_by": "A sweep of the azimuth byte on either type, reading the two outputs against each other -- their levels and the phase between them -- at the byte values either side of each of the thirty boundaries this rule puts in. The rule says the pair of readings moves at those boundaries and nowhere else, so it is wrong if it moves inside a position or stands still across one. That run has not been made: the stage this archive would make it with reads one channel for a level and the claim is about two, and the one thing that has been asked of this byte was asked at its two ends, which this rule says are one place.",
+  "could_have_been_refuted_by": "A sweep of the azimuth byte reading the two outputs against each other at the byte values either side of each of the thirty boundaries this rule puts in, and inside each of the thirty-one runs it puts between them. The rule is wrong if the reading moves inside a position or stands still across one. That run has now been made at every setting of the byte: 30 of 30 boundaries moved, and of 97 neighbouring pairs the rule puts on one position, 5 moved at all and none of them by as much as a tenth of the smallest boundary.",
   "alternatives": [
     {
       "reading": "The unit does not hold the table its manual prints. What is claimed here is a reading of a page, and a page is the publisher's account rather than the part's.",
       "candidate": "the-part-does-not-hold-the-printed-table",
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
       "why_it_stands": "Nothing has been measured on this byte except a pair at its two ends, which this rule and every alternative to it call one place. The page cannot settle it and no reading has been taken.",
       "separated_by": {
@@ -69,8 +118,12 @@
           "a-byte-rounded-to-a-quarter-and-clamped": "31 positions, moving at 30 boundaries and nowhere else",
           "the-part-does-not-hold-the-printed-table": "anything else"
         },
-        "why_not_separable": "Not by a run this rig makes today. The stage that reads a placement here reads one channel, named for the whole run, because a level read on one of the unit's outputs is not comparable with a level read on the other. What this needs is the two read against each other, which is a reading the archive has for phase alone and not beside a level. It is left open with the reason rather than queued behind a run that could not answer it."
-      }
+        "margin": 9.3,
+        "what_the_run_was": "`balance` over the whole byte, 128 settings, two takes each and four at two of them. The stage reads both outputs, which is why it exists; the sentence this alternative carried before -- that no run here could be made -- named a limit of one stage as a limit of the archive."
+      },
+      "refuted_by": "The sweep. The part holds the table's shape exactly: 31 runs of byte values, 4 wide except the two at the ends which are 6, with every boundary where the rule puts it and none anywhere else. That is not a page's account being repeated, it is a hundred and twenty-seven predictions coming back right.",
+      "what_it_does_not_settle": "What the page prints beside each of those positions. The shape is the part's and the degrees are still the publisher's, which is the alternative below rather than this one.",
+      "ruled_out_by": "The sweep. The part holds the table's shape exactly: 31 runs of byte values, 4 wide except the two at the ends which are 6, with every boundary where the rule puts it and none anywhere else. That is not a page's account being repeated, it is a hundred and twenty-seven predictions coming back right."
     },
     {
       "reading": "The column is a table of 31 entries the byte's top bits index, written out rather than computed.",
@@ -81,6 +134,21 @@
       "separated_by": {
         "observable": "Nothing the output carries.",
         "why_not_separable": "Two ways of arriving at one number differ in where the number comes from and in nothing that comes out. The claim does not rest on the difference: what it states is the thirty-one positions, their spacing and the clamp, and both readings give all three."
+      }
+    },
+    {
+      "reading": "The positions are the ones measured here and the degrees printed beside them are the publisher's account rather than the part's. The byte reaches thirty-one places and moves between them where the rule says; what is not measured is that they are twelve degrees apart, or that the two ends are behind rather than in front.",
+      "candidate": "the-degrees-are-the-pages-and-not-the-parts",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "why_it_stands": "Every number this run returned is a difference between two outputs. The curve it traces is consistent with the printed labels -- it is largest seven positions either side of centre and comes back to the centre's own reading at both ends, which is what a placement that travels round a listener does and what a placement that only travels left and right does not -- but consistent is not measured, and reading degrees out of it would be fitting this unit's outputs to somebody else's ears.",
+      "separated_by": {
+        "observable": "Where a listener hears each of the thirty-one positions.",
+        "predicts": {
+          "a-byte-rounded-to-a-quarter-and-clamped": "twelve degrees apart, round",
+          "the-degrees-are-the-pages-and-not-the-parts": "anything else"
+        },
+        "why_not_separable": "Not by this archive, and not for want of a stage. What the question needs is a listener: an angle is a fact about where a sound arrives at two ears, and every reading here is a fact about what leaves two sockets. The nearest thing that could be done is to correlate the per-band separation this run published against a head-related set measured somewhere else, which would be a fit of this unit to another measurement rather than a measurement of this unit, and belongs to whoever has both."
       }
     }
   ],
@@ -382,5 +450,104 @@
       "printed_range": "180/L168–0–R168",
       "page": 219
     }
-  ]
+  ],
+  "reproduces": {
+    "compared_against": {
+      "records": [
+        "data/units/roland-sc8850-01/balance/40-03-03-where-the-azimuth-puts-it-01-71-phones.json"
+      ],
+      "generated_from": "The rule as published, with no number in it fitted here or anywhere: the centre, the step and the stop are read off the page's own labels. It is evaluated at every byte value and turned into the one thing a reading between two channels can check -- which pairs of neighbouring settings must differ and which must not.",
+      "excluded": [],
+      "why_not_a_filter": "There is nothing to filter. The set is one record, and it is every reading this byte has: the whole sweep, at every value the byte takes."
+    },
+    "what_it_got_right": {
+      "positions": 31,
+      "widths": [
+        4,
+        6
+      ],
+      "boundaries_predicted": 30,
+      "boundaries_that_moved": 30,
+      "pairs_inside_a_position": 97,
+      "pairs_inside_that_moved_more_than_the_floor": 5
+    },
+    "the_margin": {
+      "smallest_step_across_a_boundary_db": 0.42,
+      "widest_spread_inside_a_position_db": 0.045,
+      "margin": 9.3,
+      "why_this_is_the_denominator": "Not the run's take-to-take floor, which is smaller. What a step across a boundary has to clear is the largest distance any two settings the rule calls one place came back apart -- because that is what this reading says one place is worth, measured rather than assumed, over 97 such pairs."
+    },
+    "the_five_that_moved_inside_a_position": {
+      "pairs": [
+        [
+          30,
+          31,
+          0.03
+        ],
+        [
+          32,
+          33,
+          0.03
+        ],
+        [
+          83,
+          84,
+          0.04
+        ],
+        [
+          84,
+          85,
+          0.035
+        ],
+        [
+          94,
+          95,
+          0.045
+        ]
+      ],
+      "why_they_are_not_a_breakdown": "Each is within half a decibel of a tenth of the smallest step the rule says is a boundary, and they sit in five different positions rather than in one. A wider table would put them all at the same distance from each other and a byte read straight would move at every step; what these do is sit at the floor."
+    },
+    "the_two_poles": {
+      "read_db": [
+        0.135,
+        0.129
+      ],
+      "apart_db": 0.006,
+      "the_centre_db": 0.139,
+      "read_as": "The rule says the two ends of the byte are one place, and they came back 0.006 decibels apart against a floor of 0.03. They also came back at the centre's own reading, which is what a placement directly behind a listener does to two outputs and is not something the rule predicted -- it is reported and not claimed."
+    },
+    "by_position_db": {
+      "-15": 0.135,
+      "-14": 2.066,
+      "-13": 3.77,
+      "-12": 5.654,
+      "-11": 7.889,
+      "-10": 9.304,
+      "-9": 11.125,
+      "-8": 12.07,
+      "-7": 13.161,
+      "-6": 12.728,
+      "-5": 11.928,
+      "-4": 10.834,
+      "-3": 9.275,
+      "-2": 7.141,
+      "-1": 3.504,
+      "0": 0.139,
+      "1": -3.216,
+      "2": -6.855,
+      "3": -8.982,
+      "4": -10.508,
+      "5": -11.586,
+      "6": -12.38,
+      "7": -12.815,
+      "8": -11.73,
+      "9": -10.777,
+      "10": -8.974,
+      "11": -7.575,
+      "12": -5.356,
+      "13": -3.481,
+      "14": -1.81,
+      "15": 0.129
+    }
+  }
 }
