@@ -85,6 +85,58 @@ def test_the_trailing_words_on_a_range_do_not_stop_it_being_read() -> None:
     assert asks[0].accepted_range == "00..02 of the values tried"
 
 
+def test_a_parameter_printed_as_states_is_asked_inside_them() -> None:
+    """The failure the measured range cannot catch.
+
+    A block that stores and returns every seven-bit value at every address never
+    clamps, so the guard the range is trusted for never fires -- and a parameter
+    with two printed states asked at nought against a hundred and twenty-seven is
+    two writes the engine reaches one state with. On this unit not one such
+    parameter was ever heard that way, and two of them answered at once when asked
+    at two of their own states.
+    """
+    record = probe(row("40 11 02", "03", "00..7F"))
+
+    asks, _ = plan.plan_block(record, "40 11", {"40 11 02": 6})
+
+    assert asks[0].values == (5, 0), "the state nearer the power-on value leads"
+    assert asks[0].printed_states == 6
+    assert asks[0].values_from == plan.FROM_THE_PRINTED_STATES
+    assert asks[0].accepted_range == "00..7F", "what it accepts is still what was measured"
+
+
+def test_a_printed_state_the_address_will_not_take_is_not_written() -> None:
+    """A page and a unit disagreeing is a finding, not a licence to write past the
+    range this unit was measured to accept."""
+    asks, _ = plan.plan_block(probe(row("40 11 02", "00", "00..02")), "40 11", {"40 11 02": 6})
+
+    assert asks[0].values == (0, 2)
+
+
+def test_an_address_with_no_printed_states_keeps_the_measured_pair() -> None:
+    """The count is handed in per address, so a block carrying both kinds has to
+    put each row on its own source and say which."""
+    record = probe(row("40 11 02", "00", "00..7F"), row("40 11 03", "00", "00..7F"))
+
+    asks, _ = plan.plan_block(record, "40 11", {"40 11 03": 2})
+
+    assert [(a.address, a.values) for a in asks] == [("40 11 02", (0, 127)), ("40 11 03", (0, 1))]
+    assert asks[0].values_from == plan.FROM_THE_RANGE
+    assert asks[0].to_json()["values_from"] == plan.FROM_THE_RANGE
+    assert "printed_states" not in asks[0].to_json()
+
+
+def test_a_parameter_printed_with_one_state_cannot_be_asked() -> None:
+    """However much its address accepts. Reported rather than dropped, for the
+    same reason an address accepting one value is."""
+    record = probe(row("40 11 02", "00", "00..7F"))
+
+    asks, skipped = plan.plan_block(record, "40 11", {"40 11 02": 1})
+
+    assert asks == []
+    assert [(s.address, s.why) for s in skipped] == [("40 11 02", plan.ONE_STATE)]
+
+
 def test_an_address_outside_the_block_is_not_planned() -> None:
     """The prefix is what says which part is being asked, and a part parameter
     written to the wrong part answers about a part nobody listened to."""

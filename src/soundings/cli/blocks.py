@@ -35,6 +35,23 @@ def register(sub) -> None:
         "block",
         help="the leading bytes of the addresses to plan, e.g. '40 11' for part 1",
     )
+    p.add_argument(
+        "--states-from",
+        help="an effect-list document, to ask a parameter printed as a list of states at two "
+        "of its own states instead of at the ends of what its address accepts. An address "
+        "accepting values its parameter has no state for reads as a parameter that does "
+        "nothing, and a block accepting every value at every address never clamps to show it",
+    )
+    p.add_argument(
+        "--type",
+        help="which effect's parameters to read out of --states-from, as two hex bytes",
+    )
+    p.add_argument(
+        "--first-parameter",
+        help="the address the type's first printed parameter sits at, e.g. '40 03 03'. Stated "
+        "rather than assumed: where a block's parameters begin is a fact about a family and "
+        "this command is given one unit's probe",
+    )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_plan)
 
@@ -343,9 +360,7 @@ def register(sub) -> None:
         "smears until nothing stands out -- so a longer printed range needs a longer "
         "frame and buys it with fewer frames to average",
     )
-    p.add_argument(
-        "--hop", type=int, default=16384, help="samples between frames"
-    )
+    p.add_argument("--hop", type=int, default=16384, help="samples between frames")
     p.add_argument(
         "--shortest",
         type=float,
@@ -439,27 +454,70 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_params)
 
 
+def _printed_states(path: str, type_id: str, first_parameter: str) -> dict[str, int]:
+    """How many states each of a type's parameters is printed with, keyed by address.
+
+    A parameter printing a span between two of its values -- `200m - 990m/1sec`,
+    `L63 - 0 - R63` -- is a quantity with a named end and not a list of states, so
+    it keeps the pair the write probe gives it. The mapping from a printed
+    parameter number to an address comes from the address the caller names for the
+    first one, counting up: which address a block's parameters begin at is a fact
+    about a family and this command is handed one unit's probe.
+    """
+    rows = json.loads(Path(path).read_text())["rows"]
+    head = [int(b, 16) for b in first_parameter.split()]
+    wanted = type_id.replace(" ", "").upper()
+    out: dict[str, int] = {}
+    for row in rows:
+        if "parameter_number" not in row:
+            continue
+        if (row["msb"] + row["lsb"]).upper() != wanted:
+            continue
+        printed = str(row["data"])
+        if "/" not in printed or " - " in printed:
+            continue
+        number = int(row["parameter_number"])
+        address = f"{head[0]:02X} {head[1]:02X} {head[2] + number - 1:02X}"
+        out[address] = printed.count("/") + 1
+    return out
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
     """Turn a write probe's measured ranges into the pair each address is asked at."""
     from .. import plan
 
+    states = None
+    if args.states_from:
+        if not (args.type and args.first_parameter):
+            print("--states-from needs --type and --first-parameter to know which rows are whose")
+            return 1
+        states = _printed_states(args.states_from, args.type, args.first_parameter)
+        if not states:
+            print(f"no parameter of type {args.type!r} in {args.states_from} is printed as states")
+            return 1
+
     record = json.loads(Path(args.write_probe).read_text())
-    asks, skipped = plan.plan_block(record, args.block)
+    asks, skipped = plan.plan_block(record, args.block, states)
     if not asks and not skipped:
         print(f"no address under {args.block!r} in {args.write_probe}")
         return 1
     print(plan.summarise(asks, skipped))
 
-    report.write_json(
-        args.out,
-        {
-            "block": args.block,
-            "from": str(args.write_probe),
-            "method": plan.METHOD,
-            "ask": [a.to_json() for a in asks],
-            "cannot_be_asked": [s.to_json() for s in skipped],
-        },
-    )
+    out = {
+        "block": args.block,
+        "from": str(args.write_probe),
+        "method": plan.METHOD,
+        "ask": [a.to_json() for a in asks],
+        "cannot_be_asked": [s.to_json() for s in skipped],
+    }
+    if states is not None:
+        out["states_from"] = {
+            "document": str(args.states_from),
+            "type": args.type,
+            "first_parameter": args.first_parameter,
+            "addresses": len(states),
+        }
+    report.write_json(args.out, out)
     return 0
 
 
@@ -621,7 +679,7 @@ def cmd_efx_rate(args) -> int:
             f"{found['takes_not_matching']['count']} were looked at"
         )
         return 1
-    if (missed := found["takes_not_matching"]["count"]):
+    if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)
     return 0
@@ -690,12 +748,9 @@ def cmd_efx_bands(args) -> int:
         control=args.control,
         silence=args.silence,
         stimulus=args.stimulus,
-        held=[
-            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
-        ],
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
         reference_held=[
-            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)}
-            for a, v in args.reference_held
+            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.reference_held
         ],
         bands_hz=args.band or named[0],
         band_width_octaves=1 / 3 if args.band else named[1],
@@ -730,9 +785,9 @@ def cmd_efx_bands(args) -> int:
         print("  (no --control: the record cannot say whether the flat setting was unity)")
     if not found["silence"]["takes"]:
         print("  (no --silence: a setting that turns the output off reads as a profile)")
-    if (missed := found["takes_not_matching"]["count"]):
+    if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
-    if (astray := picked["loudest_elsewhere"]):
+    if astray := picked["loudest_elsewhere"]:
         print(
             f"  ({len(astray)} takes are loudest on another channel; read from "
             f"{picked['read']} anyway, and named in the record)"
@@ -767,9 +822,7 @@ def cmd_efx_time(args) -> int:
         setting=args.setting,
         control=args.control,
         stimulus=args.stimulus,
-        held=[
-            {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
-        ],
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
         channel=args.channel,
         frame=args.frame,
         hop=args.hop,
@@ -818,9 +871,9 @@ def cmd_efx_time(args) -> int:
             f"  the same setting twice lands {found['floor_ms']:.3f} ms apart, on a "
             f"grid of {found['quefrency_step_ms']:.4f} ms"
         )
-    if (missed := found["takes_not_matching"]["count"]):
+    if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
-    if (astray := picked["loudest_elsewhere"]):
+    if astray := picked["loudest_elsewhere"]:
         print(
             f"  ({len(astray)} takes are loudest on another channel; read from "
             f"{picked['read']} anyway, and named in the record)"

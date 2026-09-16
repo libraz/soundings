@@ -6,10 +6,25 @@ them to the same byte and answers identically, which reads as a parameter that
 does nothing. Picking the pair by hand needs the manual, and a manual is a claim
 about a model rather than a measurement of this unit.
 
-It does not need one. The write probe already asked every address what it takes,
-by writing and reading back, and its rows carry the accepted range. That is the
-right source: it was measured on this unit, it is already in the archive, and a
-range it got wrong would show up as a clamp rather than as a plausible number.
+For an address carrying a quantity it does not need one. The write probe already
+asked every address what it takes, by writing and reading back, and its rows carry
+the accepted range. That is the right source: it was measured on this unit, it is
+already in the archive, and a range it got wrong would show up as a clamp rather
+than as a plausible number.
+
+**For an address carrying a list of states it does need one, and the safeguard
+above is why that went unnoticed.** What the write probe measures is what the
+store takes, which is not what the engine reaches. One block was found accepting
+and reading back every seven-bit value at every one of its addresses, parameters
+with two printed states included, so no pair ever clamped and nothing looked
+wrong -- and asked at the two ends of that range, not one such parameter on the
+whole unit was ever heard. Asked instead at two of its own printed states, the
+first two tried answered immediately and loudly. A count of states is a claim
+about a model rather than a measurement of this unit, exactly as above; the
+difference is that here the alternative is not a weaker measurement but a null
+that means nothing. So the count may be handed in, and an address whose pair came
+from a page says so in the plan, because that pair rests on something outside the
+archive and a reader has to be able to see which ones do.
 
 **The reference setting is the one nearer what the unit powers up holding.**
 Every verdict is measured against the first setting's takes, and the alignment
@@ -33,14 +48,31 @@ from dataclasses import dataclass
 RANGE = re.compile(r"^([0-9A-Fa-f]{2})\.\.([0-9A-Fa-f]{2})")
 
 METHOD = (
-    "The two settings come from the write probe's own rows rather than from a manual: it "
-    "wrote to every address and read it back, so the range it recorded is what this unit "
-    "accepted. The pair is the two ends of that range, ordered so the value nearer the one "
-    "the unit powers up holding is asked first, since that setting fixes the reference every "
-    "other take is aligned against and the power-on value is the one known to make a sound."
+    "The two settings come from the write probe's own rows: it wrote to every address and read "
+    "it back, so the range it recorded is what this unit accepted. The pair is the two ends of "
+    "that range, ordered so the value nearer the one the unit powers up holding is asked first, "
+    "since that setting fixes the reference every other take is aligned against and the power-on "
+    "value is the one known to make a sound. Where a count of printed states was handed in, that "
+    "address is asked at the first and last state instead and never outside what it was measured "
+    "to accept, because an address can take a value its parameter has no state for and then the "
+    "ends of the range are not two settings. Every row says which of the two its pair came from."
+)
+
+FROM_THE_RANGE = "the two ends of the range the write probe measured this address to accept"
+
+FROM_THE_PRINTED_STATES = (
+    "the first and last of the states this parameter is printed with, because the address "
+    "accepts values its parameter has no state for and the ends of what it accepts are not a "
+    "pair of settings. It rests on a page as well as on this unit, which the ends of a measured "
+    "range do not"
 )
 
 ONE_VALUE = "accepts one value, so it has no pair to compare and cannot be asked this way"
+
+ONE_STATE = (
+    "is printed with one state, so there is nothing to compare it against however much the "
+    "address accepts"
+)
 
 RANGE_UNREAD = (
     "the write probe never established a range here, because the address would not answer a "
@@ -62,6 +94,8 @@ class Ask:
     accepted_range: str
     power_on: int | None
     range_established: bool = True
+    values_from: str = FROM_THE_RANGE
+    printed_states: int | None = None
 
     @property
     def caveat(self) -> str | None:
@@ -75,7 +109,10 @@ class Ask:
             "power_on": self.power_on,
             "classification": self.classification,
             "range_established": self.range_established,
+            "values_from": self.values_from,
         }
+        if self.printed_states is not None:
+            out["printed_states"] = self.printed_states
         if self.caveat:
             out["caveat"] = self.caveat
         return out
@@ -139,8 +176,16 @@ def _unread(record: dict, prefix: str) -> list[str]:
     return out
 
 
-def plan_block(record: dict, prefix: str) -> tuple[list[Ask], list[Skip]]:
-    """Every address under `prefix`, sorted into the askable and the rest."""
+def plan_block(
+    record: dict, prefix: str, states: dict[str, int] | None = None
+) -> tuple[list[Ask], list[Skip]]:
+    """Every address under `prefix`, sorted into the askable and the rest.
+
+    `states` names, by address, how many states a parameter is printed with. An
+    address in it is asked at the first and last of those rather than at the ends
+    of what it accepts, and its row says so.
+    """
+    states = states or {}
     asks: list[Ask] = []
     skipped: list[Skip] = []
     for row in _rows(record, prefix):
@@ -154,13 +199,26 @@ def plan_block(record: dict, prefix: str) -> tuple[list[Ask], list[Skip]]:
             skipped.append(Skip(address, ONE_VALUE))
             continue
         power_on = int(str(row["original"]), 16) if row.get("original") else None
+        printed = states.get(address)
+        if printed is not None and printed < 2:
+            skipped.append(Skip(address, ONE_STATE))
+            continue
+        if printed is None:
+            values, came_from = _ordered(low, high, power_on), FROM_THE_RANGE
+        else:
+            # Never outside what the address was measured to take: a page and a
+            # unit disagreeing is a finding, not a licence to write past the range.
+            top = min(printed - 1, high)
+            values, came_from = _ordered(max(low, 0), top, power_on), FROM_THE_PRINTED_STATES
         asks.append(
             Ask(
                 address=address,
-                values=_ordered(low, high, power_on),
+                values=values,
                 classification=str(row.get("classification", "")),
                 accepted_range=str(row.get("range", "")),
                 power_on=power_on,
+                values_from=came_from,
+                printed_states=printed,
             )
         )
     for address in _unread(record, prefix):
@@ -180,9 +238,15 @@ def plan_block(record: dict, prefix: str) -> tuple[list[Ask], list[Skip]]:
 
 
 def summarise(asks: list[Ask], skipped: list[Skip]) -> str:
-    lines = [f"{len(asks)} addresses to ask, {len(skipped)} that cannot be"]
+    from_page = sum(a.values_from == FROM_THE_PRINTED_STATES for a in asks)
+    head = f"{len(asks)} addresses to ask, {len(skipped)} that cannot be"
+    if from_page:
+        head += f", {from_page} of them at states a page printed rather than at what they accept"
+    lines = [head]
     for ask in asks:
         mark = "" if ask.range_established else "   (range never established)"
+        if ask.printed_states is not None:
+            mark += f"   ({ask.printed_states} printed states)"
         lines.append(
             f"  {ask.address}  {ask.values[0]:3d} against {ask.values[1]:3d}"
             f"   accepts {ask.accepted_range or '?'}{mark}"
