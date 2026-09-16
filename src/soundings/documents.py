@@ -972,7 +972,304 @@ def _label_above(column: Column, position: int) -> str | None:
     return None
 
 
-TABLES = ("address-map", "effect-list")
+#: The heading over a column of the conversion grid, as `6. Rate1` in its index or
+#: `*6` beside a parameter in the effect list. The number is what joins the three
+#: printings; the name is spelt slightly differently between them.
+_QUANTITY = re.compile(r"^(\d+)\.\s*(.+)$")
+
+#: How the index names an effect type under a quantity: `07: Phaser`.
+_USES = re.compile(r"^(\d+):\s*(.+)$")
+
+#: The unit a grid column is headed with, printed under the quantity's name.
+_UNIT = re.compile(r"^\((.+)\)$")
+
+#: What the grid prints in a cell holding the same setting as the cell above it.
+DITTO = "“"
+
+#: How many cells a row of the grid holds besides one per numbered column: the
+#: value itself in hexadecimal, and the same value in decimal beside it.
+GRID_OPENS_WITH = 2
+
+#: How far apart two cells' left edges may be and still be one column of the
+#: index, whose headings are set flush and whose entries are indented from them.
+SAME_LIST = 4
+
+#: How many columns a line has to number before it is read as the head of a grid
+#: rather than as a list of small numbers that happens to run across a line.
+#:
+#: Deliberately low, because it is not what keeps a wrong line from being read as
+#: a grid. What does that is everything under it: a line numbering columns with no
+#: names beneath them refuses its header, and a line with no rows beneath it giving
+#: their own value twice yields nothing. Set high enough to say something, this
+#: would instead decide which real grids can be read at all.
+GRID_COLUMNS_AT_LEAST = 4
+
+GRID_HEADING_INCOMPLETE = (
+    "the columns of this grid are numbered across the top and one of those numbers has no "
+    "name printed under it that could be read as belonging to it -- so what quantity that "
+    "column gives the settings of is not settled by where its heading sits."
+)
+
+GRID_ROW_MISCOUNTS = (
+    "this line begins with a value in hexadecimal and the same value in decimal, which is "
+    "how a row of the grid begins, and does not then hold one cell per column. Read by "
+    "hand rather than by placing its cells at the columns they sit nearest, which would "
+    "file one quantity's setting under another."
+)
+
+INDEX_OUT_OF_ORDER = (
+    "the quantities this page indexes did not come out as one run from the first to the "
+    "last, so the order the lists were read in is not the order they are printed in. The "
+    "whole index is left unread rather than filed with the types under whichever heading "
+    "the reading happened to put them."
+)
+
+
+def _grid_anchors(lines: list[list[tuple[int, str]]]) -> list[tuple[int, int]] | None:
+    """The line numbering the grid's columns, as each number and where it sits.
+
+    Printed above the names so that a parameter carrying `*6` in the effect list
+    can be looked up, and it is the one part of the header whose meaning does not
+    depend on reading anything else: a run of integers from one, in order, across
+    a line. Everything above the grid is the index and everything below it is the
+    grid, so finding it also cuts the page in two.
+    """
+    for cells in lines:
+        values = [value for _, value in cells]
+        if len(values) >= GRID_COLUMNS_AT_LEAST and values == [
+            str(n) for n in range(1, len(values) + 1)
+        ]:
+            return [(int(value), at) for at, value in cells]
+    return None
+
+
+def _grid_row(cells: list[tuple[int, str]]) -> tuple[str, str] | None:
+    """The value a line of the grid is for, in hexadecimal and in decimal.
+
+    None for a line that is not one. The page prints the value twice and the two
+    have to agree, which is a check the printing supplies rather than one imposed
+    on it: a line that opens with a byte and that byte's own decimal is a row of
+    this grid and nothing else on the page is.
+    """
+    if len(cells) < 3:
+        return None
+    figure, decimal = cells[0][1], cells[1][1]
+    if len(figure) != 2 or any(digit not in "0123456789ABCDEF" for digit in figure):
+        return None
+    if not decimal.isdigit() or int(figure, 16) != int(decimal):
+        return None
+    return figure, decimal
+
+
+def _grid_headings(
+    lines: list[list[tuple[int, str]]], anchors: list[tuple[int, int]]
+) -> dict[int, dict[str, str]] | None:
+    """What each numbered column of the grid is headed with, by its number.
+
+    The names are set over the numbers and wrap onto two lines where they are too
+    long, so a name is assembled from whatever sits nearest its own number and
+    nearer to it than to any other. The two columns giving the value itself are
+    printed left of the first number by more than the columns are spaced, which is
+    what keeps `Value (Hex.)` out of the first quantity's name.
+
+    A trailing parenthesis is the unit the column is in. The last column is headed
+    with no unit at all, so a missing one is not a failure to read anything.
+    """
+    reach = min(right - left for (_, left), (_, right) in zip(anchors, anchors[1:], strict=False))
+    words: dict[int, list[str]] = {number: [] for number, _ in anchors}
+    started = False
+    for cells in lines:
+        if [value for _, value in cells] == [str(number) for number, _ in anchors]:
+            started = True
+            continue
+        if not started:
+            continue
+        if _grid_row(cells):
+            break
+        for at, value in cells:
+            number, column = min(anchors, key=lambda pair: abs(pair[1] - at))
+            if abs(column - at) <= reach:
+                words[number].append(value)
+    if not all(words.values()):
+        return None
+    out = {}
+    for number, found in words.items():
+        unit = _UNIT.match(found[-1])
+        name = " ".join(found[:-1] if unit else found)
+        out[number] = {"quantity": name, "unit": unit.group(1)} if unit else {"quantity": name}
+    return out
+
+
+def _index_lists(lines: list[list[tuple[int, str]]], page: int) -> tuple[list[dict], list[dict]]:
+    """The types the page says use each quantity, off the index above the grid.
+
+    The index is set in several lists side by side and a long one runs from the
+    foot of one into the head of the next, so it is read list by list and not line
+    by line. Each list keeps to one left edge -- its headings flush and its entries
+    indented a couple of characters from them -- and `SAME_LIST` is what holds
+    those two edges together without joining the list beside them.
+
+    Read in the order the lists are printed in, the headings come out numbered
+    from the first to the last with nothing missing. That is the check on the
+    reading and not a property of the page: if they do not, the lists were read in
+    the wrong order and every type under every heading is in doubt, so none of
+    them is filed.
+
+    A type number is filed with its leading zero taken off, which is how the
+    effect list prints the same number and so is what lets the two be held
+    together. The zero is the typesetting of a number, not a different number.
+    """
+    edges: dict[int, list[tuple[int, str]]] = {}
+    for cells in lines:
+        for at, value in cells:
+            if not (_QUANTITY.match(value) or _USES.match(value)):
+                continue
+            near = next((edge for edge in edges if abs(edge - at) <= SAME_LIST), at)
+            edges.setdefault(near, []).append((at, value))
+    if not edges:
+        return [], []
+
+    rows, quantities, standing = [], [], None
+    for edge in sorted(edges):
+        for _, value in edges[edge]:
+            heading = _QUANTITY.match(value)
+            if heading:
+                standing = {"column": int(heading.group(1)), "printed_as": heading.group(2)}
+                quantities.append(standing["column"])
+                continue
+            if standing is None:
+                continue
+            used = _USES.match(value)
+            rows.append(
+                {
+                    "column": standing["column"],
+                    "indexed_as": standing["printed_as"],
+                    "type": str(int(used.group(1))),
+                    "effect": used.group(2).strip(),
+                    "page": page,
+                    "read_by": "parser",
+                }
+            )
+    if quantities != list(range(1, len(quantities) + 1)):
+        return [], [{"page": page, "line": str(quantities), "why": INDEX_OUT_OF_ORDER}]
+    return rows, []
+
+
+def read_value_conversion(text: str, page: int, carried: dict | None = None) -> Reading:
+    """Every setting the conversion grid prints, and what the index says uses it.
+
+    The grid gives all 128 values of each of a handful of quantities that the
+    effect parameters are not stored in directly -- a delay in milliseconds, a
+    rate in hertz, a corner frequency -- so a parameter the effect list marks
+    `*6` has a printed setting at every byte it can hold rather than a range with
+    the inside of it left to be worked out.
+
+    Three kinds of row, and they are held together by the column number printed
+    over the grid, not by the quantity's name: the index, the grid's own header
+    and the effect list's footnote each spell some of those names differently,
+    and the number is the one thing all three print the same.
+
+    - a quantity row says column `n` of the grid gives a named quantity in a unit
+    - a setting row says that quantity's value at one byte
+    - a use row says the index prints an effect type under that quantity
+
+    A setting the page prints as a ditto is filed with the setting it repeats and
+    marked as having been printed that way, so a reader can tell a value that was
+    set from one that was carried down. `carried` holds what the page before left
+    standing in each column, from `settings_above`: the grid runs over two pages
+    and a ditto crosses the break, so a page read on its own opens with cells
+    repeating nothing.
+
+    Nothing here places a setting by the column it sits at. A row of the grid
+    holds one cell per column and opens with its own value printed twice, so the
+    cells are the quantities in order and the page checks the reading itself.
+    """
+    out = Reading()
+    lines = [cells_in(line) for line in text.splitlines()]
+    anchors = _grid_anchors(lines)
+    if anchors is None:
+        return out
+
+    cut = next(index for index, cells in enumerate(lines) if _grid_anchors([cells]))
+    uses, refused = _index_lists(lines[:cut], page)
+    out.rows.extend(uses)
+    out.not_extracted.extend(refused)
+
+    headings = _grid_headings(lines, anchors)
+    if headings is None:
+        numbered = str([number for number, _ in anchors])
+        out.not_extracted.append({"page": page, "line": numbered, "why": GRID_HEADING_INCOMPLETE})
+        return out
+    for number, heading in headings.items():
+        out.rows.append({"column": number, **heading, "page": page, "read_by": "parser"})
+
+    standing = dict(carried or {})
+    for cells in lines[cut:]:
+        found = _grid_row(cells)
+        if not found:
+            continue
+        if len(cells) != len(anchors) + GRID_OPENS_WITH:
+            out.not_extracted.append(
+                {"page": page, "line": " ".join(v for _, v in cells), "why": GRID_ROW_MISCOUNTS}
+            )
+            continue
+        figure, decimal = found
+        for number, (_, printed) in enumerate(cells[2:], start=1):
+            repeated = printed == DITTO
+            setting = standing.get(number) if repeated else printed
+            if setting is None:
+                continue
+            standing[number] = setting
+            out.rows.append(
+                {
+                    "column": number,
+                    **headings[number],
+                    "value": figure,
+                    "decimal": decimal,
+                    "setting": setting,
+                    **({"repeats_above": True} if repeated else {}),
+                    "page": page,
+                    "read_by": "parser",
+                }
+            )
+    return out
+
+
+def settings_above(page_text_of: Callable[[int], str], page: int) -> dict | None:
+    """What each column of the grid was last printed a setting for, before this page.
+
+    The grid runs over more than one page and repeats its own header on each, so a
+    page is readable on its own except for one thing: a column whose setting has
+    not changed for a while opens the next page as a ditto repeating a value that
+    was printed on the page before. Without this those cells are dropped and the
+    column comes back with holes in it exactly where the setting held longest.
+
+    Read by the pass that reads the page's rows, so a ditto is resolved once and
+    by one reading.
+
+    The walk stops at the first page that is not part of the grid rather than at
+    the front of the document. The grid runs over consecutive pages, so a page
+    without it is the page before the grid began -- and walking past it would
+    read every page of the document to answer a question about two of them.
+
+    @param page_text_of the document's pages, by the file's own numbering
+    @param page the page being read, which is not itself looked at
+    """
+    while page > 1:
+        page -= 1
+        reading = read_value_conversion(page_text_of(page), 0)
+        rows = [row for row in reading.rows if "setting" in row]
+        if not reading.rows:
+            return None
+        if rows:
+            return {
+                row["column"]: row["setting"]
+                for row in sorted(rows, key=lambda row: (int(row["decimal"]), row["column"]))
+            }
+    return None
+
+
+TABLES = ("address-map", "effect-list", "value-conversion")
 """The tables the archive files a document's rows under, by directory name.
 
 Named here rather than only where they are read because the ledger is kept per

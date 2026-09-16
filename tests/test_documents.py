@@ -430,3 +430,137 @@ def test_the_walk_back_for_a_type_stops_where_the_list_did() -> None:
     }
     assert documents.holds_parameters(pages[2]) is False
     assert documents.type_above(pages.get, 3) is None
+
+
+#: The conversion grid as the page sets it: the columns numbered across the top,
+#: their names wrapping onto two lines over the numbers, and each row opening with
+#: its own value in hexadecimal and in decimal. Two of the columns give the value
+#: itself and are printed left of the first number, which is what has to be kept
+#: out of the first quantity's name. The last column is headed with no unit.
+GRID = [
+    "                        1           2         3        4",
+    "                    Pre Delay     Delay    Cutoff",
+    " Value    Value       Time        Time 1    Freq      Accl",
+    " (Hex.)   (Dec.)      (ms)         (ms)     (Hz)",
+    "   00        0         0.0         200       315        0",
+    "   01        1         0.1         205         “        “",
+    "   02        2         0.2         210         “        1",
+]
+
+
+def test_the_grids_columns_are_named_from_the_numbers_printed_over_them() -> None:
+    out = documents.read_value_conversion("\n".join(GRID), 224)
+    headings = [row for row in out.rows if "setting" not in row and "type" not in row]
+    assert [(row["column"], row["quantity"], row.get("unit")) for row in headings] == [
+        (1, "Pre Delay Time", "ms"),
+        (2, "Delay Time 1", "ms"),
+        (3, "Cutoff Freq", "Hz"),
+        (4, "Accl", None),
+    ]
+
+
+def test_a_settings_column_is_the_one_it_is_printed_in_and_not_the_one_it_sits_nearest() -> None:
+    """A row of the grid holds one cell per column and says its own value twice.
+
+    So the cells are the quantities in printed order and nothing has to be placed
+    by geometry -- which is what keeps a column whose settings are narrower than
+    its heading from being read as the column beside it.
+    """
+    out = documents.read_value_conversion("\n".join(GRID), 224)
+    first = [row for row in out.rows if row.get("decimal") == "0"]
+    assert [(row["quantity"], row["setting"]) for row in first] == [
+        ("Pre Delay Time", "0.0"),
+        ("Delay Time 1", "200"),
+        ("Cutoff Freq", "315"),
+        ("Accl", "0"),
+    ]
+    assert not out.not_extracted
+
+
+def test_a_setting_printed_as_a_repeat_is_filed_with_the_one_it_repeats() -> None:
+    out = documents.read_value_conversion("\n".join(GRID), 224)
+    freq = [row for row in out.rows if row.get("quantity") == "Cutoff Freq" and "setting" in row]
+    assert [(row["decimal"], row["setting"], row.get("repeats_above")) for row in freq] == [
+        ("0", "315", None),
+        ("1", "315", True),
+        ("2", "315", True),
+    ]
+
+
+def test_a_repeat_opening_a_page_takes_the_setting_the_page_before_left_standing() -> None:
+    """The grid runs over two pages and a column that has not changed for a while
+    opens the next one repeating a value printed on the page before."""
+    second = [
+        "                        1           2         3        4",
+        "                    Pre Delay     Delay    Cutoff",
+        " Value    Value       Time        Time 1    Freq      Accl",
+        " (Hex.)   (Dec.)      (ms)         (ms)     (Hz)",
+        "   03        3         0.3         215         “        “",
+    ]
+    pages = {1: "\n".join(GRID), 2: "\n".join(second)}
+    carried = documents.settings_above(pages.get, 2)
+    assert carried[3] == "315"
+    assert carried[4] == "1"
+    out = documents.read_value_conversion(pages[2], 225, carried)
+    assert [row["setting"] for row in out.rows if "setting" in row] == ["0.3", "215", "315", "1"]
+
+
+def test_the_walk_back_for_a_repeat_stops_where_the_grid_did() -> None:
+    pages = {
+        1: "\n".join(WAH),
+        2: "\n".join(GRID),
+        3: "   03        3         0.3         215         “        “",
+    }
+    assert documents.settings_above(pages.get, 2) is None
+
+
+def test_a_line_opening_like_a_grid_row_and_miscounting_its_cells_is_refused() -> None:
+    """Cut by placing its cells at the columns they sit nearest, a short row files
+    one quantity's setting under another and nothing looks wrong."""
+    short = [*GRID, "   03        3         0.3         215"]
+    out = documents.read_value_conversion("\n".join(short), 224)
+    assert [missed["why"] for missed in out.not_extracted] == [documents.GRID_ROW_MISCOUNTS]
+    assert not [row for row in out.rows if row.get("decimal") == "3"]
+
+
+#: The index the grid opens with, set as two lists side by side. The first runs off
+#: the foot of its own column and into the head of the next, which is why it is read
+#: list by list rather than line by line.
+INDEX = [
+    "    1. Pre Delay Time        6. Rate1",
+    "      10: Stereo Flanger       07: Phaser",
+    "      11: Step Flanger         08: Auto Wah",
+    "    2. Delay Time1           7. Rate 2",
+    "      23: 3 Tap Delay          48: GTR Multi 1",
+    "    3. Cutoff Freq",
+    "      01: Stereo-EQ",
+    "    4. Accl",
+    "      04: Humanizer",
+    "    5. Manual",
+    "      07: Phaser",
+]
+
+
+def test_a_list_running_from_one_column_into_the_next_is_read_in_printed_order() -> None:
+    out = documents.read_value_conversion("\n".join([*INDEX, *GRID]), 224)
+    uses = [row for row in out.rows if "type" in row]
+    assert [(row["column"], row["type"], row["effect"]) for row in uses] == [
+        (1, "10", "Stereo Flanger"),
+        (1, "11", "Step Flanger"),
+        (2, "23", "3 Tap Delay"),
+        (3, "1", "Stereo-EQ"),
+        (4, "4", "Humanizer"),
+        (5, "7", "Phaser"),
+        (6, "7", "Phaser"),
+        (6, "8", "Auto Wah"),
+        (7, "48", "GTR Multi 1"),
+    ]
+
+
+def test_an_index_whose_headings_do_not_come_out_in_order_is_left_unread() -> None:
+    """Read in the wrong order the types are filed under whichever heading the
+    reading happened to put them, and every row of it is printed somewhere real."""
+    scrambled = [line.replace("3. Cutoff Freq", "9. Cutoff Freq") for line in INDEX]
+    out = documents.read_value_conversion("\n".join([*scrambled, *GRID]), 224)
+    assert not [row for row in out.rows if "type" in row]
+    assert [missed["why"] for missed in out.not_extracted] == [documents.INDEX_OUT_OF_ORDER]

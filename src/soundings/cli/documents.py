@@ -53,6 +53,29 @@ TABLES = {
         ),
         "headings": {"en": "Different effect types"},
     },
+    "value-conversion": {
+        "read": documents.read_value_conversion,
+        "carry": documents.settings_above,
+        "order": lambda row: (
+            row["column"],
+            0 if "setting" in row else 1 if "type" in row else 2,
+            int(row.get("decimal", -1)),
+            int(row.get("type", -1)),
+        ),
+        "line": lambda row: (
+            f"{row['column']:>3}. {row['quantity'] if 'quantity' in row else row['indexed_as']:<16}"
+            f"{'(' + row['unit'] + ')' if row.get('unit') else '':<7}"
+            + (
+                f" {row['value']} ({row['decimal']:>3}) = {row['setting']}"
+                + (" ditto" if row.get("repeats_above") else "")
+                if "setting" in row
+                else f" used by {row['type']:>2}: {row['effect']}"
+                if "type" in row
+                else ""
+            )
+        ),
+        "headings": {"en": "Effect Parameter Value Conversion Table"},
+    },
 }
 """The tables this can read, by the name the archive files them under.
 
