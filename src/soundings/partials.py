@@ -345,6 +345,24 @@ REFINE_FROM = 12
 minimum wherever the notches line up, so the deepest one is often beside the one
 the coarse grid happened to sample best."""
 
+REFINE_PER_SEED = 3
+"""How many of each seed's own best candidates are refined, whatever the rest did.
+
+The coarse scan cannot rank seeds against each other. It holds the mix at three
+values and the phase at sixteen, so a seed whose minimum needs a mix between two
+of them scores badly coarsely and well once refined -- and pooling every seed's
+rows into one list then refining the best of the pool leaves such a seed with no
+refinement at all.
+
+What it is worth is small and measured rather than assumed. One reading came back
+explaining 0.077 of its series at a rate the take does not run at, with the right
+rate sitting among its own seeds and inside its own search window, and refining
+that seed returned 0.88 of the series without being told anything. Three other
+readings that do cross the line the moment the rate is named do not cross it this
+way, so a seed refined too few times is one cause of a fit landing wrong and not
+the only one.
+"""
+
 SWING_SHOWS_DB = 0.30
 """Level swing, in dB RMS, below which there is nothing to fit a comb to. A tone
 with no modulation on it fits every candidate perfectly, because they all reduce
@@ -384,6 +402,21 @@ def _residual(observed: np.ndarray, model: np.ndarray) -> float:
     return float(np.sqrt(np.mean((observed - scale * model) ** 2)))
 
 
+NEARLY_AS_WELL = 0.05
+"""How much less of the series a fit may explain and still be an answer too.
+
+The surface has a minimum wherever the notches line up, so asking whether another
+minimum exists always returns yes and says nothing. What a reader needs is the
+range of excursions that explain the series about as well as the winner, because
+that is the width of what the reading actually settled. Five hundredths of the
+series' own spread: below the difference between the two modulator shapes this
+fit already declines to choose between at four tenths.
+
+Not a gate. A width is reported and the winner is still the winner; a reader who
+wants the number alone reads the number, and one who wants to know whether it was
+determined reads the width beside it.
+"""
+
 THE_RATE_IS_SOUGHT_WITHIN = 0.1
 """How far either side of its seed the fitted rate may travel, as a proportion.
 
@@ -407,9 +440,10 @@ def fit_one(observed: np.ndarray, at: np.ndarray, seeds: tuple[float, ...], shap
     """Best fit of one shape: coarse over the whole space, then refined with the rate free.
 
     `seeds` are rates the projections put the modulator near. Each is scanned
-    coarsely and the best few of all of them refined together, so a seed that
-    landed on a multiple of the true rate costs nothing as long as one of the
-    starting points can reach it.
+    coarsely, and then two sets of candidates are refined: the best few of the
+    pool, and the best few of every seed on its own. The second set is what keeps
+    a seed from being crowded out of the pool by another seed's rows, which the
+    coarse scan is not fine enough in the mix to rank fairly.
     """
     from scipy.optimize import minimize
 
@@ -456,20 +490,32 @@ def fit_one(observed: np.ndarray, at: np.ndarray, seeds: tuple[float, ...], shap
 
         return cost
 
+    taken: dict[float, int] = {}
+    rows = list(found[:REFINE_FROM])
+    for row in found:
+        if taken.get(row[5], 0) >= REFINE_PER_SEED:
+            continue
+        taken[row[5]] = taken.get(row[5], 0) + 1
+        if row not in rows:
+            rows.append(row)
+
     best = (found[0][0], np.array(found[0][1:], dtype=np.float64))
-    for row in found[:REFINE_FROM]:
+    settled: list[tuple[float, np.ndarray]] = []
+    for row in rows:
         outcome = minimize(
             costing(row[5]),
             np.array(row[1:], dtype=np.float64),
             method="Nelder-Mead",
             options={"xatol": 1e-5, "fatol": 1e-6, "maxiter": 4000},
         )
+        settled.append((float(outcome.fun), outcome.x))
         if outcome.fun < best[0]:
             best = (float(outcome.fun), outcome.x)
     swing, middle, mix, start, hz = best[1]
     return {
         "shape": shape,
         "left_over_db": round(best[0], 4),
+        "settled_at": [(float(left), float(x[0])) for left, x in settled],
         "comb_phase_swing_rad": round(float(swing), 4),
         "mix": round(float(mix), 4),
         "starts_at_turn": round(float(start % 1.0), 4),
@@ -550,14 +596,25 @@ def comb(body: np.ndarray, rate: int, *seeds: float) -> dict:
     )
     closer, other = fits
     apart = abs(closer["left_over_db"] - other["left_over_db"]) / spread
+    explains = round(1.0 - closer["left_over_db"] / spread, 4)
+    close = [
+        comb_excursion_ms(swing, centre)
+        for left, swing in closer["settled_at"]
+        if left <= closer["left_over_db"] + NEARLY_AS_WELL * spread
+    ]
     return {
         **out,
         "hz": closer["rate_hz"],
         "excursion_ms": round(comb_excursion_ms(closer["comb_phase_swing_rad"], centre), 4),
+        "excursions_that_explain_it_about_as_well_ms": [
+            round(min(close), 4),
+            round(max(close), 4),
+        ],
+        "how_many_of_those": len(close),
         "comb_phase_swing_rad": closer["comb_phase_swing_rad"],
         "mix": closer["mix"],
         "left_over_db": {f["shape"]: f["left_over_db"] for f in fits},
-        "explains": round(1.0 - closer["left_over_db"] / spread, 4),
+        "explains": explains,
         "apart_by": round(apart, 4),
         "closer_to": None if apart < MARGIN_NEEDED else closer["shape"],
     }

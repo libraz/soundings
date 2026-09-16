@@ -100,6 +100,84 @@ WHY_THE_PARTIALS_MUST_DISAGREE = (
     "over the whole voice moves every partial by the same decibels at the same moment."
 )
 
+WHAT_THE_GATES_WERE_SET_AGAINST = {
+    "stands_over_bypassed": (
+        "What the same projection returns on the same material with nothing in the path, rate by "
+        "rate. The record's second bypassed take came back at 1.1 in the phase and 1.3 in the "
+        "level, against injected sweeps standing 7 to 3000, so the line sits in a gap both "
+        "controls clear by their own margin. It is not a figure over the grid's own middle: this "
+        "carrier drifts enough on its own to stand seventeen times its grid median at half a "
+        "hertz, which any statistic with nothing to subtract reads as a modulator."
+    ),
+    "agrees_as_one_voice": (
+        "Not a round number but where correlation changes sign. Every comb injected here came "
+        "back between -0.05 and -0.37 and every level swing between 0.81 and 0.97."
+    ),
+    "comb_explains": (
+        "Injected combs that returned their excursion exactly explained 0.628 and above, and the "
+        "same fit told a rate nothing is running at explains 0.042 to 0.055. The line's place "
+        "inside that gap is a choice, and the gap is narrower than those two figures suggest: "
+        "swept over the sizes a chorus lives at, the fit returns the excursion to within a few "
+        "per cent while what it explains falls to 0.64 wherever the two paths are mixed evenly. "
+        "So a fit can be right and still be withheld here, and what the withholding means is "
+        "that this reading could not tell a right answer from a wrong rate -- not that the type "
+        "has no comb in it."
+    ),
+}
+"""What each gate's number was set against, carried into the record beside the number.
+
+A threshold published as a bare figure cannot be argued with, and these three decide
+which types give up a quantity. Assembled here so a run that states the number also
+states what would have moved it.
+
+How much room the gate's own run left around it is not in here. It is measured by
+`how_far_the_line_could_have_moved` off the run being written, because a figure typed
+into a constant is right for the run it was read on and silently wrong for the next one.
+"""
+
+
+def how_far_the_line_could_have_moved(found: list[dict]) -> str:
+    """How much room this run left around the gate, read off the run itself.
+
+    Which side of the line a reading fell is not worth reporting: the line is what
+    puts it there, so every withheld fit is below it by construction. What the run
+    decides and the gate does not is the empty band between the highest withheld
+    reading and the lowest published one. A wide band means the figure could have
+    been put anywhere across it and this record would be identical; a narrow one
+    means the choice carried types.
+    """
+    fits = [row["comb"] for row in found if (row.get("comb") or {}).get("explains") is not None]
+    published = [f["explains"] for f in fits if f.get("excursion_ms") is not None]
+    withheld = [f["explains"] for f in fits if f.get("excursion_ms") is None]
+    if not published or not withheld:
+        return (
+            "Every fit on this run came out on one side of the line, so the run says nothing "
+            "about how much room there was around it."
+        )
+    top, bottom = max(withheld), min(published)
+    room = min(COMB_EXPLAINS - top, bottom - COMB_EXPLAINS)
+    return (
+        f"On this unit the most any withheld fit explained was {top:.3f} and the least any "
+        f"published one did was {bottom:.3f}, so the line could have been put anywhere between "
+        f"those two and this record would read the same. It is {room:.3f} from the nearer of "
+        f"them. That is where the figures fell, not a property of the gate: a run whose "
+        f"readings crowded the line would have to be read with the figure's exact place in mind."
+    )
+
+
+WHY_THE_EXCURSION_CARRIES_A_SPAN = (
+    "A comb fit returns one excursion and the surface it was found on has a minimum wherever the "
+    "notches line up, so the number alone says which minimum was deepest and not how much deeper. "
+    "Beside each excursion is the range of excursions that explain the series to within a "
+    "twentieth of its own spread, measured over every candidate this fit refined. Read on "
+    "injected combs whose excursion is known, that range closes onto the answer at two, five and "
+    "ten milliseconds and opens from four hundredths to half a millisecond at half of one -- "
+    "which is where the returned figures scatter too, 0.43 to 0.51 against a true 0.50. So the "
+    "span is a property of how far the notches sweep and not of the fit's patience, and a type "
+    "whose span is wide has not been measured to a number however much of its series the fit "
+    "explains."
+)
+
 WHY_AN_EQUIVALENT_AND_NOT_A_LENGTH = (
     "A comb's phase is the delay times the partial's frequency, so a phase swing converts to a "
     "delay excursion outright. That conversion is arithmetic and the interpretation is not: a "
@@ -141,13 +219,24 @@ control sits between those, so the line's place inside the gap is a choice.
 """
 
 
-def limits(floor: Floor) -> dict:
+def limits(floor: Floor, found: list[dict]) -> dict:
     """What bounds this reading, assembled beside the verdicts it bounds.
 
     Kept in one function with the record it goes into rather than written at each
     call site: a limitation left out of the next run's file does not fail, and a
     negative without a stated bound is not a result.
+
+    Takes the run's own rows because one of the gates reports where this run's
+    readings fell against it, which no constant can hold.
     """
+    gates = {
+        **WHAT_THE_GATES_WERE_SET_AGAINST,
+        "comb_explains": (
+            WHAT_THE_GATES_WERE_SET_AGAINST["comb_explains"]
+            + " "
+            + how_far_the_line_could_have_moved(found)
+        ),
+    }
     return {
         "why_the_orders_come_from_the_bypassed_take": WHY_THE_ORDERS_COME_FROM_THE_BYPASSED_TAKE,
         "why_a_grid_and_not_a_line": WHY_A_GRID_AND_NOT_A_LINE,
@@ -155,9 +244,11 @@ def limits(floor: Floor) -> dict:
         "why_the_excursion_off_the_phase_is_a_floor": WHY_THE_PHASE_EXCURSION_IS_A_FLOOR,
         "why_the_comb_needs_the_partials_to_disagree": WHY_THE_PARTIALS_MUST_DISAGREE,
         "why_an_equivalent_and_not_a_length": WHY_AN_EQUIVALENT_AND_NOT_A_LENGTH,
+        "why_the_excursion_carries_a_span": WHY_THE_EXCURSION_CARRIES_A_SPAN,
         "stands_over_bypassed": STANDS_OVER_BYPASSED,
         "agrees_as_one_voice": AGREES_AS_ONE_VOICE,
         "comb_explains": COMB_EXPLAINS,
+        "what_the_gates_were_set_against": gates,
         "orders_read": floor.held.orders,
         "rates_are_separated_by": round(floor.held.rates_are_separated_by, 4),
     }
@@ -410,7 +501,7 @@ def survey(
         "grid_step_hz": step_hz,
         "bypassed_take": where["controls"][0],
         "method": METHOD,
-        "limits": limits(floor),
+        "limits": limits(floor, found),
         "controls": controls_from(
             body,
             rate,
@@ -434,16 +525,28 @@ def moving(found: list[dict]) -> list[str]:
 
 
 def named_an_excursion(found: list[dict]) -> list[dict]:
-    """The types whose comb fit survived every gate, which is what this stage adds."""
+    """The types whose comb fit survived every gate, which is what this stage adds.
+
+    Each carries the span of excursions that explain the series about as well as
+    the winner does. Reading the winner without it is reading a best fit as though
+    it were the only one, and on this material that is usually wrong: the span
+    closes onto the answer where the notches sweep far enough to shape the series
+    and opens to a factor of two or more where they do not.
+    """
     out = []
     for row in found:
         fitted = row.get("comb") or {}
         if fitted.get("excursion_ms") is not None:
+            span = fitted.get("excursions_that_explain_it_about_as_well_ms")
             out.append(
                 {
                     "type": row["type"],
                     "hz": fitted["hz"],
                     "excursion_ms": fitted["excursion_ms"],
+                    "excursions_that_explain_it_about_as_well_ms": span,
+                    "settled_to_one_excursion": bool(
+                        span is not None and span[1] <= 1.1 * max(span[0], 1e-9)
+                    ),
                     "mix": fitted.get("mix"),
                     "explains": fitted.get("explains"),
                     "closer_to": fitted.get("closer_to"),

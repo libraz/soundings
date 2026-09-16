@@ -140,6 +140,67 @@ def test_a_mixed_comb_gives_up_its_excursion_and_its_mix() -> None:
     assert said["explains"] > efxpartials.COMB_EXPLAINS
 
 
+def test_the_excursion_carries_the_range_that_explains_the_series_as_well() -> None:
+    """One excursion is the deepest minimum, not the only one that fits.
+
+    Where the notches sweep far enough to shape the series the range closes onto
+    the answer. Where they barely move it opens, and it has to open there: the
+    returned figure scatters over exactly that range on material whose excursion
+    is known, so a reader given the number alone would be given a precision the
+    take does not hold.
+    """
+    dry = tone(seconds=2.0)
+    far = partials.comb(partials.swept(dry, SR, 12.0, 5.0, 1.0, 0.35), SR, 1.0)
+    low, high = far["excursions_that_explain_it_about_as_well_ms"]
+    assert low <= far["excursion_ms"] <= high
+    assert high <= 1.1 * low, "a five millisecond sweep settles on one excursion"
+
+    near = partials.comb(partials.swept(dry, SR, 12.0, 0.3, 1.0, 0.35), SR, 1.0)
+    low, high = near["excursions_that_explain_it_about_as_well_ms"]
+    assert high > 1.5 * low, "a sweep this shallow does not settle, and must say so"
+
+
+def test_every_seed_is_refined_even_when_another_seed_fills_the_pool() -> None:
+    """The coarse scan cannot rank seeds against each other, so it must not try.
+
+    It holds the mix at three values, so a seed whose minimum needs a mix between
+    two of them scores badly coarsely and well once refined. Pooling every seed's
+    rows and refining the best of the pool left such a seed with no refinement at
+    all, and the fit reported a rate the take is not running at.
+    """
+    dry = tone(seconds=2.0)
+    body = partials.swept(dry, SR, 12.0, 5.0, 0.9, 0.5)
+    crowded = partials.comb(body, SR, 4.5, 2.25, 1.5, 1.125, 0.9, 0.45)
+    assert crowded["hz"] == pytest.approx(0.9, rel=0.05)
+    assert crowded["excursion_ms"] == pytest.approx(5.0, rel=0.1)
+
+
+def test_the_room_around_the_gate_is_read_off_the_run_and_not_typed_in() -> None:
+    """How much the gate's exact figure decided is a fact about the run, not the gate.
+
+    Typed into the prose as a constant it is right for the run it was read on and
+    silently wrong for the next, which is the one sentence in a limits block a reader
+    has no way to check. The quantity is the empty band around the line, not which
+    side a reading fell: the line is what puts it there.
+    """
+    roomy = [
+        {"comb": {"explains": 0.9, "excursion_ms": 2.0}},
+        {"comb": {"explains": 0.4, "excursion_ms": None}},
+    ]
+    said = efxpartials.how_far_the_line_could_have_moved(roomy)
+    assert "0.400" in said and "0.900" in said
+    assert f"{efxpartials.COMB_EXPLAINS - 0.4:.3f}" in said
+
+    crowded = [
+        {"comb": {"explains": 0.61, "excursion_ms": 2.0}},
+        {"comb": {"explains": 0.59, "excursion_ms": None}},
+    ]
+    assert "0.010" in efxpartials.how_far_the_line_could_have_moved(crowded)
+
+    one_sided = [{"comb": {"explains": 0.9, "excursion_ms": 2.0}}]
+    assert "one side" in efxpartials.how_far_the_line_could_have_moved(one_sided)
+
+
 def test_the_seeds_offered_to_the_comb_are_the_submultiples_of_both_peaks() -> None:
     """A peak sits on a whole multiple of the rate, so the rate is enumerated.
 
