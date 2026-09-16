@@ -458,37 +458,46 @@ def register(sub) -> None:
     )
     p.add_argument(
         "--first-parameter",
-        help="the address this type's first printed parameter sits at, for --states-from",
+        help="the block those parameters' addresses sit in, for --states-from: the "
+        "list prints the last byte of each and which block it belongs to is a fact "
+        "about a family rather than about this type",
     )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_params)
 
 
-def _printed_states(path: str, type_id: str, first_parameter: str) -> dict[str, int]:
-    """How many states each of a type's parameters is printed with, keyed by address.
+def _printed_values(path: str, type_id: str, block: str) -> dict[str, str]:
+    """The value column an effect list prints against each of a type's parameters.
 
-    A parameter printing a span between two of its values -- `200m - 990m/1sec`,
-    `L63 - 0 - R63` -- is a quantity with a named end and not a list of states, so
-    it keeps the pair the write probe gives it. The mapping from a printed
-    parameter number to an address comes from the address the caller names for the
-    first one, counting up: which address a block's parameters begin at is a fact
-    about a family and this command is handed one unit's probe.
+    Keyed by the whole address, which the page gives the last byte of: the block
+    those bytes sit in is a fact about a family and is named by the caller, not
+    carried here.
+
+    The value column and not the setting column. A count of the names between the
+    slashes in the setting column gets three kinds of parameter wrong -- a rotor's
+    two speeds, which are the bytes 0 and 127 rather than 0 and 1; a gain, whose
+    setting column prints decibels and no names while its values run from 52 to 76;
+    and a damping frequency printed `315-8k/Bypass`, which has a slash and is a
+    referral to a table of 128 entries.
+
+    Rows a person read off the page are merged with the rows the parser cut, because
+    the residue is where the enumerations concentrate: the printing runs a name into
+    its setting exactly where the name is long and the setting is a list of states.
     """
-    rows = json.loads(Path(path).read_text())["rows"]
-    head = [int(b, 16) for b in first_parameter.split()]
+    where = Path(path)
+    rows = json.loads(where.read_text())["rows"]
+    hand = where.parent / "by-hand.json"
+    if hand.is_file():
+        rows = rows + json.loads(hand.read_text())["tables"].get(where.stem, [])
+    head = block.replace(" ", "").upper()
     wanted = type_id.replace(" ", "").upper()
-    out: dict[str, int] = {}
+    out: dict[str, str] = {}
     for row in rows:
-        if "parameter_number" not in row:
+        if "address_lsb" not in row or "values_hex" not in row:
             continue
         if (row["msb"] + row["lsb"]).upper() != wanted:
             continue
-        printed = str(row["data"])
-        if "/" not in printed or " - " in printed:
-            continue
-        number = int(row["parameter_number"])
-        address = f"{head[0]:02X} {head[1]:02X} {head[2] + number - 1:02X}"
-        out[address] = printed.count("/") + 1
+        out[f"{head[0:2]} {head[2:4]} {row['address_lsb']}"] = row["values_hex"]
     return out
 
 
@@ -498,12 +507,12 @@ def cmd_plan(args: argparse.Namespace) -> int:
 
     states = None
     if args.states_from:
-        if not (args.type and args.first_parameter):
-            print("--states-from needs --type and --first-parameter to know which rows are whose")
+        if not args.type:
+            print("--states-from needs --type to know which of the list's rows are whose")
             return 1
-        states = _printed_states(args.states_from, args.type, args.first_parameter)
+        states = _printed_values(args.states_from, args.type, args.block)
         if not states:
-            print(f"no parameter of type {args.type!r} in {args.states_from} is printed as states")
+            print(f"{args.states_from} prints no values against any parameter of {args.type!r}")
             return 1
 
     record = json.loads(Path(args.write_probe).read_text())
@@ -524,7 +533,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
         out["states_from"] = {
             "document": str(args.states_from),
             "type": args.type,
-            "first_parameter": args.first_parameter,
+            "block": args.block,
             "addresses": len(states),
         }
     report.write_json(args.out, out)
@@ -901,12 +910,12 @@ def cmd_efx_params(args) -> int:
     if not loads:
         print(f"{args.types_from} has no type {args.type}")
         return 1
-    states = None
+    printed = None
     if args.states_from:
         if not args.first_parameter:
-            print("--states-from needs --first-parameter to know which address is which row")
+            print("--states-from needs --first-parameter to know which block those bytes sit in")
             return 1
-        states = _printed_states(args.states_from, args.type, args.first_parameter)
+        printed = _printed_values(args.states_from, args.type, args.first_parameter)
 
     found = efxparams.read_directory(
         args.records,
@@ -916,7 +925,7 @@ def cmd_efx_params(args) -> int:
         [{"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare],
         supersede=dict(s.split("=", 1) for s in args.supersede),
         slots=args.slots or None,
-        states=states,
+        printed=printed,
     )
     for name, count in found["results"].items():
         print(f"  {name}: {count}")

@@ -45,6 +45,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from . import documents
+
 RANGE = re.compile(r"^([0-9A-Fa-f]{2})\.\.([0-9A-Fa-f]{2})")
 
 METHOD = (
@@ -60,18 +62,24 @@ METHOD = (
 
 FROM_THE_RANGE = "the two ends of the range the write probe measured this address to accept"
 
-FROM_THE_PRINTED_STATES = (
-    "the first and last of the states this parameter is printed with, because the address "
-    "accepts values its parameter has no state for and the ends of what it accepts are not a "
-    "pair of settings. It rests on a page as well as on this unit, which the ends of a measured "
+FROM_THE_PRINTED_VALUES = (
+    "the lowest and highest value the page prints this parameter as having, because the address "
+    "accepts values it is not printed as having and the ends of what it accepts are not a pair "
+    "of settings. It rests on a page as well as on this unit, which the ends of a measured "
     "range do not"
 )
 
 ONE_VALUE = "accepts one value, so it has no pair to compare and cannot be asked this way"
 
-ONE_STATE = (
-    "is printed with one state, so there is nothing to compare it against however much the "
+ONE_PRINTED_VALUE = (
+    "is printed with one value, so there is nothing to compare it against however much the "
     "address accepts"
+)
+
+NONE_OF_ITS_PRINTED_VALUES = (
+    "is printed with values, and the address was measured to accept none of them. A page and a "
+    "unit disagreeing is a finding and not a licence to write past the range, so nothing is "
+    "asked here until one of the two is established"
 )
 
 RANGE_UNREAD = (
@@ -95,7 +103,7 @@ class Ask:
     power_on: int | None
     range_established: bool = True
     values_from: str = FROM_THE_RANGE
-    printed_states: int | None = None
+    printed_values: str | None = None
 
     @property
     def caveat(self) -> str | None:
@@ -111,8 +119,8 @@ class Ask:
             "range_established": self.range_established,
             "values_from": self.values_from,
         }
-        if self.printed_states is not None:
-            out["printed_states"] = self.printed_states
+        if self.printed_values is not None:
+            out["printed_values"] = self.printed_values
         if self.caveat:
             out["caveat"] = self.caveat
         return out
@@ -177,15 +185,18 @@ def _unread(record: dict, prefix: str) -> list[str]:
 
 
 def plan_block(
-    record: dict, prefix: str, states: dict[str, int] | None = None
+    record: dict, prefix: str, printed: dict[str, str] | None = None
 ) -> tuple[list[Ask], list[Skip]]:
     """Every address under `prefix`, sorted into the askable and the rest.
 
-    `states` names, by address, how many states a parameter is printed with. An
-    address in it is asked at the first and last of those rather than at the ends
-    of what it accepts, and its row says so.
+    `printed` names, by address, the value column an effect list prints against a
+    parameter. An address in it is asked at the lowest and highest value that column
+    gives, rather than at the ends of what the address accepts, and its row says so.
+
+    A column referring the reader to a table of 128 entries narrows nothing, so the
+    address keeps the pair its measured range gives it.
     """
-    states = states or {}
+    printed = printed or {}
     asks: list[Ask] = []
     skipped: list[Skip] = []
     for row in _rows(record, prefix):
@@ -199,17 +210,24 @@ def plan_block(
             skipped.append(Skip(address, ONE_VALUE))
             continue
         power_on = int(str(row["original"]), 16) if row.get("original") else None
-        printed = states.get(address)
-        if printed is not None and printed < 2:
-            skipped.append(Skip(address, ONE_STATE))
-            continue
-        if printed is None:
-            values, came_from = _ordered(low, high, power_on), FROM_THE_RANGE
+        cell = printed.get(address)
+        here = documents.values_printed(cell) if cell else None
+        if here == documents.EVERY_VALUE:
+            cell, here = None, None
+        if here is not None:
+            # Never outside what the address was measured to take: a page and a unit
+            # disagreeing is a finding, not a licence to write past the range.
+            within = sorted(value for value in here if low <= value <= high)
+            if not within:
+                skipped.append(Skip(address, NONE_OF_ITS_PRINTED_VALUES))
+                continue
+            if len(within) < 2:
+                skipped.append(Skip(address, ONE_PRINTED_VALUE))
+                continue
+            values = _ordered(within[0], within[-1], power_on)
+            came_from = FROM_THE_PRINTED_VALUES
         else:
-            # Never outside what the address was measured to take: a page and a
-            # unit disagreeing is a finding, not a licence to write past the range.
-            top = min(printed - 1, high)
-            values, came_from = _ordered(max(low, 0), top, power_on), FROM_THE_PRINTED_STATES
+            values, came_from = _ordered(low, high, power_on), FROM_THE_RANGE
         asks.append(
             Ask(
                 address=address,
@@ -218,7 +236,7 @@ def plan_block(
                 accepted_range=str(row.get("range", "")),
                 power_on=power_on,
                 values_from=came_from,
-                printed_states=printed,
+                printed_values=cell,
             )
         )
     for address in _unread(record, prefix):
@@ -238,15 +256,15 @@ def plan_block(
 
 
 def summarise(asks: list[Ask], skipped: list[Skip]) -> str:
-    from_page = sum(a.values_from == FROM_THE_PRINTED_STATES for a in asks)
+    from_page = sum(a.values_from == FROM_THE_PRINTED_VALUES for a in asks)
     head = f"{len(asks)} addresses to ask, {len(skipped)} that cannot be"
     if from_page:
-        head += f", {from_page} of them at states a page printed rather than at what they accept"
+        head += f", {from_page} of them at values a page printed rather than at what they accept"
     lines = [head]
     for ask in asks:
         mark = "" if ask.range_established else "   (range never established)"
-        if ask.printed_states is not None:
-            mark += f"   ({ask.printed_states} printed states)"
+        if ask.printed_values is not None:
+            mark += f"   (printed {ask.printed_values})"
         lines.append(
             f"  {ask.address}  {ask.values[0]:3d} against {ask.values[1]:3d}"
             f"   accepts {ask.accepted_range or '?'}{mark}"

@@ -296,3 +296,46 @@ def test_a_run_that_held_nothing_carries_no_note_about_holding(tmp_path) -> None
 
     assert found["coverage"]["held_still"] == []
     assert "why_held_still" not in found["coverage"]
+
+
+def test_a_null_taken_at_a_value_the_page_gives_the_parameter_none_of_is_not_a_null() -> None:
+    """The store's accepted range is not the engine's reachable settings.
+
+    This block accepts and reads back every seven-bit value at every one of its
+    addresses, so a pair taken from the ends of what it accepts never clamps and
+    nothing about such a null looks wrong. What is wrong is visible only over the
+    class: not one parameter of it was ever heard.
+    """
+    record = _record("40 03 03", audible=False)
+    verdict = efxparams.row("01 55", 0, 0, record, None, "00/01/02/03/04/05")
+    assert verdict["verdict"] == efxparams.OUTSIDE_ITS_PRINTED_VALUES
+    assert verdict["asked_inside_its_printed_values"] is False
+    assert verdict["printed_values"] == "00/01/02/03/04/05", "the cell, not what it expands to"
+
+
+def test_two_printed_values_that_are_nought_and_127_leave_the_pair_asked_correctly() -> None:
+    """A rotor's speed switch is printed as those two bytes, so the ends of the
+    accepted range are exactly its two settings -- and a rule counting the names
+    between the slashes would withdraw a slot that was asked right."""
+    record = _record("40 03 0D", audible=False)
+    verdict = efxparams.row("01 22", 10, 0, record, None, "00/7F")
+    assert verdict["verdict"] == efxparams.NULL
+    assert verdict["asked_inside_its_printed_values"] is True
+
+
+def test_a_parameter_pointed_at_a_conversion_table_narrows_nothing() -> None:
+    """That column gives a setting at every one of the 128 values. A cell holding a
+    slash -- `315-8k/Bypass` in the setting column beside it -- is not a list."""
+    record = _record("40 03 13", audible=False)
+    verdict = efxparams.row("04 03", 16, 0, record, None, "*8")
+    assert verdict["verdict"] == efxparams.NULL
+    assert verdict["asked_inside_its_printed_values"] is True
+
+
+def test_a_parameter_heard_at_such_a_pair_was_still_heard() -> None:
+    """Only a null taken there is uninterpretable. A tone gain's values run from 52
+    to 76 and the pair asked was 0 and 127, and it was audible anyway."""
+    record = _record("40 03 13", audible=True, shape=True, level=True)
+    verdict = efxparams.row("01 00", 16, 64, record, None, "34–4C")
+    assert verdict["verdict"] == efxparams.AUDIBLE
+    assert verdict["asked_inside_its_printed_values"] is False

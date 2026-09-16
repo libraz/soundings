@@ -16,6 +16,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from . import documents
+
 #: How the parameters were asked. Stated in the record because a verdict holds in
 #: the state it was taken in, and this state is most of what makes it readable.
 METHOD = (
@@ -65,16 +67,17 @@ WHY_SILENT_PAIR = (
     "again at a pair where both settings sound."
 )
 
-#: An address whose pair named a value its parameter has no state for.
-WHY_OUTSIDE_ITS_STATES = (
+#: An address whose pair named a value the page gives its parameter none of.
+WHY_OUTSIDE_ITS_PRINTED_VALUES = (
     "The pair was the two ends of what this address was measured to accept, and this address "
-    "accepts every seven-bit value while its parameter is printed with a short list of states. "
-    "So one of the two settings names no state of it, and whatever the engine did with that "
-    "value is not one of this parameter's settings. Read as a null it would say the parameter "
-    "does nothing; what it says is that the pair was not two of its settings. Two such "
-    "parameters asked again at two of their own states, under the same note and the same "
-    "routing that had returned the null, were both audible at once -- a reverb type at "
-    "twenty-nine decibels over its own yardstick and a vowel at forty-four."
+    "accepts every seven-bit value while the page gives its parameter fewer -- a list of "
+    "states, or a run between two ends that are not nought and 127. So one of the two settings "
+    "names a value the parameter is not printed as having, and whatever the engine did with it "
+    "is not one of this parameter's settings. Read as a null it would say the parameter does "
+    "nothing; what it says is that the pair was not two of its settings. Two such parameters "
+    "asked again at two of their own, under the same note and the same routing that had "
+    "returned the null, were both audible at once -- a reverb type at twenty-nine decibels "
+    "over its own yardstick and a vowel at forty-four."
 )
 
 #: What a pass at two settings does not establish.
@@ -88,12 +91,12 @@ LIMITS = (
     "end of its range would read as inaudible here.",
     "That a parameter which broke its own yardstick does nothing besides. Whatever else it "
     "does sits behind the thing that removed the yardstick.",
-    "How many states a parameter has, where a row carries `printed_states`. That count was "
-    "read off a page and never measured here, and on this unit the page belongs to a "
-    "neighbouring model because this one's own effect list has not been read. It decides "
-    "nothing about what was heard: it only separates a slot whose pair named two of its "
-    "states from one whose pair named a value it has none for, and a slot of the second kind "
-    "is reported as unasked rather than as answering nothing.",
+    "Which values a parameter has, where a row carries `printed_values`. Those were read off "
+    "this unit's own effect list and never measured here, and a page can be wrong about a "
+    "part. They decide nothing about what was heard: they only separate a slot whose pair "
+    "named two of the parameter's own values from one whose pair named a value the page gives "
+    "it none of, and a slot of the second kind is reported as unasked rather than as "
+    "answering nothing.",
 )
 
 #: An address whose settings were never separable, so nothing was asked of it.
@@ -162,7 +165,7 @@ AUDIBLE = "audible"
 NULL = "not audible under the note asked"
 UNREADABLE = "started something that does not repeat"
 NO_YARDSTICK = "no yardstick under the note asked, so not asked"
-OUTSIDE_ITS_STATES = "asked at a value its parameter has no state for, so not asked"
+OUTSIDE_ITS_PRINTED_VALUES = "asked at a value its parameter is not printed as having, so not asked"
 
 #: Repeatability worse than this leaves a setting with no usable yardstick of its
 #: own, so a verdict resting on it is reported with the asymmetry rather than as a
@@ -174,19 +177,32 @@ def _first(record: dict) -> dict:
     return record["by_stimulus"][0]
 
 
-def asked_outside_its_states(record: dict, printed_states: int | None) -> bool:
-    """Whether either setting names a value the parameter has no printed state for.
+def asked_outside_its_printed_values(record: dict, printed_values: str | None) -> bool:
+    """Whether either setting names a value the page gives this parameter none of.
 
     Only the pair is read, not the verdict: a parameter heard at such a pair was
     still heard, and only a null taken there is uninterpretable.
+
+    Read off the value column the page prints rather than off a count of the names
+    in its setting column, which is what separates three kinds of parameter a count
+    gets wrong. A rotor's two speeds are the bytes 0 and 127, so the pair the stage
+    asked is exactly its two states. A tone gain is a run from 52 to 76, so neither
+    end of the pair is a value it has, and no count of names would have said so
+    because the setting column prints a range of decibels and no names at all. And
+    a damping frequency printed `315-8k/Bypass` has a slash in its setting column
+    and is not a list of anything -- its value column refers the reader to a table
+    of 128 entries.
     """
-    if not printed_states:
+    if not printed_values:
         return False
-    return any(int(v) > printed_states - 1 for v in record.get("values", []))
+    here = documents.values_printed(printed_values)
+    if here is None or here == documents.EVERY_VALUE:
+        return False
+    return any(int(value) not in here for value in record.get("values", []))
 
 
 def _verdict(
-    record: dict, stimulus: dict, outside_its_states: bool = False
+    record: dict, stimulus: dict, outside_its_printed_values: bool = False
 ) -> tuple[str, str | None]:
     """What this address answered, and the sentence that qualifies it.
 
@@ -207,8 +223,8 @@ def _verdict(
     if not record["audible"]:
         # Read before the null for the same reason the refusal above is: the two
         # arrive the same way, and only one of them is a fact about the parameter.
-        if outside_its_states:
-            return OUTSIDE_ITS_STATES, WHY_OUTSIDE_ITS_STATES
+        if outside_its_printed_values:
+            return OUTSIDE_ITS_PRINTED_VALUES, WHY_OUTSIDE_ITS_PRINTED_VALUES
         return NULL, None
     heard_as_a_difference = stimulus.get("changed_the_shape") or stimulus.get("changed_the_level")
     if not heard_as_a_difference:
@@ -227,11 +243,11 @@ def row(
     default: int,
     record: dict,
     withdrawn: dict | None,
-    printed_states: int | None = None,
+    printed_values: str | None = None,
 ) -> dict:
     """One parameter's verdict, with the figures a reader needs to check it."""
     stimulus = _first(record)
-    outside = asked_outside_its_states(record, printed_states)
+    outside = asked_outside_its_printed_values(record, printed_values)
     verdict, why = _verdict(record, stimulus, outside)
     out = {
         "type": type_id,
@@ -251,9 +267,12 @@ def row(
         "changed_the_shape": stimulus.get("changed_the_shape"),
         "changed_the_level": stimulus.get("changed_the_level"),
     }
-    if printed_states is not None:
-        out["printed_states"] = printed_states
-        out["asked_inside_its_states"] = not outside
+    if printed_values is not None:
+        # Kept as the page sets it rather than as the values it expands to. What a
+        # reader has to be able to check is the cell, and a set of numbers here would
+        # be this module's reading of it standing where the reading's input belongs.
+        out["printed_values"] = printed_values
+        out["asked_inside_its_printed_values"] = not outside
     if why:
         out["why"] = why
     if withdrawn:
@@ -330,7 +349,7 @@ def read_directory(
     prepared: list[dict],
     supersede: dict[str, str] | None = None,
     slots: list[str] | None = None,
-    states: dict[str, int] | None = None,
+    printed: dict[str, str] | None = None,
 ) -> dict:
     """Assemble from a directory of per-address contrast records.
 
@@ -346,14 +365,15 @@ def read_directory(
     are passed in rather than derived here because which address is which slot is
     a fact about the unit being measured.
 
-    `states` names, by address, how many states a parameter is printed with. It
+    `printed` names, by address, the value column an effect list prints against a
+    parameter. It
     decides nothing about what was heard: a null taken at a value the parameter
     has no state for is reported as a slot nobody asked rather than as a slot
     that answered nothing.
     """
     where = Path(where)
     supersede = supersede or {}
-    states = states or {}
+    printed = printed or {}
     superseding = {str(Path(p).resolve()) for p in supersede.values()}
     # Keyed by the address the record states rather than by the file name, so a
     # run asked again writes a second file without becoming a second parameter.
@@ -396,7 +416,7 @@ def read_directory(
         if record.get("refused"):
             refused.append({"parameter": slot, "address": address, **record["refused"]})
             continue
-        rows.append(row(type_id, slot, defaults[slot], record, withdrawn, states.get(address)))
+        rows.append(row(type_id, slot, defaults[slot], record, withdrawn, printed.get(address)))
     coverage = None
     if slots:
         coverage = {

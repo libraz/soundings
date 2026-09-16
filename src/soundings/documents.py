@@ -920,6 +920,53 @@ def _effect_groups(text: str) -> list[int]:
     return opens
 
 
+#: A byte as the value column of an effect list prints one.
+_PRINTED_BYTE = r"[0-9A-F]{2}"
+
+#: A run of byte values the column gives the two ends of: `34-4C`, a gain over
+#: twenty-five of them. The printing uses an en dash for some and a hyphen for
+#: others, and nothing distinguishes the two.
+_PRINTED_SPAN = re.compile(rf"^({_PRINTED_BYTE})[-–]({_PRINTED_BYTE})$")
+
+#: The byte values the column names one by one: `00/01/02/03/04`, five vowels.
+#: Not always a run from nought -- a rotor's two speeds are `00/7F`.
+_PRINTED_LIST = re.compile(rf"^{_PRINTED_BYTE}(?:/{_PRINTED_BYTE})+$")
+
+#: A column of the conversion grid, named by the number printed over it.
+_PRINTED_COLUMN = re.compile(r"^\*(\d+)$")
+
+#: How many values a byte has, and so how many a parameter pointed at a column of
+#: the conversion grid reaches: that grid gives a setting at every one of them.
+EVERY_VALUE = frozenset(range(128))
+
+
+def values_printed(values_hex: str) -> frozenset[int] | None:
+    """Which byte values an effect list's value column gives a parameter, if it does.
+
+    Three shapes and one referral. A span gives the two ends of a run; a list gives
+    the values one at a time; a `*n` refers to a column of the conversion grid,
+    which gives a setting at every one of the 128 and so narrows nothing.
+
+    This is what a page states and not what an address accepts, and the two are not
+    the same claim. A write probe measures the store: on this family's effect block
+    it accepts and reads back every seven-bit value at every address, including the
+    addresses whose parameter the page gives twenty-five values or two. So the
+    accepted range cannot say which values are a setting of the parameter, and this
+    can -- as far as a page can say anything.
+
+    None where the column holds something none of the three shapes covers, which is
+    not the same as a parameter with no values: it is a cell nobody has read yet.
+    """
+    if _PRINTED_COLUMN.match(values_hex):
+        return EVERY_VALUE
+    span = _PRINTED_SPAN.match(values_hex)
+    if span:
+        return frozenset(range(int(span.group(1), 16), int(span.group(2), 16) + 1))
+    if _PRINTED_LIST.match(values_hex):
+        return frozenset(int(value, 16) for value in values_hex.split("/"))
+    return None
+
+
 def _where_labelled(text: str, label: str) -> list[int]:
     """Every printed column a cell holding exactly this label begins at, once each."""
     found: list[int] = []
