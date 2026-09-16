@@ -39,6 +39,8 @@
       "40 03 03",
       "--supersede",
       "40 03 11=.cache/enum-states/01-71/40-03-11.json",
+      "--supersede",
+      "40 03 03=.cache/one-setting-twice/40-03-03.json",
       "--prepare",
       "40 03 00=01 71",
       "--prepare",
@@ -46,7 +48,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-params/01-71.json"
     ],
-    "measured_at": "2026-09-16T09:09:11+00:00",
+    "measured_at": "2026-09-16T14:47:20+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -77,9 +79,8 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "asked twice at one setting of its parameter, so not asked": 1,
+    "audible": 2,
     "not audible under the note asked": 18,
-    "audible": 1,
     "asked": 20
   },
   "coverage": {
@@ -99,31 +100,38 @@
       "address": "40 03 03",
       "default": 64,
       "asked_at": [
-        127,
-        0
+        64,
+        127
       ],
-      "audible": false,
-      "verdict": "asked twice at one setting of its parameter, so not asked",
+      "audible": true,
+      "verdict": "audible",
       "conclusive": true,
       "takes_per_setting": 4,
       "each_setting_unrepeatable_db": [
-        -41.69,
-        -41.21
+        -41.13,
+        -45.18
       ],
-      "same_setting_residual_db": -39.72,
-      "across_setting_residual_db": -40.1,
-      "across_setting_level_db": 0.016,
-      "noise_floor_db": -48.38,
-      "changed_the_shape": false,
+      "same_setting_residual_db": -39.81,
+      "across_setting_residual_db": -13.4,
+      "across_setting_level_db": -2.153,
+      "noise_floor_db": -50.48,
+      "changed_the_shape": true,
       "changed_the_level": false,
       "printed_values": "*13",
       "asked_inside_its_printed_values": true,
-      "the_pair_names_one_setting": true,
+      "the_pair_names_one_setting": false,
       "printed_settings": [
-        "R180(=L180)",
-        "L180(=R180)"
+        "0",
+        "R180(=L180)"
       ],
-      "why": "Both settings name the same setting of the parameter. The page's value column refers this address to a column of the conversion grid, that column comes back to where it started, and the grid prints each of the two ends as equal to the other -- which is the page saying the byte's two ends are one place. So the two sets of takes are takes of one setting and they differ by what a setting differs from itself by, which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that it was asked twice in the same place. Asked again at the value the unit powers up holding against one end."
+      "withdrawn_pair": {
+        "values": [
+          127,
+          0
+        ],
+        "why": "Both settings name the same setting of the parameter. The page's value column refers this address to a column of the conversion grid, that column comes back to where it started, and the grid prints each of the two ends as equal to the other -- which is the page saying the byte's two ends are one place. So the two sets of takes are takes of one setting and they differ by what a setting differs from itself by, which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that it was asked twice in the same place. Asked again at the value the unit powers up holding against one end."
+      },
+      "why_asked_again": "Both settings name the same setting of the parameter. The page's value column refers this address to a column of the conversion grid, that column comes back to where it started, and the grid prints each of the two ends as equal to the other -- which is the page saying the byte's two ends are one place. So the two sets of takes are takes of one setting and they differ by what a setting differs from itself by, which is the number a null is. Read as a null it would say the parameter does nothing; what it says is that it was asked twice in the same place. Asked again at the value the unit powers up holding against one end."
     },
     {
       "type": "01 71",
