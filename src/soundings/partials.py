@@ -209,15 +209,79 @@ def levels(
         window = int(round(periods * rate / carrier_hz))
         step = max(1, rate // int(LEVEL_AT_HZ))
         return [_one(body, rate, carrier_hz * k, window, step)[3] for k in range(1, count + 1)]
+    standing = standing_at(body, rate, carrier_hz=carrier_hz, count=count)
+    return None if standing is None else [float(np.abs(value)) for value in standing]
+
+
+def standing_at(
+    body: np.ndarray, rate: int, *, carrier_hz: float, count: int
+) -> np.ndarray | None:
+    """The same reading as `levels`, with the phase of each order kept.
+
+    `levels` is the size of this and nothing else. They are one function because they
+    are one measurement: a demodulation returns a size and an angle together, and two
+    routines that each did half of it would be two places for the filter to drift
+    apart in.
+
+    The angle is what says which *way* an order points, and a size series cannot say
+    it. Fed one steady tone, a curve with no state in it returns every order either in
+    phase with the carrier or exactly against it and never between -- so the angles
+    are a test of that and not only a quantity. They are returned raw, against the
+    take's own clock. When the note started is arbitrary and rotates order `k` by `k`
+    times one angle, so a reader who wants a figure that does not depend on it has to
+    take that out; `efxorders` does, and states how.
+
+    Whole-stretch only, and there is no `periods` here. An angle read through a boxcar
+    one carrier period long is the angle of whatever that lobe collected, which on a
+    driven carrier is the orders *and* what sits between them.
+    """
+    body = np.asarray(body, dtype=np.float64)
+    if carrier_hz <= 0 or body.size < 2:
+        return None
     at = np.arange(body.size, dtype=np.float64) / rate
-    shaped = body * np.hanning(body.size)
-    weight = float(np.sum(np.hanning(body.size)))
+    window = np.hanning(body.size)
+    shaped = body * window
+    weight = float(np.sum(window))
     if weight <= 0:
         return None
-    return [
-        float(np.abs(np.sum(shaped * np.exp(-2j * np.pi * carrier_hz * k * at))) / weight)
-        for k in range(1, count + 1)
-    ]
+    return np.array(
+        [
+            np.sum(shaped * np.exp(-2j * np.pi * carrier_hz * k * at)) / weight
+            for k in range(1, count + 1)
+        ]
+    )
+
+
+def between_orders(
+    body: np.ndarray, rate: int, *, carrier_hz: float, count: int
+) -> list[float] | None:
+    """The floor each order stands in, read halfway to the next one on the same take.
+
+    The filter's own width is one over the stretch, so pointed away from every line it
+    returns the noise in that bandwidth, in that take, at that moment. A floor taken
+    from another take is a floor from another moment, and a floor stated as so many
+    decibels under the first order is not a floor at all.
+
+    **Halfway between and not a few widths off.** A Hann taper's skirt is still tens of
+    decibels up half a dozen widths out, so a floor read there is a reading of the
+    window on the order itself and rises and falls with it rather than with the noise.
+    The quieter of the two sides is taken, because the point is to find the emptiest
+    place the take offers rather than to average what is in it.
+    """
+    body = np.asarray(body, dtype=np.float64)
+    if carrier_hz <= 0 or body.size < 2:
+        return None
+    out = []
+    for k in range(1, count + 1):
+        sides = [
+            standing_at(body, rate, carrier_hz=carrier_hz * (k + away), count=1)
+            for away in (-0.5, 0.5)
+        ]
+        found = [float(np.abs(side[0])) for side in sides if side is not None]
+        if not found:
+            return None
+        out.append(min(found))
+    return out
 
 
 def project(series: np.ndarray, at: np.ndarray, grid: np.ndarray) -> np.ndarray:

@@ -340,3 +340,76 @@ def test_the_series_says_how_much_level_it_still_carried_at_the_last_order(
     # This curve has nothing above its third order, so the series has fallen away
     # long before the count runs out.
     assert first["settled_at_the_top_db"] < -80.0
+
+
+def turns_of(body: np.ndarray) -> list[float]:
+    """The turn of each order of one body, through the reader's own routine."""
+    return efxorders._turns(body, SR, CARRIER, 4)
+
+
+def a_curve(*, hz: float = CARRIER, seconds: float = SECONDS) -> np.ndarray:
+    at = np.arange(int(seconds * SR), dtype=np.float64) / SR
+    body = np.sin(2 * np.pi * hz * at)
+    return body + SQUARED * body**2 + CUBED * body**3
+
+
+def test_a_stage_with_no_state_in_it_turns_no_order_off_the_carrier() -> None:
+    """The reading that separates a curve from something with a memory.
+
+    A memoryless curve fed one steady tone can only return each order along the
+    carrier or exactly against it. Anything between is not a curve, and a reading of
+    sizes cannot see the difference at all -- which is the whole reason the turns are
+    in the record beside the sizes.
+    """
+    turns = turns_of(a_curve())
+    for turn in turns[:3]:
+        assert min(abs(turn), abs(abs(turn) - 180.0)) < 0.5
+
+
+def test_a_filter_after_the_curve_shows_in_the_turns() -> None:
+    """And the sizes it moves do not say it was a filter rather than a curve.
+
+    A one-pole whose corner sits among the orders turns each of them by its own angle
+    there, which is not the same angle times the order, so nothing that removes a
+    delay can absorb it. This is the case the turns are a detector for.
+    """
+    body = a_curve()
+    keep = float(np.exp(-2 * np.pi * (CARRIER * 1.5) / SR))
+    after = np.zeros_like(body)
+    for i in range(1, after.size):
+        after[i] = keep * after[i - 1] + (1.0 - keep) * body[i]
+    assert max(abs(turn) for turn in turns_of(after)[1:3]) > 10.0
+
+
+def test_the_turns_do_not_depend_on_when_the_note_was_struck() -> None:
+    """Which is what makes them a figure about the stage rather than about the take.
+
+    Two takes of one setting begin at whatever moment the recorder opened, and that
+    rotates order `k` by `k` times one angle. A reading that did not take it out would
+    return a different series every take and none of them would mean anything.
+    """
+    whole = a_curve(seconds=SECONDS + 1.0)
+    early = whole[: int(SECONDS * SR)]
+    # A shift that is not a whole number of carrier periods, so the carrier's own
+    # angle really does move.
+    late = whole[int(0.37 * SR) : int(0.37 * SR) + int(SECONDS * SR)]
+    for one, other in zip(turns_of(early), turns_of(late), strict=True):
+        assert min(abs(one - other), 360.0 - abs(one - other)) < 1.0
+
+
+def test_an_order_carries_the_floor_it_is_standing_in(one_curve) -> None:
+    """Read in its own take, so no other take has to be believed about the moment.
+
+    The silence take is the other floor and it is a different claim: that one says
+    what the chain returns with nothing played, this one says what this take holds
+    between its own orders. Where the chain was quieter than the silence happened to
+    be, this is the tighter of the two, and it is the one that needs no second take.
+    """
+    found = read(one_curve)
+    first = next(row for row in found["readings"] if row["value"] == 0)
+    beside = first["floor_between_orders_db"]
+    assert beside is not None
+    # The three orders this curve makes stand clear of it by a very long way, and the
+    # orders above them are float residue and do not.
+    assert min(first["orders_db"][k] - beside[k] for k in range(3)) > 100.0
+    assert first["orders_db"][3] - beside[3] < 60.0

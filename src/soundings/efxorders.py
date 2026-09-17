@@ -121,7 +121,22 @@ LIMITS = (
     "ratios, which is why `orders_db` is beside `under_the_first_db` on every reading "
     "here and on every take in `silence`: the check is each order against the same order "
     "of the silence, and it is left for a reader to make rather than folded into a "
-    "verdict. "
+    "verdict. `floor_between_orders_db` is the same check made without another take at "
+    "all -- the noise halfway to the next order, read through the same filter, in this "
+    "take and at this moment -- and it is the tighter of the two wherever the chain was "
+    "quieter than the silence take happened to be. "
+    "`orders_turn_deg` is which way each order points against the carrier, with the "
+    "take's own clock taken out by subtracting `k` times the first order's own angle. "
+    "Nothing is fitted in it and it does not depend on when the note was struck. Fed one "
+    "steady tone, a stage with no state in it returns every order either along the "
+    "carrier or exactly against it, so a turn that is neither nought nor a hundred and "
+    "eighty is a reading -- but of what, this record does not say: a state inside the "
+    "stage and a filter after it that is not flat across the orders both do it, and "
+    "separating those needs a second carrier at another frequency. The whole series is "
+    "determined only up to which way round the carrier was fed in, which adds `k` times "
+    "a hundred and eighty to every turn and leaves the distance from nought-or-against "
+    "unchanged -- so that distance is the reading and the value is not. A turn on an "
+    "order that is at its own floor is the floor's angle and means nothing. "
     "`orders` is a resolution. Where `settled_at_the_top_db` is not near nothing the "
     "series was still carrying level at the last order read, so the total below it is a "
     "lower bound on what the stage returned rather than the whole of it, and the answer "
@@ -306,6 +321,8 @@ def _read(
     found: dict[int, list[float] | None] = {}
     heard: dict[int, float] = {}
     at: dict[int, float | None] = {}
+    turned: dict[int, list[float] | None] = {}
+    floors: dict[int, list[float] | None] = {}
     for index in channels:
         body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
         here = fundamental(body, rate, near_hz=carrier_hz)
@@ -315,9 +332,55 @@ def _read(
             if here is None
             else partials.levels(body, rate, carrier_hz=here, count=orders, periods=periods)
         )
+        # The angles and the floor beside each order come from the whole-stretch
+        # reading whatever `periods` says, because neither means anything through a
+        # boxcar one carrier period wide: that lobe is a whole fundamental across, so
+        # it collects what sits between the orders along with the orders.
+        turned[index] = None if here is None else _turns(body, rate, here, orders)
+        floors[index] = (
+            None
+            if here is None
+            else partials.between_orders(body, rate, carrier_hz=here, count=orders)
+        )
         heard[index] = round(_loudness_db(samples, index), 2)
     own = int(np.argmax(takes.channel_levels(samples)))
-    return found, heard, at, round(hold, 3), own
+    return found, heard, at, round(hold, 3), own, turned, floors
+
+
+def _turns(body, rate, carrier_hz: float, orders: int) -> list[float] | None:
+    """Each order's angle against the carrier's, with the take's own clock taken out.
+
+    The note started whenever it started, and that rotates order `k` by `k` times one
+    angle. So does every delay between the stage and the converter. Neither is a fact
+    about the effect, and
+
+        turn_k = angle_k - k * angle_1
+
+    removes both exactly. There is nothing fitted in it: the first order fixes the
+    angle, every branch of it gives the same answer because the branches differ by `k`
+    times a whole turn, and the figure is the same whenever the note was struck.
+
+    What it is for: fed one steady tone, a stage with no state in it returns each order
+    either along the carrier or exactly against it, so **every turn is nought or a
+    hundred and eighty degrees and none is between**. A degree between them is a
+    reading, and what it is a reading of -- a state in the stage, or a filter after it
+    that is not flat across the orders -- this cannot separate and does not claim to.
+
+    The series is determined up to one thing, and it is the same thing a reading of
+    sizes is already up to: whether the curve was fed the carrier or its negative. That
+    adds `k` times a hundred and eighty to every turn, which leaves the distance from
+    nought-or-against unchanged and is why the distance is the test rather than the
+    value.
+    """
+    standing = partials.standing_at(body, rate, carrier_hz=carrier_hz, count=orders)
+    if standing is None:
+        return None
+    first = float(np.angle(standing[0]))
+    out = []
+    for k, value in enumerate(standing, start=1):
+        turn = float(np.angle(value)) - k * first
+        out.append(round(float(np.degrees((turn + np.pi) % (2.0 * np.pi) - np.pi)), 1))
+    return out
 
 
 def _matched(pattern, listed: dict, files: list[str]) -> list[tuple[str, dict, object]]:
@@ -392,20 +455,26 @@ def read_directory(
     wanted = (used,) if beside is None else (used, beside)
     elsewhere: list[str] = []
 
+    turns_at: dict[str, list[float] | None] = {}
+    floor_at: dict[str, list[float] | None] = {}
+
     def one(name: str, entry: dict):
-        found, heard, at, hold, own = _read(
+        found, heard, at, hold, own, turned, floors = _read(
             where, name, entry,
             channels=wanted, carrier_hz=carrier_hz, orders=orders, periods=periods,
             lead_s=lead_s, trim_s=trim_s, hold_s=hold_s,
         )
         if own != used and name not in elsewhere:
             elsewhere.append(name)
+        turns_at[name] = turned[used]
+        floor_at[name] = floors[used]
         return found, heard, at, hold
 
-    def said(sizes: list[float] | None) -> dict:
+    def said(sizes: list[float] | None, name: str | None = None) -> dict:
         if sizes is None:
             return {"under_the_first_db": None, "all_of_them_db": None, "orders_db": None}
         under = under_the_first(sizes)
+        beside = floor_at.get(name)
         return {
             "under_the_first_db": under,
             "all_of_them_db": all_of_them_db(under),
@@ -416,6 +485,19 @@ def read_directory(
             # not above what the same chain returned there with nothing played, and
             # that comparison cannot be made between two ratios.
             "orders_db": [round(float(20.0 * np.log10(max(size, 1e-30))), 2) for size in sizes],
+            # Which way each order points, against the carrier, with the take's own
+            # clock removed. Nought or a hundred and eighty on every order is what a
+            # stage with no state in it returns when it is fed one steady tone.
+            "orders_turn_deg": turns_at.get(name),
+            # And the floor each order is standing in, read halfway to the next order
+            # in the same take. This is what says an order is an order: a figure, in
+            # this take, at this moment, rather than a number of decibels chosen under
+            # the first order or a floor carried in from the silence of another take.
+            "floor_between_orders_db": (
+                None
+                if beside is None
+                else [round(float(20.0 * np.log10(max(v, 1e-30))), 2) for v in beside]
+            ),
         }
 
     quiets: list[str] = []
@@ -427,7 +509,7 @@ def read_directory(
             quiets.append(name)
             found, heard, at, _hold = one(name, entry)
             heard_at.append(heard[used])
-            silent.append({**said(found[used]), "heard_db": heard[used], "take": name})
+            silent.append({**said(found[used], name), "heard_db": heard[used], "take": name})
         if heard_at:
             floor_heard = round(float(np.mean(heard_at)), 1)
 
@@ -524,7 +606,7 @@ def read_directory(
             controls.append(
                 {
                     **at_value,
-                    **said(found[used]),
+                    **said(found[used], name),
                     **against(under_the_first(found[used]) if found[used] else None),
                     **apart(found),
                     "fundamental_hz": at[used],
@@ -542,7 +624,7 @@ def read_directory(
         found, heard, at, hold = one(name, entry)
         reading = {
             VALUE: int(got.group(VALUE)),
-            **said(found[used]),
+            **said(found[used], name),
             **against(under_the_first(found[used]) if found[used] else None),
             **apart(found),
             "fundamental_hz": at[used],
