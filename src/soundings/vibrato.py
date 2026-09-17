@@ -421,6 +421,7 @@ def record(
     control: dict | None,
     control_taken_from: str | None,
     channel: dict | None = None,
+    subject: dict[str, str] | None = None,
 ) -> dict:
     """The record a vibrato run leaves: its rows, and what the control does not reach.
 
@@ -442,6 +443,7 @@ def record(
     ]
     return {
         "takes": takes,
+        **(subject or {}),
         "method": METHOD,
         "searched_hz": list(searched_hz),
         **({"channel": channel} if channel is not None else {}),

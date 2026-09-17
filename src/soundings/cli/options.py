@@ -58,6 +58,57 @@ def add_out(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--out", help="write the result as JSON")
 
 
+def add_subject(
+    parser: argparse.ArgumentParser, *, required: bool = False, slot: bool = True
+) -> None:
+    """What the takes were of, so the record says it in a field and not in its name.
+
+    This one is genuinely the same everywhere, which is the bar this module sets:
+    a type is two hex bytes and a slot is an address, on every stage that reads a
+    parameter setting by setting. It is here rather than repeated because a stage
+    that spelled it differently would file its records under a subject no query
+    reaches, and that is not a style complaint -- a unit's listing groups records
+    by subject, and a record naming none is one no coverage figure can count.
+
+    `slot` is off for the few stages that read a whole type rather than one of its
+    parameters. Optional by default because the older stages have records that
+    were made before the flag existed, and a flag made required today would make
+    those commands unable to re-publish the very records that need it.
+    """
+    parser.add_argument(
+        "--type",
+        metavar="MSB LSB",
+        required=required,
+        help="the insertion effect type the takes were made under. Without it the "
+        "record says what a parameter did without saying whose parameter it was, and "
+        "a directory of them is identified by its filenames -- which is an index kept "
+        "by hand beside records that could carry it themselves",
+    )
+    if slot:
+        parser.add_argument(
+            "--slot",
+            metavar="ADDR",
+            required=required,
+            help="the address that was swept, for the same reason",
+        )
+
+
+def subject_of(args: argparse.Namespace) -> dict[str, str]:
+    """The subject flags as the fields a record carries, dropping what was not given.
+
+    The other half of `add_subject`, and here rather than in each handler so that
+    the flag and the field cannot be spelled differently: a record filed under
+    `slot` where its siblings say `address` is a record the unit's listing groups
+    on its own, which reads as a parameter nobody measured.
+
+    A field left out rather than written empty. An index shows an empty subject as
+    a record that states none, which is true of a record that was never told and
+    false of one told nothing.
+    """
+    found = {"type": getattr(args, "type", None), "address": getattr(args, "slot", None)}
+    return {key: value for key, value in found.items() if value}
+
+
 def add_audio(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--audio", help="substring of the audio input device name")
 

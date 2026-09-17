@@ -51,6 +51,7 @@ def register(sub) -> None:
         "otherwise reports a confident delay at whatever lag its noise peaked at. Every "
         "stimulus in the catalogue records 0.6",
     )
+    options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_motion)
 
@@ -61,14 +62,7 @@ def register(sub) -> None:
     )
     p.add_argument("dry", help="a take with the effect off")
     p.add_argument("wet", help="the same note with the effect on")
-    p.add_argument(
-        "--type",
-        metavar="MSB LSB",
-        help="the insertion effect type the pair was taken under. Without it the record "
-        "says how long a tail took to die without saying whose tail it was, and a "
-        "directory of them is identified by its filenames -- which is an index kept by "
-        "hand beside records that could carry it themselves",
-    )
+    options.add_subject(p)
     p.add_argument(
         "--floor",
         nargs=2,
@@ -112,6 +106,7 @@ def register(sub) -> None:
         default="third-octave",
         help="which set of bands the phase is reported over",
     )
+    options.add_subject(p)
     p.add_argument(
         "--block",
         type=float,
@@ -193,6 +188,7 @@ def cmd_motion(args: argparse.Namespace) -> int:
     report.write_json(
         args.out,
         {
+            **options.subject_of(args),
             "dry": str(args.dry),
             "wet": str(args.wet),
             "sample_rate": rate,
@@ -236,7 +232,7 @@ def cmd_decay(args: argparse.Namespace) -> int:
     report.write_json(
         args.out,
         {
-            "type_id": args.type,
+            **options.subject_of(args),
             "dry": str(args.dry),
             "wet": str(args.wet),
             "floor_from": [str(p) for p in args.floor] if args.floor else None,
@@ -285,6 +281,7 @@ def cmd_phase(args: argparse.Namespace) -> int:
     report.write_json(
         args.out,
         {
+            **options.subject_of(args),
             "dry": str(args.dry),
             "wet": str(args.wet),
             "control_from": [str(p) for p in args.control] if args.control else None,

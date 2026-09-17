@@ -66,6 +66,7 @@ def register(sub) -> None:
         default=6.0,
         help="dB a movement must clear the steadier setting's own scatter by",
     )
+    options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_balance)
 
@@ -90,6 +91,7 @@ def register(sub) -> None:
         default=6.0,
         help="dB a setting's spread across the bands must clear the flattest setting's by",
     )
+    options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_balance_bands)
 
@@ -110,6 +112,7 @@ def register(sub) -> None:
         default=6.0,
         help="dB a movement must clear the steadiest setting's own scatter by",
     )
+    options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_arrival)
 
@@ -129,6 +132,7 @@ def register(sub) -> None:
     )
     p.add_argument("--min-rate", type=float, default=0.5, help="slowest modulation searched, Hz")
     p.add_argument("--max-rate", type=float, default=15.0, help="fastest modulation searched, Hz")
+    options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_vibrato)
 
@@ -208,6 +212,7 @@ def cmd_balance(args: argparse.Namespace) -> int:
         args.out,
         {
             "takes": str(args.takes),
+            **options.subject_of(args),
             "method": balance.METHOD,
             "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
             "why_the_pair_is_in_input_order": balance.WHY_THE_PAIR_IS_IN_INPUT_ORDER,
@@ -250,6 +255,7 @@ def cmd_balance_bands(args: argparse.Namespace) -> int:
         args.out,
         {
             "takes": str(args.takes),
+            **options.subject_of(args),
             "method": balance.SEPARATION_BY_BAND,
             "why_the_windows_are_one_length": balance.WHY_THE_WINDOWS_ARE_ONE_LENGTH,
             "why_a_flat_separation_is_the_yardstick": (
@@ -298,6 +304,7 @@ def cmd_arrival(args: argparse.Namespace) -> int:
         args.out,
         {
             "takes": str(args.takes),
+            **options.subject_of(args),
             "method": arrival.METHOD,
             "why_the_windows_are_one_length": arrival.WHY_THE_WINDOWS_ARE_ONE_LENGTH,
             "why_the_windows_are_measured_and_not_printed": (
@@ -367,6 +374,7 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
         vibrato.record(
             by_setting,
             takes=str(args.takes),
+            subject=options.subject_of(args),
             searched_hz=search,
             control=vouched,
             control_taken_from=quiet,

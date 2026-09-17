@@ -156,3 +156,31 @@ def test_a_record_naming_no_subject_is_listed_and_not_counted() -> None:
     assert found["naming_no_subject"] == ["balance/40-11.json"]
     assert found["subjects"] == 1
     assert found["records_naming_one"] == 1
+
+
+def test_one_field_under_two_names_is_one_subject() -> None:
+    """`decay` and `phase` spell the effect type `type_id` and five other stages
+    spell it `type`, and both hold `01 00`. Left apart, a phase reading and a band
+    profile of one parameter read as two parameters -- a coverage figure counting
+    the same work twice and the same gap not at all."""
+    stages = {
+        "phase": [
+            {"file": "phase/a.json", "about": {"type_id": "01 00", "address": "40 03 03"}}
+        ],
+        "efx-bands": [
+            {"file": "efx-bands/b.json", "about": {"type": "01 00", "address": "40 03 03"}}
+        ],
+    }
+    found = index.subjects(stages)
+    assert found["subjects"] == 1
+    assert list(found["by_subject"]) == ["address 40 03 03, type 01 00"]
+
+
+def test_the_stages_that_read_one_parameter_can_all_say_which() -> None:
+    """A flag on four siblings and not the fifth is a defect in the fifth: the
+    fifth's records are the ones no coverage figure reaches."""
+    parser = build_parser()
+    sub = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+    for name in ("balance", "balance-bands", "arrival", "vibrato", "motion", "decay", "phase"):
+        flags = {s for action in sub.choices[name]._actions for s in action.option_strings}
+        assert {"--type", "--slot"} <= flags, f"{name} cannot say what its takes were of"

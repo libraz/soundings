@@ -111,8 +111,7 @@ def register(sub) -> None:
         "takes",
         help="a directory of takes with the takes-manifest.json a --save run wrote",
     )
-    p.add_argument("--type", metavar="MSB LSB", help="the type the takes were made under")
-    p.add_argument("--slot", metavar="ADDR", help="the address that was swept")
+    options.add_subject(p)
     p.add_argument(
         "--setting",
         required=True,
@@ -188,9 +187,7 @@ def register(sub) -> None:
         "takes",
         help="a directory of takes with the takes-manifest.json a --save run wrote",
     )
-    p.add_argument("--type", metavar="MSB LSB", required=True,
-                   help="the type the takes were made under")
-    p.add_argument("--slot", metavar="ADDR", required=True, help="the address that was swept")
+    options.add_subject(p, required=True)
     p.add_argument(
         "--setting",
         required=True,
@@ -255,10 +252,7 @@ def register(sub) -> None:
         "takes",
         help="a directory of takes with the takes-manifest.json a --save run wrote",
     )
-    p.add_argument(
-        "--type", required=True, metavar="MSB LSB", help="the type the takes were made under"
-    )
-    p.add_argument("--slot", required=True, metavar="ADDR", help="the address that was swept")
+    options.add_subject(p, required=True)
     p.add_argument(
         "--setting",
         required=True,
@@ -381,10 +375,7 @@ def register(sub) -> None:
         "takes",
         help="a directory of takes with the takes-manifest.json a --save run wrote",
     )
-    p.add_argument(
-        "--type", required=True, metavar="MSB LSB", help="the type the takes were made under"
-    )
-    p.add_argument("--slot", required=True, metavar="ADDR", help="the address that was swept")
+    options.add_subject(p, required=True)
     p.add_argument(
         "--setting",
         required=True,
@@ -480,9 +471,7 @@ def register(sub) -> None:
         "one insertion effect type, with no machine attached",
     )
     p.add_argument("records", help="a directory of contrast records, one per parameter address")
-    p.add_argument(
-        "--type", required=True, metavar="MSB LSB", help="the type they were taken under"
-    )
+    options.add_subject(p, required=True, slot=False)
     p.add_argument(
         "--types-from", required=True, help="an efx-type-map record, for the settings it loads"
     )
