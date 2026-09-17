@@ -1,168 +1,604 @@
 {
- "inference": {
-  "schema_version": 1,
-  "unit_id": "roland-sc8850-01",
-  "state": "standing",
-  "made_at": "2026-09-17T01:41:17.370558+00:00",
-  "made_by": "backup/what-the-first-lo-fi-is-made-of.py, backup/the-first-lo-fi-with-its-filters-open.py, backup/write-the-lo-fi-degrader-inference.py",
-  "rounds": 1,
-  "about": {
-   "scope": "unit",
-   "types": [
-    "01 72"
-   ],
-   "addresses": [
-    "40 03 04"
-   ]
-  }
- },
- "claim": "The byte printed `Lo-Fi Type 1 - 6 - 9` at `40 03 04` on type `01 72` is not one quantity with nine values. It is two fields of one byte, and the two are told apart by where they show rather than by any arithmetic on the index.\n\n**What the low field does is hold the signal for a whole number of samples.** Read with the type's own filters parked where they were measured to pass the most, the nine entries are three behaviours each appearing three times, grouped by the index modulo three: inside a group the profiles agree to 0.34 dB at the median against a floor of 0.25 dB, and the nearest two entries from different groups differ by 0.66 dB. One group is flat. The second puts a null 19 dB deep at 10679 Hz and the third one 26 dB deep at 8000 Hz, and all three entries of each group put it in the same band. A null is what holding a sample for a whole number of periods does and a low pass table is not: the third group's profile comes back up after its null and goes down again at the top of the band set, which is a second null where a hold of four samples has to have one and where nothing with one corner does.\n\n**And the two nulls measure the rate rather than assuming it.** They stand in the ratio 1.3348, which is 5.0 bands of this set apart and is four to three to inside one of them. Read as a hold of three samples and a hold of four, they imply a rate of 32036 Hz and 32000 Hz -- two numbers this record produces independently of each other, agreeing to a tenth of a per cent, and agreeing with the 32000 Hz this archive reads on classes that share none of these takes.\n\n**What the high field does is not visible in a signal that fills the path.** At full level the index divided by three changes nothing: entries six, seven and eight sit on top of entries nought, one and two to inside the floor. Read through the narrowest entry of the type's own pre filter, which is thirty decibels down, the last three entries stand 7.6 dB louder than the first six while the first six stand together. Something that adds to a quiet signal and not to a loud one is what this reading can say; which of the things that do is not read here.",
- "named": "a sample-and-hold rate in the low field of a byte, and something else in the high",
- "rests_on": {
-  "measurements": [
-   {
-    "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
-    "keys": [
-     "readings[value=1].largest_at_hz",
-     "readings[value=4].largest_at_hz",
-     "readings[value=7].largest_at_hz"
-    ],
-    "values": [
-     37.2,
-     29.5,
-     26.3
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
-    "keys": [
-     "readings[value=2].largest_at_hz",
-     "readings[value=5].largest_at_hz",
-     "readings[value=8].largest_at_hz"
-    ],
-    "values": [
-     49.6,
-     49.6,
-     49.6
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
-    "keys": [
-     "readings[value=0].above_the_silence_db",
-     "readings[value=3].above_the_silence_db",
-     "readings[value=6].above_the_silence_db"
-    ],
-    "values": [
-     77.5,
-     77.5,
-     77.5
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-in-twelfths.json",
-    "keys": [
-     "readings[value=0].above_the_silence_db",
-     "readings[value=3].above_the_silence_db",
-     "readings[value=6].above_the_silence_db"
-    ],
-    "values": [
-     48.2,
-     48.2,
-     55.8
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-in-twelfths.json",
-    "keys": [
-     "readings[value=2].above_the_silence_db",
-     "readings[value=5].above_the_silence_db",
-     "readings[value=8].above_the_silence_db"
-    ],
-    "values": [
-     48.6,
-     48.6,
-     56.2
-    ]
-   }
-  ],
-  "document_rows": [
-   {
-    "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-    "rows": [
-     "Lo-Fi 1, parameter 2, Lo-Fi Type, 1 - 6 - 9",
-     "Lo-Fi 1, parameter 1, Pre Filter, 1 - 2 - 6",
-     "Lo-Fi 1, parameter 3, Post Filter, 1 - 2 - 6"
-    ],
-    "why": "That the byte has nine printed positions and that the page gives them no quantity, no unit and no conversion column -- which is why what they are is a thing only a measurement can say. The two filters are cited because where they were parked is what decides which of this byte's two fields a reading can see, and the page gives those no quantity either."
-   }
-  ],
-  "era_priors": [
-   {
-    "claim": "A lo-fi effect of this period reduces a rate by holding a sample rather than by filtering and resampling.",
-    "why": "A hold is a counter and a register. Filtering to the new rate and back costs a filter per rate and buys a result the effect exists to avoid -- the aliasing and the stepping are the sound being asked for.",
-    "would_be_wrong_if": "The profiles showed one corner and no null, or a null with nothing above it."
-   }
-  ],
-  "community": []
- },
- "adds": "The records say what each of the nine entries did to each band, under two parkings of the type's own filters. What is read out of them here is that the nine are three behaviours by the index modulo three, that the three are holds of one, three and four samples, what rate that implies, and that a second field of the byte shows only when the signal is small. The records name no hold, no rate and no field.",
- "alternatives": [
-  {
-   "reading": "A table of low-pass filters rather than a hold, whose entries happen to land near a third and a quarter of the rate.",
-   "candidate": null,
-   "standing": false,
-   "ruled_out_by": "The second null. The group holding four samples comes back up after its null at 8000 Hz and falls again to -2.87, -3.93, -4.27 dB at the top band of the set, which is twice its first null and is where a hold of four has its second zero. A low pass with one corner does not return, and a low pass deep enough to make a notch that deep does not come back up at all."
-  },
-  {
-   "reading": "The field that only shows on a quiet signal is a bit depth, rather than a noise source of its own at a fixed level.",
-   "candidate": null,
-   "standing": true,
-   "separated_by": {
-    "observable": "How the added noise moves when the signal moves. A quantiser's noise is fixed by the step and does not follow the signal down until the signal reaches the step; a generator at a fixed level does not follow it at all. Read as a partial survey rather than as bands, at several levels of the same stimulus, with the type's own generators at nothing.",
-    "predicts": {
-     "a bit depth": "Noise that stays put as the signal falls and then coarsens the signal itself, with harmonics of the stimulus appearing rather than a flat floor.",
-     "a generator at a fixed level": "A floor that stays put and no harmonics of the stimulus."
-    },
-    "sensitivity_here": "7.6 dB, which is how far the last three entries lifted a signal thirty decibels down. What separates the two readings is whether that lift carries harmonics of the stimulus, and a band reading cannot tell a harmonic from a floor.",
-    "margin": 5,
-    "run": {
-     "stage": "efx-partials",
-     "types": [
-      "01 72"
-     ],
-     "addresses": [
-      "40 03 04"
-     ],
-     "minutes": 15,
-     "why": "The three entries of the high field at three levels of one stimulus, with the low field held at its flat value so that no hold is putting energy where a harmonic would be read."
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-17T01:41:17.370558+00:00",
+    "made_by": "backup/what-the-first-lo-fi-is-made-of.py, backup/the-first-lo-fi-with-its-filters-open.py, backup/write-the-lo-fi-degrader-inference.py, backup/fold-in-what-the-quiet-field-turned-out-to-be.py",
+    "rounds": 2,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 72"
+      ],
+      "addresses": [
+        "40 03 04"
+      ]
     }
-   }
   },
-  {
-   "reading": "The rate the nulls imply is not the engine's own rate but a rate this effect resamples to.",
-   "candidate": null,
-   "standing": true,
-   "equivalent_under_this_test": true,
-   "separated_by": {
-    "observable": "Nothing in these takes. What the nulls fix is the period the hold repeats at, and a hold of three samples at the engine's rate and a hold of one sample at a third of it put their zeros in the same place.",
-    "predicts": {
-     "the engine's rate": "These nulls.",
-     "a rate of this effect's own": "The same nulls."
+  "claim": "The byte printed `Lo-Fi Type 1 - 6 - 9` at `40 03 04` on type `01 72` is not one quantity with nine values. It is two fields of one byte, and the two are told apart by where they show rather than by any arithmetic on the index.\n\n**What the low field does is hold the signal for a whole number of samples.** Read with the type's own filters parked where they were measured to pass the most, the nine entries are three behaviours each appearing three times, grouped by the index modulo three: inside a group the profiles agree to 0.34 dB at the median against a floor of 0.25 dB, and the nearest two entries from different groups differ by 0.66 dB. One group is flat. The second puts a null 19 dB deep at 10679 Hz and the third one 26 dB deep at 8000 Hz, and all three entries of each group put it in the same band. A null is what holding a sample for a whole number of periods does and a low pass table is not: the third group's profile comes back up after its null and goes down again at the top of the band set, which is a second null where a hold of four samples has to have one and where nothing with one corner does.\n\n**And the two nulls measure the rate rather than assuming it.** They stand in the ratio 1.3348, which is 5.0 bands of this set apart and is four to three to inside one of them. Read as a hold of three samples and a hold of four, they imply a rate of 32036 Hz and 32000 Hz -- two numbers this record produces independently of each other, agreeing to a tenth of a per cent, and agreeing with the 32000 Hz this archive reads on classes that share none of these takes.\n\n**What the high field does is not visible in a signal that fills the path.** At full level the index divided by three changes nothing: entries six, seven and eight sit on top of entries nought, one and two to inside the floor. Read through the narrowest entry of the type's own pre filter, which is thirty decibels down, the last three entries stand 7.6 dB louder than the first six while the first six stand together. Something that adds to a quiet signal and not to a loud one is what this reading can say; which of the things that do is not read here.\n\n**What the high field does is quantise.** The three entries were asked as orders of a held tone rather than as bands, at three levels of one stimulus spanning 36.1 decibels at the effect's own input, with the low field flat so that no hold was putting energy where an order would be read and the type's own filters left where they pass the most. Above the thirteenth order, the last entry stands 38 to 42 decibels over the first while the floor between those same orders rises only 21 to 30. The lift is 11 to 17 decibels more on the orders than between them, so what is added sits on whole multiples of the stimulus and is not a floor under it. A noise source at a fixed level puts nothing on the orders; a quantiser working on a periodic signal puts all of it there, because its error repeats with the signal.\n\n**And it does not follow the signal down.** Read against the converter rather than against the first order, the added series sits at -84 to -87 decibels across the whole 36.1 decibels of input, which is a step fixed in the signal's own units and not a proportion of it. Against the tone it is therefore loudest where the tone is quietest, which is what the band profile saw as a lift that only shows on a quiet signal.\n\n**Two of the field's three values are one value.** Its first and second differ by at most 6.2 decibels over these orders, against repeats of one setting that themselves fail to agree by 13.1 at the closest of the three levels: the two settings are nearer to each other than the run can separate, and the whole of the lift is the third value by itself. What the page prints as nine entries is a hold with three values and a quantiser with two.",
+  "named": "a sample-and-hold rate in the low field of a byte, and something else in the high",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
+        "keys": [
+          "readings[value=1].largest_at_hz",
+          "readings[value=4].largest_at_hz",
+          "readings[value=7].largest_at_hz"
+        ],
+        "values": [
+          37.2,
+          29.5,
+          26.3
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
+        "keys": [
+          "readings[value=2].largest_at_hz",
+          "readings[value=5].largest_at_hz",
+          "readings[value=8].largest_at_hz"
+        ],
+        "values": [
+          49.6,
+          49.6,
+          49.6
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-with-the-filters-open-in-twelfths.json",
+        "keys": [
+          "readings[value=0].above_the_silence_db",
+          "readings[value=3].above_the_silence_db",
+          "readings[value=6].above_the_silence_db"
+        ],
+        "values": [
+          77.5,
+          77.5,
+          77.5
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-in-twelfths.json",
+        "keys": [
+          "readings[value=0].above_the_silence_db",
+          "readings[value=3].above_the_silence_db",
+          "readings[value=6].above_the_silence_db"
+        ],
+        "values": [
+          48.2,
+          48.2,
+          55.8
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-72-04-the-degrader-in-twelfths.json",
+        "keys": [
+          "readings[value=2].above_the_silence_db",
+          "readings[value=5].above_the_silence_db",
+          "readings[value=8].above_the_silence_db"
+        ],
+        "values": [
+          48.6,
+          48.6,
+          56.2
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-127.json",
+        "keys": [
+          "readings[value=6].under_the_first_db",
+          "readings[value=0].under_the_first_db",
+          "readings[value=6].floor_between_orders_db",
+          "readings[value=0].floor_between_orders_db"
+        ],
+        "values": [
+          [
+            -49.82,
+            -38.63,
+            -47.84,
+            -40.86,
+            -54.35,
+            -44.96,
+            -65.65,
+            -70.25,
+            -72.99,
+            -59.68,
+            -68.91,
+            -67.13,
+            -76.2,
+            -57.62,
+            -74.01,
+            -56.37,
+            -75.33,
+            -56.6,
+            -83.36,
+            -58.34,
+            -76.47,
+            -59.62,
+            -77.11,
+            -71.37,
+            -72.19,
+            -68.73,
+            -74.51,
+            -60.96,
+            -91.29,
+            -56.79,
+            -81.27
+          ],
+          [
+            -49.69,
+            -38.2,
+            -47.61,
+            -41.13,
+            -54.25,
+            -44.76,
+            -65.73,
+            -66.09,
+            -69.03,
+            -58.53,
+            -69.51,
+            -76.65,
+            -99.69,
+            -92.39,
+            -100.23,
+            -92.76,
+            -111.19,
+            -93.53,
+            -106.34,
+            -99.54,
+            -108.3,
+            -100.54,
+            -102.39,
+            -103.89,
+            -105.62,
+            -111.04,
+            -114.53,
+            -117.23,
+            -123.6,
+            -105.95,
+            -110.62
+          ],
+          [
+            -111.33,
+            -98.97,
+            -98.97,
+            -105.66,
+            -107.94,
+            -107.94,
+            -112.77,
+            -112.77,
+            -111.11,
+            -110.83,
+            -108.38,
+            -112.1,
+            -119.82,
+            -119.82,
+            -112.59,
+            -109.97,
+            -109.97,
+            -113.13,
+            -113.13,
+            -113.49,
+            -113.49,
+            -112.2,
+            -111.52,
+            -113.83,
+            -114.64,
+            -120.1,
+            -120.89,
+            -120.89,
+            -109.48,
+            -111.39,
+            -117.22,
+            -117.22
+          ],
+          [
+            -116.5,
+            -98.55,
+            -98.55,
+            -112.33,
+            -112.33,
+            -108.75,
+            -119.37,
+            -119.37,
+            -119.24,
+            -119.24,
+            -114.25,
+            -129.96,
+            -133.81,
+            -133.81,
+            -130.28,
+            -131.67,
+            -131.67,
+            -132.48,
+            -132.48,
+            -128.78,
+            -132.23,
+            -146.61,
+            -146.61,
+            -137.75,
+            -137.56,
+            -140.52,
+            -140.52,
+            -153.52,
+            -153.52,
+            -145.46,
+            -155.44,
+            -155.44
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-040.json",
+        "keys": [
+          "readings[value=6].under_the_first_db",
+          "readings[value=0].under_the_first_db",
+          "readings[value=6].floor_between_orders_db",
+          "readings[value=0].floor_between_orders_db"
+        ],
+        "values": [
+          [
+            -48.95,
+            -43.96,
+            -47.73,
+            -40.29,
+            -56.23,
+            -46.76,
+            -58.96,
+            -54.19,
+            -61.21,
+            -52.75,
+            -60.77,
+            -60.34,
+            -58.18,
+            -61.55,
+            -55.35,
+            -71.0,
+            -57.62,
+            -67.53,
+            -58.79,
+            -60.47,
+            -62.45,
+            -56.01,
+            -68.34,
+            -58.11,
+            -64.05,
+            -59.79,
+            -59.95,
+            -64.53,
+            -58.97,
+            -66.19,
+            -58.84
+          ],
+          [
+            -49.4,
+            -42.15,
+            -47.97,
+            -42.04,
+            -54.19,
+            -44.49,
+            -66.24,
+            -68.55,
+            -68.85,
+            -59.37,
+            -69.85,
+            -77.42,
+            -103.3,
+            -93.97,
+            -98.85,
+            -97.87,
+            -107.04,
+            -100.99,
+            -118.68,
+            -98.29,
+            -116.47,
+            -102.53,
+            -103.91,
+            -108.56,
+            -113.02,
+            -109.98,
+            -106.41,
+            -109.94,
+            -122.69,
+            -110.61,
+            -130.85
+          ],
+          [
+            -107.83,
+            -99.21,
+            -99.21,
+            -102.86,
+            -109.61,
+            -109.61,
+            -106.97,
+            -108.08,
+            -117.15,
+            -117.15,
+            -111.76,
+            -113.22,
+            -113.22,
+            -111.42,
+            -106.96,
+            -106.96,
+            -106.22,
+            -111.78,
+            -111.78,
+            -118.17,
+            -118.17,
+            -108.43,
+            -108.56,
+            -116.15,
+            -117.93,
+            -117.93,
+            -111.02,
+            -111.02,
+            -108.4,
+            -119.47,
+            -119.47,
+            -110.03
+          ],
+          [
+            -117.38,
+            -99.33,
+            -99.33,
+            -112.78,
+            -112.78,
+            -109.41,
+            -121.01,
+            -121.01,
+            -120.66,
+            -120.66,
+            -114.86,
+            -130.27,
+            -133.4,
+            -133.4,
+            -131.4,
+            -131.66,
+            -131.66,
+            -131.68,
+            -132.94,
+            -132.94,
+            -129.69,
+            -143.67,
+            -149.53,
+            -149.53,
+            -134.8,
+            -142.8,
+            -146.91,
+            -164.19,
+            -164.19,
+            -148.47,
+            -148.47,
+            -158.54
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-016.json",
+        "keys": [
+          "readings[value=6].under_the_first_db",
+          "readings[value=0].under_the_first_db",
+          "readings[value=6].floor_between_orders_db",
+          "readings[value=0].floor_between_orders_db"
+        ],
+        "values": [
+          [
+            -34.0,
+            -39.77,
+            -32.26,
+            -45.69,
+            -36.25,
+            -42.11,
+            -41.73,
+            -53.1,
+            -46.3,
+            -52.57,
+            -35.43,
+            -46.71,
+            -34.4,
+            -42.66,
+            -41.28,
+            -60.54,
+            -31.04,
+            -43.54,
+            -40.39,
+            -42.88,
+            -37.16,
+            -54.03,
+            -32.5,
+            -60.02,
+            -35.3,
+            -46.81,
+            -41.99,
+            -48.12,
+            -40.77,
+            -49.59,
+            -50.06
+          ],
+          [
+            -49.79,
+            -43.14,
+            -47.6,
+            -42.32,
+            -54.34,
+            -44.15,
+            -65.6,
+            -69.43,
+            -68.38,
+            -59.6,
+            -69.83,
+            -76.77,
+            -91.81,
+            -82.88,
+            -95.29,
+            -86.69,
+            -97.82,
+            -90.18,
+            -91.91,
+            -87.73,
+            -107.02,
+            -89.8,
+            -101.04,
+            -89.44,
+            -98.84,
+            -96.36,
+            -103.55,
+            -92.52,
+            -99.68,
+            -90.11,
+            -100.6
+          ],
+          [
+            -117.64,
+            -112.37,
+            -112.37,
+            -126.03,
+            -126.03,
+            -121.65,
+            -121.65,
+            -116.0,
+            -125.2,
+            -125.2,
+            -117.21,
+            -117.21,
+            -124.99,
+            -124.99,
+            -123.22,
+            -111.08,
+            -111.43,
+            -113.82,
+            -113.82,
+            -111.63,
+            -111.63,
+            -110.06,
+            -111.82,
+            -121.36,
+            -121.36,
+            -113.61,
+            -115.03,
+            -115.03,
+            -110.81,
+            -110.81,
+            -122.07,
+            -122.07
+          ],
+          [
+            -131.6,
+            -111.49,
+            -111.49,
+            -122.66,
+            -122.66,
+            -120.76,
+            -138.05,
+            -138.05,
+            -135.27,
+            -135.27,
+            -126.89,
+            -136.88,
+            -146.9,
+            -146.9,
+            -135.45,
+            -142.23,
+            -142.23,
+            -152.56,
+            -152.56,
+            -146.24,
+            -138.54,
+            -136.32,
+            -139.47,
+            -144.54,
+            -146.97,
+            -146.97,
+            -148.47,
+            -148.47,
+            -143.35,
+            -150.47,
+            -150.47,
+            -144.71
+          ]
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "Lo-Fi 1, parameter 2, Lo-Fi Type, 1 - 6 - 9",
+          "Lo-Fi 1, parameter 1, Pre Filter, 1 - 2 - 6",
+          "Lo-Fi 1, parameter 3, Post Filter, 1 - 2 - 6"
+        ],
+        "why": "That the byte has nine printed positions and that the page gives them no quantity, no unit and no conversion column -- which is why what they are is a thing only a measurement can say. The two filters are cited because where they were parked is what decides which of this byte's two fields a reading can see, and the page gives those no quantity either."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A lo-fi effect of this period reduces a rate by holding a sample rather than by filtering and resampling.",
+        "why": "A hold is a counter and a register. Filtering to the new rate and back costs a filter per rate and buys a result the effect exists to avoid -- the aliasing and the stepping are the sound being asked for.",
+        "would_be_wrong_if": "The profiles showed one corner and no null, or a null with nothing above it."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The records say what each of the nine entries did to each band, under two parkings of the type's own filters. What is read out of them here is that the nine are three behaviours by the index modulo three, that the three are holds of one, three and four samples, what rate that implies, and that a second field of the byte shows only when the signal is small. The records name no hold, no rate and no field.",
+  "alternatives": [
+    {
+      "reading": "A table of low-pass filters rather than a hold, whose entries happen to land near a third and a quarter of the rate.",
+      "candidate": null,
+      "standing": false,
+      "ruled_out_by": "The second null. The group holding four samples comes back up after its null at 8000 Hz and falls again to -2.87, -3.93, -4.27 dB at the top band of the set, which is twice its first null and is where a hold of four has its second zero. A low pass with one corner does not return, and a low pass deep enough to make a notch that deep does not come back up at all."
     },
-    "sensitivity_here": "Not applicable: the two readings differ in what is counted and not in what comes out. What makes the first worth writing is that the number it gives agrees with what other classes on this unit read from takes these share nothing with.",
-    "margin": 0
-   }
-  }
- ],
- "refuted_by": "Two entries from different groups modulo three agreeing to inside the run's floor, or two entries within one group differing by more than it. Or a null at a frequency the ratio three to four cannot reach, which would make the two groups two filters rather than two holds.",
- "could_have_been_refuted_by": "The run that made it. Nine entries were asked and the grouping was not put in by hand: it is what the pairwise medians returned. The first reading of the same byte, taken through the narrowest pre filter, returned a different grouping -- nought with three, one with four, two with five, and six, seven and eight each on their own -- and that is the reading this one had to overturn rather than agree with.",
- "what_it_would_change": [],
- "what_this_does_not_settle": [
-  "Which of the three holds the flat group is. A hold of one sample and a hold of two are the same reading here: the second puts its only null at sixteen kilohertz, which is the last band of the set and the top of what this band set can say.",
-  "Where the nulls are, beyond the band they fall in. A twelfth-octave band is about six per cent wide, so each null is read to that and the rate each implies is read to that. What is better determined than either is their ratio, which is five bands and is four to three to inside one band.",
-  "What the high field is. That it shows on a quiet signal and not a loud one is measured; that this is a bit depth is the reading the era makes likely and a band profile cannot separate from a noise source.",
-  "Why two of the high field's three values look alike. Entries nought to five stand together through the narrow pre filter and only the last three lift, so either the field is not three even steps or two of its steps are finer than this reading reaches.",
-  "What the two filters are. They were parked, not read, and the pass that swept them read each through the other and through this byte -- which is the same trap this byte's first reading fell into."
- ]
+    {
+      "reading": "The field that only shows on a quiet signal is a bit depth, rather than a noise source of its own at a fixed level.",
+      "candidate": null,
+      "standing": false,
+      "separated_by": {
+        "observable": "How the added noise moves when the signal moves. A quantiser's noise is fixed by the step and does not follow the signal down until the signal reaches the step; a generator at a fixed level does not follow it at all. Read as a partial survey rather than as bands, at several levels of the same stimulus, with the type's own generators at nothing.",
+        "predicts": {
+          "a bit depth": "Noise that stays put as the signal falls and then coarsens the signal itself, with harmonics of the stimulus appearing rather than a flat floor.",
+          "a generator at a fixed level": "A floor that stays put and no harmonics of the stimulus."
+        },
+        "sensitivity_here": "7.6 dB, which is how far the last three entries lifted a signal thirty decibels down. What separates the two readings is whether that lift carries harmonics of the stimulus, and a band reading cannot tell a harmonic from a floor.",
+        "margin": 5,
+        "run": {
+          "stage": "efx-orders",
+          "types": [
+            "01 72"
+          ],
+          "addresses": [
+            "40 03 04"
+          ],
+          "minutes": 15,
+          "why": "The three entries of the high field at three levels of one stimulus, with the low field held at its flat value so that no hold is putting energy where a harmonic would be read."
+        }
+      },
+      "taken_up_by": "The measurement came back for it and the claim above now says it. Read as orders at three levels of one stimulus, what the last entry adds stands on whole multiples of the stimulus rather than between them, and its level against the converter does not move as the signal falls. A generator at a fixed level predicts neither, and it is the first of them that no band profile could have been asked. Not `ruled_out_by`: this is the reading that turned out to be right. The entry named `efx-partials` for the stage, which reads what modulates a held tone rather than what is added to it; `efx-orders` reads both of the predictions in one record, and is what was run."
+    },
+    {
+      "reading": "The rate the nulls imply is not the engine's own rate but a rate this effect resamples to.",
+      "candidate": null,
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": "Nothing in these takes. What the nulls fix is the period the hold repeats at, and a hold of three samples at the engine's rate and a hold of one sample at a third of it put their zeros in the same place.",
+        "predicts": {
+          "the engine's rate": "These nulls.",
+          "a rate of this effect's own": "The same nulls."
+        },
+        "sensitivity_here": "Not applicable: the two readings differ in what is counted and not in what comes out. What makes the first worth writing is that the number it gives agrees with what other classes on this unit read from takes these share nothing with.",
+        "margin": 0
+      }
+    }
+  ],
+  "refuted_by": "Two entries from different groups modulo three agreeing to inside the run's floor, or two entries within one group differing by more than it. Or a null at a frequency the ratio three to four cannot reach, which would make the two groups two filters rather than two holds. Or the last entry's added series standing no higher over the floor between the orders than on them, which is what a noise source of its own would return.",
+  "could_have_been_refuted_by": "The run that made it. Nine entries were asked and the grouping was not put in by hand: it is what the pairwise medians returned. The first reading of the same byte, taken through the narrowest pre filter, returned a different grouping -- nought with three, one with four, two with five, and six, seven and eight each on their own -- and that is the reading this one had to overturn rather than agree with.",
+  "what_it_would_change": [],
+  "what_this_does_not_settle": [
+    "Which of the three holds the flat group is. A hold of one sample and a hold of two are the same reading here: the second puts its only null at sixteen kilohertz, which is the last band of the set and the top of what this band set can say.",
+    "Where the nulls are, beyond the band they fall in. A twelfth-octave band is about six per cent wide, so each null is read to that and the rate each implies is read to that. What is better determined than either is their ratio, which is five bands and is four to three to inside one band.",
+    "How many bits the quantiser leaves. What is measured is that a step exists and that it is fixed in the signal's own units; its size in bits is not read here, and reading it would want the added series matched against a rendered quantiser rather than compared between two settings of the byte.",
+    "Why the field's first two values are one value. That they return the same series is measured at three levels here and the page prints them as separate entries; whether that is a table with a repeated entry or a field narrower than the index suggests is not something the output can be asked.",
+    "What the two filters are. They were parked, not read, and the pass that swept them read each through the other and through this byte -- which is the same trap this byte's first reading fell into."
+  ]
 }
