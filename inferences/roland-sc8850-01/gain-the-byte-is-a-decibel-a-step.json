@@ -4,7 +4,7 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T22:27:41.001308+00:00",
-    "made_by": "backup/how-big-is-one-step-of-a-gain.py, backup/read-the-cut-side-again.py, backup/does-the-dent-move-with-the-width.py, backup/the-tone-control-nobody-prints.py, backup/build-gain-models.py, backup/run-gain-reproduce.py, backup/where-the-dent-lives.py, backup/write-gain-inference.py",
+    "made_by": "backup/how-big-is-one-step-of-a-gain.py, backup/read-the-cut-side-again.py, backup/does-the-dent-move-with-the-width.py, backup/the-tone-control-nobody-prints.py, backup/build-gain-models.py, backup/run-gain-reproduce.py, backup/where-the-dent-lives.py, backup/write-gain-inference.py, backup/is-a-multis-equaliser-the-single-types-section.py, backup/the-same-section-five-bytes-along.py, backup/fold-in-what-the-byte-does-outside-its-window.py",
     "rounds": 1,
     "about": {
       "scope": "class",
@@ -12,13 +12,17 @@
       "types": [
         "01 00",
         "01 42",
-        "01 50"
+        "01 50",
+        "04 01",
+        "04 03"
       ],
       "addresses": [
         "40 03 04",
         "40 03 06",
         "40 03 09",
+        "40 03 0A",
         "40 03 0C",
+        "40 03 0F",
         "40 03 13",
         "40 03 14"
       ]
@@ -565,6 +569,176 @@
           ]
         ],
         "why": "The same for the high shelf."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-01-0F-is-a-multis-equaliser-the-single-types-section-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=40].largest_db",
+          "readings[value=52].largest_db",
+          "readings[value=58].largest_db",
+          "readings[value=70].largest_db",
+          "readings[value=76].largest_db",
+          "readings[value=90].largest_db",
+          "readings[value=127].largest_db",
+          "held",
+          "settings_asked"
+        ],
+        "values": [
+          -11.67,
+          -11.79,
+          -11.73,
+          -5.92,
+          5.9,
+          12.07,
+          12.06,
+          12.15,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 15",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 10",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          [
+            0,
+            40,
+            52,
+            58,
+            64,
+            70,
+            76,
+            90,
+            127
+          ]
+        ],
+        "why": "A mid section of a combination type, asked at the window's two ends, at six steps inside each of them, and at four settings far outside it. The type's other stages are written off rather than left where it powers them up, so the height read is the section's."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-03-0A-the-same-section-five-bytes-along-in-twelfths.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=40].largest_db",
+          "readings[value=52].largest_db",
+          "readings[value=58].largest_db",
+          "readings[value=70].largest_db",
+          "readings[value=76].largest_db",
+          "readings[value=90].largest_db",
+          "readings[value=127].largest_db",
+          "held",
+          "settings_asked"
+        ],
+        "values": [
+          -11.56,
+          -11.73,
+          -11.49,
+          -6.04,
+          6.05,
+          11.99,
+          12.03,
+          11.91,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 10",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0E",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0D",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "02"
+            }
+          ],
+          [
+            0,
+            40,
+            52,
+            58,
+            64,
+            70,
+            76,
+            90,
+            127
+          ]
+        ],
+        "why": "The same settings on a second combination type, which keeps the section five addresses lower. Its chorus and its delay are both in the output at power-on and both are closed here, and the frequency byte rests at the entry the standalone type's own width run held."
       }
     ],
     "documents": [
@@ -689,6 +863,34 @@
         "worst_db": 0.05,
         "why": "The shelf's cut at the bottom of the byte against its boost at the top, negated. On this section the two are mirrors, which is what the peaking section at one of its widths is not."
       }
+    },
+    "outside_the_window": {
+      "what": "What the byte returns four steps past each edge was the whole of the evidence for the clamp. Two more types were asked at 0, 40, 90 and 127.",
+      "records": [
+        "data/units/roland-sc8850-01/efx-bands/04-01-0F-is-a-multis-equaliser-the-single-types-section-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/04-03-0A-the-same-section-five-bytes-along-in-twelfths.json"
+      ],
+      "types": [
+        "04 01",
+        "04 03"
+      ],
+      "addresses": [
+        "40 03 0F",
+        "40 03 0A"
+      ],
+      "furthest_from_the_low_end_db": 0.24,
+      "furthest_from_the_high_end_db": 0.08,
+      "six_steps_in_reads_db_per_step": {
+        "58": [
+          0.987,
+          1.007
+        ],
+        "70": [
+          0.983,
+          1.008
+        ]
+      },
+      "read_as": "Fifty-two steps below the window and fifty-one above it, the byte returns what its nearest edge returns: 0.24 dB is the furthest any of the four low settings sits from the low edge and 0.08 dB the furthest any high one sits from the high edge, against the twentieth of a decibel three addresses agree to at the edges themselves. Six steps inside each edge the same takes return a decibel a step. So the clamp is the byte's behaviour over its whole range rather than a plateau four steps wide."
     }
   },
   "alternatives": [
@@ -707,7 +909,8 @@
       "reading": "The byte is decibels offset by sixty-four over all hundred and twenty-eight settings and the printed range is where the panel stops.",
       "candidate": "the-byte-is-decibels-over-its-whole-range",
       "standing": false,
-      "ruled_out_by": "Three settings past each end of the window return the same figure as the end itself, to within a twentieth of a decibel, on a section that reads the gain rather than a flank of it. The byte does not reach sixty-four decibels of cut; it stops at twelve and stays there."
+      "ruled_out_by": "Three settings past each end of the window return the same figure as the end itself, to within a twentieth of a decibel, on a section that reads the gain rather than a flank of it. The byte does not reach sixty-four decibels of cut; it stops at twelve and stays there.",
+      "also_refuted_by": "At byte 0 it asks for -64 dB and the section returns -11.67 and -11.56 on two types that had never been asked there. It was ruled out on the four steps past each edge, where it and the claim differ by four decibels; here they differ by fifty-two."
     },
     {
       "reading": "The twenty-five settings are a stored table of near-decibels rather than the integers, and the departures on the cut half are its entries.",
@@ -2519,6 +2722,11 @@
     {
       "what": "The eight bands of the graphic equaliser. Eight gains printed -12 - +12 with no frequency, width or count printed against any of them.",
       "bounded_by": "Nothing measured. The claim's addresses do not include them and the class does not reach them."
+    },
+    {
+      "what": "Whether the clamp is the same clamp on the addresses this class reaches that are not a peaking section's gain.",
+      "bounded_by": "Two shelves and two tone controls carry this byte and all four were read inside the window and four steps past it. What is read far outside it is two peaking sections, on two types. A shelf that let go of its end somewhere past the fourth step would not show here.",
+      "what_would": "The same four settings on one of the shelves, which is four takes under a hold this archive has already used."
     }
   ],
   "what_it_would_change": "A hundred and eighteen parameters across sixty-five types stop being unknown. Eighty-six of them are two shelves whose corners no page prints and which now have a measured profile at both of their gains' ends, taken from a type that does print its corners. A renderer that has the equaliser has the tone control."
