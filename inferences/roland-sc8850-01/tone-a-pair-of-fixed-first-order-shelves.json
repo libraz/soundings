@@ -1,276 +1,684 @@
 {
-  "inference": {
-    "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
-    "state": "standing",
-    "made_at": "2026-09-15T06:51:47.479101+00:00",
-    "made_by": "backup/is-the-shelf-the-same-shelf.py, backup/write-the-shelf-inference.py",
-    "rounds": 1,
-    "about": {
-      "scope": "unit",
-      "types": [
-        "01 42",
-        "01 50"
-      ],
-      "addresses": [
-        "40 03 13",
-        "40 03 14"
-      ]
-    }
-  },
-  "claim": "The tone controls these two types carry are one pair of first-order shelves whose corners are fixed and have no byte: a low shelf at 161 Hz and a high shelf at or above 5187 Hz. The pair is the same pair on both types -- fitted to each type on its own the low corners land 0.0 octaves apart and the high ones 0.0119, and one shared pair scores each record as well as its own fit does. The section is one pole and one zero: a unit-slope second-order shelf is two to three times worse on the median of every one of the four records and three times worse at its worst, and its worst band is in the shelf's own transition every time. The gain is not fitted here at all -- it is the window the gain class closed on, twenty-five values centred on 64 that stick at both ends, and the same window that type 01 00 was read with.",
-  "named": "a fixed first-order shelf pair, the part's tone control",
-  "rests_on": {
-    "measurements": [
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints-in-twelfths.json",
-        "keys": [
-          "readings[value=52].steepest_db_per_octave",
-          "readings[value=58].steepest_db_per_octave",
-          "readings[value=70].steepest_db_per_octave",
-          "readings[value=76].steepest_db_per_octave"
-        ],
-        "values": [
-          3.74,
-          1.93,
-          -1.95,
-          -3.53
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints-in-twelfths.json",
-        "keys": [
-          "readings[value=52].steepest_db_per_octave",
-          "readings[value=76].steepest_db_per_octave"
-        ],
-        "values": [
-          -5.73,
-          5.72
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json",
-        "keys": [
-          "readings[value=52].steepest_db_per_octave",
-          "readings[value=58].steepest_db_per_octave",
-          "readings[value=70].steepest_db_per_octave",
-          "readings[value=76].steepest_db_per_octave"
-        ],
-        "values": [
-          3.51,
-          2.05,
-          -2.06,
-          -3.45
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json",
-        "keys": [
-          "readings[value=52].steepest_db_per_octave",
-          "readings[value=76].steepest_db_per_octave"
-        ],
-        "values": [
-          -4.93,
-          5.47
-        ]
-      }
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-17T01:17:46.644825+00:00",
+  "made_by": "backup/is-the-shelf-the-same-shelf.py, backup/write-the-shelf-inference.py, backup/fold-in-the-shelf-on-four-more-front-halves.py",
+  "rounds": 2,
+  "about": {
+   "scope": "unit",
+   "types": [
+    "01 02",
+    "01 20",
+    "01 25",
+    "01 42",
+    "01 50",
+    "02 06"
+   ],
+   "addresses": [
+    "40 03 13",
+    "40 03 14"
+   ]
+  }
+ },
+ "claim": "The tone controls these two types carry are one pair of first-order shelves whose corners are fixed and have no byte: a low shelf at 161 Hz and a high shelf at or above 5187 Hz. The pair is the same pair on both types -- fitted to each type on its own the low corners land 0.0 octaves apart and the high ones 0.0119, and one shared pair scores each record as well as its own fit does. The section is one pole and one zero: a unit-slope second-order shelf is two to three times worse on the median of every one of the four records and three times worse at its worst, and its worst band is in the shelf's own transition every time. The gain is not fitted here at all -- it is the window the gain class closed on, twenty-five values centred on 64 that stick at both ends, and the same window that type 01 00 was read with. Six front halves carry one pair, and the corner is a range and not a number. Four further front halves were swept at the same two addresses, chosen for having nothing in common with the first two or with each other: 01 02 (a generator of harmonics with nothing summed in), 01 20 (eight all-pass sections turned down to the dry signal), 01 25 (an amplitude modulator at no depth), 02 06 (two blocks in series). The pair reproduces all four to a median of 0.160 dB or better against spans of twenty decibels and more, worst band 4.78 dB, and the second-order pair is beaten on every record the same way it was beaten before -- its best worst band anywhere in the six is 6.22 dB and it is inside the shelf's own transition every time. Three of the four carry no balance byte at all, so on those there is no direct half to park and what reached the gains is what the front half passed. **The corner is a range, and the round that closed this claim published it as a number.** Scanned over five octaves rather than refined around one grid point, every corner between 112 and 161 Hz fits the low shelf inside every record's own floor, and every corner between 5187 and 7880 Hz fits the high one: the widths run to 1.55 octaves and the narrowest is 0.52. The two corners the model carries sit inside those ranges and are kept, because nothing measured moves them and a second point estimate would be the same artefact with a different value. What the agreement between types is worth is that no type's range sits outside the others' -- which is what was being asked, and is now asked of six.",
+ "named": "a fixed first-order shelf pair, the part's tone control",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
     ],
-    "document_rows": [
-      {
-        "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
-        "rows": [
-          "Stereo Chorus, parameter 17, Low Gain, -12 - +12",
-          "Stereo Chorus, parameter 18, Hi Gain (High gain), -12 - +12",
-          "Stereo Delay, parameter 17, Low Gain, -12 - +12",
-          "Stereo Delay, parameter 18, Hi Gain (High gain), -12 - +12"
-        ],
-        "why": "That both types print a pair of gains and neither prints a corner for them. What corner they sit on is therefore a thing no page states, which is why these records exist -- and it is why the corners here are fitted rather than checked against a printed number."
-      }
+    "values": [
+     3.74,
+     1.93,
+     -1.95,
+     -3.53
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
     ],
-    "era_priors": [
-      {
-        "claim": "A tone control with no corner byte is a section written once with its coefficients compiled in, reached by whichever type wants one.",
-        "why": "A corner nobody can set needs no table and no runtime arithmetic, so the cheap thing is one routine with two constants in it. Two types built at different times would have no reason to land on the same two constants.",
-        "would_be_wrong_if": "A third type's tone controls came back on a different pair of corners, which would make the pair the type's and not the part's."
-      }
+    "values": [
+     -5.73,
+     5.72
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
     ],
-    "community": []
-  },
-  "adds": "The records say what each gain byte did to each band at four settings of the low control and two of the high, on two types. What is read out of them here is that those profiles are shelves, that the shelves are one pole and one zero rather than a pair, where the corners are, and that the two types' corners are the same corners. The records name no filter, no corner and no order, and say so.",
-  "alternatives": [
-    {
-      "reading": "A unit-slope second-order shelf, which is the shelf a part that already has biquads gets for free.",
-      "candidate": "tone-a-fixed-shelf-pair-order-2",
-      "standing": false,
-      "ruled_out_by": "Its worst band is in the shelf's own transition on all four records -- 6.2 to 6.6 decibels out where the first-order pair is 2.0 to 2.4 -- and it has to move the corner to get there: fitted on its own it puts the low shelf at 291 Hz against 161 and the high at 3.2 kHz against 5.2, and is still twice as far out. A slope twice as steep cannot be hidden in a corner."
-    },
-    {
-      "reading": "The pair is shared because the two types call one routine, rather than because two routines were given the same two constants.",
-      "candidate": null,
-      "standing": true,
-      "equivalent_under_this_test": true,
-      "separated_by": {
-        "observable": "Nothing this archive can ask.",
-        "predicts": {
-          "one routine": "These profiles.",
-          "two routines agreeing": "The same profiles."
-        },
-        "sensitivity_here": "Not applicable: the two readings differ in where the code is and in nothing that comes out of it.",
-        "margin": 0,
-        "why_not_separable": "The same shape recorded twice in the same archive. What the agreement does rule out is two *different* pairs, which is the thing that was worth asking: corners fitted to each type separately land 0.0 and 0.0119 octaves apart, under what either band set resolves."
-      }
-    }
+    "values": [
+     3.51,
+     2.05,
+     -2.06,
+     -3.45
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     -4.93,
+     5.47
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-02-13-the-tone-control-on-an-enhancer-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     3.61,
+     2.03,
+     -2.01,
+     -3.6
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-02-14-the-tone-control-on-an-enhancer-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     -5.72,
+     5.73
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-20-13-the-tone-control-on-an-allpass-chain-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     3.62,
+     1.95,
+     -1.99,
+     -3.59
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-20-14-the-tone-control-on-an-allpass-chain-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     -5.77,
+     5.71
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-25-13-the-tone-control-on-a-multiplier-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     3.57,
+     1.97,
+     -1.97,
+     -3.63
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-25-14-the-tone-control-on-a-multiplier-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     -5.7,
+     5.75
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/02-06-13-the-tone-control-on-a-chained-pair-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=58].steepest_db_per_octave",
+     "readings[value=70].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     3.26,
+     1.95,
+     -2.11,
+     -3.78
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/02-06-14-the-tone-control-on-a-chained-pair-in-twelfths.json",
+    "keys": [
+     "readings[value=52].steepest_db_per_octave",
+     "readings[value=76].steepest_db_per_octave"
+    ],
+    "values": [
+     -5.67,
+     5.68
+    ]
+   }
   ],
-  "reproduces": {
-    "model": "inferences/models/tone-a-fixed-shelf-pair-order-1.json",
-    "compared_against": {
-      "records": [
-        "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints-in-twelfths.json",
-        "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints-in-twelfths.json",
-        "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json",
-        "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json"
-      ],
-      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record at either of the two tone-control addresses, on whatever type",
-      "filter": {
-        "index": "data/units/roland-sc8850-01/index.json",
-        "stage": "efx-bands",
-        "address_in": [
-          "40 03 13",
-          "40 03 14"
-        ]
-      },
-      "then_dropped": [
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints.json",
-          "why": "The same takes as the twelfth-octave record beside it, read at the third-octave set. Scoring both counts one measurement twice, and the finer reading is the one that can see where a shelf turns."
-        },
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints.json",
-          "why": "The same takes as the twelfth-octave record beside it, read at the third-octave set. Scoring both counts one measurement twice, and the finer reading is the one that can see where a shelf turns."
-        }
-      ],
-      "excluded": []
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-88pro-owners-manual-en/effect-list.json",
+    "rows": [
+     "Stereo Chorus, parameter 17, Low Gain, -12 - +12",
+     "Stereo Chorus, parameter 18, Hi Gain (High gain), -12 - +12",
+     "Stereo Delay, parameter 17, Low Gain, -12 - +12",
+     "Stereo Delay, parameter 18, Hi Gain (High gain), -12 - +12"
+    ],
+    "why": "That both types print a pair of gains and neither prints a corner for them. What corner they sit on is therefore a thing no page states, which is why these records exist -- and it is why the corners here are fitted rather than checked against a printed number."
+   }
+  ],
+  "era_priors": [
+   {
+    "claim": "A tone control with no corner byte is a section written once with its coefficients compiled in, reached by whichever type wants one.",
+    "why": "A corner nobody can set needs no table and no runtime arithmetic, so the cheap thing is one routine with two constants in it. Two types built at different times would have no reason to land on the same two constants.",
+    "would_be_wrong_if": "A third type's tone controls came back on a different pair of corners, which would make the pair the type's and not the part's."
+   }
+  ],
+  "community": []
+ },
+ "adds": "The records say what each gain byte did to each band at four settings of the low control and two of the high, on two types. What is read out of them here is that those profiles are shelves, that the shelves are one pole and one zero rather than a pair, where the corners are, and that the two types' corners are the same corners. The records name no filter, no corner and no order, and say so.",
+ "alternatives": [
+  {
+   "reading": "A unit-slope second-order shelf, which is the shelf a part that already has biquads gets for free.",
+   "candidate": "tone-a-fixed-shelf-pair-order-2",
+   "standing": false,
+   "ruled_out_by": "Its worst band is in the shelf's own transition on all four records -- 6.2 to 6.6 decibels out where the first-order pair is 2.0 to 2.4 -- and it has to move the corner to get there: fitted on its own it puts the low shelf at 291 Hz against 161 and the high at 3.2 kHz against 5.2, and is still twice as far out. A slope twice as steep cannot be hidden in a corner."
+  },
+  {
+   "reading": "The pair is shared because the two types call one routine, rather than because two routines were given the same two constants.",
+   "candidate": null,
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Nothing this archive can ask.",
+    "predicts": {
+     "one routine": "These profiles.",
+     "two routines agreeing": "The same profiles."
     },
-    "domain": "dB",
-    "residual": {
+    "sensitivity_here": "Not applicable: the two readings differ in where the code is and in nothing that comes out of it.",
+    "margin": 0,
+    "why_not_separable": "The same shape recorded twice in the same archive. What the agreement does rule out is two *different* pairs, which is the thing that was worth asking: corners fitted to each type separately land 0.0 and 0.0119 octaves apart, under what either band set resolves."
+   }
+  }
+ ],
+ "reproduces": {
+  "model": "inferences/models/tone-a-fixed-shelf-pair-order-1.json",
+  "compared_against": {
+   "records": [
+    "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints-in-twelfths.json",
+    "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints-in-twelfths.json",
+    "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json",
+    "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json"
+   ],
+   "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record at either of the two tone-control addresses, on whatever type",
+   "filter": {
+    "index": "data/units/roland-sc8850-01/index.json",
+    "stage": "efx-bands",
+    "address_in": [
+     "40 03 13",
+     "40 03 14"
+    ]
+   },
+   "then_dropped": [
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints.json",
+     "why": "The same takes as the twelfth-octave record beside it, read at the third-octave set. Scoring both counts one measurement twice, and the finer reading is the one that can see where a shelf turns."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints.json",
+     "why": "The same takes as the twelfth-octave record beside it, read at the third-octave set. Scoring both counts one measurement twice, and the finer reading is the one that can see where a shelf turns."
+    }
+   ],
+   "excluded": []
+  },
+  "domain": "dB",
+  "residual": {
+   "01 42|low": {
+    "median_abs_db": 0.06,
+    "worst_abs_db": 2.03,
+    "worst_at": {
+     "value": 52,
+     "hz": 46.8
+    },
+    "span_db": 23.15,
+    "floor_db": 1.41,
+    "reading_is_a_value_not_a_bound": true
+   },
+   "01 42|high": {
+    "median_abs_db": 0.08,
+    "worst_abs_db": 2.35,
+    "worst_at": {
+     "value": 52,
+     "hz": 5993.2
+    },
+    "span_db": 23.91,
+    "floor_db": 1.41,
+    "reading_is_a_value_not_a_bound": true
+   },
+   "01 50|low": {
+    "median_abs_db": 0.02,
+    "worst_abs_db": 1.94,
+    "worst_at": {
+     "value": 52,
+     "hz": 100
+    },
+    "span_db": 12.69,
+    "floor_db": 0.13,
+    "reading_is_a_value_not_a_bound": false
+   },
+   "01 50|high": {
+    "median_abs_db": 0.05,
+    "worst_abs_db": 2.34,
+    "worst_at": {
+     "value": 52,
+     "hz": 6300
+    },
+    "span_db": 20.21,
+    "floor_db": 0.13,
+    "reading_is_a_value_not_a_bound": false
+   }
+  },
+  "gates": {
+   "measured_in": "dB",
+   "gross": {
+    "verdict": "reproduces",
+    "why": "The worst of the four medians is 0.08 dB against spans of 12.69 to 23.91 dB."
+   },
+   "properties": {
+    "verdict": "reproduces",
+    "why": "The steepest slope is a property of the order alone and the records publish it: 3.74 and 3.53 decibels an octave at the two ends of the low control on 01 42, against the 3.6 a first-order shelf runs at full gain and the 7.2 a unit-slope pair does. And the corners the two types return are the same corners to 0.0 and 0.0119 octaves, which is a thing neither candidate arranges -- each was fitted to each type on its own before the pair was written."
+   },
+   "power": {
+    "verdict": "separated",
+    "beaten": {
+     "tone-a-fixed-shelf-pair-order-2": {
       "01 42|low": {
-        "median_abs_db": 0.06,
-        "worst_abs_db": 2.03,
-        "worst_at": {
-          "value": 52,
-          "hz": 46.8
-        },
-        "span_db": 23.15,
-        "floor_db": 1.41,
-        "reading_is_a_value_not_a_bound": true
+       "median_abs_db": 0.13,
+       "worst_abs_db": 6.6,
+       "worst_at": {
+        "value": 76,
+        "hz": 166.9
+       }
       },
       "01 42|high": {
-        "median_abs_db": 0.08,
-        "worst_abs_db": 2.35,
-        "worst_at": {
-          "value": 52,
-          "hz": 5993.2
-        },
-        "span_db": 23.91,
-        "floor_db": 1.41,
-        "reading_is_a_value_not_a_bound": true
+       "median_abs_db": 0.14,
+       "worst_abs_db": 6.34,
+       "worst_at": {
+        "value": 52,
+        "hz": 5339.4
+       }
       },
       "01 50|low": {
-        "median_abs_db": 0.02,
-        "worst_abs_db": 1.94,
-        "worst_at": {
-          "value": 52,
-          "hz": 100
-        },
-        "span_db": 12.69,
-        "floor_db": 0.13,
-        "reading_is_a_value_not_a_bound": false
+       "median_abs_db": 0.075,
+       "worst_abs_db": 6.52,
+       "worst_at": {
+        "value": 52,
+        "hz": 160
+       }
       },
       "01 50|high": {
-        "median_abs_db": 0.05,
-        "worst_abs_db": 2.34,
-        "worst_at": {
-          "value": 52,
-          "hz": 6300
-        },
-        "span_db": 20.21,
-        "floor_db": 0.13,
-        "reading_is_a_value_not_a_bound": false
+       "median_abs_db": 0.095,
+       "worst_abs_db": 6.22,
+       "worst_at": {
+        "value": 52,
+        "hz": 5000
+       }
       }
+     }
     },
-    "gates": {
-      "measured_in": "dB",
-      "gross": {
-        "verdict": "reproduces",
-        "why": "The worst of the four medians is 0.08 dB against spans of 12.69 to 23.91 dB."
-      },
-      "properties": {
-        "verdict": "reproduces",
-        "why": "The steepest slope is a property of the order alone and the records publish it: 3.74 and 3.53 decibels an octave at the two ends of the low control on 01 42, against the 3.6 a first-order shelf runs at full gain and the 7.2 a unit-slope pair does. And the corners the two types return are the same corners to 0.0 and 0.0119 octaves, which is a thing neither candidate arranges -- each was fitted to each type on its own before the pair was written."
-      },
-      "power": {
-        "verdict": "separated",
-        "beaten": {
-          "tone-a-fixed-shelf-pair-order-2": {
-            "01 42|low": {
-              "median_abs_db": 0.13,
-              "worst_abs_db": 6.6,
-              "worst_at": {
-                "value": 76,
-                "hz": 166.9
-              }
-            },
-            "01 42|high": {
-              "median_abs_db": 0.14,
-              "worst_abs_db": 6.34,
-              "worst_at": {
-                "value": 52,
-                "hz": 5339.4
-              }
-            },
-            "01 50|low": {
-              "median_abs_db": 0.075,
-              "worst_abs_db": 6.52,
-              "worst_at": {
-                "value": 52,
-                "hz": 160
-              }
-            },
-            "01 50|high": {
-              "median_abs_db": 0.095,
-              "worst_abs_db": 6.22,
-              "worst_at": {
-                "value": 52,
-                "hz": 5000
-              }
-            }
-          }
-        },
-        "how": "contradicted",
-        "why": "Not outscored: contradicted, and in the one place the order shows. The second-order pair's worst band is inside the shelf's transition on every record -- 167 Hz for a shelf it puts at 291, 5.3 kHz for one it puts at 3.2 -- which is a slope in the wrong place rather than a fit that is slightly worse. The first-order pair's worst bands are at the edges of the band sets, where the run's own repeats are worst and where the high shelf had not finished."
-      },
-      "breakdown": {
-        "verdict": "structure remains",
-        "why": {
-          "01 42|low": "the signed median swings 0.75 dB across the settings and 1.545 dB across the readings within one, against the run's own floor of 1.41 dB",
-          "01 42|high": "the signed median swings 0.17 dB across the settings and 1.565 dB across the readings within one, against the run's own floor of 1.41 dB",
-          "01 50|low": "the signed median swings 0.33 dB across the settings and 0.055 dB across the readings within one, against the run's own floor of 0.13 dB",
-          "01 50|high": "the signed median swings 0.4 dB across the settings and 1.155 dB across the readings within one, against the run's own floor of 0.13 dB"
-        },
-        "read_as": "It returns structure on all four and the reason is different on the two controls, so neither is read as the model breaking down. On the low control the swing is between 25 Hz and 59 Hz, where this run's own repeats of one setting spread 0.31 and 1.11 decibels against 0.05 above 100 -- the signed median alternates sign across those bands rather than running one way. On the high control the swing is at 6 kHz, and both records say there why: the deviation was still climbing where the band set ended, so the corner is the lowest one consistent with the readings and a lean up there is that bound leaning. The scoring carries the record's own figure for this and it reads as a bound on 01 50 by that figure. The verdict is left as it came back."
-      }
+    "how": "contradicted",
+    "why": "Not outscored: contradicted, and in the one place the order shows. The second-order pair's worst band is inside the shelf's transition on every record -- 167 Hz for a shelf it puts at 291, 5.3 kHz for one it puts at 3.2 -- which is a slope in the wrong place rather than a fit that is slightly worse. The first-order pair's worst bands are at the edges of the band sets, where the run's own repeats are worst and where the high shelf had not finished."
+   },
+   "breakdown": {
+    "verdict": "structure remains",
+    "why": {
+     "01 42|low": "the signed median swings 0.75 dB across the settings and 1.545 dB across the readings within one, against the run's own floor of 1.41 dB",
+     "01 42|high": "the signed median swings 0.17 dB across the settings and 1.565 dB across the readings within one, against the run's own floor of 1.41 dB",
+     "01 50|low": "the signed median swings 0.33 dB across the settings and 0.055 dB across the readings within one, against the run's own floor of 0.13 dB",
+     "01 50|high": "the signed median swings 0.4 dB across the settings and 1.155 dB across the readings within one, against the run's own floor of 0.13 dB"
     },
-    "verdict": "reproduces"
+    "read_as": "It returns structure on all four and the reason is different on the two controls, so neither is read as the model breaking down. On the low control the swing is between 25 Hz and 59 Hz, where this run's own repeats of one setting spread 0.31 and 1.11 decibels against 0.05 above 100 -- the signed median alternates sign across those bands rather than running one way. On the high control the swing is at 6 kHz, and both records say there why: the deviation was still climbing where the band set ended, so the corner is the lowest one consistent with the readings and a lean up there is that bound leaning. The scoring carries the record's own figure for this and it reads as a bound on 01 50 by that figure. The verdict is left as it came back."
+   }
   },
-  "refuted_by": "A tone control on a third type whose corners are not these, which would make the pair the type's rather than the part's. Or either shelf read with a band set reaching past where it settles and coming back at twelve decibels an octave.",
-  "what_it_would_change": [
-    "inferences/roland-sc8850-01/0100-a-chain-of-four-sections-and-an-output-gain.json",
-    "inferences/roland-sc8850-01/0142-a-filter-byte-sits-on-one-pole.json"
-  ],
-  "what_this_does_not_settle": [
-    "Where the high shelf's corner is. It is a bound on both types: the deviation is largest in the top band of each set and neither reaches half of it on the far side. What would settle it is a band set running past the corner, which at this rate means past 16 kHz -- and half the rate is 16 kHz, so there is nowhere to put it.",
-    "Whether the equaliser's own shelves are this pair. They are first-order on a separate comparison of thirty-one records, which is the same section, but their corners are byte-selected and land at 118 or 217 Hz and 6.7 or 11.0 kHz -- none of them these. So what is shared is the section and not the constants.",
-    "What the tone controls sit in front of or behind. Both records were taken with the rest of the chain held, and where in the chain a shelf sits is not a thing a magnitude reading of a linear chain can say.",
-    "Whether any of the other forty-odd types printing this pair of gains carry the same pair. Two were read because two were swept."
-  ]
+  "verdict": "reproduces"
+ },
+ "refuted_by": "A tone control on a third type whose corners are not these, which would make the pair the type's rather than the part's. Or either shelf read with a band set reaching past where it settles and coming back at twelve decibels an octave.",
+ "what_it_would_change": [
+  "inferences/roland-sc8850-01/0100-a-chain-of-four-sections-and-an-output-gain.json",
+  "inferences/roland-sc8850-01/0142-a-filter-byte-sits-on-one-pole.json"
+ ],
+ "what_this_does_not_settle": [
+  "Whether the equaliser's own shelves are this pair. They are first-order on a separate comparison of thirty-one records, which is the same section, but their corners are byte-selected and land at 118 or 217 Hz and 6.7 or 11.0 kHz -- none of them these. So what is shared is the section and not the constants.",
+  "What the tone controls sit in front of or behind. Both records were taken with the rest of the chain held, and where in the chain a shelf sits is not a thing a magnitude reading of a linear chain can say.",
+  "Where either corner is, beyond the range published here. The low shelf is anywhere between 112 and 161 Hz and the high one between 5187 and 7880 Hz on every record; nothing in these takes narrows either, and a band set four times finer was measured on another class to scatter a feature rather than sharpen it.",
+  "Whether the thirty-six types printing this pair that were not swept carry it. Six were read because six were swept, and they are six front halves with nothing in common -- which is what the pair belonging to the part rather than to a type would look like, and is not the same as having asked the rest."
+ ],
+ "how_well_the_corner_is_determined": {
+  "what": "Every corner that fits a record as well as the best one does, scanned over five octaves and judged against that record's own floor rather than a tolerance chosen here. Reported for all six front halves, including the two this claim was originally fitted on.",
+  "measured_in": "Hz, and octaves for the widths",
+  "per_record": {
+   "01 02|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.05,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     112.2,
+     160.6
+    ],
+    "how_wide_that_is_octaves": 0.52,
+    "why_none_fits": null,
+    "front_half": "a generator of harmonics with nothing summed in",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-02-13-the-tone-control-on-an-enhancer-in-twelfths.json"
+   },
+   "01 02|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.07,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     5187.2,
+     7879.5
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "a generator of harmonics with nothing summed in",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-02-14-the-tone-control-on-an-enhancer-in-twelfths.json"
+   },
+   "01 20|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.06,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     105.7,
+     160.6
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "eight all-pass sections turned down to the dry signal",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-20-13-the-tone-control-on-an-allpass-chain-in-twelfths.json"
+   },
+   "01 20|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.07,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     5187.2,
+     7879.5
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "eight all-pass sections turned down to the dry signal",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-20-14-the-tone-control-on-an-allpass-chain-in-twelfths.json"
+   },
+   "01 25|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.05,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     105.7,
+     160.6
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "an amplitude modulator at no depth",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-25-13-the-tone-control-on-a-multiplier-in-twelfths.json"
+   },
+   "01 25|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.07,
+    "the_floor_it_is_judged_against_db": 0.09,
+    "every_corner_that_fits_as_well_hz": [
+     5187.2,
+     7879.5
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "an amplitude modulator at no depth",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-25-14-the-tone-control-on-a-multiplier-in-twelfths.json"
+   },
+   "02 06|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.12,
+    "the_floor_it_is_judged_against_db": 0.25,
+    "every_corner_that_fits_as_well_hz": [
+     61.8,
+     181.0
+    ],
+    "how_wide_that_is_octaves": 1.55,
+    "why_none_fits": null,
+    "front_half": "two blocks in series",
+    "record": "data/units/roland-sc8850-01/efx-bands/02-06-13-the-tone-control-on-a-chained-pair-in-twelfths.json"
+   },
+   "02 06|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.155,
+    "the_floor_it_is_judged_against_db": 0.25,
+    "every_corner_that_fits_as_well_hz": [
+     5187.2,
+     10621.6
+    ],
+    "how_wide_that_is_octaves": 1.03,
+    "why_none_fits": null,
+    "front_half": "two blocks in series",
+    "record": "data/units/roland-sc8850-01/efx-bands/02-06-14-the-tone-control-on-a-chained-pair-in-twelfths.json"
+   },
+   "01 42|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.05,
+    "the_floor_it_is_judged_against_db": 0.08,
+    "every_corner_that_fits_as_well_hz": [
+     112.2,
+     160.6
+    ],
+    "how_wide_that_is_octaves": 0.52,
+    "why_none_fits": null,
+    "front_half": "a modulated delay line",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-42-13-the-tone-control-nobody-prints-in-twelfths.json"
+   },
+   "01 42|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.07,
+    "the_floor_it_is_judged_against_db": 0.08,
+    "every_corner_that_fits_as_well_hz": [
+     5187.2,
+     7879.5
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "a modulated delay line",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-42-14-the-tone-control-nobody-prints-in-twelfths.json"
+   },
+   "01 50|low": {
+    "best_hz": 112.2,
+    "best_median_abs_db": 0.02,
+    "the_floor_it_is_judged_against_db": 0.035,
+    "every_corner_that_fits_as_well_hz": [
+     105.7,
+     160.6
+    ],
+    "how_wide_that_is_octaves": 0.6,
+    "why_none_fits": null,
+    "front_half": "a delay",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-50-13-the-tone-control-on-a-third-front-half.json"
+   },
+   "01 50|high": {
+    "best_hz": 7879.5,
+    "best_median_abs_db": 0.04,
+    "the_floor_it_is_judged_against_db": 0.035,
+    "every_corner_that_fits_as_well_hz": null,
+    "how_wide_that_is_octaves": null,
+    "why_none_fits": "No corner anywhere in the scan got under this record's own floor, which is the tightest of the six. Its best is reported and its range is not, because a range computed against a floor nothing clears would be empty rather than narrow.",
+    "front_half": "a delay",
+    "record": "data/units/roland-sc8850-01/efx-bands/01-50-14-the-tone-control-on-a-third-front-half.json"
+   }
+  },
+  "shared_by_every_record_hz": {
+   "low": [
+    112.2,
+    160.6
+   ],
+   "high": [
+    5187.2,
+    7879.5
+   ]
+  },
+  "what_the_first_round_said_and_why_it_is_withdrawn": "That the two types' low corners landed 0.0 octaves apart and their high corners 0.0119. Both figures are true and neither is a precision. The search that produced them scanned a grid of sixty points and then refined one step either side of the winner, so two records whose residual basin covers several grid points return the same point -- and the basin here is six tenths of an octave wide on the cleanest records and wider on the noisiest. Scanned finely the best corner moves to about a hundred and twelve hertz and about seven point nine kilohertz on all six records that can be read, including the record the published pair was fitted from, and the residual difference between there and the published corner is under every one of those records' floors. The reading is that the corner is a range; the published values are a point inside it and are left where they are.",
+  "what_is_not_withdrawn": "That the two shelves are one pair shared across front halves, and that each is one pole and one zero. Neither rests on where inside the range the corner sits: the first rests on one pair reproducing six records taken through six unrelated front halves, and the second on a second-order pair putting its worst band inside the shelf's own transition on every one of them."
+ },
+ "what_the_other_front_halves_returned": {
+  "what": "The published pair scored against each further type's records, and the second-order pair beside it.",
+  "measured_in": "dB",
+  "against_the_published_pair": {
+   "01 02|low": {
+    "median_abs_db": 0.06,
+    "worst_abs_db": 2.2,
+    "span_db": 23.11,
+    "floor_db": 1.34
+   },
+   "01 02|high": {
+    "median_abs_db": 0.08,
+    "worst_abs_db": 2.36,
+    "span_db": 23.87,
+    "floor_db": 1.34
+   },
+   "01 20|low": {
+    "median_abs_db": 0.06,
+    "worst_abs_db": 2.06,
+    "span_db": 22.72,
+    "floor_db": 1.37
+   },
+   "01 20|high": {
+    "median_abs_db": 0.09,
+    "worst_abs_db": 2.39,
+    "span_db": 23.72,
+    "floor_db": 1.37
+   },
+   "01 25|low": {
+    "median_abs_db": 0.06,
+    "worst_abs_db": 2.17,
+    "span_db": 23.33,
+    "floor_db": 1.53
+   },
+   "01 25|high": {
+    "median_abs_db": 0.09,
+    "worst_abs_db": 2.33,
+    "span_db": 23.63,
+    "floor_db": 1.53
+   },
+   "02 06|low": {
+    "median_abs_db": 0.13,
+    "worst_abs_db": 4.78,
+    "span_db": 20.36,
+    "floor_db": 2.5
+   },
+   "02 06|high": {
+    "median_abs_db": 0.16,
+    "worst_abs_db": 2.35,
+    "span_db": 23.67,
+    "floor_db": 2.5
+   },
+   "01 42|low": {
+    "median_abs_db": 0.06,
+    "worst_abs_db": 2.03,
+    "span_db": 23.15,
+    "floor_db": 1.41
+   },
+   "01 42|high": {
+    "median_abs_db": 0.08,
+    "worst_abs_db": 2.35,
+    "span_db": 23.91,
+    "floor_db": 1.41
+   },
+   "01 50|low": {
+    "median_abs_db": 0.02,
+    "worst_abs_db": 1.94,
+    "span_db": 12.69,
+    "floor_db": 0.13
+   },
+   "01 50|high": {
+    "median_abs_db": 0.05,
+    "worst_abs_db": 2.34,
+    "span_db": 20.21,
+    "floor_db": 0.13
+   }
+  },
+  "against_the_second_order_pair": {
+   "01 02|low": {
+    "median_abs_db": 0.15,
+    "worst_abs_db": 6.58
+   },
+   "01 02|high": {
+    "median_abs_db": 0.14,
+    "worst_abs_db": 6.35
+   },
+   "01 20|low": {
+    "median_abs_db": 0.135,
+    "worst_abs_db": 6.81
+   },
+   "01 20|high": {
+    "median_abs_db": 0.12,
+    "worst_abs_db": 6.39
+   },
+   "01 25|low": {
+    "median_abs_db": 0.145,
+    "worst_abs_db": 6.78
+   },
+   "01 25|high": {
+    "median_abs_db": 0.17,
+    "worst_abs_db": 6.35
+   },
+   "02 06|low": {
+    "median_abs_db": 0.21,
+    "worst_abs_db": 6.99
+   },
+   "02 06|high": {
+    "median_abs_db": 0.26,
+    "worst_abs_db": 6.48
+   },
+   "01 42|low": {
+    "median_abs_db": 0.13,
+    "worst_abs_db": 6.6
+   },
+   "01 42|high": {
+    "median_abs_db": 0.14,
+    "worst_abs_db": 6.34
+   },
+   "01 50|low": {
+    "median_abs_db": 0.075,
+    "worst_abs_db": 6.52
+   },
+   "01 50|high": {
+    "median_abs_db": 0.095,
+    "worst_abs_db": 6.22
+   }
+  },
+  "why_three_of_them_have_no_balance_byte": "The first three types read at these addresses all carry one, and each of those runs had to park it and argue what the direct half was doing. An enhancer, a phaser and a tremolo print no balance at all, so what reached the gains on those is what the front half passed."
+ }
 }
