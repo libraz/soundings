@@ -181,6 +181,7 @@ def read_directory(
     address: str,
     setting: str,
     held: list[dict] | None = None,
+    held_not_spelled_out: str | None = None,
     settled_s: float | None = None,
     lead_s: float = 0.6,
     trim_s: float = 0.5,
@@ -272,6 +273,14 @@ def read_directory(
         "taken with the other stage turned down and one taken with it running are "
         "different readings of different things, and nothing in the numbers says "
         "which is which.",
+        # Beside the block it qualifies, and emitted here rather than added to the
+        # payload by whoever called: a caveat assembled somewhere else is one the
+        # next run publishes without.
+        **(
+            {"held_not_spelled_out": held_not_spelled_out}
+            if held_not_spelled_out
+            else {}
+        ),
         "takes_from": str(where),
         "manifest": takes.manifest_note(listed, files),
         "settings_asked": sorted({r[VALUE] for r in readings}),

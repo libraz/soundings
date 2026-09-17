@@ -148,6 +148,17 @@ def register(sub) -> None:
         "other stage turned down is a different reading and nothing in the number says so",
     )
     p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held. A take name "
+        "may say a state -- the type's other rate slot at some byte -- without saying "
+        "which address that is, and which address it is depends on the type. Said in "
+        "words rather than guessed at, because a record stating an address that was "
+        "never written is wrong in a way a reader cannot see, and one stating nothing "
+        "held reads as a run that held nothing",
+    )
+    p.add_argument(
         "--settled",
         type=float,
         help="seconds the run waited after writing the setting before recording. One "
@@ -921,6 +932,7 @@ def cmd_efx_rate(args) -> int:
             address=args.slot,
             setting=args.setting,
             held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+            held_not_spelled_out=args.held_not_spelled_out,
             settled_s=args.settled,
             lead_s=args.lead,
             hold_s=args.hold,

@@ -327,6 +327,7 @@ def main(argv: list[str]) -> int:
                         *(["--settled", str(here["settled"])]
                           if here["settled"] is not None else []),
                         *[a for h in held for a in ("--held", f"{h['address']}={h['bytes']}")],
+                        *(["--held-not-spelled-out", note] if note else []),
                     ],
                     started=time.monotonic(),
                     midi_device_id=None,
@@ -338,10 +339,9 @@ def main(argv: list[str]) -> int:
                 address=address,
                 setting=setting,
                 held=held,
+                held_not_spelled_out=note,
                 settled_s=here["settled"],
             )
-            if note:
-                payload["held_not_spelled_out"] = note
             if not payload["readings"]:
                 continue
             stem = f"{kind[:2]}-{kind[2:]}-{address.split()[-1]}-{run['dir']}"
