@@ -171,6 +171,23 @@ down over the addresses asked for, so it is refused and the region is recorded a
 answered short. The baseline is the union of the two captures, and `soundings
 complete` counts it that way.
 
+**A reply of the length that was asked for can still hold one byte of data.** Two
+blocks of that same unit answer a region read with a reply as long as the request
+and a checksum that verifies, carrying the value of the address it starts at and
+00 in every byte after it -- while all 128 offsets of each block, asked one at a
+time, answer with their own offset. Nothing refuses a reply like that, since the
+length is what makes a short one refusable, so every byte of it is published as a
+value; and where the region's first byte is 00 anyway there is nothing to see.
+What makes it visible is the comparison and not the run: hold every value in a
+region capture against a single-byte read of the same address. On this unit that
+is 37240 addresses, 220 of them disagree, and all 220 are in those two blocks.
+
+**Do that comparison before a later stage rests on either capture.** A reset probe
+took its baseline from the region read and chose each mark against a single read,
+which wrote the baseline's own value into 220 of the 224 addresses it marked
+there. All three resets came back restoring every one of them, which is the only
+answer that comparison could return.
+
 **This is the last stage that may be run before a stage that writes.** Stages 1
 to 4 send reads or nothing at all, so the capture is still a power-on capture
 when it is taken after them. From stage 6 onwards the unit is written to, and the

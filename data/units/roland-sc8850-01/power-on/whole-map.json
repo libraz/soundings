@@ -37649,6 +37649,34 @@
         ],
         "how_it_reads": "Blocks 48 and 49 are not among the twelve and nothing here is measured about them: they answer no single byte read, so they were never candidates. That is not the same as their being absent from the unit. A one byte request at 0C 00 00 makes it transmit 48 and 49, among four pairs of blocks shaped alike, which measurements.json records."
       }
+    },
+    {
+      "kind": "a-region-reply-whose-bytes-after-the-first-are-zero",
+      "blocks": [
+        "21 0C",
+        "21 1C"
+      ],
+      "addresses": 224,
+      "asked_one_address_at_a_time": "All 128 offsets of each block answer, and each one holds its own offset: 21 0C 05 reads 05. Four runs read them that way -- the capture that asks one address at a time, the offsets stage, the write probe's originals and the hold probe's -- and a value written to one of these addresses is given back by the next read of it.",
+      "asked_as_a_region": "The reply is as long as the request and its checksum verifies. Its first byte is the value of the address the request starts at, and every byte after it is 00.",
+      "how_it_was_seen": "Each block is covered by two regions of 64 bytes, one starting at offset 00 and one at offset 30. The region that starts at 30 comes back holding 30 and then 63 zeros. Those two are the only regions in this map whose reply is a non-zero first byte followed by nothing but zeros, and a region whose first byte is 00 cannot be told apart from a region that holds zeros.",
+      "not_the_short_reply": "A reply shorter than its request is refused, because counting up from the address it starts at puts every byte after the missing one on the address below its own. This reply is the length that was asked for, so nothing refuses it and all 64 of its bytes are published as values.",
+      "the_two_readings_are_one_power_cycle": "The region capture was taken at 02:39:48 and the capture that asks one address at a time at 02:45:11, both with nothing but reads sent since the unit was switched on. So this is two ways of asking and not two states.",
+      "measured_in": [
+        "power-on/whole-map-regions.json",
+        "power-on/whole-map-singles.json",
+        "offsets/whole-map.json",
+        "write-probe/whole-map.json",
+        "hold-probe/whole-map.json"
+      ],
+      "how_far_it_was_checked": "Every value in this capture was held against a single-byte read of the same address, 37240 of them, and 220 disagree: 110 in each of these two blocks and none anywhere else. The remaining 204 addresses in this capture were never asked one at a time.",
+      "how_it_reads": "The values these two blocks carry in this capture, and in power-on/whole-map-regions.json and power-on/whole-map-reachable.json, are not what the addresses hold. Anything measured by comparing region reads across these 224 addresses could not have come out otherwise, since the reading returns the same zeros whatever they hold. What each address holds is in the captures that ask one address at a time.",
+      "what_it_bounds": [
+        "reset-probe/whole-map.json marks all 224 of them and reports every one restored to the power-on value under all three resets. The mark is chosen against a read of one address at a time and the outcome is judged against this capture, so at 220 of the 224 the mark and the baseline are the same value and restored is the only outcome the comparison can return. The four that differ are offsets 00 and 30 of each block.",
+        "Fifteen alias-scan records watch these two blocks by region read. A message landing in either of them would not have been seen, so their negatives do not cover these 224 addresses."
+      ],
+      "what_is_not_settled": "Whether it is the block or the length of the request that decides it. Every region read of these two blocks in the archive asked for 64 bytes and no shorter one was taken. What would answer it: write a known value to one address at a time, then ask the same block as a region at more than one length.",
+      "kept_by_hand": "Added to a record the stage had already written, because it is a comparison between records rather than something one run measured. No stage holds these addresses."
     }
   ]
 }

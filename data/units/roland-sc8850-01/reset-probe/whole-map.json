@@ -29843,5 +29843,20 @@
       "50 03"
     ],
     "why": "The addresses this names in the blocks listed under regions_answered_short came from a region read whose reply was shorter than the request. The block is what the reply was for and is right; the offset was counted up from the start of the request and is not. What the run found still happened -- both snapshots were laid down the same way, so a byte that moved did move -- but which address moved is not established here."
-  }
+  },
+  "findings": [
+    {
+      "kind": "a-region-reply-whose-bytes-after-the-first-are-zero",
+      "blocks": [
+        "21 0C",
+        "21 1C"
+      ],
+      "addresses": 224,
+      "how_it_reads": "These 224 addresses are marked and read back by a region read, and the two blocks answer a region read with the length that was asked for and 00 in every byte after the first. The mark is chosen against a read of one address at a time, so at 220 of the 224 the mark and the baseline hold the same value and restored to the power-on value is the only outcome the comparison can return. The verdicts here are not readings of what the three resets did to those addresses.",
+      "measured_in": [
+        "power-on/whole-map.json"
+      ],
+      "kept_by_hand": "Added to a record the stage had already written, because it is a comparison between records rather than something one run measured. No stage holds these addresses."
+    }
+  ]
 }

@@ -41261,5 +41261,20 @@
       ],
       "why": "This region was asked for more bytes than the unit sent back, and the reply carries the address it starts at rather than the address of each byte. Counting up from that start puts every byte after the one the unit skipped on the address below its own, so the bytes are held here in the order they arrived instead of being placed. Measured rather than supposed: the same request was answered the same short way every time, with a checksum that verified, and the addresses the reply leaves out are not the ones that go silent when the block is asked an offset at a time -- so knowing which addresses answer does not say which bytes these are. A shorter read of the same block is answered in full, and that is where the values for its first addresses came from."
     }
+  ],
+  "findings": [
+    {
+      "kind": "a-region-reply-whose-bytes-after-the-first-are-zero",
+      "blocks": [
+        "21 0C",
+        "21 1C"
+      ],
+      "addresses": 224,
+      "how_it_reads": "The values this capture carries at those addresses are not what they hold. Asked one address at a time each holds its own offset; asked as a region the reply is the length that was asked for and every byte after its first is 00.",
+      "measured_in": [
+        "power-on/whole-map.json"
+      ],
+      "kept_by_hand": "Added to a record the stage had already written, because it is a comparison between records rather than something one run measured. No stage holds these addresses."
+    }
   ]
 }
