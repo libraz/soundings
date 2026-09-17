@@ -558,9 +558,17 @@ def _printed_values(path: str, type_id: str, block: str) -> dict[str, str]:
     return out
 
 
-#: The marks an effect list prints in front of a parameter's name. They are about
-#: where the row sits on the page -- which column of a two-column table it was set
-#: in -- and not about what the parameter is called.
+#: The marks an effect list prints in front of a parameter's name. The document
+#: reader cuts them off and files them as `printed_mark`, so a row extracted by the
+#: parser no longer carries one; this is for the rows somebody read by hand, where
+#: a mark is typed as it was printed and nothing checks it.
+#:
+#: What each mark says is which of the two effect controls can reach that parameter
+#: -- a fact about the type and worth keeping, which is why it is kept rather than
+#: dropped. What it must not do is sit inside the name: `stage_named` reads the
+#: first word of a name as the tag saying which stage of a two-stage type the
+#: parameter is in, and a mark left in front of it answers `+`, which matches no
+#: other parameter's stage and so reports every gate in its own stage as absent.
 _PRINTED_MARKS = "+#* "
 
 

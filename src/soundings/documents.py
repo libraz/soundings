@@ -720,6 +720,69 @@ PARAMETER_UNDER_NO_TYPE = (
     "without the type it numbers a parameter of."
 )
 
+#: The symbol an effect list prints in front of a parameter's name. Both printings
+#: use `+` and `#`, and both say under the table what they are for: a marked
+#: parameter is one an effect controller can be set to modify, and one of the two
+#: documents goes further and says which symbol belongs to which of the two
+#: controllers.
+#:
+#: Kept as the symbol the page printed rather than as what it means, and the
+#: difference matters twice. The two documents state different amounts about it, so
+#: a field holding the fuller reading would be putting one publisher's sentence
+#: into the other's table. And the symbol is checkable against the page while a
+#: meaning is a reading of it -- which is the line this directory is drawn along.
+_EFFECT_CONTROL_MARKS = "+#"
+
+
+#: What the effect list sets between the ends of a range, and between them and the
+#: value in the middle. An en dash, and never the hyphen-minus a negative end is
+#: printed with -- which is what makes `-12–0–+12` cuttable at all.
+_BETWEEN_ENDS = "–"
+
+
+def printed_range(data: str) -> tuple[tuple[str, str] | None, str | None]:
+    """A printed setting column as the two ends of its range and the value between.
+
+    `(None, None)` where the column prints a list of states rather than a range:
+    `LPF/BPF` and `1/1.5,1/2,1/4,1/100` have ends only in the order somebody chose
+    to print them in, and a first and last read off that would be a range the page
+    does not state.
+
+    **The number in the middle is the default and not a bound.** The list prints it
+    in boldface and sets it inside the range -- `0–96–127` is nought to a hundred
+    and twenty-seven, resting at ninety-six -- so a reader taking the column whole
+    finds one parameter printed six ways across the types that carry it, counts six
+    subjects, and looks for a shared block between two of them that are the same
+    block already. The middle is returned rather than dropped because where a type
+    rests is worth as much as what it spans; it is simply not part of the range.
+    """
+    parts = [part.strip() for part in data.split(_BETWEEN_ENDS)]
+    if len(parts) == 3:
+        return (parts[0], parts[2]), parts[1]
+    if len(parts) == 2:
+        return (parts[0], parts[1]), None
+    return None, None
+
+
+def marked(parameter: str) -> tuple[str, str | None]:
+    """A parameter's printed name, and the symbol the list printed in front of it.
+
+    `None` where there is none, which is most rows: a type carries each symbol at
+    most once. The two printings set it differently -- one leaves a space after it
+    and the other sets it flush against the name -- so the cut is on the symbol and
+    not on the spacing.
+
+    Kept out of the name because the same parameter is marked on one type and not
+    on the next, and marked with one symbol on one type and the other symbol on a
+    third. A name that carried it would make one parameter read as three, which is
+    a coverage figure counting one subject as three and finding a gap in none of
+    them -- and it would put a `+` where a reader looks for the stage tag that says
+    which half of a two-stage type a parameter belongs to.
+    """
+    if parameter[:1] in _EFFECT_CONTROL_MARKS and parameter[1:].strip():
+        return parameter[1:].strip(), parameter[0]
+    return parameter, None
+
 
 @dataclass
 class Column:
@@ -1215,11 +1278,13 @@ def _read_appendix_effect_list(text: str, page: int, carried: dict | None) -> Re
                     {"page": page, "line": "  ".join(values), "why": PARAMETER_UNDER_NO_TYPE}
                 )
                 continue
+            name, mark = marked(name)
             out.rows.append(
                 {
                     **kind,
                     "address_lsb": address,
                     "parameter": name,
+                    **({"printed_mark": mark} if mark else {}),
                     "data": setting,
                     "values_hex": values_hex,
                     "page": page,
@@ -1311,11 +1376,13 @@ def read_effect_list(text: str, page: int, carried: dict | None = None) -> Readi
                         {"page": page, "line": value, "why": PARAMETER_UNDER_NO_TYPE}
                     )
                     continue
+                name, mark = marked(name)
                 out.rows.append(
                     {
                         **kind,
                         "parameter_number": found.group(2),
                         "parameter": name,
+                        **({"printed_mark": mark} if mark else {}),
                         "data": printed,
                         "page": page,
                         "read_by": "parser",

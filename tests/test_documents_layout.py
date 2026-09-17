@@ -394,3 +394,64 @@ def test_a_note_naming_what_a_reset_leaves_says_it_for_a_reset(document_id: str)
                 f"{document_id}: {note['address']} says {reset} leaves {value!r}, "
                 "which is not a byte"
             )
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_a_symbol_the_list_prints_before_a_name_is_not_part_of_the_name(
+    document_id: str,
+) -> None:
+    """A mark left in front of a name makes one parameter read as three.
+
+    Both effect lists print `+` or `#` before the name of the one parameter each
+    effect controller can be set to modify, and the same parameter carries a `+` on
+    one type, a `#` on another and nothing on a third. Inside the name that reads as
+    three different parameters, so a coverage figure counts one subject as three and
+    finds a gap in none of them -- and `stage_named` reads the first word of a name
+    as the tag saying which half of a two-stage type a parameter sits in, which the
+    mark then answers, matching no other parameter and reporting every gate in its
+    own stage as absent.
+
+    The rows a person read by hand are held to it too. They are typed rather than
+    cut, so nothing else would notice.
+    """
+    marked = [
+        row["parameter"]
+        for row in effects_of(document_id)
+        if isinstance(row.get("parameter"), str) and row["parameter"][:1] in "+#"
+    ]
+    assert not marked, f"{document_id}: the mark is inside the name: {sorted(set(marked))[:5]}"
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_the_symbol_is_kept_rather_than_dropped(document_id: str) -> None:
+    """Cutting the mark off the name may not lose it.
+
+    What it says is which of the two effect controllers can reach that parameter,
+    which is a thing the page states and nothing else here holds. A reader that
+    stripped it would leave the record quieter than the page it was read from,
+    which is the failure this file exists to catch.
+    """
+    rows = effects_of(document_id)
+    if not rows:
+        pytest.skip(f"{document_id} holds no effect list")
+    marks = {row["printed_mark"] for row in rows if row.get("printed_mark")}
+    assert marks <= {"+", "#"}, f"{document_id}: unread mark {sorted(marks - {'+', '#'})}"
+    assert marks, f"{document_id}: no row carries a mark, and both printings use them"
+
+
+@pytest.mark.parametrize("document_id", IDS)
+def test_a_type_is_marked_for_each_controller_at_most_once(document_id: str) -> None:
+    """Two parameters of one type under one mark would be a mark read wrongly.
+
+    There are two effect controllers and each is set to one parameter, so a type
+    carrying a symbol twice means the reader took something else for one -- a
+    bullet, a footnote marker, the leading character of a name.
+    """
+    seen: dict[tuple[str, str, str], int] = {}
+    for row in effects_of(document_id):
+        if row.get("printed_mark"):
+            seen[(row["msb"], row["lsb"], row["printed_mark"])] = (
+                seen.get((row["msb"], row["lsb"], row["printed_mark"]), 0) + 1
+            )
+    twice = {key: count for key, count in seen.items() if count > 1}
+    assert not twice, f"{document_id}: one type marked twice for one controller: {twice}"

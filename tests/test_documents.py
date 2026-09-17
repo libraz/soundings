@@ -334,7 +334,7 @@ def test_an_effect_types_parameters_are_read_under_the_type_they_are_printed_und
     }
     assert [(row["parameter_number"], row["parameter"], row["data"]) for row in wah[1:]] == [
         ("1", "Fil Type (Filter Type)", "LPF/BPF"),
-        ("5", "#Rate", "0.05 - 10.0"),
+        ("5", "Rate", "0.05 - 10.0"),
     ]
     assert not out.not_extracted
 
@@ -599,10 +599,25 @@ def test_the_appendixs_printing_of_the_list_is_read_as_a_table() -> None:
         (row["address_lsb"], row["parameter"], row["data"], row["values_hex"]) for row in rotary[1:]
     ] == [
         ("03", "Low Slow", "0.05–0.35–10.0", "*6"),
-        ("13", "+ Speed", "Slow/Fast", "00/7F"),
-        ("16", "# Level", "0–127", "00–7F"),
+        ("13", "Speed", "Slow/Fast", "00/7F"),
+        ("16", "Level", "0–127", "00–7F"),
     ]
     assert not out.not_extracted
+
+
+def test_the_symbol_printed_before_a_name_is_kept_beside_it_and_not_in_it() -> None:
+    """The list marks the one parameter each effect controller can be set to
+    modify, and the mark is printed where a name begins. Left in the name it makes
+    one parameter read as several -- the same name is marked on one type, marked
+    with the other symbol on a second and bare on a third -- and it answers the
+    reader that takes a name's first word for the stage tag of a two-stage type."""
+    out = documents.read_effect_list("\n".join(APPENDIX), 217)
+    rotary = [row for row in out.rows if row["lsb"] == "22"]
+    assert [(row["parameter"], row.get("printed_mark")) for row in rotary[1:]] == [
+        ("Low Slow", None),
+        ("Speed", "+"),
+        ("Level", "#"),
+    ]
 
 
 def test_a_parameters_address_is_not_read_as_the_first_thing_in_the_column_beside_it() -> None:
@@ -637,7 +652,7 @@ def test_a_type_whose_bytes_are_printed_below_its_name_is_still_a_type() -> None
         ("9", "01", "22"),
         ("3", "01", "02"),
     ]
-    sens = [row for row in out.rows if row.get("parameter") == "+ Sens"]
+    sens = [row for row in out.rows if row.get("parameter") == "Sens"]
     assert sens[0]["lsb"] == "02"
 
 
