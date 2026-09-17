@@ -134,16 +134,27 @@ def test_a_mono_source_is_given_no_number_and_says_why(tmp_path) -> None:
     balance computed against a channel holding only noise would report the
     noise's own wander as a pan. It carries that reason rather than being dropped:
     a stimulus missing from the verdicts reads as one that was never asked, and a
-    count of what moved is then taken over a denominator that quietly shrank."""
+    count of what moved is then taken over a denominator that quietly shrank.
+
+    The settings are still listed, and each take still says how far it stood over
+    its own lead. The run measured levels and no separation, and publishing the
+    refusal without them would turn a stated bound back into a silence -- which is
+    the whole reason a null is worth reading here."""
     root = saved(tmp_path, {"0": [(-20.0, -300.0)] * 4, "127": [(-20.0, -300.0)] * 4})
 
     found = balance.measure(root)
 
     assert len(found) == 1
     assert found[0].not_measured == balance.MONO_SOURCE
-    assert found[0].settings == []
     assert found[0].channels is None
     assert found[0].to_json()["measured"] is False
+
+    assert [s.setting for s in found[0].settings] == ["0", "127"]
+    assert all(s.balance_db == [] for s in found[0].settings)
+    assert all(len(s.over_the_lead_db) == 4 for s in found[0].settings)
+    # Every channel the take has, since the pair this could not find is the thing
+    # it has no answer about.
+    assert found[0].over_the_lead_on == tuple(range(4))
 
 
 def test_a_parameter_that_pans_hard_is_not_mistaken_for_a_mono_source(tmp_path) -> None:
@@ -481,3 +492,73 @@ def test_the_rows_of_one_setting_are_on_one_scale_and_say_which(tmp_path) -> Non
         ):
             if separation is not None:
                 assert abs((first - second) - separation) < 0.02
+
+
+def test_a_reading_says_how_far_its_quieter_channel_stood_over_its_own_lead(tmp_path) -> None:
+    """A separation is a separation of the unit's signal only while both channels
+    carry one, so the quieter side's distance from the silence the take begins with
+    is what says whether the reading is a level at all.
+
+    Read at every setting rather than at chosen ones. The setting that matters is
+    whichever separated furthest, and naming it in advance is a table kept by hand
+    beside figures that could pick it out themselves.
+    """
+    root = saved(
+        tmp_path,
+        {
+            "064": [(-20.0, -20.0)] * 2,
+            "127": [(-20.0, -95.0)] * 2,
+        },
+    )
+
+    found = balance.measure(root)[0]
+
+    centred, hard = found.settings
+    assert centred.stood_over_the_lead_db > 60.0
+    # The note at -95 dB against a lead at -100 is a channel barely off its own floor,
+    # which is the reading a separation must not be published without.
+    assert hard.stood_over_the_lead_db < 10.0
+    assert found.stood_over_the_lead_db == hard.stood_over_the_lead_db
+    assert found.to_json()["stood_over_the_lead_db"] == round(hard.stood_over_the_lead_db, 2)
+
+
+def test_the_ceiling_a_separation_is_read_against_comes_out_of_a_record(tmp_path) -> None:
+    """How far this pair of inputs can be driven apart is a fact about one rig on
+    one day, so it is read out of a record of that rig rather than held beside the
+    code, where it would reach the next unit as an assumption.
+
+    Every measured run of the record is asked. The ceiling is the furthest the pair
+    has been shown to reach, and taking it from a chosen run would make it the
+    furthest that run happened to.
+    """
+    where = tmp_path / "data/units/some-unit-01/balance/a-record.json"
+    where.parent.mkdir(parents=True)
+    where.write_text(
+        json.dumps(
+            {
+                "runs": [
+                    {
+                        "name": "one",
+                        "measured": True,
+                        "channels": [2, 3],
+                        "by_setting": [{"balance_db": [4.0, -31.25]}],
+                    },
+                    {
+                        "name": "two",
+                        "measured": False,
+                        "channels": None,
+                        "by_setting": [{"balance_db": [-99.0]}],
+                    },
+                ]
+            }
+        )
+    )
+
+    found = balance.how_far_a_record_separated(where)
+
+    assert found["db"] == 31.25
+    # The run this could not read is not evidence about how far the pair reaches,
+    # and the channels reported are the ones the figure itself came off.
+    assert found["on_channels"] == [2, 3]
+    # Named from the unit down, the way one record names another everywhere here.
+    assert found["where"] == "balance/a-record.json"

@@ -66,6 +66,16 @@ def register(sub) -> None:
         default=6.0,
         help="dB a movement must clear the steadier setting's own scatter by",
     )
+    p.add_argument(
+        "--separated-as-far-as",
+        metavar="RECORD",
+        help="a record of this unit whose widest separation bounds what this one may "
+        "report. A separation that stops has to be shown to be the unit's and not the "
+        "chain's, and how far these two inputs can be driven apart is a fact about the "
+        "rig that some other address already measured -- so it is read out of that "
+        "record rather than held beside the code, where it would reach the next unit "
+        "as an assumption",
+    )
     options.add_subject(p)
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_balance)
@@ -179,25 +189,34 @@ def cmd_balance(args: argparse.Namespace) -> int:
     """Say what each saved run did to the balance between the two channels."""
     from pathlib import Path
 
-    from .. import balance
+    from .. import balance, takes
+    from .. import record as envelope
 
     root = Path(args.takes)
     # One run, or a directory of them. The manifest is what says which, since a
     # run's directory holds one and a directory of runs holds none.
     roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
     found = []
+    asked = {}
     for one in roots:
         if not (one / "takes-manifest.json").exists():
             continue
+        # What this run was of, from the run rather than from the command line. A
+        # record binding several runs across several types has one invocation and no
+        # single subject, so the only place each run's own can come from is the
+        # manifest its driver closed over.
+        method = takes.method_of(one)
+        about = options.about_of(method)
+        asked[one.name] = method.get("question")
         for verdict in balance.measure(one, margin_db=args.margin):
             print(f"{one.name}: {verdict.describe()}")
-            found.append((one.name, verdict))
+            found.append((one.name, about, verdict))
     if not found:
         print(f"no saved takes under {args.takes}")
         return 1
 
-    moved = [n for n, v in found if v.moved_between_settings or v.did_not_repeat]
-    unmeasured = [n for n, v in found if v.not_measured]
+    moved = [n for n, _a, v in found if v.moved_between_settings or v.did_not_repeat]
+    unmeasured = [n for n, _a, v in found if v.not_measured]
     # The two are counted apart because they mean opposite things. A run that was
     # asked and said no belongs under the denominator; a run that could not be
     # asked does not, and folding it in reports a null the measurement never made.
@@ -208,6 +227,26 @@ def cmd_balance(args: argparse.Namespace) -> int:
     if unmeasured:
         print(f"{len(unmeasured)} could not be measured: {' | '.join(unmeasured)}")
 
+    # A run this could not read as a balance is a run that measured levels and no
+    # separation, and what it asked is in its own manifest -- so the finding states
+    # the run's question and points at the rows that answer it. Derived from the
+    # verdict rather than named on the command line: a record that has to be told
+    # which of its runs found something is a record with a table kept by hand.
+    # One per run and not one per stimulus: a run asked under three voices is one
+    # run that could not be read, and three copies of its question would read as
+    # three findings.
+    refused = {n: a for n, a, v in found if v.not_measured and v.over_the_lead_on}
+    findings = [
+        envelope.finding(
+            asked.get(n) or balance.MONO_SOURCE,
+            runs=[n],
+            **({"held": a["held"]} if a.get("held") else {}),
+            read_in=f"runs[name={n}].by_setting[].over_the_lead_db",
+            why=balance.WHY_A_REFUSED_RUN_STILL_REPORTS_ITS_LEVELS,
+        )
+        for n, a in refused.items()
+    ]
+
     report.write_json(
         args.out,
         {
@@ -217,7 +256,23 @@ def cmd_balance(args: argparse.Namespace) -> int:
             "why_the_total_is_reported": balance.WHY_NOT_A_LEVEL,
             "why_the_pair_is_in_input_order": balance.WHY_THE_PAIR_IS_IN_INPUT_ORDER,
             "moved_the_balance": moved,
-            "runs": [{"name": n, **v.to_json()} for n, v in found],
+            **(
+                {
+                    "what_bounds_the_separation": {
+                        "how_far_this_rig_has_separated": balance.how_far_a_record_separated(
+                            args.separated_as_far_as
+                        ),
+                        "why": balance.WHY_A_SEPARATION_NEEDS_A_CEILING,
+                    }
+                }
+                if args.separated_as_far_as
+                else {}
+            ),
+            "runs": [
+                {"name": n, **({"about": a} if a else {}), **v.to_json()}
+                for n, a, v in found
+            ],
+            **({"findings": findings} if findings else {}),
         },
     )
     return 0
@@ -227,7 +282,7 @@ def cmd_balance_bands(args: argparse.Namespace) -> int:
     """Say what each saved run did to the separation, one band at a time."""
     from pathlib import Path
 
-    from .. import balance
+    from .. import balance, takes
 
     root = Path(args.takes)
     roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
@@ -235,15 +290,20 @@ def cmd_balance_bands(args: argparse.Namespace) -> int:
     for one in roots:
         if not (one / "takes-manifest.json").exists():
             continue
+        # What this run was of, from the run rather than from the command line. A
+        # record binding several runs across several types has one invocation and no
+        # single subject, so the only place each run's own can come from is the
+        # manifest its driver closed over.
+        about = options.about_of(takes.method_of(one))
         for verdict in balance.by_band(one, margin_db=args.margin, band_set=args.bands):
             print(f"{one.name}: {verdict.describe()}")
-            found.append((one.name, verdict))
+            found.append((one.name, about, verdict))
     if not found:
         print(f"no saved takes under {args.takes}")
         return 1
 
-    shaped = [n for n, v in found if v.depends_on_frequency]
-    unmeasured = [n for n, v in found if v.not_measured]
+    shaped = [n for n, _a, v in found if v.depends_on_frequency]
+    unmeasured = [n for n, _a, v in found if v.not_measured]
     print(
         f"\n{len(shaped)} of {len(found) - len(unmeasured)} separate differently by band: "
         f"{' | '.join(shaped) or 'none'}"
@@ -266,7 +326,10 @@ def cmd_balance_bands(args: argparse.Namespace) -> int:
             "band_above_the_floor_db": balance.BAND_ABOVE_THE_FLOOR_DB,
             "band_repeats_within_db": balance.BAND_REPEATS_WITHIN_DB,
             "separated_differently_by_band": shaped,
-            "runs": [{"name": n, **v.to_json()} for n, v in found],
+            "runs": [
+                {"name": n, **({"about": a} if a else {}), **v.to_json()}
+                for n, a, v in found
+            ],
         },
     )
     return 0
@@ -276,7 +339,7 @@ def cmd_arrival(args: argparse.Namespace) -> int:
     """Say what each saved run put in the early window and what it put in the late one."""
     from pathlib import Path
 
-    from .. import arrival
+    from .. import arrival, takes
 
     root = Path(args.takes)
     roots = [root] if (root / "takes-manifest.json").exists() else sorted(root.glob("*"))
@@ -284,15 +347,20 @@ def cmd_arrival(args: argparse.Namespace) -> int:
     for one in roots:
         if not (one / "takes-manifest.json").exists():
             continue
+        # What this run was of, from the run rather than from the command line. A
+        # record binding several runs across several types has one invocation and no
+        # single subject, so the only place each run's own can come from is the
+        # manifest its driver closed over.
+        about = options.about_of(takes.method_of(one))
         for verdict in arrival.measure(one, margin_db=args.margin):
             print(f"{one.name}: {verdict.describe()}")
-            found.append((one.name, verdict))
+            found.append((one.name, about, verdict))
     if not found:
         print(f"no saved takes under {args.takes}")
         return 1
 
-    moved = [n for n, v in found if v.moved_between_settings]
-    unmeasured = [n for n, v in found if v.not_measured]
+    moved = [n for n, _a, v in found if v.moved_between_settings]
+    unmeasured = [n for n, _a, v in found if v.not_measured]
     print(
         f"\n{len(moved)} of {len(found) - len(unmeasured)} moved signal between the two "
         f"windows: {' | '.join(moved) or 'none'}"
@@ -315,7 +383,10 @@ def cmd_arrival(args: argparse.Namespace) -> int:
                 arrival.WHY_A_RETURN_THAT_OVERLAPS_IS_REFUSED
             ),
             "moved_between_the_windows": moved,
-            "runs": [{"name": n, **v.to_json()} for n, v in found],
+            "runs": [
+                {"name": n, **({"about": a} if a else {}), **v.to_json()}
+                for n, a, v in found
+            ],
         },
     )
     return 0

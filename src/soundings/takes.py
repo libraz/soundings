@@ -358,6 +358,25 @@ def _safe(text: str) -> str:
     return "".join(c if c.isalnum() or c in "-_" else "_" for c in str(text))
 
 
+def method_of(where: str | Path) -> dict:
+    """What the store said when it closed, without the takes themselves.
+
+    A manifest carries the question the run was asked and, where its driver said so,
+    which type and address it was of. That is the run's own account of its subject,
+    and for a record binding several runs it is the only account there can be: the
+    record has one command line and the runs under it have different subjects, so a
+    flag cannot say what each of them was.
+
+    Returns nothing where there is no manifest rather than raising, because a
+    directory of runs holds none itself and the caller is walking both.
+    """
+    path = Path(where) / "takes-manifest.json"
+    if not path.exists():
+        return {}
+    kept = json.loads(path.read_text())
+    return {key: value for key, value in kept.items() if key != "takes"}
+
+
 def listing(where: str | Path) -> tuple[dict, list[str]]:
     """The files under `where`, and the manifest beside them as a lookup.
 

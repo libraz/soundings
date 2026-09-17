@@ -122,6 +122,69 @@ def add_subject(
             )
 
 
+SUBJECT_IN_A_MANIFEST = ("type", "address", "controller")
+"""The fields a store may close over to say what its takes were of.
+
+Named here and not in the store, because this is the half that reads them and a
+list of field names kept twice is two lists.
+"""
+
+
+def said_by(manifest: dict | None) -> dict[str, str]:
+    """What a run's own store said its takes were of, and nothing a flag said.
+
+    A run records its subject beside its takes, so a reading made from them can say
+    what it is of rather than be told again. Read from the manifest alone, unlike
+    `subject_of`, and the difference is not a shortcut: a record binding six runs
+    across three types has no one subject it could be told, and a flag covering the
+    whole directory would put the first run's type on all six. Where the store said
+    nothing this returns nothing, which is a run that was never told and reads as
+    one.
+    """
+    said = manifest or {}
+    found = {key: said.get(key) for key in SUBJECT_IN_A_MANIFEST}
+    # The two are exclusive in the same way the flags are: a run reached through a
+    # controller was not reached through an address, and carrying both would put a
+    # run in two groups of an index that means them to be one.
+    if found["controller"] is not None:
+        found["address"] = None
+    return {key: value for key, value in found.items() if value not in (None, "")}
+
+
+ABOUT_IS_NOT = frozenset({"takes", "stimuli", "windows_s", "question"})
+"""Manifest keys a record that binds runs already carries from the reading itself.
+
+The takes are the listing, the stimulus comes back as a name on the run, the windows
+are a figure the reading publishes, and the question is prose the record asks once at
+its top rather than once per run.
+
+**Everything else a manifest holds is something the run said about itself, and it is
+carried across by not being named here rather than by being listed.** A run that
+states one more control than the run before it must not lose it to a reader written
+against the earlier one.
+"""
+
+
+def about_of(manifest: dict | None) -> dict:
+    """What one run said about itself, as the field a record puts beside that run.
+
+    A record that binds several runs has one command line and several subjects, so
+    what each run was of can only come from the run. This is the whole of the store's
+    account of it -- the type, the address, what was held, whatever else the driver
+    closed over -- minus the few things the reading publishes itself.
+
+    Empty values are dropped rather than written: a run that states no held block and
+    one that states an empty one are different, and a reader shown `held: null`
+    cannot tell which it has.
+    """
+    said = manifest or {}
+    return {
+        key: value
+        for key, value in said.items()
+        if key not in ABOUT_IS_NOT and value not in (None, "", [], {})
+    }
+
+
 def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[str, str]:
     """The subject flags as the fields a record carries, dropping what was not given.
 
@@ -141,7 +204,7 @@ def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[s
     a record that states none, which is true of a record that was never told and
     false of one told nothing.
     """
-    said = manifest or {}
+    said = said_by(manifest)
     given = getattr(args, "cc", None)
     found = {
         "type": getattr(args, "type", None) or said.get("type"),

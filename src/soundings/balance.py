@@ -40,6 +40,7 @@ was defined for a pair and quietly returns false everywhere else.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -90,6 +91,25 @@ class SettingBalance:
     total_db: list[float] = field(default_factory=list)
     """Per take, the two channels together. A pan moves the first and not this."""
 
+    over_the_lead_db: list[list[float]] = field(default_factory=list)
+    """Per take, each channel's body less that channel's own lead.
+
+    A separation is only a separation of the unit's signal while both channels are
+    carrying one, so the quieter side's distance from the silence the take begins
+    with is what says whether the reading is a level at all. Read per channel and
+    per take rather than at chosen settings: the setting where it matters is the
+    one that separated furthest, and which setting that is falls out of the figures
+    instead of being named in advance.
+
+    Empty where the take's lead is too short to read, which is a run that cannot
+    answer this rather than one that answered nothing.
+    """
+
+    @property
+    def stood_over_the_lead_db(self) -> float:
+        """The least any channel of any take of this setting stood over its own lead."""
+        return min((v for take in self.over_the_lead_db for v in take), default=float("nan"))
+
     @property
     def spread_db(self) -> float:
         return spread(self.balance_db)
@@ -103,13 +123,18 @@ class SettingBalance:
         return float(np.median(self.balance_db)) if self.balance_db else float("nan")
 
     def to_json(self) -> dict:
-        return {
+        out = {
             "setting": self.setting,
             "balance_db": [round(v, 2) for v in self.balance_db],
             "together_db": [round(v, 2) for v in self.total_db],
             "balance_spread_db": round(self.spread_db, 2),
             "together_spread_db": round(self.total_spread_db, 2),
         }
+        if self.over_the_lead_db:
+            out["over_the_lead_db"] = [
+                [round(v, 2) for v in take] for take in self.over_the_lead_db
+            ]
+        return out
 
 
 @dataclass
@@ -118,6 +143,15 @@ class Verdict:
     settings: list[SettingBalance]
     channels: tuple[int, int] | None
     margin_db: float = 6.0
+    over_the_lead_on: tuple[int, ...] | None = None
+    """Which channels the per-take distance from the lead was read in.
+
+    The pair where one was found, and every channel the take has where none was:
+    a run with no pair has nothing to say about a balance and something to say
+    about levels, and borrowing another run's pair to say it would report a figure
+    about channels this run never established.
+    """
+
     not_measured: str | None = None
     """Why this stimulus has no verdict, when it has none.
 
@@ -141,8 +175,21 @@ class Verdict:
         rather than a different rule: a sweep whose gap does not clear the steadiest
         setting's scatter by the margin was not going to clear the worst either.
         """
-        spreads = [s.spread_db for s in self.settings]
+        spreads = [s.spread_db for s in self.settings if s.balance_db]
         return min(spreads) if spreads else float("nan")
+
+    @property
+    def stood_over_the_lead_db(self) -> float:
+        """The least any take of any setting stood over its own lead.
+
+        The least rather than the typical, because this is a bound: the setting that
+        separated furthest is the one whose quieter channel is nearest the floor, and
+        a reading is only as good as its worst take.
+        """
+        return min(
+            (s.stood_over_the_lead_db for s in self.settings if s.over_the_lead_db),
+            default=float("nan"),
+        )
 
     @property
     def moved_between_settings(self) -> bool:
@@ -152,7 +199,7 @@ class Verdict:
         parameter need not be monotonic in its byte and a table that turns back on
         itself would put its two ends in the same place.
         """
-        if len(self.settings) < 2:
+        if self.not_measured or len(self.settings) < 2:
             return False
         typical = [s.typical_db for s in self.settings]
         return bool(max(typical) - min(typical) > self.yardstick_db + self.margin_db)
@@ -165,7 +212,7 @@ class Verdict:
         wanders wanders at every setting, and a parameter is only implicated when
         some setting is steady in the same session that another is not.
         """
-        if len(self.settings) < 2:
+        if self.not_measured or len(self.settings) < 2:
             return False
         spreads = [s.spread_db for s in self.settings]
         return bool(max(spreads) - min(spreads) > self.margin_db * 2)
@@ -205,23 +252,31 @@ class Verdict:
         return f"{self.stimulus} ({where}): {found}. {shown}"
 
     def to_json(self) -> dict:
-        if self.not_measured:
-            return {
-                "stimulus_name": self.stimulus,
-                "channels": None,
-                "measured": False,
-                "not_measured": self.not_measured,
-            }
-        return {
+        # The settings are listed either way. A run this could not read as a balance
+        # still measured something -- how far each take stood over its own lead -- and
+        # dropping the rows would publish the refusal as a silence, which is the one
+        # thing a stated bound is for.
+        common = {
             "stimulus_name": self.stimulus,
             "channels": list(self.channels) if self.channels else None,
+            "over_the_lead_on": list(self.over_the_lead_on) if self.over_the_lead_on else None,
+            "by_setting": [s.to_json() for s in self.settings],
+        }
+        if self.not_measured:
+            return {**common, "measured": False, "not_measured": self.not_measured}
+        stood = self.stood_over_the_lead_db
+        return {
+            **common,
             "measured": True,
             "margin_db": self.margin_db,
             "yardstick_db": round(self.yardstick_db, 2),
+            # Left out rather than written as a non-number where no take had a lead
+            # long enough to read: a key holding nothing readable is a key a consumer
+            # has to special-case, and JSON has no spelling for it.
+            **({"stood_over_the_lead_db": round(stood, 2)} if stood == stood else {}),
             "moved_between_settings": self.moved_between_settings,
             "did_not_repeat_within_a_setting": self.did_not_repeat,
             "while_the_two_together_held_still": self.while_the_total_stayed,
-            "by_setting": [s.to_json() for s in self.settings],
         }
 
 
@@ -248,13 +303,50 @@ WHY_A_SEPARATION_NEEDS_A_CEILING = (
     "all."
 )
 
-WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED = (
+WHY_A_REFUSED_RUN_STILL_REPORTS_ITS_LEVELS = (
     "A separation between two channels is the separation of whatever reached them, so a second "
     "path to the output that the parameter does not act on would set a floor under it that has "
-    "nothing to do with the parameter. What is reported is what the two channels hold with the "
-    "effect's own output level written to zero: if that is the take's own lead, there is no "
-    "second path for the reading to be the sum of."
+    "nothing to do with the parameter. A run with no two channels to compare is exactly the run "
+    "that answers whether there is such a path, and reporting it as a refusal alone would publish "
+    "the answer as a silence. What is reported instead is how far each take stood over its own "
+    "lead: at the lead there was nothing for a later reading to be the sum of, and above it there "
+    "was."
 )
+
+
+def how_far_a_record_separated(path: str | Path) -> dict:
+    """The widest separation another reading of this rig put between two of its inputs.
+
+    The ceiling `WHY_A_SEPARATION_NEEDS_A_CEILING` asks for, read out of a record
+    rather than carried as a constant: it is a fact about one rig on one day, and a
+    number kept beside the code would arrive at the next unit as an assumption.
+
+    Every measured run of the record is asked, because the ceiling is the furthest
+    this pair of inputs has been shown to reach and not the furthest a chosen run
+    did. What is reported beside it is the pair the furthest run was read on, and
+    that pair rather than every pair in the record: two inputs that never carried
+    the same signal do not bound each other, so the channels that belong to the
+    figure are the ones the figure came off.
+    """
+    path = Path(path)
+    record = json.loads(path.read_text())
+    best = (float("nan"), None)
+    for run in record.get("runs", []):
+        if not run.get("measured"):
+            continue
+        for setting in run.get("by_setting", []):
+            for value in setting.get("balance_db", []):
+                if not abs(value) <= best[0]:
+                    best = (abs(value), run.get("channels"))
+    parts = path.parts
+    # Named from the unit down, the way one record names another everywhere else
+    # here. An absolute path says where the operator's disk is laid out.
+    inside = "/".join(parts[parts.index("units") + 2 :]) if "units" in parts else path.name
+    return {
+        "db": round(float(best[0]), 2),
+        "where": inside,
+        "on_channels": list(best[1]) if best[1] else None,
+    }
 
 
 def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
@@ -283,22 +375,39 @@ def measure(root: str | Path, *, margin_db: float = 6.0) -> list[Verdict]:
         head = loudest[0][:lead] if lead > rate // 100 else None
         every = [frames for setting in order[stimulus] for frames, _ in loaded[setting]]
         channels, _floor = pair_of_channels(every, head)
-        if channels is None:
-            out.append(
-                Verdict(stimulus=stimulus, settings=[], channels=None, not_measured=MONO_SOURCE)
-            )
-            continue
-        left, right = channels
+        # Where no pair was found there is no balance, and the settings are still read
+        # for what each take held over its own lead. The channels that figure is in are
+        # the pair where there is one and all of them where there is not, per
+        # `Verdict.over_the_lead_on`.
+        read_on = tuple(channels) if channels else tuple(range(every[0].shape[1]))
+        readable = head is not None
         measured = []
         for setting in order[stimulus]:
             found = SettingBalance(setting=setting)
             for frames, _ in loaded[setting]:
+                if readable:
+                    found.over_the_lead_db.append(
+                        [
+                            level_db(rms(frames[lead:, c])) - level_db(rms(frames[:lead, c]))
+                            for c in read_on
+                        ]
+                    )
+                if channels is None:
+                    continue
+                left, right = channels
                 a, b = level_db(rms(frames[:, left])), level_db(rms(frames[:, right]))
                 found.balance_db.append(a - b)
                 found.total_db.append(level_db(rms(frames[:, [left, right]])))
             measured.append(found)
         out.append(
-            Verdict(stimulus=stimulus, settings=measured, channels=channels, margin_db=margin_db)
+            Verdict(
+                stimulus=stimulus,
+                settings=measured,
+                channels=channels,
+                margin_db=margin_db,
+                over_the_lead_on=read_on if readable else None,
+                not_measured=None if channels else MONO_SOURCE,
+            )
         )
     return out
 
@@ -647,8 +756,9 @@ __all__ = [
     "BandSetting",
     "BandVerdict",
     "by_band",
-    "WHY_A_PATH_AROUND_THE_EFFECT_IS_ASKED",
+    "WHY_A_REFUSED_RUN_STILL_REPORTS_ITS_LEVELS",
     "WHY_A_SEPARATION_NEEDS_A_CEILING",
+    "how_far_a_record_separated",
     "WHY_NOT_A_LEVEL",
     "WHY_THE_FLOOR_IS_THE_PAIRS_OWN",
     "WHY_THE_PAIR_IS_IN_INPUT_ORDER",
