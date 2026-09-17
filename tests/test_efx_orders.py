@@ -413,3 +413,33 @@ def test_an_order_carries_the_floor_it_is_standing_in(one_curve) -> None:
     # orders above them are float residue and do not.
     assert min(first["orders_db"][k] - beside[k] for k in range(3)) > 100.0
     assert first["orders_db"][3] - beside[3] < 60.0
+
+
+def test_the_turns_repeat_floor_is_an_arc_and_not_a_subtraction() -> None:
+    """Because an angle is on a circle and the size beside it is on a line.
+
+    Two takes that landed either side of the half turn are as close as two takes get,
+    and the reading that subtracts the smallest from the largest calls them the widest
+    disagreement in the record. The middle of them is on their own side of the circle
+    for the same reason, not on the opposite one.
+    """
+    either_side = [[179.0, 10.0], [-179.0, 20.0]]
+    assert efxorders._turn_spread(either_side)[0] == pytest.approx(2.0, abs=0.05)
+    middle = efxorders._middle_turn(either_side)[0]
+    assert min(abs(middle - 180.0), abs(middle + 180.0)) < 0.05
+    # And on the order that did not wrap it agrees with the plain subtraction.
+    assert efxorders._turn_spread(either_side)[1] == pytest.approx(10.0, abs=0.05)
+
+
+def test_a_record_says_where_its_last_order_landed(one_curve) -> None:
+    """A resolution that is only a count until the carrier is beside it.
+
+    Reading more orders of a higher carrier walks the top of the series towards
+    whatever rate the stage runs at, and both of those are asked for rather than
+    measured, so the record states where the top ended up instead of asserting that
+    it is somewhere safe.
+    """
+    found = read(one_curve)
+    assert found["top_order_hz"] == pytest.approx(
+        found["carrier_asked_hz"] * found["orders"], rel=1e-9
+    )

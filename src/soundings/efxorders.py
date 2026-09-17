@@ -132,7 +132,13 @@ LIMITS = (
     "carrier or exactly against it, so a turn that is neither nought nor a hundred and "
     "eighty is a reading -- but of what, this record does not say: a state inside the "
     "stage and a filter after it that is not flat across the orders both do it, and "
-    "separating those needs a second carrier at another frequency. The whole series is "
+    "separating those needs a second carrier at another frequency. "
+    "How far from nought-or-against counts is `floor_turn_deg` in `reference`, which is "
+    "the run's own repeats of one setting read the same way. It is an arc and not a "
+    "difference of two numbers: two takes at plus and minus a hundred and seventy-nine "
+    "degrees are two degrees apart, and the reading beside it for the sizes is a "
+    "subtraction because a level is on a line and an angle is not. "
+    "The whole series is "
     "determined only up to which way round the carrier was fed in, which adds `k` times "
     "a hundred and eighty to every turn and leaves the distance from nought-or-against "
     "unchanged -- so that distance is the reading and the value is not. A turn on an "
@@ -142,9 +148,12 @@ LIMITS = (
     "lower bound on what the stage returned rather than the whole of it, and the answer "
     "is to read the same takes again with more orders asked for. "
     "The orders are read where they were put, which holds only while they stay under "
-    "half the rate the unit runs at: at the carrier in this record the last order read "
-    "is still under a kilohertz, and a carrier an octave or two higher would need that "
-    "checked before the same reading means the same thing."
+    "half the rate the stage runs at. Where the last one lands is `top_order_hz`, the "
+    "carrier asked for times the number of orders asked for, and it is printed rather "
+    "than judged: this record does not know what rate the stage runs at, so whether the "
+    "top of this series is where the reading says it is has to be decided against that "
+    "figure by a reader who does. Raising `orders` and raising the carrier both move it, "
+    "and neither announces itself in the numbers."
 )
 
 NOT_HERE = (
@@ -347,6 +356,45 @@ def _read(
     return found, heard, at, round(hold, 3), own, turned, floors
 
 
+def _middle_turn(rows: list[list[float]]) -> list[float]:
+    """Where the repeats of one setting put each order's turn, on the circle.
+
+    A mean of degrees is not a mean of angles: a hundred and seventy-nine and minus a
+    hundred and seventy-nine average to nought, which is the opposite side of the
+    circle from both of them. Average the unit vectors instead.
+    """
+    return [
+        round(
+            float(
+                np.degrees(
+                    np.angle(np.mean(np.exp(1j * np.radians([row[i] for row in rows]))))
+                )
+            ),
+            1,
+        )
+        for i in range(len(rows[0]))
+    ]
+
+
+def _turn_spread(rows: list[list[float]]) -> list[float]:
+    """The shortest arc the repeats of one order's turn all fit inside.
+
+    The size beside this is spread as the largest repeat minus the smallest, which is
+    the right reading for a quantity on a line and the wrong one for a quantity on a
+    circle: two takes at plus and minus a hundred and seventy-nine degrees differ by
+    two degrees and subtracting says three hundred and fifty-eight. So the repeats are
+    sorted around the circle, the widest gap between neighbours is found, and what is
+    left over is the arc they occupy.
+    """
+    spread: list[float] = []
+    for i in range(len(rows[0])):
+        here = sorted(float(row[i]) % 360.0 for row in rows)
+        gaps = [b - a for a, b in zip(here, here[1:], strict=False)]
+        gaps.append(here[0] + 360.0 - here[-1])
+        spread.append(round(360.0 - max(gaps), 1))
+    return spread
+
+
 def _turns(body, rate, carrier_hz: float, orders: int) -> list[float] | None:
     """Each order's angle against the carrier's, with the take's own clock taken out.
 
@@ -519,10 +567,16 @@ def read_directory(
     middle: list[float] | None = None
     beside_middle: list[float] | None = None
     floor: list[float] | None = None
+    middle_turn: list[float] | None = None
+    turn_floor: list[float] | None = None
     flat_heard: float | None = None
     flat_at: float | None = None
     if flats:
         read = [one(name, entry) for name, entry, _ in flats]
+        turns = [turns_at[name] for name, _, _ in flats if turns_at.get(name)]
+        if turns:
+            middle_turn = _middle_turn(turns)
+            turn_floor = _turn_spread(turns)
         rows = [under_the_first(found[used]) for found, _, _, _ in read if found[used]]
         middle = [round(float(np.mean([row[i] for row in rows])), 2) for i in range(len(rows[0]))]
         floor = [
@@ -649,6 +703,7 @@ def read_directory(
         "not_in_this_record": NOT_HERE,
         "orders": orders,
         "carrier_asked_hz": carrier_hz,
+        "top_order_hz": round(carrier_hz * orders, 1),
         "read_over": (
             "the whole of the held stretch"
             if periods is None
@@ -674,6 +729,8 @@ def read_directory(
             "takes": sorted(name for name, _, _ in flats),
             "under_the_first_db": middle,
             "floor_db": floor,
+            "turn_deg": middle_turn,
+            "floor_turn_deg": turn_floor,
             "heard_db": flat_heard,
             "fundamental_hz": flat_at,
             "why": WHY_REFERENCE,
