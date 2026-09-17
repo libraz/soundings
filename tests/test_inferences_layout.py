@@ -128,13 +128,26 @@ def test_a_standing_alternative_can_be_settled_or_says_why_not(path: Path):
 
 
 @pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
-def test_an_alternative_that_fell_says_what_felled_it(path: Path):
+def test_an_alternative_that_stopped_standing_says_which_way_it_went(path: Path):
+    """An alternative ends three ways and the file has to say which.
+
+    It is refuted, it is still standing, or **the measurement found for it and the
+    claim took it up**. The third is not the first: a key named `ruled_out_by`
+    carrying a sentence about a reading that turned out to be right is the kind of
+    thing this archive exists to refuse, and a reader who only skimmed the key names
+    would come away with the opposite of what was measured.
+    """
     claim = inferences.load(path)
     for alternative in claim["alternatives"]:
         if alternative.get("standing"):
             continue
-        assert alternative.get("ruled_out_by"), (
+        fell = alternative.get("ruled_out_by")
+        taken = alternative.get("taken_up_by")
+        assert fell or taken, (
             f"{path.name}: {alternative['reading'][:50]!r} is not standing and does not say why"
+        )
+        assert not (fell and taken), (
+            f"{path.name}: {alternative['reading'][:50]!r} says it was both refuted and taken up"
         )
 
 

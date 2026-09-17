@@ -23,6 +23,14 @@ than a memory.
 observable that separates a reading still standing from the claim, and an
 alternative with no way to separate it is either equivalent -- which closes it --
 or unanswerable with this rig, which is a result and is written as one.
+
+**An alternative ends three ways, not two.** It falls, and says what felled it in
+`ruled_out_by`. It stands, and says what would separate it. Or the measurement
+comes back for it and the claim takes it up, which is `taken_up_by` and is not the
+first of the three however convenient it would be to file it there: a reading that
+turned out to be right, recorded under a key that says it was ruled out, is a file
+that says the opposite of what was measured to anybody reading the keys. The claim
+that takes one up is revised, so that is a round.
 """
 
 from __future__ import annotations
