@@ -185,7 +185,9 @@ complete` counts it that way.
 blocks of that same unit answer a region read with a reply as long as the request
 and a checksum that verifies, carrying the value of the address it starts at and
 00 in every byte after it -- while all 128 offsets of each block, asked one at a
-time, answer with their own offset. Nothing refuses a reply like that, since the
+time, answer with their own offset. At every length from two to sixty-four, and a
+block beside them answers all of those lengths in full, so a region read of these
+two reaches exactly one address whichever it starts at. Nothing refuses a reply like that, since the
 length is what makes a short one refusable, so every byte of it is published as a
 value; and where the region's first byte is 00 anyway there is nothing to see.
 What makes it visible is the comparison and not the run: hold every value in a

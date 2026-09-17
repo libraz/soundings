@@ -1,6 +1,6 @@
 {
   "record": {
-    "schema_version": 1,
+    "schema_version": 2,
     "unit_id": "roland-sc8850-01",
     "stage": "watch-set",
     "invocation": [
@@ -10,17 +10,26 @@
       "--out",
       "data/units/roland-sc8850-01/watch-set/one-at-a-time.json"
     ],
-    "measured_at": "2026-09-10T06:05:38+00:00",
-    "elapsed_s": 0.0,
-    "midi_device_id": "10"
+    "measured_at": "2026-09-17T02:10:53+00:00",
+    "elapsed_s": 0.3,
+    "midi_device_id": null,
+    "midi_model_id": null
   },
   "why": "Only the addresses an offsets record has already seen answer a single-byte read, asked one at a time. An address that answers no single read pays a timeout for the asking, and there are tens of thousands of them inside the regions -- at four tenths of a second each that is hours to establish what a region read already reaches. What this leaves out is stated rather than hidden: it is exactly the addresses that come back only inside a longer read, which is what the other kind of map is for.",
+  "prefixes": {
+    "asked_for": [],
+    "why": "Only the addresses under the prefixes this map was asked for. Everything outside is not in it, so a stage given this map says nothing about the rest of the space -- which is the bound to state when a run is aimed at part of the space rather than at all of it, and the reason the prefixes are written here rather than only in the command that produced it."
+  },
   "why_windows": "Blocks measured to be a window onto another block are left out. A value landing in one lands in the store it points at, and that store is watched here, so watching both asks the same store twice and reports one store as two.",
   "is_not_a_measurement": "This file is not a measurement. It is a list of addresses assembled from the records named below, so that a stage can be aimed at what this unit has answered rather than at what one earlier stage happened to look at. Rebuilding it from those records reproduces it; nothing here was read from the unit.",
   "built_from": [
     "data/units/roland-sc8850-01/offsets/40-4x.json",
     "data/units/roland-sc8850-01/offsets/documented-40-4x.json",
     "data/units/roland-sc8850-01/offsets/whole-map.json",
+    "data/units/roland-sc8850-01/power-on/whole-map-reachable.json",
+    "data/units/roland-sc8850-01/power-on/whole-map-regions.json",
+    "data/units/roland-sc8850-01/power-on/whole-map.json",
+    "data/units/roland-sc8850-01/reset-probe/whole-map.json",
     "data/units/roland-sc8850-01/sweep/whole-map.json"
   ],
   "windows": {
@@ -39,6 +48,14 @@
       "4E",
       "4F"
     ]
+  },
+  "first_byte_only": {
+    "blocks": [
+      "21 0C",
+      "21 1C"
+    ],
+    "addresses": 256,
+    "why": "A block measured to answer a region read with its first byte and 00 in every byte after it is asked one address at a time here, however the rest of the map is asked. The reply is the length that was requested and its checksum verifies, so nothing refuses it and every byte of it would be published as a value -- and a stage given a map that reads such a block as a region cannot see a value land in it, which makes its negatives there about the reply rather than about the unit. Which blocks these are is read from this unit's own records, where the comparison that found them is kept."
   },
   "addresses": 15420,
   "regions": [
