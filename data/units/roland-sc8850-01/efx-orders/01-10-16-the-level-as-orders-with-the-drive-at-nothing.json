@@ -37,8 +37,8 @@
       "--out",
       "~/Projects/soundings/data/units/roland-sc8850-01/efx-orders/01-10-16-the-level-as-orders-with-the-drive-at-nothing.json"
     ],
-    "measured_at": "2026-09-17T08:08:16+00:00",
-    "elapsed_s": 1.7,
+    "measured_at": "2026-09-17T08:33:37+00:00",
+    "elapsed_s": 4.8,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -46,7 +46,7 @@
   "type": "01 10",
   "address": "40 03 16",
   "method": "A tone was held through the effect at one setting and each of the first orders of its carrier was demodulated by that order's own frequency. The carrier itself was measured from each take rather than taken from the note that was played, because a demodulation aimed off a partial reads it through the skirt of its own filter. The filter after the mixer is the whole of the held stretch, windowed -- a matched filter for a partial that stands still, and the narrowest one these takes can give. The level reported per order is that filter's output, in decibels under the first order of the same take.",
-  "limits": "Every figure is the level of an order under the first order **of the same take**, so nothing here is a level and nothing here moves when something after the stage scales the output. That is what makes settings of different loudness comparable and it is also what this record cannot report: how loud the setting came back is in `heard_db` and nowhere in the orders. `floor_db` is the spread of the run's own repeats of one setting, order by order, and a difference inside it is not a reading. It is a range over a handful of takes rather than a bound, so a difference just outside it is not thereby a reading either, and how many takes drew it is in `reference`. A run with no repeats in it carries no floor at all: its figures still stand, because each is read against its own take's first order, but nothing says how small a difference between two of them can be told from the same setting asked twice. Only whole multiples of the carrier are read. A stimulus that is not one partial arrives with orders of its own and returns products between them, and a product on a whole multiple is counted as that order; what bounds this is how much of the stimulus is its own fundamental, which is stated with the stimulus and is not a figure this reading can produce. Energy the stage put between the orders is not here at all. An order quieter than what the same chain recorded with nothing played is the floor and not the order. That comparison is between levels and cannot be made between two ratios, which is why `orders_db` is beside `under_the_first_db` on every reading here and on every take in `silence`: the check is each order against the same order of the silence, and it is left for a reader to make rather than folded into a verdict. `orders` is a resolution. Where `settled_at_the_top_db` is not near nothing the series was still carrying level at the last order read, so the total below it is a lower bound on what the stage returned rather than the whole of it, and the answer is to read the same takes again with more orders asked for. The orders are read where they were put, which holds only while they stay under half the rate the unit runs at: at the carrier in this record the last order read is still under a kilohertz, and a carrier an octave or two higher would need that checked before the same reading means the same thing.",
+  "limits": "Every figure is the level of an order under the first order **of the same take**, so nothing here is a level and nothing here moves when something after the stage scales the output. That is what makes settings of different loudness comparable and it is also what this record cannot report: how loud the setting came back is in `heard_db` and nowhere in the orders. `floor_db` is the spread of the run's own repeats of one setting, order by order, and a difference inside it is not a reading. It is a range over a handful of takes rather than a bound, so a difference just outside it is not thereby a reading either, and how many takes drew it is in `reference`. A run with no repeats in it carries no floor at all: its figures still stand, because each is read against its own take's first order, but nothing says how small a difference between two of them can be told from the same setting asked twice. Only whole multiples of the carrier are read. A stimulus that is not one partial arrives with orders of its own and returns products between them, and a product on a whole multiple is counted as that order; what bounds this is how much of the stimulus is its own fundamental, which is stated with the stimulus and is not a figure this reading can produce. Energy the stage put between the orders is not here at all. An order quieter than what the same chain recorded with nothing played is the floor and not the order. That comparison is between levels and cannot be made between two ratios, which is why `orders_db` is beside `under_the_first_db` on every reading here and on every take in `silence`: the check is each order against the same order of the silence, and it is left for a reader to make rather than folded into a verdict. `floor_between_orders_db` is the same check made without another take at all -- the noise halfway to the next order, read through the same filter, in this take and at this moment -- and it is the tighter of the two wherever the chain was quieter than the silence take happened to be. `orders_turn_deg` is which way each order points against the carrier, with the take's own clock taken out by subtracting `k` times the first order's own angle. Nothing is fitted in it and it does not depend on when the note was struck. Fed one steady tone, a stage with no state in it returns every order either along the carrier or exactly against it, so a turn that is neither nought nor a hundred and eighty is a reading -- but of what, this record does not say: a state inside the stage and a filter after it that is not flat across the orders both do it, and separating those needs a second carrier at another frequency. The whole series is determined only up to which way round the carrier was fed in, which adds `k` times a hundred and eighty to every turn and leaves the distance from nought-or-against unchanged -- so that distance is the reading and the value is not. A turn on an order that is at its own floor is the floor's angle and means nothing. `orders` is a resolution. Where `settled_at_the_top_db` is not near nothing the series was still carrying level at the last order read, so the total below it is a lower bound on what the stage returned rather than the whole of it, and the answer is to read the same takes again with more orders asked for. The orders are read where they were put, which holds only while they stay under half the rate the unit runs at: at the carrier in this record the last order read is still under a kilohertz, and a carrier an octave or two higher would need that checked before the same reading means the same thing.",
   "not_in_this_record": "No curve, no order of polynomial and no clipper. Which nonlinearity these orders belong to, whether it is symmetric, and where along it the signal sat is a fit across settings and types, and the fit is not made here. Neither is what set the orders: a stage reached through the part rather than through the type is a stage the type's own bytes also reach, and which of them a reader is looking at is what the subject of this record says and what these figures cannot.",
   "orders": 8,
   "carrier_asked_hz": 110.0,
@@ -119,6 +119,26 @@
           -175.35,
           -166.78
         ],
+        "orders_turn_deg": [
+          0.0,
+          155.8,
+          0.2,
+          -105.6,
+          72.5,
+          108.4,
+          29.7,
+          -121.4
+        ],
+        "floor_between_orders_db": [
+          -159.99,
+          -159.99,
+          -167.01,
+          -167.01,
+          -163.65,
+          -164.9,
+          -164.9,
+          -174.25
+        ],
         "heard_db": -110.55,
         "take": "held-81-silence-00-00.wav"
       },
@@ -143,6 +163,26 @@
           -164.15,
           -171.34,
           -172.75
+        ],
+        "orders_turn_deg": [
+          0.0,
+          -125.6,
+          87.2,
+          13.7,
+          -41.3,
+          -155.3,
+          -95.1,
+          -16.3
+        ],
+        "floor_between_orders_db": [
+          -158.22,
+          -165.29,
+          -172.84,
+          -172.84,
+          -164.25,
+          -167.21,
+          -167.21,
+          -164.63
         ],
         "heard_db": -110.55,
         "take": "held-81-silence-01-00.wav"
@@ -207,6 +247,26 @@
           -81.56,
           -82.66
         ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          13.0,
+          -138.8,
+          69.6,
+          -80.4,
+          130.6,
+          -20.1
+        ],
+        "floor_between_orders_db": [
+          -158.36,
+          -168.16,
+          -168.16,
+          -163.51,
+          -162.86,
+          -172.42,
+          -172.42,
+          -167.98
+        ],
         "against_the_reference_db": [
           -8.64,
           -10.33,
@@ -255,6 +315,26 @@
           -80.28,
           -81.56,
           -82.66
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          13.0,
+          -138.8,
+          69.6,
+          -80.4,
+          130.6,
+          -20.1
+        ],
+        "floor_between_orders_db": [
+          -168.96,
+          -161.34,
+          -165.56,
+          -185.45,
+          -185.45,
+          -166.47,
+          -167.83,
+          -167.83
         ],
         "against_the_reference_db": [
           -8.64,
@@ -338,6 +418,26 @@
         -104.53,
         -107.75
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.9,
+        32.9,
+        93.9,
+        161.6,
+        -129.1,
+        -71.7,
+        6.9
+      ],
+      "floor_between_orders_db": [
+        -162.45,
+        -162.9,
+        -162.9,
+        -168.37,
+        -168.37,
+        -163.03,
+        -164.19,
+        -164.19
+      ],
       "against_the_reference_db": [
         -0.01,
         -0.01,
@@ -385,6 +485,26 @@
         -101.03,
         -101.01,
         -104.22
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.5,
+        32.5,
+        93.3,
+        160.8,
+        -130.1,
+        -72.9,
+        5.5
+      ],
+      "floor_between_orders_db": [
+        -161.41,
+        -174.87,
+        -174.87,
+        -159.87,
+        -165.29,
+        -171.65,
+        -171.65,
+        -170.81
       ],
       "against_the_reference_db": [
         0.05,
@@ -438,6 +558,26 @@
         -98.5,
         -101.73
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.3,
+        32.2,
+        92.8,
+        160.2,
+        -130.9,
+        -73.7,
+        4.6
+      ],
+      "floor_between_orders_db": [
+        -178.66,
+        -167.69,
+        -163.26,
+        -165.46,
+        -177.17,
+        -177.17,
+        -161.56,
+        -161.56
+      ],
       "against_the_reference_db": [
         0.03,
         0.03,
@@ -490,6 +630,26 @@
         -94.96,
         -98.2
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.4,
+        32.1,
+        92.7,
+        160.1,
+        -131.0,
+        -73.9,
+        4.4
+      ],
+      "floor_between_orders_db": [
+        -172.89,
+        -177.36,
+        -177.36,
+        -168.05,
+        -168.05,
+        -167.92,
+        -172.63,
+        -172.63
+      ],
       "against_the_reference_db": [
         0.01,
         0.01,
@@ -539,6 +699,26 @@
         -92.46,
         -95.69
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.4,
+        32.2,
+        92.8,
+        160.1,
+        -130.9,
+        -73.8,
+        4.5
+      ],
+      "floor_between_orders_db": [
+        -168.87,
+        -181.04,
+        -181.04,
+        -167.33,
+        -167.33,
+        -165.34,
+        -165.34,
+        -162.67
+      ],
       "against_the_reference_db": [
         0.0,
         -0.01,
@@ -582,6 +762,26 @@
         -88.53,
         -88.47,
         -91.71
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.2,
+        31.9,
+        92.5,
+        159.8,
+        -131.4,
+        -74.3,
+        3.9
+      ],
+      "floor_between_orders_db": [
+        -162.42,
+        -165.3,
+        -165.3,
+        -164.44,
+        -168.36,
+        -174.81,
+        -174.81,
+        -159.38
       ],
       "against_the_reference_db": [
         0.01,
@@ -632,6 +832,26 @@
         -85.58,
         -88.82
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.3,
+        31.9,
+        92.5,
+        159.8,
+        -131.3,
+        -74.3,
+        4.0
+      ],
+      "floor_between_orders_db": [
+        -165.62,
+        -166.84,
+        -166.84,
+        -165.16,
+        -162.27,
+        -167.77,
+        -167.77,
+        -164.92
+      ],
       "against_the_reference_db": [
         0.01,
         0.01,
@@ -679,6 +899,26 @@
         -83.15,
         -86.39
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.4,
+        32.1,
+        92.7,
+        160.1,
+        -131.0,
+        -73.9,
+        4.4
+      ],
+      "floor_between_orders_db": [
+        -167.3,
+        -165.09,
+        -166.25,
+        -167.93,
+        -167.93,
+        -164.28,
+        -165.83,
+        -165.83
+      ],
       "against_the_reference_db": [
         -0.01,
         0.0,
@@ -723,6 +963,26 @@
         -81.27,
         -84.51
       ],
+      "orders_turn_deg": [
+        0.0,
+        3.3,
+        32.0,
+        92.5,
+        159.8,
+        -131.3,
+        -74.2,
+        4.0
+      ],
+      "floor_between_orders_db": [
+        -160.36,
+        -170.18,
+        -170.18,
+        -164.08,
+        -164.08,
+        -174.84,
+        -174.84,
+        -163.42
+      ],
       "against_the_reference_db": [
         0.0,
         0.01,
@@ -766,6 +1026,26 @@
         -78.05,
         -77.99,
         -81.23
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.2,
+        31.8,
+        92.4,
+        159.6,
+        -131.6,
+        -74.5,
+        3.7
+      ],
+      "floor_between_orders_db": [
+        -163.01,
+        -163.01,
+        -160.01,
+        -160.01,
+        -160.11,
+        -168.67,
+        -168.67,
+        -162.65
       ],
       "against_the_reference_db": [
         0.0,
