@@ -89,6 +89,7 @@
     "efx-rate",
     "efx-sway",
     "efx-bands",
+    "efx-orders",
     "efx-time",
     "efx-params",
     "efx-motion",
@@ -4026,7 +4027,7 @@
           "dest": "slot",
           "nargs": null,
           "default": "None",
-          "required": true,
+          "required": false,
           "help": "the address that was swept, for the same reason",
           "metavar": "ADDR",
           "choices": null,
@@ -4202,7 +4203,7 @@
           "dest": "slot",
           "nargs": null,
           "default": "None",
-          "required": true,
+          "required": false,
           "help": "the address that was swept, for the same reason",
           "metavar": "ADDR",
           "choices": null,
@@ -4398,6 +4399,247 @@
         }
       ]
     },
+    "efx-orders": {
+      "help": "read what one setting did to the harmonic orders of a held tone, order by order, from takes already saved, with no machine attached",
+      "handler": "cmd_efx_orders",
+      "takes_model_id": false,
+      "needs_unit": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the insertion effect type the takes were made under. Without it the record says what a parameter did without saying whose parameter it was, and a directory of them is identified by its filenames -- which is an index kept by hand beside records that could carry it themselves",
+          "metavar": "MSB LSB",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the address that was swept, for the same reason",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--cc"
+          ],
+          "dest": "cc",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the controller that was swept, where the run reached the chain through one instead of through an address. Spelled as the field the index already groups on, so a run about a controller meets the runs that sent one rather than sitting in a group of its own",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--setting"
+          ],
+          "dest": "setting",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting with a group named `value`, which is what it was taken at. The same contract the band reading sets: how the setting is read back out belongs in the invocation, where it lands in the record and a reader can check it rather than trust it",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--carrier"
+          ],
+          "dest": "carrier",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "where the carrier was nominally played. Each take's own is measured near it and reported, because a boxcar aimed off the partial reads every order through the skirt of its own window",
+          "metavar": "HZ",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--orders"
+          ],
+          "dest": "orders",
+          "nargs": null,
+          "default": "8",
+          "required": false,
+          "help": "how many orders to read, counting the first. A count and not a bound on the stage: what the curve put above the last one asked for is not in the figures, and the record says how much level the series still carried there",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--over-periods"
+          ],
+          "dest": "over_periods",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "read each order through a boxcar this many carrier periods long instead of over the whole held stretch. A resolution and not a correction: the short filter's lobe is wide enough to count what the stage put beside an order as part of it, and the long one loses a partial that moves. The same takes read both ways are two records, and two that disagree say where the energy sits",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--reference"
+          ],
+          "dest": "reference",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a pattern naming the repeats of one setting. Optional here and required on the band reading, because an order is read under its own take's first order rather than against these: what the repeats add is the floor, so a run without them is short of a bound rather than short of a reading",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--control"
+          ],
+          "dest": "control",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a pattern naming the takes made with the part routed past the effect. They are what says an order belongs to the stage rather than to the voice, which a carrier that is not one partial arrives with",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--silence"
+          ],
+          "dest": "silence",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a pattern naming the takes made with the same chain and nothing played. An order that has fallen into the room and the converter is the floor being reported as a harmonic",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--stimulus"
+          ],
+          "dest": "stimulus",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "what was sounded through the effect. How much of it is its own fundamental is what bounds this reading, because a curve fed two partials returns products between them and a product on a whole multiple is counted as that order",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held"
+          ],
+          "dest": "held",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address the run had written while it read, and what it held. Orders are the whole chain's, so a setting read with another of the type's stages moved is a reading of something else",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the interface channel to read every take from. Defaults to whichever is loudest in the takes the run repeated, or in the swept takes where it repeated none: an input the unit is not on is not silent, and its orders are an answer",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--hold"
+          ],
+          "dest": "hold",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "seconds the stimulus was held, where the manifest's own take length is not one second longer than it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
     "efx-time": {
       "help": "read where one insertion effect's delay slot put the copy it returns, setting by setting, from takes already saved, with no machine attached",
       "handler": "cmd_efx_time",
@@ -4449,7 +4691,7 @@
           "dest": "slot",
           "nargs": null,
           "default": "None",
-          "required": true,
+          "required": false,
           "help": "the address that was swept, for the same reason",
           "metavar": "ADDR",
           "choices": null,

@@ -24,6 +24,10 @@ BAND_SET_NAMES = ("third-octave", "twelfth-octave")
 built without loading the reader. `efxbands.BAND_SETS` is what they resolve to,
 and a test holds the two lists against each other rather than a reader doing it."""
 
+ORDERS_READ = 8
+"""How many orders `efx-orders` reads where the invocation does not say, spelled
+here for the same reason and held against `efxorders.ORDERS` by the same test."""
+
 
 def register(sub) -> None:
     p = sub.add_parser(
@@ -365,6 +369,111 @@ def register(sub) -> None:
     )
     options.add_out(p)
     p.set_defaults(needs_unit=False, func=cmd_efx_bands)
+
+    p = sub.add_parser(
+        "efx-orders",
+        help="read what one setting did to the harmonic orders of a held tone, order by "
+        "order, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, required=True, controller=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "what it was taken at. The same contract the band reading sets: how the setting "
+        "is read back out belongs in the invocation, where it lands in the record and a "
+        "reader can check it rather than trust it",
+    )
+    p.add_argument(
+        "--carrier",
+        type=float,
+        required=True,
+        metavar="HZ",
+        help="where the carrier was nominally played. Each take's own is measured near "
+        "it and reported, because a boxcar aimed off the partial reads every order "
+        "through the skirt of its own window",
+    )
+    p.add_argument(
+        "--orders",
+        type=int,
+        default=ORDERS_READ,
+        metavar="N",
+        help="how many orders to read, counting the first. A count and not a bound on "
+        "the stage: what the curve put above the last one asked for is not in the "
+        "figures, and the record says how much level the series still carried there",
+    )
+    p.add_argument(
+        "--over-periods",
+        type=int,
+        metavar="N",
+        help="read each order through a boxcar this many carrier periods long instead of "
+        "over the whole held stretch. A resolution and not a correction: the short "
+        "filter's lobe is wide enough to count what the stage put beside an order as "
+        "part of it, and the long one loses a partial that moves. The same takes read "
+        "both ways are two records, and two that disagree say where the energy sits",
+    )
+    p.add_argument(
+        "--reference",
+        metavar="REGEX",
+        help="a pattern naming the repeats of one setting. Optional here and required "
+        "on the band reading, because an order is read under its own take's first order "
+        "rather than against these: what the repeats add is the floor, so a run without "
+        "them is short of a bound rather than short of a reading",
+    )
+    p.add_argument(
+        "--control",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the part routed past the effect. They "
+        "are what says an order belongs to the stage rather than to the voice, which a "
+        "carrier that is not one partial arrives with",
+    )
+    p.add_argument(
+        "--silence",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the same chain and nothing played. An "
+        "order that has fallen into the room and the converter is the floor being "
+        "reported as a harmonic",
+    )
+    p.add_argument(
+        "--stimulus",
+        help="what was sounded through the effect. How much of it is its own fundamental "
+        "is what bounds this reading, because a curve fed two partials returns products "
+        "between them and a product on a whole multiple is counted as that order",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. Orders are "
+        "the whole chain's, so a setting read with another of the type's stages moved is "
+        "a reading of something else",
+    )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever is "
+        "loudest in the takes the run repeated, or in the swept takes where it repeated "
+        "none: an input the unit is not on is not silent, and its orders are an answer",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        help="seconds the stimulus was held, where the manifest's own take length is not "
+        "one second longer than it",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_orders)
 
     p = sub.add_parser(
         "efx-time",
@@ -940,6 +1049,83 @@ def cmd_efx_bands(args) -> int:
         print("  (no --silence: a setting that turns the output off reads as a profile)")
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if astray := picked["loudest_elsewhere"]:
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_orders(args) -> int:
+    """What one setting did to the orders of a held tone, from takes already saved."""
+    from .. import efxorders
+
+    def said(reading) -> None:
+        under = reading["under_the_first_db"]
+        largest = reading.get("largest_db")
+        print(
+            f"  {reading['value']:5d} -> "
+            + (
+                f"{reading['all_of_them_db']:+7.2f} dB under the first"
+                if under is not None
+                else f"{'not read':>25s}"
+            )
+            + (
+                f"  worst order {reading['largest_at_order']} by {largest:+.2f} dB"
+                if largest is not None
+                else ""
+            )
+            + f"  {reading['heard_db']:.0f} dBFS"
+        )
+
+    found = efxorders.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        controller=args.cc,
+        setting=args.setting,
+        carrier_hz=args.carrier,
+        orders=args.orders,
+        periods=args.over_periods,
+        reference=args.reference,
+        control=args.control,
+        silence=args.silence,
+        stimulus=args.stimulus,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        channel=args.channel,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        progress=said,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of {len(picked['reference_db'])} "
+        f"({picked['chosen_by']}, {picked['named_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reference_db"])
+        + " dBFS"
+    )
+    if not found["readings"]:
+        print(
+            f"no take under {args.takes} has a setting matching {args.setting!r}; "
+            f"{found['takes_not_matching']['count']} were looked at"
+        )
+        return 1
+    if found["reference"]["floor_db"] is None:
+        print(
+            "  (no --reference: the record carries no floor, so no difference in it "
+            "is a reading)"
+        )
+    else:
+        worst = max(found["reference"]["floor_db"])
+        print(f"  the repeats of one setting agree to {worst:.2f} dB at the worst order")
+    if not found["control"]["takes"]:
+        print("  (no --control: an order the carrier arrived with reads as one the stage added)")
+    if not found["silence"]["takes"]:
+        print("  (no --silence: an order that fell into the floor reads as a harmonic)")
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  ({missed} takes under the same directory did not match the patterns)")
     if astray := picked["loudest_elsewhere"]:
         print(
             f"  ({len(astray)} takes are loudest on another channel; read from "

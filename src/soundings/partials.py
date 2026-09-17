@@ -169,6 +169,57 @@ def read(
     )
 
 
+def levels(
+    body: np.ndarray, rate: int, *, carrier_hz: float, count: int, periods: int | None = None
+) -> list[float] | None:
+    """Each of the first `count` orders of the carrier as its own standing level.
+
+    The same demodulation as `_one` above and a different reading, because the
+    question is different and the difference is in one number -- how long the boxcar
+    after the mixer is.
+
+    `_one` reads a partial that is **moving**, so its boxcar is one carrier period
+    long: short enough to follow a modulator, and with its nulls on the neighbouring
+    orders. What that costs is a main lobe a whole fundamental wide, so everything
+    within one fundamental of an order is read as part of it. On a carrier a
+    nonlinearity has been fed that is not nothing -- products between two partials
+    land between the orders, and a lobe that wide collects them.
+
+    A standing level needs no time resolution at all, so the boxcar is the whole
+    read stretch: a matched filter for a steady partial, and the narrowest lobe the
+    take can give. Windowed rather than square, so that a fundamental measured a
+    little off does not read every order through a sidelobe of the first. What it
+    assumes is that the partial is steady over the stretch -- one that drifts turns
+    under the filter and reads low -- and what says it was is the run's own repeats
+    of one setting, which is a figure the caller has and this does not.
+
+    `periods` reads it over a boxcar that many carrier periods long instead, and is
+    here for asking whether the two answers agree rather than for producing a
+    record: a reading that changes with the width of its filter is reporting what
+    sits beside the orders as well as the orders.
+
+    `None` where the stretch is too short to hold the reading.
+    """
+    body = np.asarray(body, dtype=np.float64)
+    if carrier_hz <= 0 or body.size < 2:
+        return None
+    if periods is not None:
+        if body.size <= 2 * DROP:
+            return None
+        window = int(round(periods * rate / carrier_hz))
+        step = max(1, rate // int(LEVEL_AT_HZ))
+        return [_one(body, rate, carrier_hz * k, window, step)[3] for k in range(1, count + 1)]
+    at = np.arange(body.size, dtype=np.float64) / rate
+    shaped = body * np.hanning(body.size)
+    weight = float(np.sum(np.hanning(body.size)))
+    if weight <= 0:
+        return None
+    return [
+        float(np.abs(np.sum(shaped * np.exp(-2j * np.pi * carrier_hz * k * at))) / weight)
+        for k in range(1, count + 1)
+    ]
+
+
 def project(series: np.ndarray, at: np.ndarray, grid: np.ndarray) -> np.ndarray:
     """One size per grid rate, averaged over the partials, in the series' units.
 

@@ -59,7 +59,11 @@ def add_out(parser: argparse.ArgumentParser) -> None:
 
 
 def add_subject(
-    parser: argparse.ArgumentParser, *, required: bool = False, slot: bool = True
+    parser: argparse.ArgumentParser,
+    *,
+    required: bool = False,
+    slot: bool = True,
+    controller: bool = False,
 ) -> None:
     """What the takes were of, so the record says it in a field and not in its name.
 
@@ -70,10 +74,25 @@ def add_subject(
     reaches, and that is not a style complaint -- a unit's listing groups records
     by subject, and a record naming none is one no coverage figure can count.
 
+    **What was swept is not always an address.** A stage in the chain is reached by
+    the part's own controllers as well as by the type's parameters, and a run that
+    sweeps one of those is about the controller: filing it under the address it
+    happened to hold would say the run was about a parameter nobody moved. Where
+    both are offered only one may be given, which is the guard -- one run swept one
+    thing.
+
+    `controller` is off by default, and that is a statement about the stage rather
+    than about the flag. A stage offering it has to be able to put a controller in
+    the record it writes, and one that cannot would take the flag and file the run
+    under nothing. Which stages cannot is a gap in those stages; it is left where a
+    reader can see it instead of being covered by a flag that does nothing.
+
     `slot` is off for the few stages that read a whole type rather than one of its
-    parameters. Optional by default because the older stages have records that
-    were made before the flag existed, and a flag made required today would make
-    those commands unable to re-publish the very records that need it.
+    parameters, and it takes the controller with it: a stage with nothing swept
+    inside the type has no controller subject either. Optional by default because
+    the older stages have records that were made before the flag existed, and a
+    flag made required today would make those commands unable to re-publish the
+    very records that need it.
     """
     parser.add_argument(
         "--type",
@@ -85,12 +104,22 @@ def add_subject(
         "by hand beside records that could carry it themselves",
     )
     if slot:
-        parser.add_argument(
+        swept = parser.add_mutually_exclusive_group(required=required)
+        swept.add_argument(
             "--slot",
             metavar="ADDR",
-            required=required,
             help="the address that was swept, for the same reason",
         )
+        if controller:
+            swept.add_argument(
+                "--cc",
+                type=int,
+                metavar="N",
+                help="the controller that was swept, where the run reached the chain "
+                "through one instead of through an address. Spelled as the field the "
+                "index already groups on, so a run about a controller meets the runs "
+                "that sent one rather than sitting in a group of its own",
+            )
 
 
 def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[str, str]:
@@ -113,11 +142,19 @@ def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[s
     false of one told nothing.
     """
     said = manifest or {}
+    given = getattr(args, "cc", None)
     found = {
         "type": getattr(args, "type", None) or said.get("type"),
         "address": getattr(args, "slot", None) or said.get("address"),
+        # A controller number may be nought, which is a controller and not an
+        # absence, so this one is asked whether it was given rather than whether it
+        # is true. The flags are exclusive, so a run that named a controller does
+        # not fall back to an address the manifest carried for another reason.
+        "controller": given if given is not None else said.get("controller"),
     }
-    return {key: value for key, value in found.items() if value}
+    if found["controller"] is not None:
+        found["address"] = None
+    return {key: value for key, value in found.items() if value not in (None, "")}
 
 
 def add_audio(parser: argparse.ArgumentParser) -> None:
