@@ -150,3 +150,65 @@ def test_the_file_says_it_is_not_a_measurement_and_what_it_was_built_from(tmp_pa
     assert "not a measurement" in built["is_not_a_measurement"]
     assert any("sweep/whole-map.json" in p for p in built["built_from"])
     assert any("offsets/whole-map.json" in p for p in built["built_from"])
+
+
+def test_a_block_a_record_names_is_asked_one_address_at_a_time(tmp_path) -> None:
+    """A region read of such a block carries its first byte and zeros after it.
+
+    Length and checksum are both what was asked for, so nothing refuses the reply
+    and every byte of it is published. A stage given a map that asks the block as
+    a region therefore cannot see a value land in it, and its negatives there are
+    about the reply rather than about the unit.
+    """
+    unit = _unit(
+        tmp_path,
+        sweep={"regions": [{"address": "21 0C 00", "size": 4}]},
+        offsets={
+            "blocks": [
+                {
+                    "address": "21 0C 00",
+                    "answered": {f"21 0C {i:02X}": f"{i:02X}" for i in range(4)},
+                }
+            ]
+        },
+    )
+    (unit / "power-on").mkdir()
+    (unit / "power-on" / "whole-map.json").write_text(
+        json.dumps(
+            {
+                "findings": [
+                    {
+                        "kind": watching.FIRST_BYTE_ONLY,
+                        "blocks": ["21 0C"],
+                    }
+                ]
+            }
+        )
+    )
+    built = watching.build(unit)
+
+    assert [r["size"] for r in built["regions"]] == [1, 1, 1, 1]
+    assert built["addresses"] == 4
+    assert built["first_byte_only"]["blocks"] == ["21 0C"]
+    assert built["first_byte_only"]["addresses"] == 4
+    assert any("power-on/whole-map.json" in p for p in built["built_from"])
+
+
+def test_a_unit_whose_records_name_no_such_block_is_asked_as_runs(tmp_path) -> None:
+    """The blocks are one unit's answer, so the next unit starts with none of them."""
+    unit = _unit(
+        tmp_path,
+        sweep={"regions": [{"address": "21 0C 00", "size": 4}]},
+        offsets={
+            "blocks": [
+                {
+                    "address": "21 0C 00",
+                    "answered": {f"21 0C {i:02X}": f"{i:02X}" for i in range(4)},
+                }
+            ]
+        },
+    )
+    built = watching.build(unit)
+
+    assert [r["size"] for r in built["regions"]] == [4]
+    assert built["first_byte_only"]["blocks"] == []

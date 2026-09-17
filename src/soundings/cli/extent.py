@@ -156,7 +156,12 @@ def register(sub) -> None:
         "is one half of a capture rather than a capture",
     )
     options.add_out(p)
-    p.set_defaults(func=cmd_watch_set)
+    # It asks the records and never the unit, so it neither holds the unit nor
+    # stamps a device on what it writes. Holding it meant that rebuilding a map
+    # -- which is what a stage does after a record it is built from changes --
+    # was refused for as long as another command was measuring, and the map is
+    # the one thing a waiting stage needs before it can start.
+    p.set_defaults(func=cmd_watch_set, needs_unit=False)
 
 
 def cmd_sweep(args: argparse.Namespace) -> int:

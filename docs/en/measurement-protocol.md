@@ -146,8 +146,18 @@ message goes. `--one-at-a-time` holds only what a single read answers, each its
 own region: a reply to a single read is answered for the address it was asked
 about or not at all, so no byte in it can land on the address below its own.
 
+A block this unit's records name as answering a region read with its first byte
+and zeros after it is put in one address at a time, however the rest of the map is
+asked, and the map says which blocks those were. The blocks are read from the
+records and held nowhere in the code: which ones answer that way is one unit's
+answer, and a list of them beside the builder would arrive at the next unit as an
+assumption about it.
+
 Nothing here is measured, and the file says so. It is rebuilt from the unit's own
-records whenever those change, and it names them.
+records whenever those change, and it names them -- so a stage that has just
+learnt something about how a block answers rebuilds the map before it runs again.
+The command takes no unit and holds none, so it can be rebuilt while the hardware
+is busy with something else.
 
 ### 5. Power-on state
 

@@ -50,6 +50,16 @@ WHY_WINDOWS_KEPT = (
     "value recorded for it rather than a value recorded once."
 )
 
+WHY_FIRST_BYTE_ONLY = (
+    "A block measured to answer a region read with its first byte and 00 in every byte after "
+    "it is asked one address at a time here, however the rest of the map is asked. The reply "
+    "is the length that was requested and its checksum verifies, so nothing refuses it and "
+    "every byte of it would be published as a value -- and a stage given a map that reads such "
+    "a block as a region cannot see a value land in it, which makes its negatives there about "
+    "the reply rather than about the unit. Which blocks these are is read from this unit's own "
+    "records, where the comparison that found them is kept."
+)
+
 WHY_ONE_AT_A_TIME = (
     "Only the addresses an offsets record has already seen answer a single-byte read, asked "
     "one at a time. An address that answers no single read pays a timeout for the asking, and "
@@ -100,6 +110,37 @@ def answering(unit: Path) -> set[str]:
         for block in found.get("blocks", []):
             out |= set(block.get("answered") or {})
     return out
+
+
+FIRST_BYTE_ONLY = "a-region-reply-whose-bytes-after-the-first-are-zero"
+
+
+def _first_byte_only(unit: Path) -> tuple[set[str], list[Path]]:
+    """Blocks this unit's records say a region read answers with its first byte only.
+
+    Read rather than held: the blocks are one unit's answer, and a list of them
+    beside the code would arrive at the next unit as an assumption about it. A
+    record that names none leaves this empty, which is the same map as before.
+    """
+    blocks: set[str] = set()
+    cited: list[Path] = []
+    for path in sorted(unit.glob("*/*.json")):
+        try:
+            record = json.loads(path.read_text())
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        if not isinstance(record, dict):
+            continue
+        named = {
+            block
+            for finding in record.get("findings") or []
+            if isinstance(finding, dict) and finding.get("kind") == FIRST_BYTE_ONLY
+            for block in finding.get("blocks") or []
+        }
+        if named:
+            blocks |= named
+            cited.append(path)
+    return blocks, cited
 
 
 def _runs(addresses: set[str]) -> list[dict]:
@@ -154,6 +195,9 @@ def build(unit: Path, *, keep_windows: bool = False, one_at_a_time: bool = False
     windows = _windows(found)
     if not keep_windows:
         addresses = {a for a in addresses if a[:2] not in windows}
+    singly, cited = _first_byte_only(unit)
+    alone = {a for a in addresses if a[:5] in singly}
+    addresses -= alone
     # Two keys rather than one sentence made of both. A published sentence has to
     # exist in the source as it was written, and a run-together pair exists there
     # as neither half -- so joining them puts prose in the archive that a reader
@@ -165,13 +209,23 @@ def build(unit: Path, *, keep_windows: bool = False, one_at_a_time: bool = False
         "built_from": sorted(
             [str(sweep.relative_to(unit.parents[2]))]
             + [str(p.relative_to(unit.parents[2])) for p in sorted((unit / "offsets").glob("*.json"))]
+            + [str(p.relative_to(unit.parents[2])) for p in cited]
         ),
         "windows": {"kept": keep_windows, "blocks": sorted(windows)},
-        "addresses": len(addresses),
-        "regions": (
-            [{"address": a, "size": 1} for a in sorted(addresses)]
-            if one_at_a_time
-            else _runs(addresses)
+        "first_byte_only": {
+            "blocks": sorted(singly),
+            "addresses": len(alone),
+            "why": WHY_FIRST_BYTE_ONLY,
+        },
+        "addresses": len(addresses) + len(alone),
+        "regions": sorted(
+            (
+                [{"address": a, "size": 1} for a in sorted(addresses)]
+                if one_at_a_time
+                else _runs(addresses)
+            )
+            + [{"address": a, "size": 1} for a in sorted(alone)],
+            key=lambda region: region["address"],
         ),
     }
 
