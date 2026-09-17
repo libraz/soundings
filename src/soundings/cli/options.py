@@ -93,7 +93,7 @@ def add_subject(
         )
 
 
-def subject_of(args: argparse.Namespace) -> dict[str, str]:
+def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[str, str]:
     """The subject flags as the fields a record carries, dropping what was not given.
 
     The other half of `add_subject`, and here rather than in each handler so that
@@ -101,11 +101,22 @@ def subject_of(args: argparse.Namespace) -> dict[str, str]:
     `slot` where its siblings say `address` is a record the unit's listing groups
     on its own, which reads as a parameter nobody measured.
 
+    **The run's own manifest answers where the command line does not.** A driver
+    that saved its takes wrote what they were of into the manifest beside them, and
+    a reading made from those takes is a reading of that -- so a flag is a way of
+    saying it where the takes do not, not the only way. The flag still wins: it is
+    the one a person typed while looking at the run, and a manifest naming a whole
+    directory of runs names the first of them.
+
     A field left out rather than written empty. An index shows an empty subject as
     a record that states none, which is true of a record that was never told and
     false of one told nothing.
     """
-    found = {"type": getattr(args, "type", None), "address": getattr(args, "slot", None)}
+    said = manifest or {}
+    found = {
+        "type": getattr(args, "type", None) or said.get("type"),
+        "address": getattr(args, "slot", None) or said.get("address"),
+    }
     return {key: value for key, value in found.items() if value}
 
 

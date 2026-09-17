@@ -374,7 +374,7 @@ def cmd_vibrato(args: argparse.Namespace) -> int:
         vibrato.record(
             by_setting,
             takes=str(args.takes),
-            subject=options.subject_of(args),
+            subject=options.subject_of(args, manifest),
             searched_hz=search,
             control=vouched,
             control_taken_from=quiet,
