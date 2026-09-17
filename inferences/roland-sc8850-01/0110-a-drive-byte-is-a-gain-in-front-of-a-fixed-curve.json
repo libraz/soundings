@@ -3,9 +3,9 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-17T07:32:59.343157+00:00",
-    "made_by": "backup/what-the-drive-byte-does.py, backup/is-it-the-drive-or-is-it-the-level.py, backup/how-hard-the-stage-is-driven-from-outside.py, backup/publish-the-drive-as-orders.py, backup/match-the-drive-against-the-input-from-the-records.py, backup/write-the-drive-inference.py",
-    "rounds": 1,
+    "made_at": "2026-09-17T08:09:16.250979+00:00",
+    "made_by": "backup/what-the-drive-byte-does.py, backup/is-it-the-drive-or-is-it-the-level.py, backup/how-hard-the-stage-is-driven-from-outside.py, backup/publish-the-drive-as-orders.py, backup/match-the-drive-against-the-input-from-the-records.py, backup/which-voice-is-one-partial-at-this-note.py, backup/write-the-drive-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -17,8 +17,8 @@
       ]
     }
   },
-  "claim": "The byte a page prints `Drive` against sets how hard a signal is driven into a fixed nonlinearity. It does not choose between curves and it does not change the curve: over the settings the comparison can reach, feeding the stage a louder signal at one drive returns the same harmonic orders as raising the drive at one input. The input each setting wants is what that setting's own value gives when it is read as a gain -- twenty times the log of it over 48, in decibels, and 48 is where the page rests the byte rather than an origin chosen here. From setting 8 to 48 the wanted input tracks that law to between a tenth and four tenths of a decibel, against bars of a tenth to four and four tenths that the ladder measures for itself by putting each of its own rungs back from the others. The tightest of those rows is setting 32, where the law is asked to a tenth of a decibel and answers to a tenth. Two bounds, both measured. The byte's bottom three settings return one state -- 0, 2 and 4 agree order for order inside the run's own repeats -- so whatever the byte is there it is not a gain, which would have to be three different ones. Above 48 every setting wants more input than the part can give, and the comparison says nothing about them rather than pinning them to the ladder's last rung. The curve being driven is not a saturating clipper. Its harmonic content falls as the input rises, monotonically over thirty-six decibels of it, and never reaches the carrier's own orders however quiet the input gets: what departs from linearity sits near zero rather than at the extremes. The other standalone drive type is a different curve and not the same one rested somewhere else. No state this type can be put in comes within seven and nine tenths of a decibel of any state of that one, against repeats that agree to two hundredths.",
-  "named": "a linear pre-gain into a fixed curve, the curve's departure from linearity near zero rather than at its extremes. Not called memoryless: every figure was read on one held tone at one frequency, which cannot tell a static curve from one with a state in it, and a name is the first part of a claim to be retracted",
+  "claim": "The byte a page prints `Drive` against sets how hard a signal is driven into a fixed nonlinearity. It does not choose between curves and it does not change the curve: over the settings the comparison can reach, feeding the stage a louder signal at one drive returns the same reading as raising the drive at one input, the reading being the level at each whole multiple of the carrier under the level at the carrier. That is a statement about the stage and not about the signal. If the stage is one curve behind one gain then scaling what it is fed has the same effect whatever it is fed, so all this needs is that both sides of every comparison were made on the same signal, which they were. It is worth saying what it therefore does not need, because the signal is not what the run took it for: the voice is two oscillators about twelve cents apart at nearly the same size, so it beats, and the stage was driven at a level that moved through each take rather than one that stood still. The correspondence survives that untouched. What is read at each multiple of the carrier does not, and nothing here is a harmonic series. The input each setting wants is what that setting's own value gives when it is read as a gain -- twenty times the log of it over 48, in decibels, and 48 is where the page rests the byte rather than an origin chosen here. From setting 8 to 48 the wanted input tracks that law to between a tenth and four tenths of a decibel, against bars of a tenth to four and four tenths that the ladder measures for itself by putting each of its own rungs back from the others. The tightest of those rows is setting 32, where the law is asked to a tenth of a decibel and answers to a tenth. Two bounds, both measured. The byte's bottom three settings return one state -- 0, 2 and 4 agree order for order inside the run's own repeats -- so whatever the byte is there it is not a gain, which would have to be three different ones. Above 48 every setting wants more input than the part can give, and the comparison says nothing about them rather than pinning them to the ladder's last rung. The other standalone drive type is a different curve and not the same one rested somewhere else. No state this type can be put in comes within seven and nine tenths of a decibel of any state of that one, against repeats that agree to two hundredths.",
+  "named": "a linear pre-gain into a fixed curve. Nothing is named about the curve. It is not called memoryless, because every figure was read on one held tone at one frequency and that cannot tell a static curve from one with a state in it; and nothing is said about where it departs from linearity, because the signal it was read on is two beating oscillators and the shape of a curve cannot be taken off that. A name is the first part of a claim to be retracted, and one half of this one already was",
   "rests_on": {
     "measurements": [
       {
@@ -367,7 +367,8 @@
             96,
             127
           ],
-          "stimulus": "a synthesised sine through the analogue input, at two frequencies an octave apart and at matched levels",
+          "stimulus": "a note held through the effect on a voice measured to be one component at this same note -- program 79, from a survey of nine of the unit's own voices. Read through the filter these figures are read through, its own orders stand 41.7 decibels under its first at the worst of the first eight, and from the fourteenth order upward it stands at the chain's own floor, 101 decibels under and lower. Not a signal presented at the analogue input: that input reaches this unit's output flat and bypasses every one of its effects, which is measured, sounded at two notes an octave apart and at the levels that put the same first order into the stage",
+          "not_this": "data/units/roland-sc8850-01/transfer/input-bypasses-efx.json",
           "takes": 28,
           "minutes": 12
         }
@@ -378,14 +379,14 @@
       "candidate": null,
       "standing": true,
       "separated_by": {
-        "observable": "Whether anything comes back at frequencies that are not whole multiples of the carrier, with a synthesised sine driving the stage through the analogue input instead of a voice.",
+        "observable": "Whether anything comes back at frequencies that are not whole multiples of the carrier, on a voice that is one component rather than the two the present figures were read on.",
         "predicts": {
           "a static curve": "Nothing off the multiples. Fed one sinusoid a memoryless curve returns energy at whole multiples of it and nowhere else.",
           "a curve with memory": "Content off the multiples, from whatever the state does between one sample and the next."
         },
-        "divergence": "Not predictable without a model of the memory, so what the margin is a ratio of is the two bounds rather than two predictions: how deep the present stimulus lets the question be asked, against how deep a sine would. That is the thing a margin is for here -- a run that cannot see below the stimulus's own products cannot answer at all, whatever the memory turns out to be.",
-        "sensitivity_here": "The present carrier stops the question at 13.46 dB under the first order, which is where its own second partial arrives: a curve fed two partials returns products between them and those land off the multiples whether or not anything has memory. A synthesised sine has no second partial to make products with, and the floor is then the chain's own -- the same takes put the drive the ladder was made at 70.4 dB above what the chain records with nothing played.",
-        "margin": 377,
+        "divergence": "Not predictable without a model of the memory, so what the margin is a ratio of is the two bounds rather than two predictions: how deep the question can be asked on a carrier that is one component, against how deep it can be asked on the one these figures were read on. That is the thing a margin is for here -- a run that cannot see below what its own stimulus brings cannot answer at all, whatever the memory turns out to be.",
+        "sensitivity_here": "The carrier these figures were read on stops the question at 13.5 dB under the first order, which is where its own second component arrives: a curve fed two tones returns products between them and those land off the multiples whether or not anything has memory. The voice the survey measured as one component brings 39.6 dB less of it -- what stands nearest its own first order is 39.6 dB under it, and the chain's floor is another 44.5 dB below that, so it is the voice and not the rig that sets the depth either way.",
+        "margin": 20,
         "run": {
           "stage": "efx-orders",
           "type": "01 10",
@@ -399,24 +400,25 @@
             96,
             127
           ],
-          "stimulus": "a synthesised sine through the analogue input",
+          "stimulus": "a note held through the effect on a voice measured to be one component at this same note -- program 79, from a survey of nine of the unit's own voices. Read through the filter these figures are read through, its own orders stand 41.7 decibels under its first at the worst of the first eight, and from the fourteenth order upward it stands at the chain's own floor, 101 decibels under and lower. Not a signal presented at the analogue input: that input reaches this unit's output flat and bypasses every one of its effects, which is measured",
+          "not_this": "data/units/roland-sc8850-01/transfer/input-bypasses-efx.json",
           "takes": 14,
           "minutes": 8
         }
       }
     },
     {
-      "reading": "What sits near zero is a staircase -- a quantiser with a fixed step -- rather than a smooth feature such as a dead zone or a crossover notch. Both give the falling relative distortion this claim reports, for the same reason: a feature of fixed width near zero.",
+      "reading": "What the curve does near zero is a staircase -- a quantiser with a fixed step -- rather than a smooth feature such as a dead zone or a crossover notch. The reading that put a feature near zero in the first place has been withdrawn, so this is not offered as the better of two explanations of something measured. It is asked because the run that would settle it is the same run that would say whether there is a feature near zero at all, and the high orders answer both.",
       "candidate": null,
       "standing": true,
       "separated_by": {
-        "observable": "How the order series behaves past the twentieth order, with a synthesised sine driving the stage through the analogue input.",
+        "observable": "How the order series behaves past the twentieth order, on a voice whose own orders have reached the chain's floor by the fourteenth.",
         "predicts": {
           "a staircase": "A series that stops falling. A quantiser's error is broadband, so the high orders sit on a plateau instead of continuing down.",
           "a smooth feature": "A series that goes on falling at about the rate the low orders set, because the feature is smooth on the scale of the signal."
         },
         "divergence": "14 dB. Read to thirty-two orders these takes already show a plateau: orders 9 to 17 fall about 1.7 dB an order, which carried to order 30 would put it near -56 dB under the first, and what is there is -42. That figure is not usable as it stands -- the take routed past the effect plateaus in the same place, so on this carrier the plateau is the voice's -- but it is the size the difference would be.",
-        "sensitivity_here": "0.28 dB, what the repeats agree to at the worst of thirty-two orders, four times looser than at eight because the high orders are quieter. The bound that stops the question being asked now is a different one: the carrier's own orders come within 3 dB of what the stage returns by order 15 at the drive the ladder was made at, and by order 13 at the top of the byte, so nothing above that is attributable on this stimulus at all.",
+        "sensitivity_here": "0.28 dB, what the repeats agree to at the worst of thirty-two orders, four times looser than at eight because the high orders are quieter. On the carrier these figures were read on that was not the bound at all: its own orders come within 3 dB of what the stage returns by the fifteenth at the drive the ladder was made at and by the thirteenth at the top of the byte, so nothing above them was attributable. The voice the survey measured as one component removes that bound rather than easing it -- its own orders are at the chain's floor from the fourteenth upward, 101 decibels under its first and lower, against a stage that returns tens of decibels more than that.",
         "margin": 50,
         "run": {
           "stage": "efx-orders",
@@ -431,7 +433,8 @@
             96,
             127
           ],
-          "stimulus": "a synthesised sine through the analogue input",
+          "stimulus": "a note held through the effect on a voice measured to be one component at this same note -- program 79, from a survey of nine of the unit's own voices. Read through the filter these figures are read through, its own orders stand 41.7 decibels under its first at the worst of the first eight, and from the fourteenth order upward it stands at the chain's own floor, 101 decibels under and lower. Not a signal presented at the analogue input: that input reaches this unit's output flat and bypasses every one of its effects, which is measured",
+          "not_this": "data/units/roland-sc8850-01/transfer/input-bypasses-efx.json",
           "takes": 14,
           "minutes": 8
         }
@@ -441,13 +444,20 @@
   "refuted_by": "A drive setting between 8 and 48 whose orders no input level reproduces, by more than the bar the ladder measures at that input. Or the wanted input ceasing to follow the byte's value in decibels once the ladder is extended -- the run reached thirty-six decibels of input and the law was checked over forty of drive, and a longer ladder could break it where this one could not look. Or the output level byte turning out to move the orders after all on some other type, which would make every comparison here a comparison through a gain and the whole reading an artefact of loudness.",
   "what_it_would_change": [],
   "what_this_does_not_settle": [
-    "What the curve is. Eight orders at each of nine input levels say a great deal about the shape and nothing here fits one: no polynomial order, no clipping law, no table length, and no statement about whether it is odd, even or neither.",
+    "What the curve is. Nothing here fits one: no polynomial order, no clipping law, no table length, and no statement about whether it is odd, even or neither. This is a stronger disclaimer than the one it replaces, which said the figures say a great deal about the shape and were merely not fitted. They do not. The signal they were read on is two oscillators twelve cents apart at nearly the same size, so what a whole multiple of the carrier holds is not the order of a curve fed a tone -- it is what the stronger of the two made by itself under a drive level that beats through its whole range six times inside every take. A shape cannot be taken off that, and this claim's business is a correspondence between settings, which can.",
     "What the byte does at its bottom three settings. They are one state and the claim says so; it does not say whether the byte is clamped there, whether the gain has a floor under it, or whether something else entirely takes over.",
     "What the byte does above 48. Every setting above it asks for more input than the part can produce, so the ladder cannot reach them and nothing here says whether the law continues, bends or stops.",
     "Whether the other standalone drive type is a gain into its own fixed curve. It is measured to be a different curve; it was never given a ladder of its own, and the same comparison on it is a run that has not been made.",
     "Whether the cabinet after the stage leaves the reading alone. The sweep under a cabinet is published beside this and is not used here, because a filter after a nonlinearity changes which orders come back and the matching would be against a ladder made without one.",
     "How the byte behaves on the fourteen other types that print a drive parameter. Two were asked and they are the two standalone ones; a multi-effect's drive stage is a block-reuse question this says nothing about.",
     "Whether the correspondence is a gain at all rather than a gain and a matched attenuation after it. The reading is a ratio, so anything after the curve is invisible to it by construction -- which is what makes settings of different loudness comparable and is also what it cannot see.",
-    "Anything above about the thirteenth order. Read to thirty-two orders the takes still hold energy at the top, but the take routed past the effect holds it too: the carrier's own orders come within 3 dB of what the stage returns by order 15 at the drive the ladder was made at and by order 13 at the top of the byte. What the high orders do is the question that separates the shapes near zero from each other, and it needs a stimulus this unit's voices cannot provide."
-  ]
+    "Anything above about the thirteenth order. Read to thirty-two orders the takes still hold energy at the top, but the take routed past the effect holds it too: the carrier's own orders come within 3 dB of what the stage returns by order 15 at the drive the ladder was made at and by order 13 at the top of the byte. What the high orders do is the question that separates the shapes near zero from each other, and this carrier cannot be asked it. Another of the unit's own voices can: a survey of nine of them at this same note found one whose own orders are at the chain's floor from the fourteenth upward. What the stimulus could not provide was the run's choice of stimulus and not a property of the machine."
+  ],
+  "a_reading_published_and_withdrawn": {
+    "what": "This file was published saying what the curve does, and it had no business saying it. The sentence is recorded rather than deleted, because what is wrong with it is a mistake this archive can make again and the figures it was drawn from have not moved.",
+    "said": "That the curve is not a saturating clipper: that its harmonic content falls as the input rises, monotonically over thirty-six decibels, and never reaches the carrier's own orders however quiet the input gets -- so what departs from linearity sits near zero rather than at the extremes. The name carried it too, as `the curve's departure from linearity near zero rather than at its extremes`.",
+    "refuted_by": "The take the record itself holds. The voice was picked for being near a single partial, on a figure -- ninety-two per cent of its energy in its own fundamental -- measured at a different note, and the property was not asked again at the note the run moved to. Asked now, off the record's own bypassed take, it is two oscillators eleven to twelve cents apart with the weaker one two to four decibels under the stronger, at every order from the first. A shape read off the response to that is a shape read off two beating tones, and the drive level was moving through sixteen decibels inside every take while it was read.",
+    "what_survived_and_why": "The correspondence between settings, which is the claim. It holds for any signal at all: if the stage is one fixed curve behind one gain, scaling what is fed in has the same effect whatever is fed in, so a comparison whose two sides were made on the same signal does not care what the signal was. Every comparison here was. The separation from the other drive type survives for the same reason, and so does the finding that the byte's bottom three settings are one state. What does not survive is every sentence about the curve itself, because those read the figures as a harmonic series and they are not one.",
+    "how_it_was_found": "By checking the precondition of the run this file was asking for next. Three of its standing alternatives wanted a synthesised sine put in at the analogue input, and whether that reaches the effects is a published record of this unit -- it does not. Going back for a stimulus the unit could actually provide is what made the present one get looked at."
+  }
 }
