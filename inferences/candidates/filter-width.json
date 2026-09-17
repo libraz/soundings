@@ -1,0 +1,74 @@
+{
+  "class": "filter-width",
+  "what_the_class_is": "Not an effect but one parameter of several of them: the byte that says how wide the peak a neighbouring byte places is. Eight slots across seven effect types take one and every one of them prints the same five values against it -- 0.5, 1.0, 2.0, 4.0, 9.0 -- so unlike a frequency range there is nothing to read off the page about where the entries run. What is left to identify is what number each entry puts in the section, which is a question the page answers and the unit may not agree with.",
+
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "Five entries, and they are a table. A byte with five printed values is an index, and the settings past the fifth have to go somewhere; a table with no bound check is what the era wrote and what the readings of the settings past the end already show.",
+      "What a section needs is not a width but a coefficient. The cookbook form every biquad of the period is written in reaches the section through one intermediate quantity -- half the sine of the centre's angle over the width -- so what a table entry is most cheaply holding is a reciprocal, and a factor of two between a printed figure and a stored one is the kind of thing a reciprocal table invites rather than a coincidence.",
+      "Five coefficient sets per centre would be eighty sets against sixteen centres, which is the expensive way. One five-entry table multiplied into whatever the centre table gives is one multiply, and it predicts the same five widths at every centre -- which is a thing the archive can ask, because one run swept this byte at the bottom of the frequency table and another at its middle.",
+      "The width a manufacturer prints and the width a section holds are defined between two points on a curve, and which two is a convention rather than a measurement. Nothing about the era says a printed table and an implemented one were written against the same convention, and a table published for a musician has no reason to be the one the code indexes."
+    ],
+    "would_be_wrong_if": "A setting past the fifth returned something none of the first five return, or the same setting returned different widths at two centres, at a resolution the run can tell apart."
+  },
+
+  "candidates": [
+    {
+      "id": "half-the-printed-table",
+      "what": "0.25, 0.5, 1.0, 2.0, 4.5: each printed figure halved, put into the section as the width its bandwidth is defined by at the half-gain points.",
+      "predicts": {
+        "the_widest_entry": "A peak a little over two octaves wide between its half-gain points, which at a full boost is the shallowest curve the byte can make.",
+        "the_narrowest_entry": "Under a quarter of an octave, which is three bands of the set this class is read on and the one entry the reading has to work to hold.",
+        "the_step_between_entries": "A doubling at every step but the last, which is 2.25 rather than 2."
+      }
+    },
+    {
+      "id": "the-printed-table",
+      "what": "0.5, 1.0, 2.0, 4.0, 9.0: the figures the page prints, taken as the width the section is built from.",
+      "predicts": {
+        "the_widest_entry": "A peak a little over one octave wide, half of what the halved table gives, at every setting.",
+        "the_narrowest_entry": "An eighth of an octave, which is one and a half bands of this reading and is at the edge of what it can hold.",
+        "the_step_between_entries": "A doubling at every step but the last, which is 2.25."
+      }
+    },
+    {
+      "id": "a-doubling-from-a-quarter",
+      "what": "0.25, 0.5, 1.0, 2.0, 4.0: a table that doubles all the way, on the reading that the page's ninth is a printed figure rather than a stored one.",
+      "predicts": {
+        "the_widest_entry": "As the halved table: the two agree at four of the five entries.",
+        "the_narrowest_entry": "Eleven per cent wider than the halved table's, which is the only place these two differ and is the narrowest peak either of them makes.",
+        "the_step_between_entries": "A doubling everywhere, so the table is a shift and holds no number that is not a power of two."
+      }
+    },
+    {
+      "id": "a-doubling-from-a-half",
+      "what": "0.5, 1.0, 2.0, 4.0, 8.0: the printed table with its last entry rounded to the doubling the first four make.",
+      "predicts": {
+        "the_widest_entry": "As the printed table.",
+        "the_narrowest_entry": "Eleven per cent wider than the printed table's.",
+        "the_step_between_entries": "A doubling everywhere."
+      }
+    },
+    {
+      "id": "twice-the-printed-table",
+      "what": "1.0, 2.0, 4.0, 8.0, 18.0: the printed figures doubled, so that the winner is bracketed rather than only undercut.",
+      "predicts": {
+        "the_widest_entry": "Half an octave, which is narrower than the narrowest entry either halved candidate makes.",
+        "the_narrowest_entry": "A sixteenth of an octave, under one band of this reading, which is the one prediction here the band set cannot hold and says so.",
+        "the_step_between_entries": "A doubling at every step but the last."
+      }
+    }
+  ],
+
+  "what_no_candidate_here_predicts": [
+    "Which way the width is spelled in the code. A width and a bandwidth in octaves are two ways of writing the one coefficient a section takes, and a table of either can be turned into a table of the other exactly. No reading in this archive separates them, and a claim here is about the coefficient rather than about which of the two the table holds.",
+    "What the section does at a gain other than the one these runs were taken at. Every record this class is scored on holds the gain the width shapes at full, and the measured width at half that gain is not what any fixed-width section gives: at six decibels the peak is about forty per cent narrower than the twelve-decibel shape predicts, on two types, and that is a property of how the gain byte reaches the section rather than of this table.",
+    "Where the peak sits. That is the neighbouring byte and its own class, and a candidate here that got the width right and the centre wrong is scored against a profile in the wrong place -- which at the narrowest entry is most of what a residual here is made of, and is why a reading of that entry has to say which centre it was taken at.",
+    "What the settings past the fifth select. Every candidate here takes the same answer from the same reading -- they return what setting zero returns -- so that is carried and not tested."
+  ],
+
+  "note": "A decibel residual over the band profile is the right instrument here and is the wrong one next door. A byte that slides a peak sideways is nearly invisible in decibels, which is why the frequency class had to be read as a position; a byte that changes how wide a peak is changes the profile by most of the peak's own height on its flanks while leaving its top alone, so the residual is large exactly where the candidates differ. The two classes read the same records with two instruments on purpose.",
+
+  "and_the_same_table_at_two_centres": "One run swept this byte with the centre at the bottom of its table and another with it in the middle. That is what tells a five-entry table multiplied into a centre from five coefficient sets stored per centre: the first predicts the same five widths wherever the peak is, the second predicts nothing in particular. It is also the only thing in this class that a candidate cannot be made to fit by choosing five numbers, because the five numbers are the same at both."
+}
