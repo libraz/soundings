@@ -50,6 +50,13 @@ WHY_WINDOWS_KEPT = (
     "value recorded for it rather than a value recorded once."
 )
 
+WHY_PREFIX = (
+    "Only the addresses under the prefixes this map was asked for. Everything outside is not "
+    "in it, so a stage given this map says nothing about the rest of the space -- which is the "
+    "bound to state when a run is aimed at part of the space rather than at all of it, and the "
+    "reason the prefixes are written here rather than only in the command that produced it."
+)
+
 WHY_FIRST_BYTE_ONLY = (
     "A block measured to answer a region read with its first byte and 00 in every byte after "
     "it is asked one address at a time here, however the rest of the map is asked. The reply "
@@ -162,7 +169,13 @@ def _runs(addresses: set[str]) -> list[dict]:
     return out
 
 
-def build(unit: Path, *, keep_windows: bool = False, one_at_a_time: bool = False) -> dict:
+def build(
+    unit: Path,
+    *,
+    keep_windows: bool = False,
+    one_at_a_time: bool = False,
+    prefixes: list[str] | None = None,
+) -> dict:
     """The watch set for this unit, as a map a stage's `--map` can be given.
 
     `keep_windows` is for a capture of what each address held, where a window
@@ -195,6 +208,8 @@ def build(unit: Path, *, keep_windows: bool = False, one_at_a_time: bool = False
     windows = _windows(found)
     if not keep_windows:
         addresses = {a for a in addresses if a[:2] not in windows}
+    if prefixes:
+        addresses = {a for a in addresses if any(a.startswith(p) for p in prefixes)}
     singly, cited = _first_byte_only(unit)
     alone = {a for a in addresses if a[:5] in singly}
     addresses -= alone
@@ -204,6 +219,7 @@ def build(unit: Path, *, keep_windows: bool = False, one_at_a_time: bool = False
     # following it back cannot find.
     return {
         "why": WHY_ONE_AT_A_TIME if one_at_a_time else WHY_UNION,
+        "prefixes": {"asked_for": sorted(prefixes or []), "why": WHY_PREFIX},
         "why_windows": WHY_WINDOWS_KEPT if keep_windows else WHY_WINDOWS_DROPPED,
         "is_not_a_measurement": NOT_A_MEASUREMENT,
         "built_from": sorted(

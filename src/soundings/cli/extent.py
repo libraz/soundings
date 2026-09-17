@@ -155,6 +155,14 @@ def register(sub) -> None:
         "a reply shorter than a region read has been measured to do. It reaches less, so it "
         "is one half of a capture rather than a capture",
     )
+    p.add_argument(
+        "--prefix",
+        nargs="*",
+        default=[],
+        help="keep only the addresses starting here. For a run aimed at part of the space: "
+        "everything outside is not in the map, so a stage given it says nothing about the "
+        "rest -- which the map states, since that bound belongs to every record made with it",
+    )
     options.add_out(p)
     # It asks the records and never the unit, so it neither holds the unit nor
     # stamps a device on what it writes. Holding it meant that rebuilding a map
@@ -340,7 +348,10 @@ def cmd_watch_set(args: argparse.Namespace) -> int:
     unit = Path(args.unit)
     try:
         built = watching.build(
-            unit, keep_windows=args.keep_windows, one_at_a_time=args.one_at_a_time
+            unit,
+            keep_windows=args.keep_windows,
+            one_at_a_time=args.one_at_a_time,
+            prefixes=args.prefix,
         )
     except FileNotFoundError as exc:
         raise SystemExit(str(exc)) from exc

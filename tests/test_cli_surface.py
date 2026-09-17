@@ -68,6 +68,12 @@ def surface() -> dict:
                 # are not one family's own -- one line of review, not a default
                 # that moves in silence.
                 "takes_model_id": sub.choices[name]._defaults.get("takes_model_id", False),
+                # The same reasoning, for the other default that is not a flag.
+                # Whether a command holds the unit decides whether it can run
+                # while something else is measuring, and whether what it writes
+                # carries a device id -- and a command that reads records only
+                # has no business holding either.
+                "needs_unit": sub.choices[name]._defaults.get("needs_unit", True),
                 "options": _actions(sub.choices[name]),
             }
             for name in sub.choices

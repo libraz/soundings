@@ -212,3 +212,21 @@ def test_a_unit_whose_records_name_no_such_block_is_asked_as_runs(tmp_path) -> N
 
     assert [r["size"] for r in built["regions"]] == [4]
     assert built["first_byte_only"]["blocks"] == []
+
+
+def test_a_map_asked_for_a_prefix_holds_only_that_and_says_so(tmp_path) -> None:
+    """A run aimed at part of the space says nothing about the rest, and the map is the bound."""
+    unit = _unit(
+        tmp_path,
+        sweep={"regions": [{"address": "21 0C 00", "size": 2}, {"address": "40 11 00", "size": 2}]},
+        offsets=_answered("40 11 00"),
+    )
+    built = watching.build(unit, prefixes=["21 0C"])
+
+    assert {r["address"] for r in built["regions"]} == {"21 0C 00"}
+    assert built["prefixes"]["asked_for"] == ["21 0C"]
+    assert "says nothing about the rest" in built["prefixes"]["why"]
+
+    whole = watching.build(unit)
+    assert whole["prefixes"]["asked_for"] == []
+    assert len(whole["regions"]) == 2
