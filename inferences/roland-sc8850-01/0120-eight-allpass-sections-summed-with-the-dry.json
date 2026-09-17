@@ -1,590 +1,598 @@
 {
-  "inference": {
-    "schema_version": 1,
-    "unit_id": "roland-sc8850-01",
-    "state": "standing",
-    "made_at": "2026-09-15T06:12:12.038782+00:00",
-    "made_by": "backup/build-phaser-models.py, backup/write-the-phaser-inference.py",
-    "rounds": 2,
-    "about": {
-      "scope": "unit",
-      "types": [
-        "01 20"
-      ],
-      "addresses": [
-        "40 03 03",
-        "40 03 07"
-      ]
-    }
-  },
-  "claim": "This type is eight first-order all-pass sections in series, summed with the dry signal rather than averaged with it, running at thirty-two kilohertz. One byte moves every section's corner together, which puts four cancellations in the audible band at fixed ratios read in the tangent of frequency -- so they crowd towards each other in hertz as the byte takes them up, and the top ones leave the band rather than staying four.",
-  "named": "a phaser as the period built one: an all-pass ladder mixed back with the input",
-  "rests_on": {
-    "measurements": [
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
-        "keys": [
-          "readings[value=0].largest_db",
-          "readings[value=64].largest_db",
-          "readings[value=127].largest_db"
-        ],
-        "values": [
-          -22.62,
-          -15.72,
-          18.87
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
-        "keys": [
-          "readings[value=0].largest_at_hz",
-          "readings[value=7].largest_at_hz",
-          "readings[value=8].largest_at_hz",
-          "readings[value=12].largest_at_hz",
-          "readings[value=15].largest_at_hz",
-          "readings[value=16].largest_at_hz",
-          "readings[value=24].largest_at_hz",
-          "readings[value=32].largest_at_hz",
-          "readings[value=40].largest_at_hz",
-          "readings[value=48].largest_at_hz",
-          "readings[value=56].largest_at_hz",
-          "readings[value=63].largest_at_hz",
-          "readings[value=64].largest_at_hz",
-          "readings[value=72].largest_at_hz",
-          "readings[value=80].largest_at_hz",
-          "readings[value=88].largest_at_hz",
-          "readings[value=96].largest_at_hz",
-          "readings[value=104].largest_at_hz",
-          "readings[value=112].largest_at_hz",
-          "readings[value=114].largest_at_hz",
-          "readings[value=120].largest_at_hz",
-          "readings[value=127].largest_at_hz"
-        ],
-        "values": [
-          210.2,
-          280.6,
-          297.3,
-          333.7,
-          353.6,
-          374.6,
-          500.0,
-          630.0,
-          793.7,
-          943.9,
-          1189.2,
-          1781.8,
-          1887.7,
-          2669.7,
-          3363.6,
-          4000.0,
-          4489.8,
-          5339.4,
-          5993.2,
-          5993.2,
-          6349.6,
-          6727.2
-        ]
-      },
-      {
-        "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
-        "keys": [
-          "readings[value=0].largest_at_hz",
-          "readings[value=12].largest_at_hz",
-          "readings[value=24].largest_at_hz",
-          "readings[value=48].largest_at_hz",
-          "readings[value=72].largest_at_hz",
-          "readings[value=96].largest_at_hz",
-          "readings[value=114].largest_at_hz",
-          "readings[value=120].largest_at_hz",
-          "readings[value=127].largest_at_hz"
-        ],
-        "values": [
-          200,
-          315,
-          500,
-          1000,
-          2500,
-          5000,
-          6300,
-          6300,
-          6300
-        ]
-      }
-    ],
-    "document_rows": [
-      {
-        "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
-        "rows": [
-          "the column the effect list points a phaser's manual byte at, at all 128 values"
-        ]
-      }
-    ],
-    "era_priors": [
-      {
-        "claim": "A phaser of this period is a cascade of first-order all-pass sections summed with the input.",
-        "why": "It is the one structure that gives evenly spaced notches for the cost of two multiplies a section, and a fixed-point part can run eight of them where it could not run eight biquads.",
-        "would_be_wrong_if": "The notches did not sit at the ratios an all-pass ladder fixes, or their count did not match one section count across every setting. Both were measured: four notches at the bottom of the byte, at 3.30 and 2.20 times each other against the 3.36 and 2.24 that eight sections fix."
-      }
-    ],
-    "community": []
-  },
-  "what_the_manual_byte_is": {
-    "what": "Continuous, or near enough that no stride this run could see. The corner moves at every setting: 7 against 8 is 0.056 octaves, 15 against 16 is 0.037 and 63 against 64 is 0.059, while 8 against 15 -- seven settings inside what a sixteen entry table would make one entry -- is 0.307, and 56 against 63 is 0.478. A table read eight settings at a time holds flat inside an entry and steps between them, and this does the opposite of both.",
-    "why_it_matters": "The frequency bytes this archive has read a table off are filter corners that sit still once set. This one is the centre a modulator sweeps, and a sweep through sixteen entries would be audible as sixteen steps. So the sixteen entry structure is not a property of a byte printed with a frequency range, and the claim that reads it that way is narrowed rather than extended by this run.",
-    "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
-    "against": "0.030 octaves, which is what four notches of one setting agree the corner to."
-  },
-  "what_the_resonance_byte_is": {
-    "what": "A feedback path wrapped round the ladder, not a resonance belonging to any section. Read at three settings with the manual held at 64, every one of the four cancellations shallows as the byte rises and not one of them deepens: 17.0, 14.9, 11.6 and 10.5 dB under their own shoulders at zero, against 0.9, 8.5, 7.7 and 4.9 at sixty-four, and the highest of them has become a 8.6 dB peak by a hundred and twenty-seven. The record's own largest deviation follows it out of the notches entirely -- minus 22.6 dB at 1888 Hz at zero, and plus 18.9 dB at 105 Hz at the top.",
-    "why_that_is_the_reading": "Feedback round an all-pass chain leaves no exact null anywhere, because a chain that passes everything at unit gain cannot be cancelled by a copy of itself once part of it is coming back round. So the dips fill in and peaks rise between them, which is what these three settings do. A resonance belonging to each section would sharpen the notches rather than fill them, and would move them apart as it did.",
-    "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
-    "found_by": "Takes the manual sweep had already taken and not published. The run asked six resonance and mix settings first, to find out whether the notches would be deep enough to read at all, and the record named those takes as ones its own pattern did not match. Reading them cost no device time."
-  },
-  "adds": "The archive says what the manual byte did to each third-octave band at nine settings. It does not say those profiles are the magnitude of a phase -- that the dips are cancellations between a signal and a delayed-in-phase copy of itself rather than filters with stopbands, that there are eight sections rather than six or ten, that the dry and wet are summed rather than averaged, or that the chain runs at thirty-two kilohertz. Each is a structure fitted to the readings, and the fit is what this holds.",
-  "alternatives": [
-    {
-      "reading": "Four second-order all-pass sections rather than eight first-order ones.",
-      "candidate": null,
-      "standing": true,
-      "equivalent_under_this_test": true,
-      "separated_by": {
-        "observable": "Nothing this or any run can read.",
-        "predicts": {
-          "eight first order": "The notches of this record.",
-          "four second order": "The same notches, exactly, wherever the pole pairs sit on the real axis -- and notches at other ratios wherever they do not."
-        },
-        "sensitivity_here": "The notch ratios are read to 0.030 octaves, against the 0.089 octaves a pole pair off the real axis would have to move them by before it was a different chain.",
-        "margin": 1,
-        "why_not_separable": "Two second-order all-pass sections with their poles on the real axis are two first-order ones, so at the only setting where this reading reproduces, it is not a second structure -- it is the same chain written in pairs. Anywhere else its phase runs steeper near each corner and the notch ratios move off the ones measured here, which the fit already bounds. So the difference is how somebody implemented it and not what the unit does, and there is no run to queue. This was nearly queued as one: the resonance byte was taken to be the thing that would separate them, and the record beside this one shows it is a feedback path around the ladder, which both readings share."
-      }
-    },
-    {
-      "reading": "The corner table is a law in the byte rather than the readout published here.",
-      "candidate": null,
-      "standing": true,
-      "equivalent_under_this_test": true,
-      "separated_by": {
-        "observable": "Nothing the unit's output can be asked.",
-        "predicts": {
-          "a readout": "The corners at the settings measured, and nothing about the rest.",
-          "a law": "The same corners, since a law that returns these numbers and a table holding them differ in where the numbers come from and in nothing that comes out."
-        },
-        "sensitivity_here": "The corner is read to 0.030 octaves at every setting asked, and twenty-two of the hundred and twenty-eight have been asked.",
-        "margin": 1,
-        "why_not_separable": "The run that was queued here has been made. It asked every eighth value and the three pairs that straddle a stride of eight, to find out whether the byte repeats in blocks the way this unit's filter corners do -- which is the one shape that would have told a stored table from a computed one on this machine. It does not: the corner moves at every setting, 0.056 octaves from 7 to 8 against 0.307 from 8 to 15. With no repeats to count, a table of a hundred and twenty-eight entries and a formula return the same hundred and twenty-eight numbers, and the output is the only thing here that can be asked. This is the state the effect level class is already in for the same reason."
-      },
-      "run_that_was_made": {
-        "stage": "efx-bands",
-        "type": "01 20",
-        "address": "40 03 03",
-        "settings": [
-          0,
-          7,
-          8,
-          12,
-          15,
-          16,
-          24,
-          32,
-          40,
-          48,
-          56,
-          63,
-          64,
-          72,
-          80,
-          88,
-          96,
-          104,
-          112,
-          114,
-          120,
-          127
-        ],
-        "what_it_showed": "no stride: the byte is continuous over the range the notches can be read on"
-      }
-    }
-  ],
-  "reproduces": {
-    "model": "inferences/models/0120-eight-allpass-sections-at-32k.json",
-    "compared_against": {
-      "records": [
-        "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json"
-      ],
-      "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 20 at the twelfth-octave resolution",
-      "filter": {
-        "index": "data/units/roland-sc8850-01/index.json",
-        "stage": "efx-bands",
-        "type": "01 20",
-        "file_ends_with": "-in-twelfths.json"
-      },
-      "then_dropped": [
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
-          "why": "The byte this one sweeps is the feedback path, and the model holds no feedback path: it is the ladder at the setting where the byte is zero. Scoring it would be asking the model for a term it does not have and reading the answer as a residual. What that byte is has since been read off this same record, and the loop it turns out to be is closed around this ladder -- so the two are one chain, and the setting where the byte is nothing is where the two models are the same one."
-        },
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-the-same-resonance-at-half-mix-in-twelfths.json",
-          "why": "The same three settings of the same byte read again with the type's mix at its middle rather than at the top of its range, which is the second profile the loop reading is held against. Dropped here by the same rule and for the same reason as the record above: what it sweeps is a term this model does not have."
-        },
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-the-resonance-between-the-three-in-twelfths.json",
-          "why": "The same byte as the two records above, swept at seventeen settings rather than three. Dropped here by the same rule and for the same reason: what it sweeps is the feedback path, and this model is the ladder with no feedback path in it."
-        },
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-across-the-resonance-boundary-in-twelfths.json",
-          "why": "The same byte again, at eleven settings either side of one boundary of a table of sixteen. Dropped here by the same rule and for the same reason as the three records above: what it sweeps is the feedback path, and this model is the ladder with no feedback path in it."
-        }
-      ],
-      "excluded": [
-        {
-          "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
-          "why": "The same takes read at the coarser set. A notch is narrower than a third octave, so that reading reports the energy either side of one rather than the notch, and scoring both counts one measurement twice."
-        }
-      ]
-    },
-    "domain": "dB",
-    "residual": {
-      "median_abs_db": 0.14,
-      "worst_abs_db": 4.2,
-      "worst_at": {
-        "value": 0,
-        "hz": 198.4
-      },
-      "span_db": 33.75,
-      "floor_db": 1.92,
-      "why": "The median is fifteen times under the run's own floor and the span the byte commands is two hundred and forty times the median. The worst band is a notch flank, where the profile falls twenty decibels across two bands and a corner two per cent out is four decibels out."
-    },
-    "gates": {
-      "gross": {
-        "verdict": "reproduces",
-        "why": "median 0.14 dB against the 33.75 dB the byte commands"
-      },
-      "properties": {
-        "verdict": "reproduces",
-        "why": "The count of notches is a property of the section count alone and the model returns it: four at settings 0 to 72, and fewer above, because the upper ones pass out of the band rather than because they were never there."
-      },
-      "power": {
-        "verdict": "separated",
-        "beaten": {
-          "six-allpass-sections-at-32k": {
-            "median_abs_db": 0.995,
-            "worst_abs_db": 32.1
-          },
-          "ten-allpass-sections-at-32k": {
-            "median_abs_db": 0.64,
-            "worst_abs_db": 28.37
-          },
-          "eight-allpass-sections-at-44k1": {
-            "median_abs_db": 0.62,
-            "worst_abs_db": 24.99
-          },
-          "eight-allpass-sections-at-48k": {
-            "median_abs_db": 0.69,
-            "worst_abs_db": 25.67
-          },
-          "twelve-allpass-sections-at-32k": {
-            "median_abs_db": 0.79,
-            "worst_abs_db": 27.25
-          }
-        },
-        "why": "Every alternative in the catalogue puts a notch where this unit has none. Their worst band is twenty-five to thirty-two decibels out against this one's four, which is a whole cancellation in the wrong place rather than a fit that is slightly worse."
-      },
-      "breakdown": {
-        "verdict": "reproduces",
-        "why": "the signed median swings 0.11 dB across the settings and 1.77 dB across the readings within one, against the run's own floor of 1.92 dB",
-        "read_as": "Read over nine settings this gate returned structure, just over the floor. Thirteen more settings were added to answer a different question and it turned over: what looked like a lean was nine points, and every alternative in the catalogue still returns structure on the same twenty-two. The verdict here is whichever the scoring returned, not a reading of it."
-      }
-    }
-  },
-  "refuted_by": "A setting of the manual byte whose profile has a number of cancellations no single section count explains, or notches whose positions in the tangent of frequency are not fixed multiples of one corner. Either would say the sections do not share a corner, which is the whole of this structure. A rate other than thirty-two kilohertz fitting better once the profile can be read above sixteen would refute the rate without touching the section count.",
-  "what_it_would_change": [
-    "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json"
-  ],
-  "what_this_does_not_settle": [
-    "Anything about the type with its depth off zero. The profile was taken with the modulator held still, which is what makes the notches countable at all; what the depth byte does to the corner is a different measurement and is not in this.",
-    "What the resonance byte is. It was held at zero throughout, so nothing here says whether it is feedback around the ladder or something else.",
-    "How deep the feedback path runs, or where in the chain it is taken from and returned to. What is established is that the byte is a feedback path and not a resonance belonging to a section: three settings of it were read and every notch shallows, none deepens."
-  ],
-  "what_the_printed_number_is": {
-    "what_was_open": [
-      "What the printed manual number means. The page prints 100 to 8.0k and this fits corners from 1.0 to 13.5 kHz, with the lowest notch running 212 Hz to 6.8 kHz -- so the printed span is the notch's and not the corner's, or it is neither, and no run here decides between them.",
-      "What law the corner follows. It is continuous and it is not geometric in the byte -- 0.045 octaves a setting over the bottom half and 0.014 over the top -- and this run was built to find a stride rather than to fit a curve.",
-      "What the printed hundred to eight thousand is measured in. The corner reaches 13.5 kHz and the lowest notch 6.8, and neither is 8000."
-    ],
-    "why_it_could_not_be_asked_before": "The run had nine settings of the byte and the page's two ends. A law wants the page's number at every setting it was read at, and the table that prints them had not been read.",
-    "why_this_is_held_out": "The conversion table was read after this claim was made, and nothing in the run that made it had the column. The corners it reports were fitted from audio alone, so the page is not a thing this reading was tuned against -- it is a thing the reading either lands on or does not.",
-    "what_the_page_prints": {
-      "column": "Manual, in hertz, printed at all 128 values",
-      "used_by_types": [
-        "7",
-        "54",
-        "55",
-        "61",
-        "63",
-        "64"
-      ],
-      "not_a_table": "Three arithmetic runs and a cap, which is four numbers rather than a hundred and twenty-eight: ten hertz a step from 100 to setting twenty, twenty a step to fifty-five, a hundred a step to a hundred and twenty-five, and flat at 8000 above it. Each run reaches its own last entry from its own first with nothing left over."
-    },
-    "the_law": {
-      "in_words": "The printed number is the lowest notch, measured after the bilinear warp and counted from the column's own first entry. Write F for the warp a delay-free loop at this rate puts on a frequency -- F(x) = (fs/pi) tan(pi x / fs) -- and the page's number is F of the notch, less F of a hundred hertz.",
-      "as_written": "tan(pi * notch / fs) = tan(pi * 100 / fs) + pi * printed / fs",
-      "fs_hz": 32000,
-      "the_hundred": "The first entry of the column itself, and not a number fitted here. Fitting the intercept instead lands either side of it depending on which of the two readings of the notch is used -- 1.049 of it on one and 0.961 on the other -- so the reading cannot tell it from the page's own number and the page's own number is what is written.",
-      "nothing_is_fitted": "Both constants are already named: the rate this claim's first round fitted, and the first entry of the printed column. So this could have come out wrong at every one of the twenty-two settings and there was no parameter to move."
-    },
-    "how_far_it_lands": {
-      "with_nothing_fitted": {
-        "largest_at_hz": {
-          "settings": 22,
-          "worst_octaves": 0.0988,
-          "median_octaves": 0.0409
-        },
-        "fitted_at_hz": {
-          "settings": 20,
-          "worst_octaves": 0.0822,
-          "median_octaves": 0.0503
-        }
-      },
-      "if_both_constants_were_fitted_instead": {
-        "largest_at_hz": {
-          "worst_octaves": 0.0895,
-          "median_octaves": 0.0275,
-          "intercept": 0.010297,
-          "slope_per_printed_hz": 9.5227e-05
-        },
-        "fitted_at_hz": {
-          "worst_octaves": 0.1286,
-          "median_octaves": 0.0275,
-          "intercept": 0.009431,
-          "slope_per_printed_hz": 9.5833e-05
-        }
-      },
-      "band_octaves": 0.083333,
-      "why_both_readings": "The record locates each notch twice, once by the band it is largest in and once by a curve fitted over the feature, and neither is the better one. A law that held under one and not the other would be a law about a reading.",
-      "what_the_two_free_constants_buy": "A worse worst under one reading and a better one under the other, and the same median either way. Two parameters bought nothing, which is the strongest thing that can be said for the ones the page already named."
-    },
-    "the_alternatives": {
-      "scored_as": "Every candidate is asked for the notch, which is the thing that was measured. The corner is derived from it by dividing a tangent by a constant the section count fixes, and scoring some candidates in one and some in the other puts an arctangent between them that flatters whichever is wrong at the top.",
-      "largest_at_hz": [
-        {
-          "reading": "the notch's tangent runs straight in the printed number",
-          "worst_octaves": 0.0895,
-          "median_octaves": 0.0275,
-          "sign_changes": 6
-        },
-        {
-          "reading": "the notch runs straight in the printed number",
-          "worst_octaves": 0.4937,
-          "median_octaves": 0.061,
-          "sign_changes": 4
-        },
-        {
-          "reading": "the notch is geometric in the byte",
-          "worst_octaves": 0.543,
-          "median_octaves": 0.1115,
-          "sign_changes": 4
-        },
-        {
-          "reading": "the notch's tangent is a fixed multiple of the printed number",
-          "worst_octaves": 0.804,
-          "median_octaves": 0.2372,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is the notch, up to one factor",
-          "worst_octaves": 0.8491,
-          "median_octaves": 0.3269,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is where notch 1 sits",
-          "worst_octaves": 1.0718,
-          "median_octaves": 0.2033,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is where notch 2 sits",
-          "worst_octaves": 2.8198,
-          "median_octaves": 1.8555,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is the sections' own corner",
-          "worst_octaves": 3.4015,
-          "median_octaves": 2.4369,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is where notch 3 sits",
-          "worst_octaves": 3.9832,
-          "median_octaves": 3.0185,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is where notch 4 sits",
-          "worst_octaves": 5.7313,
-          "median_octaves": 4.7665,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the notch runs straight in the byte",
-          "worst_octaves": null,
-          "median_octaves": null,
-          "sign_changes": 0,
-          "puts_a_setting_at_or_below_nought_hz": true
-        }
-      ],
-      "fitted_at_hz": [
-        {
-          "reading": "the notch's tangent runs straight in the printed number",
-          "worst_octaves": 0.1286,
-          "median_octaves": 0.0275,
-          "sign_changes": 4
-        },
-        {
-          "reading": "the notch runs straight in the printed number",
-          "worst_octaves": 0.4978,
-          "median_octaves": 0.0608,
-          "sign_changes": 2
-        },
-        {
-          "reading": "the notch is geometric in the byte",
-          "worst_octaves": 0.5154,
-          "median_octaves": 0.1558,
-          "sign_changes": 4
-        },
-        {
-          "reading": "the notch's tangent is a fixed multiple of the printed number",
-          "worst_octaves": 0.8254,
-          "median_octaves": 0.2356,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is the notch, up to one factor",
-          "worst_octaves": 0.8703,
-          "median_octaves": 0.3204,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is where notch 1 sits",
-          "worst_octaves": 1.082,
-          "median_octaves": 0.2014,
-          "sign_changes": 1
-        },
-        {
-          "reading": "the printed number is where notch 2 sits",
-          "worst_octaves": 2.8301,
-          "median_octaves": 1.8483,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is the sections' own corner",
-          "worst_octaves": 3.4118,
-          "median_octaves": 2.4297,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is where notch 3 sits",
-          "worst_octaves": 3.9935,
-          "median_octaves": 3.0113,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the printed number is where notch 4 sits",
-          "worst_octaves": 5.7416,
-          "median_octaves": 4.7593,
-          "sign_changes": 0
-        },
-        {
-          "reading": "the notch runs straight in the byte",
-          "worst_octaves": null,
-          "median_octaves": null,
-          "sign_changes": 0,
-          "puts_a_setting_at_or_below_nought_hz": true
-        }
-      ],
-      "what_falls": "Both readings rank them the same way. The two the claim had named fall hardest: the printed number being the corner is out by 3.40 octaves and its being the lowest notch directly is out by 1.07, against a band of 0.083. The nearest surviving candidate is the notch running straight in the printed number rather than its tangent, which has the same two free constants and is five times worse at its worst."
-    },
-    "and_at_a_coarser_reading": {
-      "record": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
-      "band_octaves": 0.333333,
-      "settings": 9,
-      "land_in_the_band_they_were_read_in": 9,
-      "worst_octaves": 0.1283,
-      "readings": [
-        {
-          "value": 0,
-          "printed_hz": 100.0,
-          "read_hz": 200,
-          "the_law_says_hz": 200.0,
-          "away_octaves": 0.0002
-        },
-        {
-          "value": 12,
-          "printed_hz": 220.0,
-          "read_hz": 315,
-          "the_law_says_hz": 319.9,
-          "away_octaves": -0.0223
-        },
-        {
-          "value": 24,
-          "printed_hz": 380.0,
-          "read_hz": 500,
-          "the_law_says_hz": 479.6,
-          "away_octaves": 0.06
-        },
-        {
-          "value": 48,
-          "printed_hz": 860.0,
-          "read_hz": 1000,
-          "the_law_says_hz": 957.2,
-          "away_octaves": 0.0631
-        },
-        {
-          "value": 72,
-          "printed_hz": 2700.0,
-          "read_hz": 2500,
-          "the_law_says_hz": 2732.5,
-          "away_octaves": -0.1283
-        },
-        {
-          "value": 96,
-          "printed_hz": 5100.0,
-          "read_hz": 5000,
-          "the_law_says_hz": 4808.0,
-          "away_octaves": 0.0565
-        },
-        {
-          "value": 114,
-          "printed_hz": 6900.0,
-          "read_hz": 6300,
-          "the_law_says_hz": 6132.9,
-          "away_octaves": 0.0388
-        },
-        {
-          "value": 120,
-          "printed_hz": 7500.0,
-          "read_hz": 6300,
-          "the_law_says_hz": 6529.4,
-          "away_octaves": -0.0516
-        },
-        {
-          "value": 127,
-          "printed_hz": 8000.0,
-          "read_hz": 6300,
-          "the_law_says_hz": 6843.1,
-          "away_octaves": -0.1193
-        }
-      ]
-    },
-    "what_it_settles": "The printed number is neither of the two things the claim could not choose between, and the third reading it offered -- that it is neither -- is right only in the sense that it is not a frequency of the chain as read. It is that frequency prewarped, which is the domain a bilinear design is written in, so a number in it is what a designer would have had in hand before the transform rather than after. That also settles what law the corner follows: the corner is the arctangent of an affine function of the printed number, and through the column's own three arithmetic runs that makes it piecewise in the byte with the bends where the page puts them, which is why it looked continuous and not geometric.",
-    "what_would_refute_this_round": "A setting whose notch lands further from the law than the band it was read in, on a reading fine enough to say so -- the byte has a hundred and six settings nobody has read and the law names every one of them. A run over the bottom of the byte would say most: that is where the residual is largest and where the page's steps are finest, so ten hertz of printed number is a tenth of an octave of notch there and a hundredth at the top. The law would also fall if the same column read on another of the six types that carry it needed a different hundred, because then the constant is the type's and not the column's.",
-    "what_it_does_not_settle": [
-      "Whether the section count is eight. The law is written on the notch, which is measured, so it holds whatever the sections turn out to be -- and it therefore says nothing about them either way.",
-      "Anything above setting a hundred and twenty-five. The column is flat there and three settings were read inside the flat, so the cap is consistent with the reading and is not separately shown.",
-      "What the other five types that carry this column do. One type was read.",
-      "Whether the same relation holds with the modulator running. Every reading here was taken with it held still, which is what makes a notch countable at all."
-    ]
+ "inference": {
+  "schema_version": 1,
+  "unit_id": "roland-sc8850-01",
+  "state": "standing",
+  "made_at": "2026-09-15T06:12:12.038782+00:00",
+  "made_by": "backup/build-phaser-models.py, backup/write-the-phaser-inference.py",
+  "rounds": 2,
+  "about": {
+   "scope": "unit",
+   "types": [
+    "01 20"
+   ],
+   "addresses": [
+    "40 03 03",
+    "40 03 07"
+   ]
   }
+ },
+ "claim": "This type is eight first-order all-pass sections in series, summed with the dry signal rather than averaged with it, running at thirty-two kilohertz. One byte moves every section's corner together, which puts four cancellations in the audible band at fixed ratios read in the tangent of frequency -- so they crowd towards each other in hertz as the byte takes them up, and the top ones leave the band rather than staying four.",
+ "named": "a phaser as the period built one: an all-pass ladder mixed back with the input",
+ "rests_on": {
+  "measurements": [
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+    "keys": [
+     "readings[value=0].largest_db",
+     "readings[value=64].largest_db",
+     "readings[value=127].largest_db"
+    ],
+    "values": [
+     -22.62,
+     -15.72,
+     18.87
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+    "keys": [
+     "readings[value=0].largest_at_hz",
+     "readings[value=7].largest_at_hz",
+     "readings[value=8].largest_at_hz",
+     "readings[value=12].largest_at_hz",
+     "readings[value=15].largest_at_hz",
+     "readings[value=16].largest_at_hz",
+     "readings[value=24].largest_at_hz",
+     "readings[value=32].largest_at_hz",
+     "readings[value=40].largest_at_hz",
+     "readings[value=48].largest_at_hz",
+     "readings[value=56].largest_at_hz",
+     "readings[value=63].largest_at_hz",
+     "readings[value=64].largest_at_hz",
+     "readings[value=72].largest_at_hz",
+     "readings[value=80].largest_at_hz",
+     "readings[value=88].largest_at_hz",
+     "readings[value=96].largest_at_hz",
+     "readings[value=104].largest_at_hz",
+     "readings[value=112].largest_at_hz",
+     "readings[value=114].largest_at_hz",
+     "readings[value=120].largest_at_hz",
+     "readings[value=127].largest_at_hz"
+    ],
+    "values": [
+     210.2,
+     280.6,
+     297.3,
+     333.7,
+     353.6,
+     374.6,
+     500.0,
+     630.0,
+     793.7,
+     943.9,
+     1189.2,
+     1781.8,
+     1887.7,
+     2669.7,
+     3363.6,
+     4000.0,
+     4489.8,
+     5339.4,
+     5993.2,
+     5993.2,
+     6349.6,
+     6727.2
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
+    "keys": [
+     "readings[value=0].largest_at_hz",
+     "readings[value=12].largest_at_hz",
+     "readings[value=24].largest_at_hz",
+     "readings[value=48].largest_at_hz",
+     "readings[value=72].largest_at_hz",
+     "readings[value=96].largest_at_hz",
+     "readings[value=114].largest_at_hz",
+     "readings[value=120].largest_at_hz",
+     "readings[value=127].largest_at_hz"
+    ],
+    "values": [
+     200,
+     315,
+     500,
+     1000,
+     2500,
+     5000,
+     6300,
+     6300,
+     6300
+    ]
+   }
+  ],
+  "document_rows": [
+   {
+    "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
+    "rows": [
+     "the column the effect list points a phaser's manual byte at, at all 128 values"
+    ]
+   }
+  ],
+  "era_priors": [
+   {
+    "claim": "A phaser of this period is a cascade of first-order all-pass sections summed with the input.",
+    "why": "It is the one structure that gives evenly spaced notches for the cost of two multiplies a section, and a fixed-point part can run eight of them where it could not run eight biquads.",
+    "would_be_wrong_if": "The notches did not sit at the ratios an all-pass ladder fixes, or their count did not match one section count across every setting. Both were measured: four notches at the bottom of the byte, at 3.30 and 2.20 times each other against the 3.36 and 2.24 that eight sections fix."
+   }
+  ],
+  "community": []
+ },
+ "what_the_manual_byte_is": {
+  "what": "Continuous, or near enough that no stride this run could see. The corner moves at every setting: 7 against 8 is 0.056 octaves, 15 against 16 is 0.037 and 63 against 64 is 0.059, while 8 against 15 -- seven settings inside what a sixteen entry table would make one entry -- is 0.307, and 56 against 63 is 0.478. A table read eight settings at a time holds flat inside an entry and steps between them, and this does the opposite of both.",
+  "why_it_matters": "The frequency bytes this archive has read a table off are filter corners that sit still once set. This one is the centre a modulator sweeps, and a sweep through sixteen entries would be audible as sixteen steps. So the sixteen entry structure is not a property of a byte printed with a frequency range, and the claim that reads it that way is narrowed rather than extended by this run.",
+  "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json",
+  "against": "0.030 octaves, which is what four notches of one setting agree the corner to."
+ },
+ "what_the_resonance_byte_is": {
+  "what": "A feedback path wrapped round the ladder, not a resonance belonging to any section. Read at three settings with the manual held at 64, every one of the four cancellations shallows as the byte rises and not one of them deepens: 17.0, 14.9, 11.6 and 10.5 dB under their own shoulders at zero, against 0.9, 8.5, 7.7 and 4.9 at sixty-four, and the highest of them has become a 8.6 dB peak by a hundred and twenty-seven. The record's own largest deviation follows it out of the notches entirely -- minus 22.6 dB at 1888 Hz at zero, and plus 18.9 dB at 105 Hz at the top.",
+  "why_that_is_the_reading": "Feedback round an all-pass chain leaves no exact null anywhere, because a chain that passes everything at unit gain cannot be cancelled by a copy of itself once part of it is coming back round. So the dips fill in and peaks rise between them, which is what these three settings do. A resonance belonging to each section would sharpen the notches rather than fill them, and would move them apart as it did.",
+  "measured_in": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+  "found_by": "Takes the manual sweep had already taken and not published. The run asked six resonance and mix settings first, to find out whether the notches would be deep enough to read at all, and the record named those takes as ones its own pattern did not match. Reading them cost no device time."
+ },
+ "adds": "The archive says what the manual byte did to each third-octave band at nine settings. It does not say those profiles are the magnitude of a phase -- that the dips are cancellations between a signal and a delayed-in-phase copy of itself rather than filters with stopbands, that there are eight sections rather than six or ten, that the dry and wet are summed rather than averaged, or that the chain runs at thirty-two kilohertz. Each is a structure fitted to the readings, and the fit is what this holds.",
+ "alternatives": [
+  {
+   "reading": "Four second-order all-pass sections rather than eight first-order ones.",
+   "candidate": null,
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Nothing this or any run can read.",
+    "predicts": {
+     "eight first order": "The notches of this record.",
+     "four second order": "The same notches, exactly, wherever the pole pairs sit on the real axis -- and notches at other ratios wherever they do not."
+    },
+    "sensitivity_here": "The notch ratios are read to 0.030 octaves, against the 0.089 octaves a pole pair off the real axis would have to move them by before it was a different chain.",
+    "margin": 1,
+    "why_not_separable": "Two second-order all-pass sections with their poles on the real axis are two first-order ones, so at the only setting where this reading reproduces, it is not a second structure -- it is the same chain written in pairs. Anywhere else its phase runs steeper near each corner and the notch ratios move off the ones measured here, which the fit already bounds. So the difference is how somebody implemented it and not what the unit does, and there is no run to queue. This was nearly queued as one: the resonance byte was taken to be the thing that would separate them, and the record beside this one shows it is a feedback path around the ladder, which both readings share."
+   }
+  },
+  {
+   "reading": "The corner table is a law in the byte rather than the readout published here.",
+   "candidate": null,
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "observable": "Nothing the unit's output can be asked.",
+    "predicts": {
+     "a readout": "The corners at the settings measured, and nothing about the rest.",
+     "a law": "The same corners, since a law that returns these numbers and a table holding them differ in where the numbers come from and in nothing that comes out."
+    },
+    "sensitivity_here": "The corner is read to 0.030 octaves at every setting asked, and twenty-two of the hundred and twenty-eight have been asked.",
+    "margin": 1,
+    "why_not_separable": "The run that was queued here has been made. It asked every eighth value and the three pairs that straddle a stride of eight, to find out whether the byte repeats in blocks the way this unit's filter corners do -- which is the one shape that would have told a stored table from a computed one on this machine. It does not: the corner moves at every setting, 0.056 octaves from 7 to 8 against 0.307 from 8 to 15. With no repeats to count, a table of a hundred and twenty-eight entries and a formula return the same hundred and twenty-eight numbers, and the output is the only thing here that can be asked. This is the state the effect level class is already in for the same reason."
+   },
+   "run_that_was_made": {
+    "stage": "efx-bands",
+    "type": "01 20",
+    "address": "40 03 03",
+    "settings": [
+     0,
+     7,
+     8,
+     12,
+     15,
+     16,
+     24,
+     32,
+     40,
+     48,
+     56,
+     63,
+     64,
+     72,
+     80,
+     88,
+     96,
+     104,
+     112,
+     114,
+     120,
+     127
+    ],
+    "what_it_showed": "no stride: the byte is continuous over the range the notches can be read on"
+   }
+  }
+ ],
+ "reproduces": {
+  "model": "inferences/models/0120-eight-allpass-sections-at-32k.json",
+  "compared_against": {
+   "records": [
+    "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits-in-twelfths.json"
+   ],
+   "generated_from": "data/units/roland-sc8850-01/index.json, every efx-bands record filed under type 01 20 at the twelfth-octave resolution",
+   "filter": {
+    "index": "data/units/roland-sc8850-01/index.json",
+    "stage": "efx-bands",
+    "type": "01 20",
+    "file_ends_with": "-in-twelfths.json"
+   },
+   "then_dropped": [
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json",
+     "why": "The byte this one sweeps is the feedback path, and the model holds no feedback path: it is the ladder at the setting where the byte is zero. Scoring it would be asking the model for a term it does not have and reading the answer as a residual. What that byte is has since been read off this same record, and the loop it turns out to be is closed around this ladder -- so the two are one chain, and the setting where the byte is nothing is where the two models are the same one."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-the-same-resonance-at-half-mix-in-twelfths.json",
+     "why": "The same three settings of the same byte read again with the type's mix at its middle rather than at the top of its range, which is the second profile the loop reading is held against. Dropped here by the same rule and for the same reason as the record above: what it sweeps is a term this model does not have."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-the-resonance-between-the-three-in-twelfths.json",
+     "why": "The same byte as the two records above, swept at seventeen settings rather than three. Dropped here by the same rule and for the same reason: what it sweeps is the feedback path, and this model is the ladder with no feedback path in it."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-06-across-the-resonance-boundary-in-twelfths.json",
+     "why": "The same byte again, at eleven settings either side of one boundary of a table of sixteen. Dropped here by the same rule and for the same reason as the three records above: what it sweeps is the feedback path, and this model is the ladder with no feedback path in it."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-13-the-tone-control-on-an-allpass-chain-in-twelfths.json",
+     "why": "The byte this one sweeps is one of the two gains forty-two types carry, which this model does not contain: it is eight all-pass sections and their sum with the dry, and no tone control. It was recorded under this type because the question was whether that gain is the same gain on a front half with nothing in common with the ones already read, and the answer to that is a different claim resting on this same record. Scoring it here would be asking the all-pass model for a shelf it has not got and reading the answer as a residual."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-14-the-tone-control-on-an-allpass-chain-in-twelfths.json",
+     "why": "The byte this one sweeps is one of the two gains forty-two types carry, which this model does not contain: it is eight all-pass sections and their sum with the dry, and no tone control. It was recorded under this type because the question was whether that gain is the same gain on a front half with nothing in common with the ones already read, and the answer to that is a different claim resting on this same record. Scoring it here would be asking the all-pass model for a shelf it has not got and reading the answer as a residual."
+    }
+   ],
+   "excluded": [
+    {
+     "file": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
+     "why": "The same takes read at the coarser set. A notch is narrower than a third octave, so that reading reports the energy either side of one rather than the notch, and scoring both counts one measurement twice."
+    }
+   ]
+  },
+  "domain": "dB",
+  "residual": {
+   "median_abs_db": 0.14,
+   "worst_abs_db": 4.2,
+   "worst_at": {
+    "value": 0,
+    "hz": 198.4
+   },
+   "span_db": 33.75,
+   "floor_db": 1.92,
+   "why": "The median is fifteen times under the run's own floor and the span the byte commands is two hundred and forty times the median. The worst band is a notch flank, where the profile falls twenty decibels across two bands and a corner two per cent out is four decibels out."
+  },
+  "gates": {
+   "gross": {
+    "verdict": "reproduces",
+    "why": "median 0.14 dB against the 33.75 dB the byte commands"
+   },
+   "properties": {
+    "verdict": "reproduces",
+    "why": "The count of notches is a property of the section count alone and the model returns it: four at settings 0 to 72, and fewer above, because the upper ones pass out of the band rather than because they were never there."
+   },
+   "power": {
+    "verdict": "separated",
+    "beaten": {
+     "six-allpass-sections-at-32k": {
+      "median_abs_db": 0.995,
+      "worst_abs_db": 32.1
+     },
+     "ten-allpass-sections-at-32k": {
+      "median_abs_db": 0.64,
+      "worst_abs_db": 28.37
+     },
+     "eight-allpass-sections-at-44k1": {
+      "median_abs_db": 0.62,
+      "worst_abs_db": 24.99
+     },
+     "eight-allpass-sections-at-48k": {
+      "median_abs_db": 0.69,
+      "worst_abs_db": 25.67
+     },
+     "twelve-allpass-sections-at-32k": {
+      "median_abs_db": 0.79,
+      "worst_abs_db": 27.25
+     }
+    },
+    "why": "Every alternative in the catalogue puts a notch where this unit has none. Their worst band is twenty-five to thirty-two decibels out against this one's four, which is a whole cancellation in the wrong place rather than a fit that is slightly worse."
+   },
+   "breakdown": {
+    "verdict": "reproduces",
+    "why": "the signed median swings 0.11 dB across the settings and 1.77 dB across the readings within one, against the run's own floor of 1.92 dB",
+    "read_as": "Read over nine settings this gate returned structure, just over the floor. Thirteen more settings were added to answer a different question and it turned over: what looked like a lean was nine points, and every alternative in the catalogue still returns structure on the same twenty-two. The verdict here is whichever the scoring returned, not a reading of it."
+   }
+  }
+ },
+ "refuted_by": "A setting of the manual byte whose profile has a number of cancellations no single section count explains, or notches whose positions in the tangent of frequency are not fixed multiples of one corner. Either would say the sections do not share a corner, which is the whole of this structure. A rate other than thirty-two kilohertz fitting better once the profile can be read above sixteen would refute the rate without touching the section count.",
+ "what_it_would_change": [
+  "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json"
+ ],
+ "what_this_does_not_settle": [
+  "Anything about the type with its depth off zero. The profile was taken with the modulator held still, which is what makes the notches countable at all; what the depth byte does to the corner is a different measurement and is not in this.",
+  "What the resonance byte is. It was held at zero throughout, so nothing here says whether it is feedback around the ladder or something else.",
+  "How deep the feedback path runs, or where in the chain it is taken from and returned to. What is established is that the byte is a feedback path and not a resonance belonging to a section: three settings of it were read and every notch shallows, none deepens."
+ ],
+ "what_the_printed_number_is": {
+  "what_was_open": [
+   "What the printed manual number means. The page prints 100 to 8.0k and this fits corners from 1.0 to 13.5 kHz, with the lowest notch running 212 Hz to 6.8 kHz -- so the printed span is the notch's and not the corner's, or it is neither, and no run here decides between them.",
+   "What law the corner follows. It is continuous and it is not geometric in the byte -- 0.045 octaves a setting over the bottom half and 0.014 over the top -- and this run was built to find a stride rather than to fit a curve.",
+   "What the printed hundred to eight thousand is measured in. The corner reaches 13.5 kHz and the lowest notch 6.8, and neither is 8000."
+  ],
+  "why_it_could_not_be_asked_before": "The run had nine settings of the byte and the page's two ends. A law wants the page's number at every setting it was read at, and the table that prints them had not been read.",
+  "why_this_is_held_out": "The conversion table was read after this claim was made, and nothing in the run that made it had the column. The corners it reports were fitted from audio alone, so the page is not a thing this reading was tuned against -- it is a thing the reading either lands on or does not.",
+  "what_the_page_prints": {
+   "column": "Manual, in hertz, printed at all 128 values",
+   "used_by_types": [
+    "7",
+    "54",
+    "55",
+    "61",
+    "63",
+    "64"
+   ],
+   "not_a_table": "Three arithmetic runs and a cap, which is four numbers rather than a hundred and twenty-eight: ten hertz a step from 100 to setting twenty, twenty a step to fifty-five, a hundred a step to a hundred and twenty-five, and flat at 8000 above it. Each run reaches its own last entry from its own first with nothing left over."
+  },
+  "the_law": {
+   "in_words": "The printed number is the lowest notch, measured after the bilinear warp and counted from the column's own first entry. Write F for the warp a delay-free loop at this rate puts on a frequency -- F(x) = (fs/pi) tan(pi x / fs) -- and the page's number is F of the notch, less F of a hundred hertz.",
+   "as_written": "tan(pi * notch / fs) = tan(pi * 100 / fs) + pi * printed / fs",
+   "fs_hz": 32000,
+   "the_hundred": "The first entry of the column itself, and not a number fitted here. Fitting the intercept instead lands either side of it depending on which of the two readings of the notch is used -- 1.049 of it on one and 0.961 on the other -- so the reading cannot tell it from the page's own number and the page's own number is what is written.",
+   "nothing_is_fitted": "Both constants are already named: the rate this claim's first round fitted, and the first entry of the printed column. So this could have come out wrong at every one of the twenty-two settings and there was no parameter to move."
+  },
+  "how_far_it_lands": {
+   "with_nothing_fitted": {
+    "largest_at_hz": {
+     "settings": 22,
+     "worst_octaves": 0.0988,
+     "median_octaves": 0.0409
+    },
+    "fitted_at_hz": {
+     "settings": 20,
+     "worst_octaves": 0.0822,
+     "median_octaves": 0.0503
+    }
+   },
+   "if_both_constants_were_fitted_instead": {
+    "largest_at_hz": {
+     "worst_octaves": 0.0895,
+     "median_octaves": 0.0275,
+     "intercept": 0.010297,
+     "slope_per_printed_hz": 9.5227e-05
+    },
+    "fitted_at_hz": {
+     "worst_octaves": 0.1286,
+     "median_octaves": 0.0275,
+     "intercept": 0.009431,
+     "slope_per_printed_hz": 9.5833e-05
+    }
+   },
+   "band_octaves": 0.083333,
+   "why_both_readings": "The record locates each notch twice, once by the band it is largest in and once by a curve fitted over the feature, and neither is the better one. A law that held under one and not the other would be a law about a reading.",
+   "what_the_two_free_constants_buy": "A worse worst under one reading and a better one under the other, and the same median either way. Two parameters bought nothing, which is the strongest thing that can be said for the ones the page already named."
+  },
+  "the_alternatives": {
+   "scored_as": "Every candidate is asked for the notch, which is the thing that was measured. The corner is derived from it by dividing a tangent by a constant the section count fixes, and scoring some candidates in one and some in the other puts an arctangent between them that flatters whichever is wrong at the top.",
+   "largest_at_hz": [
+    {
+     "reading": "the notch's tangent runs straight in the printed number",
+     "worst_octaves": 0.0895,
+     "median_octaves": 0.0275,
+     "sign_changes": 6
+    },
+    {
+     "reading": "the notch runs straight in the printed number",
+     "worst_octaves": 0.4937,
+     "median_octaves": 0.061,
+     "sign_changes": 4
+    },
+    {
+     "reading": "the notch is geometric in the byte",
+     "worst_octaves": 0.543,
+     "median_octaves": 0.1115,
+     "sign_changes": 4
+    },
+    {
+     "reading": "the notch's tangent is a fixed multiple of the printed number",
+     "worst_octaves": 0.804,
+     "median_octaves": 0.2372,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is the notch, up to one factor",
+     "worst_octaves": 0.8491,
+     "median_octaves": 0.3269,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is where notch 1 sits",
+     "worst_octaves": 1.0718,
+     "median_octaves": 0.2033,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is where notch 2 sits",
+     "worst_octaves": 2.8198,
+     "median_octaves": 1.8555,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is the sections' own corner",
+     "worst_octaves": 3.4015,
+     "median_octaves": 2.4369,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is where notch 3 sits",
+     "worst_octaves": 3.9832,
+     "median_octaves": 3.0185,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is where notch 4 sits",
+     "worst_octaves": 5.7313,
+     "median_octaves": 4.7665,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the notch runs straight in the byte",
+     "worst_octaves": null,
+     "median_octaves": null,
+     "sign_changes": 0,
+     "puts_a_setting_at_or_below_nought_hz": true
+    }
+   ],
+   "fitted_at_hz": [
+    {
+     "reading": "the notch's tangent runs straight in the printed number",
+     "worst_octaves": 0.1286,
+     "median_octaves": 0.0275,
+     "sign_changes": 4
+    },
+    {
+     "reading": "the notch runs straight in the printed number",
+     "worst_octaves": 0.4978,
+     "median_octaves": 0.0608,
+     "sign_changes": 2
+    },
+    {
+     "reading": "the notch is geometric in the byte",
+     "worst_octaves": 0.5154,
+     "median_octaves": 0.1558,
+     "sign_changes": 4
+    },
+    {
+     "reading": "the notch's tangent is a fixed multiple of the printed number",
+     "worst_octaves": 0.8254,
+     "median_octaves": 0.2356,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is the notch, up to one factor",
+     "worst_octaves": 0.8703,
+     "median_octaves": 0.3204,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is where notch 1 sits",
+     "worst_octaves": 1.082,
+     "median_octaves": 0.2014,
+     "sign_changes": 1
+    },
+    {
+     "reading": "the printed number is where notch 2 sits",
+     "worst_octaves": 2.8301,
+     "median_octaves": 1.8483,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is the sections' own corner",
+     "worst_octaves": 3.4118,
+     "median_octaves": 2.4297,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is where notch 3 sits",
+     "worst_octaves": 3.9935,
+     "median_octaves": 3.0113,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the printed number is where notch 4 sits",
+     "worst_octaves": 5.7416,
+     "median_octaves": 4.7593,
+     "sign_changes": 0
+    },
+    {
+     "reading": "the notch runs straight in the byte",
+     "worst_octaves": null,
+     "median_octaves": null,
+     "sign_changes": 0,
+     "puts_a_setting_at_or_below_nought_hz": true
+    }
+   ],
+   "what_falls": "Both readings rank them the same way. The two the claim had named fall hardest: the printed number being the corner is out by 3.40 octaves and its being the lowest notch directly is out by 1.07, against a band of 0.083. The nearest surviving candidate is the notch running straight in the printed number rather than its tangent, which has the same two free constants and is five times worse at its worst."
+  },
+  "and_at_a_coarser_reading": {
+   "record": "data/units/roland-sc8850-01/efx-bands/01-20-03-where-the-phaser-sits.json",
+   "band_octaves": 0.333333,
+   "settings": 9,
+   "land_in_the_band_they_were_read_in": 9,
+   "worst_octaves": 0.1283,
+   "readings": [
+    {
+     "value": 0,
+     "printed_hz": 100.0,
+     "read_hz": 200,
+     "the_law_says_hz": 200.0,
+     "away_octaves": 0.0002
+    },
+    {
+     "value": 12,
+     "printed_hz": 220.0,
+     "read_hz": 315,
+     "the_law_says_hz": 319.9,
+     "away_octaves": -0.0223
+    },
+    {
+     "value": 24,
+     "printed_hz": 380.0,
+     "read_hz": 500,
+     "the_law_says_hz": 479.6,
+     "away_octaves": 0.06
+    },
+    {
+     "value": 48,
+     "printed_hz": 860.0,
+     "read_hz": 1000,
+     "the_law_says_hz": 957.2,
+     "away_octaves": 0.0631
+    },
+    {
+     "value": 72,
+     "printed_hz": 2700.0,
+     "read_hz": 2500,
+     "the_law_says_hz": 2732.5,
+     "away_octaves": -0.1283
+    },
+    {
+     "value": 96,
+     "printed_hz": 5100.0,
+     "read_hz": 5000,
+     "the_law_says_hz": 4808.0,
+     "away_octaves": 0.0565
+    },
+    {
+     "value": 114,
+     "printed_hz": 6900.0,
+     "read_hz": 6300,
+     "the_law_says_hz": 6132.9,
+     "away_octaves": 0.0388
+    },
+    {
+     "value": 120,
+     "printed_hz": 7500.0,
+     "read_hz": 6300,
+     "the_law_says_hz": 6529.4,
+     "away_octaves": -0.0516
+    },
+    {
+     "value": 127,
+     "printed_hz": 8000.0,
+     "read_hz": 6300,
+     "the_law_says_hz": 6843.1,
+     "away_octaves": -0.1193
+    }
+   ]
+  },
+  "what_it_settles": "The printed number is neither of the two things the claim could not choose between, and the third reading it offered -- that it is neither -- is right only in the sense that it is not a frequency of the chain as read. It is that frequency prewarped, which is the domain a bilinear design is written in, so a number in it is what a designer would have had in hand before the transform rather than after. That also settles what law the corner follows: the corner is the arctangent of an affine function of the printed number, and through the column's own three arithmetic runs that makes it piecewise in the byte with the bends where the page puts them, which is why it looked continuous and not geometric.",
+  "what_would_refute_this_round": "A setting whose notch lands further from the law than the band it was read in, on a reading fine enough to say so -- the byte has a hundred and six settings nobody has read and the law names every one of them. A run over the bottom of the byte would say most: that is where the residual is largest and where the page's steps are finest, so ten hertz of printed number is a tenth of an octave of notch there and a hundredth at the top. The law would also fall if the same column read on another of the six types that carry it needed a different hundred, because then the constant is the type's and not the column's.",
+  "what_it_does_not_settle": [
+   "Whether the section count is eight. The law is written on the notch, which is measured, so it holds whatever the sections turn out to be -- and it therefore says nothing about them either way.",
+   "Anything above setting a hundred and twenty-five. The column is flat there and three settings were read inside the flat, so the cap is consistent with the reading and is not separately shown.",
+   "What the other five types that carry this column do. One type was read.",
+   "Whether the same relation holds with the modulator running. Every reading here was taken with it held still, which is what makes a notch countable at all."
+  ]
+ }
 }
