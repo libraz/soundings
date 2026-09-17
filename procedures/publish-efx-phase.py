@@ -47,12 +47,11 @@ import json
 import re
 import sys
 import time
-from itertools import combinations
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from soundings import efxbands, phase, record, takes  # noqa: E402
+from soundings import efxbands, phase, record  # noqa: E402
 
 STIMULUS = (
     "channel 2, program 126, note 60, velocity 100, held 8.0 s, captured 9.0 s, "
@@ -136,46 +135,41 @@ def ends(where: Path, setting: str) -> list[tuple[int, Path]]:
 
 
 def one(dry: Path, wet: Path, repeats: list[Path], *, type_id: str, address: str,
-        value, where: Path) -> dict:
-    """One pair read, with every pair of the run's repeats read on the same channel."""
-    dry_frames, wet_frames, rate, picked = takes.read_pair(str(dry), str(wet))
-    head = int(LEAD_S * rate)
-    how = {"bands": efxbands.THIRD_OCTAVES, "width_octaves": 1 / 3}
-    found = phase.measure(dry_frames[head:], wet_frames[head:], rate, **how)
+        value) -> tuple[dict, list[str]]:
+    """One pair read, and the command line that reads it again.
+
+    Both from one call, because they used to come from two. The payload was
+    assembled here and the command line written out beside it by hand, and the
+    hand-written one named a control set two takes short of the one measured --
+    so every record said it could be rebuilt and none of them could. The argument
+    list below is the one this call was made with, spelled as flags.
+    """
     # Every pair of the repeats, including the pair being measured where that pair
     # is itself two repeats. A bound drawn from one pair is one draw; a bound drawn
     # from every pair BUT the one measured makes the largest of the draws stand
     # above the rest of them by construction, which is what a null record is.
-    control = list(combinations(repeats, 2))
-    loaded = []
-    for a, b in control:
-        first, second, control_rate, _ = takes.read_pair(str(a), str(b), on=picked["read"])
-        if control_rate != rate:
-            raise SystemExit(f"a control pair is {control_rate} Hz and the pair is {rate} Hz")
-        loaded.append((first[head:], second[head:]))
-    vouched = phase.control(loaded, rate, **how)
-    return {
-        "type_id": type_id,
-        "address": address,
-        "value": value,
-        "stimulus": STIMULUS,
-        "takes_from": str(where),
-        "dry": str(dry),
-        "wet": str(wet),
-        "control_from": [[str(a), str(b)] for a, b in control],
-        "sample_rate": rate,
-        "channel": picked,
-        "lead_s": LEAD_S,
-        "limits": phase.LIMITS,
-        **found,
-        "control": vouched,
-        **(
-            {"control_failed": phase.CONTROL_FAILED}
-            if vouched["largest_deg"] is None
-            else {}
-        ),
-        "conclusive": phase.is_conclusive(found, vouched),
-    }
+    subject = {"type": type_id}
+    if address is not None:
+        subject["address"] = address
+    if value is not None:
+        subject["value"] = value
+    payload = phase.reading_of(
+        str(dry),
+        str(wet),
+        [str(p) for p in repeats],
+        bands=efxbands.THIRD_OCTAVES,
+        width_octaves=1 / 3,
+        lead_s=LEAD_S,
+        subject=subject,
+        stimulus=STIMULUS,
+    )
+    argv = ["phase", str(dry), str(wet), "--control", *[str(p) for p in repeats],
+            "--type", type_id, "--lead", str(LEAD_S), "--stimulus", STIMULUS]
+    if address is not None:
+        argv += ["--slot", address]
+    if value is not None:
+        argv += ["--value", str(value)]
+    return payload, argv
 
 
 def write(payload: dict, path: Path, argv_of: list[str]) -> None:
@@ -240,21 +234,19 @@ def main(argv: list[str]) -> int:
 
         # The null first, so that what the method returns for a byte that did
         # nothing is read before anything it returns for a byte that did.
-        payload = one(repeats[0], repeats[-1], repeats, type_id=run["type"],
-                      address=None, value=None, where=where)
+        payload, argv = one(repeats[0], repeats[-1], repeats, type_id=run["type"],
+                            address=None, value=None)
         path = out / f"{kind}-flat-{run['dir']}.json"
-        write(payload, path, ["phase", str(repeats[0]), str(repeats[-1]),
-                              "--control", *[str(p) for p in repeats[1:-1]]])
+        write(payload, path, argv)
         print(f"  {path.name}  {said(payload)}")
         written += 1
 
         for address, setting in run["rows"]:
             for value, wet in ends(where, setting):
-                payload = one(repeats[0], wet, repeats, type_id=run["type"],
-                              address=address, value=value, where=where)
+                payload, argv = one(repeats[0], wet, repeats, type_id=run["type"],
+                                    address=address, value=value)
                 path = out / f"{kind}-{address.split()[-1]}-{value:03d}-{run['dir']}.json"
-                write(payload, path, ["phase", str(repeats[0]), str(wet),
-                                      "--control", *[str(p) for p in repeats[1:]]])
+                write(payload, path, argv)
                 print(f"  {path.name}  {said(payload)}")
                 written += 1
 

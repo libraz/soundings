@@ -158,22 +158,45 @@ def test_a_record_naming_no_subject_is_listed_and_not_counted() -> None:
     assert found["records_naming_one"] == 1
 
 
-def test_one_field_under_two_names_is_one_subject() -> None:
-    """`decay` and `phase` spell the effect type `type_id` and five other stages
-    spell it `type`, and both hold `01 00`. Left apart, a phase reading and a band
-    profile of one parameter read as two parameters -- a coverage figure counting
-    the same work twice and the same gap not at all."""
-    stages = {
-        "phase": [
-            {"file": "phase/a.json", "about": {"type_id": "01 00", "address": "40 03 03"}}
-        ],
-        "efx-bands": [
-            {"file": "efx-bands/b.json", "about": {"type": "01 00", "address": "40 03 03"}}
-        ],
-    }
-    found = index.subjects(stages)
-    assert found["subjects"] == 1
-    assert list(found["by_subject"]) == ["address 40 03 03, type 01 00"]
+def test_one_field_is_written_under_one_name() -> None:
+    """`decay` and `phase` once spelled the effect type `type_id` where the other
+    stages spelled it `type`, and a fold in the index held the two together so that
+    a phase reading and a band profile of one parameter did not read as two
+    parameters -- a coverage figure counting the same work twice and the same gap
+    not at all.
+
+    Both stages now write `type` and their records have been re-published from the
+    command lines they carry. This is what the fold was standing in for, and it is
+    the stronger check: a fold keeps two spellings working, and a record arriving
+    under the old one would have gone on being quietly corrected."""
+    for path in PUBLISHED:
+        found = json.loads(path.read_text())
+        if not isinstance(found, dict):
+            continue
+        assert "type_id" not in found, f"{path} spells the effect type type_id"
+
+
+def test_a_records_own_command_line_is_one_the_harness_accepts() -> None:
+    """A record says which command made it, and a reader's first move is to run it.
+
+    Parsed and not run: replaying every record reads a hundred gigabytes of takes,
+    and what goes wrong here goes wrong before any of them are opened. A driver
+    that assembles its argument list by hand beside the call it is describing wrote
+    `--type 01 00` as two arguments where the flag takes one, and every record it
+    made carried a line that stops at the parser. That is invisible until somebody
+    tries it, which is exactly when it is most expensive."""
+    parser = build_parser()
+    for path in PUBLISHED:
+        found = json.loads(path.read_text())
+        if not isinstance(found, dict):
+            continue
+        argv = found.get("record", {}).get("invocation")
+        if not argv:
+            continue
+        try:
+            parser.parse_args(argv)
+        except SystemExit as refused:
+            pytest.fail(f"{path.relative_to(ROOT)}: {' '.join(argv)} ({refused})")
 
 
 def test_the_stages_that_read_one_parameter_can_all_say_which() -> None:

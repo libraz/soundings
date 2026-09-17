@@ -316,9 +316,17 @@ def main(argv: list[str]) -> int:
             record.invoked(
                 record.Invocation(
                     stage="efx-rate",
+                    # A flag whose value is nothing is left off rather than
+                    # spelled `None`. The two read the same in a file and are not
+                    # the same on a command line: the parser takes `--settled` as
+                    # a number and stops at the word, so a line written that way
+                    # is one no reader can run.
                     argv=[
                         "efx-rate", str(where), "--type", type_id, "--slot", address,
-                        "--setting", setting, "--settled", str(here["settled"]),
+                        "--setting", setting,
+                        *(["--settled", str(here["settled"])]
+                          if here["settled"] is not None else []),
+                        *[a for h in held for a in ("--held", f"{h['address']}={h['bytes']}")],
                     ],
                     started=time.monotonic(),
                     midi_device_id=None,

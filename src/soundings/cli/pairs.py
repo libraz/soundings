@@ -11,7 +11,6 @@ recorded once and asked questions afterwards.
 from __future__ import annotations
 
 import argparse
-from itertools import combinations
 
 from . import options, report
 from .blocks import BAND_SET_NAMES
@@ -107,6 +106,22 @@ def register(sub) -> None:
         help="which set of bands the phase is reported over",
     )
     options.add_subject(p)
+    p.add_argument(
+        "--value",
+        type=int,
+        default=None,
+        help="the setting the wet take was of. A record naming the address that was "
+        "swept and not where it stood says which byte moved and not what it was moved "
+        "to, and a directory of those is told apart by its filenames",
+    )
+    p.add_argument(
+        "--stimulus",
+        default=None,
+        help="what the note was, in the run's own words. The store beside the takes "
+        "names the stimulus it captured under and not what was asked for it, so a "
+        "reading that wants the programme, the note and how long it was held has "
+        "nowhere else to take them from",
+    )
     p.add_argument(
         "--block",
         type=float,
@@ -250,53 +265,31 @@ def cmd_phase(args: argparse.Namespace) -> int:
     from .. import efxbands
     from .. import phase as ph
 
+    if args.control and len(args.control) < 2:
+        print("--control needs two or more takes of one setting")
+        return 2
     centres, width = efxbands.BAND_SETS[args.band_set]
-    dry, wet, rate, picked = _pair(args.dry, args.wet)
-    head = int(args.lead * rate)
-    how = {"bands": centres, "width_octaves": width}
-    if args.block is not None:
-        how["block_s"] = args.block
-    found = ph.measure(dry[head:], wet[head:], rate, **how)
+    subject = options.subject_of(args)
+    if args.value is not None:
+        subject["value"] = args.value
+    try:
+        payload = ph.reading_of(
+            args.dry,
+            args.wet,
+            list(args.control or ()),
+            bands=centres,
+            width_octaves=width,
+            block_s=args.block,
+            lead_s=args.lead,
+            subject=subject,
+            stimulus=args.stimulus,
+        )
+    except ValueError as clash:
+        print(clash)
+        return 1
 
-    vouched = None
-    if args.control:
-        if len(args.control) < 2:
-            print("--control needs two or more takes of one setting")
-            return 2
-        # The control read on the channel the pair was read on, not on one chosen
-        # again: a bound measured on the other leg of the unit bounds a comparison
-        # that was never made.
-        repeats = []
-        for first, second in combinations(args.control, 2):
-            a, b, control_rate, _ = _pair(first, second, on=picked["read"])
-            if control_rate != rate:
-                print(f"a control pair is {control_rate} Hz and the pair is {rate} Hz")
-                return 1
-            repeats.append((a[head:], b[head:]))
-        vouched = ph.control(repeats, rate, **how)
-
-    print(f"{args.dry} against {args.wet}, {rate} Hz")
-    print(ph.describe(found, vouched))
-
-    report.write_json(
-        args.out,
-        {
-            **options.subject_of(args),
-            "dry": str(args.dry),
-            "wet": str(args.wet),
-            "control_from": [str(p) for p in args.control] if args.control else None,
-            "sample_rate": rate,
-            "channel": picked,
-            "lead_s": args.lead,
-            "limits": ph.LIMITS,
-            **found,
-            **({"control": vouched} if vouched else {}),
-            **(
-                {"control_failed": ph.CONTROL_FAILED}
-                if vouched is not None and vouched["largest_deg"] is None
-                else {}
-            ),
-            "conclusive": ph.is_conclusive(found, vouched) if vouched else None,
-        },
-    )
+    print(f"{args.dry} against {args.wet}, {payload['sample_rate']} Hz")
+    print(ph.describe(payload, payload.get("control")))
+    report.write_json(args.out, payload)
+    vouched = payload.get("control")
     return 0 if vouched is None or vouched["largest_deg"] is not None else 1

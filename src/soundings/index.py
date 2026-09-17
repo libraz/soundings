@@ -44,7 +44,6 @@ SUBJECT = (
     "controller",
     "channel",
     "type",
-    "type_id",
     "map_select",
     "region_prefix",
 )
@@ -120,32 +119,23 @@ def names_it(value: object) -> bool:
     return isinstance(value, str | int) and not isinstance(value, bool)
 
 
-#: One field written under two names, and which name is the one. `decay` and
-#: `phase` spelled the effect type `type_id` where five other stages spell it
-#: `type`, and the two hold the same thing in the same format -- `01 00` either
-#: way. The commands now emit one spelling; this covers the records made before
-#: they did, and it is here rather than in `about()` because the entry stays what
-#: the record says while the grouping says which entries are about one thing.
-#:
-#: Folded rather than left apart because the consequence is not cosmetic: a phase
-#: reading and a band profile of one parameter filed under two keys read as two
-#: parameters, which is a coverage figure counting the same work twice and the
-#: same gap not at all.
-ONE_FIELD_TWO_SPELLINGS = {"type_id": "type"}
-
-
 def as_a_subject(about: dict) -> str:
     """One record's subject as a single key, so two records about one thing meet.
 
     Empty where the record names no subject, which is not the same as a record
     whose subject happens to be rare -- so the caller keeps those apart rather
     than filing them all under one blank.
+
+    **One field, one name.** `decay` and `phase` once spelled the effect type
+    `type_id` where the other stages spelled it `type`, and a fold from one to the
+    other stood here so that a phase reading and a band profile of one parameter
+    met rather than reading as two parameters -- a coverage figure counting the
+    same work twice and the same gap not at all. Both stages now write `type` and
+    their records have been re-published from the command lines they carry, so
+    there is one spelling and nothing to fold. A second name kept alive here would
+    be a second convention with nothing on the other end of it.
     """
-    said = {
-        ONE_FIELD_TWO_SPELLINGS.get(key, key): about[key]
-        for key in SUBJECT
-        if key in about and names_it(about[key])
-    }
+    said = {key: about[key] for key in SUBJECT if key in about and names_it(about[key])}
     return ", ".join(f"{key} {said[key]}" for key in SUBJECT if key in said)
 
 

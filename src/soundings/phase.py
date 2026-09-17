@@ -33,6 +33,8 @@ of one, and how far that moved across the take is reported.
 
 from __future__ import annotations
 
+from itertools import combinations
+
 import numpy as np
 
 from .efxbands import THIRD_OCTAVES
@@ -418,6 +420,89 @@ def control(pairs, rate: int, **how) -> dict:
         "Every pair rather than one because one pair is one draw: two repeats that "
         "happened to agree draw a bound the run's own noise would cross.",
     }
+
+
+def reading_of(
+    dry: str,
+    wet: str,
+    repeats: list[str],
+    *,
+    bands,
+    width_octaves: float,
+    block_s: float | None = None,
+    lead_s: float,
+    subject: dict,
+    stimulus: str | None = None,
+) -> dict:
+    """Everything one pair of takes and its repeats make, assembled in one place.
+
+    Here rather than in the command that calls it because this shape had two
+    writers and they drifted. A driver assembling it beside the handler measured
+    its control over every repeat and stored a command line naming a control set
+    two takes short, so a replay of that line returned a different bound while
+    every other field agreed -- a record that reads as reproducible and is not.
+    One writer cannot disagree with itself.
+
+    The control is read on the channel the pair was read on. A bound measured on
+    the other leg of the unit bounds a comparison that was never made.
+    """
+    from . import takes as takestore
+
+    dry_frames, wet_frames, rate, picked = takestore.read_pair(dry, wet)
+    head = int(lead_s * rate)
+    how = {"bands": bands, "width_octaves": width_octaves}
+    if block_s is not None:
+        how["block_s"] = block_s
+    found = measure(dry_frames[head:], wet_frames[head:], rate, **how)
+
+    vouched, pairs = None, list(combinations(repeats, 2))
+    if pairs:
+        loaded = []
+        for first, second in pairs:
+            a, b, control_rate, _ = takestore.read_pair(first, second, on=picked["read"])
+            if control_rate != rate:
+                raise ValueError(
+                    f"a control pair is {control_rate} Hz and the pair is {rate} Hz"
+                )
+            loaded.append((a[head:], b[head:]))
+        vouched = control(loaded, rate, **how)
+
+    return {
+        **subject,
+        **({"stimulus": stimulus} if stimulus else {}),
+        "takes_from": _one_directory(dry, wet, *repeats),
+        "dry": str(dry),
+        "wet": str(wet),
+        # Named as the pairs they were, not as the takes they were drawn from.
+        # `control.pairs` carries a figure per pair and no file names, so this is
+        # the only place that says which two takes each of those figures is of.
+        "control_from": [[str(a), str(b)] for a, b in pairs] or None,
+        "sample_rate": rate,
+        "channel": picked,
+        "lead_s": lead_s,
+        "limits": LIMITS,
+        **found,
+        **({"control": vouched} if vouched else {}),
+        **(
+            {"control_failed": CONTROL_FAILED}
+            if vouched is not None and vouched["largest_deg"] is None
+            else {}
+        ),
+        "conclusive": is_conclusive(found, vouched) if vouched else None,
+    }
+
+
+def _one_directory(*paths: str) -> str | None:
+    """The directory the takes came from, where they all came from one.
+
+    Left out rather than guessed at where they did not: a reading made across two
+    directories has no single store behind it, and naming the first would say it
+    had.
+    """
+    from pathlib import Path
+
+    where = {str(Path(p).parent) for p in paths}
+    return where.pop() if len(where) == 1 else None
 
 
 def is_conclusive(found: dict, vouched: dict) -> bool:
