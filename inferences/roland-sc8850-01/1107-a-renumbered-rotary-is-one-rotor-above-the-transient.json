@@ -4,7 +4,7 @@
   "unit_id": "roland-sc8850-01",
   "state": "standing",
   "made_at": "2026-09-17T03:26:49.804069+00:00",
-  "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py",
+  "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py, backup/fold-in-the-high-rotor.py",
   "rounds": 1,
   "about": {
    "scope": "unit",
@@ -14,12 +14,14 @@
    ],
    "addresses": [
     "40 03 03",
+    "40 03 07",
     "40 03 08",
     "40 03 0C"
    ]
-  }
+  },
+  "why_the_rounds_did_not_move": "The ceiling counts revisions of the model. Nothing about the model moved: a competing reading fell and a second one was recorded as one this test cannot separate, which is the opposite of a revision."
  },
- "claim": "The rotary on `11 07` is the rotary of `01 22`, above the settings where either rotor is still on its way. `01 22` prints ten rotary parameters at `03` through `0B` and then, after an address no page names at `0C`, at `0D`; `11 07` prints the same ten at `08` through `10` and then `11`, with nothing between, so nine of them move five addresses and the tenth moves four. Swept on both and laid over each other, from value 16 to the top of the byte the two are 0.6 cents apart at worst -- across both places the shared table folds, at both take lengths the single type was read at, and at value 32 which was taken at both lengths as the tie. This is the third pair of a multi and its single-effect sibling to be asked and the first read by a stage that recovers a frequency rather than a level, so the agreement is not something a band reading could have manufactured.\n\nBelow value 16 the two disagree by as much as 1507.2 cents, and this says nothing about either block. The same byte at the same value on the same type returns three different rates depending on how many bytes the run wrote before it -- 0.5934 Hz at value 12 after two writes, 0.5472 after three, 0.4042 after thirteen, which is what the multi returns after three and after nineteen. Down there a reading is of the byte and to when the write arrived, and neither record states it.",
+ "claim": "The rotary on `11 07` is the rotary of `01 22`, above the settings where either rotor is still on its way. `01 22` prints ten rotary parameters at `03` through `0B` and then, after an address no page names at `0C`, at `0D`; `11 07` prints the same ten at `08` through `10` and then `11`, with nothing between, so nine of them move five addresses and the tenth moves four. Swept on both and laid over each other, from value 16 to the top of the byte the two are 0.6 cents apart at worst -- across both places the shared table folds, at both take lengths the single type was read at, and at value 32 which was taken at both lengths as the tie. This is the third pair of a multi and its single-effect sibling to be asked and the first read by a stage that recovers a frequency rather than a level, so the agreement is not something a band reading could have manufactured.\n\nBelow value 16 the two disagree by as much as 1507.2 cents, and this says nothing about either block. The same byte at the same value on the same type returns three different rates depending on how many bytes the run wrote before it -- 0.5934 Hz at value 12 after two writes, 0.5472 after three, 0.4042 after thirteen, which is what the multi returns after three and after nineteen. Down there a reading is of the byte and to when the write arrived, and neither record states it.\n\nThe high rotor answers the same way and the distance is not one number. The pair's other rotor was read on both types in one run, at one settle, with each type's other rotor silenced, and at the three settings both were asked it returns the same rate to between a tenth and a third of a cent. Its distance short of the printed entry is 0.056 to 0.061 Hz on both, agreeing to between a ten-thousandth and thirteen ten-thousandths of a hertz -- a second quantity the table does not contain, at a second address pair. And it is not an unrelated second quantity: the low rotor's distance over this one is 4.00 at the setting where the shared rate table steps by a twentieth of a hertz, and 4.19 and 4.39 at the two where it steps by a tenth and a half, against the 4.00 the two entries of this unit's own acceleration table give for the two bytes both types rest those rotors at. The drift is ordered the way the table's coarseness is, and the distance is read against that table.",
  "named": "one rotary, reached through a renumbering that is not a shift",
  "rests_on": {
   "measurements": [
@@ -125,6 +127,32 @@
     "values": [
      0.448,
      0.5472
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+    "keys": [
+     "readings[value=32].rate_hz",
+     "readings[value=110].rate_hz",
+     "readings[value=127].rate_hz"
+    ],
+    "values": [
+     1.5887,
+     6.0415,
+     9.9442
+    ]
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json",
+    "keys": [
+     "readings[value=32].rate_hz",
+     "readings[value=110].rate_hz",
+     "readings[value=127].rate_hz"
+    ],
+    "values": [
+     1.5886,
+     6.0426,
+     9.9429
     ]
    }
   ],
@@ -297,7 +325,7 @@
   {
    "reading": "Two rotaries built to one description, agreeing because they index one printed table, rather than one block reached twice.",
    "candidate": null,
-   "standing": true,
+   "standing": false,
    "separated_by": {
     "observable": "A quantity the printed table does not contain. The table is public and two implementations reading it would agree on it; what they would not agree on is the distance the rotor stops short by, which is this unit's own and is printed nowhere. It holds at 0.244 to 0.246 Hz on both types from value 16 to 127, which is already a quantity outside the table -- but it is one number, and one number is a coincidence a second implementation could reach.",
     "predicts": {
@@ -319,13 +347,22 @@
      "minutes": 12,
      "why": "The high rotor's slow rate on the multi, against the record of the single type's that this archive already holds. It is the same block, so nothing new has to be held; what is new is that the constant it carries is a different number, and two numbers outside the printed table agreeing is what one number cannot be.\n\nAbove value 16 only, and with the low rotor silenced at its level byte the way this pair's low reading silenced the high one. The bottom is not asked: it is not a reading of the byte alone until the write timing is a stated part of the record, which is a change to how a run is recorded and not a run."
     }
-   }
+   },
+   "ruled_out_by": "The high rotor of the same pair. This reading says the two agree because they index one printed table, and they agree on two quantities the table does not contain: the low rotor's distance short, 0.244 to 0.246 Hz on both, and the high rotor's, 0.056 to 0.061 on both. What refutes the reading is the agreement, which is a difference of two measurements and needs no table: two implementations reading one printed table would agree on the table and there is no reason they would agree on a distance the table does not contain, at two address pairs, to a thousandth of a hertz. Read in data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json and data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json."
   },
   {
    "reading": "The bottom of the byte is where the two blocks differ, rather than where neither record is a reading of the byte alone.",
    "candidate": null,
    "standing": false,
    "ruled_out_by": "The single type returning three different rates at one value of one byte, under three counts of how many bytes were written first, with the type never changing. A difference that one type produces against itself cannot be evidence about two."
+  },
+  {
+   "reading": "One rotor routine written once and instantiated twice, rather than one block reached from two types.",
+   "standing": true,
+   "equivalent_under_this_test": true,
+   "separated_by": {
+    "why_not_separable": "Nothing this archive can measure. Two instances of one routine and one routine reached twice return the same rate, the same distance short and the same ratio between the rotors, and what leaves the sockets is the only thing that can be asked here. This is the residue of the reading above once the coincidence in it is refuted, and it is carried the way the same alternative is carried on the claim about `11 08`'s two halves rather than queued behind a run that could not answer it."
+   }
   }
  ],
  "refuted_by": "Either rotor's rate differing between the two types by more than a cent at any setting from value 16 upward, under any state both types can be put in.",
@@ -338,6 +375,67 @@
   "The high rotor. One of the pair's two rotors was swept; the other shares the block and carries a constant of its own, which is the run this claim queues.",
   "Any of the block's other eight parameters on the multi. The acceleration byte among them was written at the value the single type rests at and not swept, and it is the byte the bottom's behaviour is a behaviour of.",
   "What `40 03 0C` on `01 22` is for. It was shown not to reach this rotor and nothing more.",
-  "Whether the bottom of an accelerating type's rate byte can be read at all. It can, if when the write arrived is recorded; no record here does, and that is a change to how a run is recorded rather than a measurement."
- ]
+  "Whether the bottom of an accelerating type's rate byte can be read at all. It can, if when the write arrived is recorded; no record here does, and that is a change to how a run is recorded rather than a measurement.",
+  "What the high rotor does below value 16. It was asked at 32, 110 and 127 and nowhere lower, and the low rotor's bottom turned out to be governed by when the write arrived rather than by the byte -- which no record states, so the high rotor's bottom is open for the same reason and not for a new one.",
+  "Whether the remaining eight rotary parameters agree. One rate byte per rotor has now been laid over, and the block prints ten."
+ ],
+ "what_the_high_rotor_returned": {
+  "what": "The other rotor of the same pair, at the address each type prints its high slow rate at -- `40 03 07` on the single type and `40 03 0C` on the multi, five up as the rest of the block is. Both sides were already in the archive: one run, one takes directory, one settle of ten seconds, each type's other rotor silenced at its own level byte, four partials agreeing out of four on every reading used here.",
+  "measured_in": "cents for the rates, Hz for the distances",
+  "at_each_setting": [
+   {
+    "value": 32,
+    "the_printed_entry_hz": 1.65,
+    "the_single_type_hz": 1.5887,
+    "the_multi_hz": 1.5886,
+    "apart_cents": 0.08,
+    "short_on_the_single_hz": 0.0613,
+    "short_on_the_multi_hz": 0.0614,
+    "the_two_distances_apart_hz": 0.0001,
+    "the_low_rotors_distance_over_this_one": 3.997,
+    "the_step_of_the_run_this_setting_is_in_hz": 0.05
+   },
+   {
+    "value": 110,
+    "the_printed_entry_hz": 6.1,
+    "the_single_type_hz": 6.0415,
+    "the_multi_hz": 6.0426,
+    "apart_cents": 0.22,
+    "short_on_the_single_hz": 0.0585,
+    "short_on_the_multi_hz": 0.0574,
+    "the_two_distances_apart_hz": 0.0011,
+    "the_low_rotors_distance_over_this_one": 4.188,
+    "the_step_of_the_run_this_setting_is_in_hz": 0.1
+   },
+   {
+    "value": 127,
+    "the_printed_entry_hz": 10.0,
+    "the_single_type_hz": 9.9442,
+    "the_multi_hz": 9.9429,
+    "apart_cents": 0.16,
+    "short_on_the_single_hz": 0.0558,
+    "short_on_the_multi_hz": 0.0571,
+    "the_two_distances_apart_hz": 0.0013,
+    "the_low_rotors_distance_over_this_one": 4.391,
+    "the_step_of_the_run_this_setting_is_in_hz": 0.5
+   }
+  ],
+  "the_distance_is_the_low_rotors_over_four": {
+   "what": "The low rotor stops short by 0.244 to 0.246 Hz and the high rotor by 0.056 to 0.061, and the two rotors rest at acceleration bytes of 24 and 88 on both types -- the same two values, which is why the two distances are comparable at all. This archive's closed acceleration claim reads that byte through its top four bits into a table, and the entry the high rotor's byte lands on is four times the entry the low rotor's lands on.",
+   "what_the_closed_model_returns_hz": {
+    "low": 0.2335,
+    "high": 0.0584
+   },
+   "the_ratio_it_gives": 3.998,
+   "the_ratio_the_measurement_gives": {
+    "32": 3.997,
+    "110": 4.188,
+    "127": 4.391
+   },
+   "why_it_is_not_four_at_every_setting": "Because the distance is read against a table entry and the entry is coarser than the distance is large at the top of the byte. The three settings sit in runs of the shared table stepping by 0.05, 0.1 and 0.5 Hz, and the ratio they return is 4.00, 4.19 and 4.39 -- ordered the way the coarseness is, and landing on the table's own four exactly where the table is finest. That is a reading of the drift and it is not measured here: what would measure it is a rate entry read rather than reconstructed. The agreement between the two types does not depend on any of it.",
+   "why_that_matters": "The queue's own reason for wanting a second number was that one number is a coincidence a second implementation could reach. This is not an unrelated second number: at the setting where the table can carry it, it is the first divided by an entry of a table that is this unit's own and printed nowhere. An implementation that agreed on both would have to hold the same rate table, the same acceleration table and the same constant."
+  },
+  "what_rests_on_the_table_and_what_does_not": "The two types agreeing is a difference of two measurements and needs no table at all. The size of the distance does need one, and at the top of the byte the table is coarse where the distance is small -- the entries at 110 and 127 are a tenth and half a hertz apart from their neighbours, against a distance of six hundredths. So the distance's value there stands on the reconstructed entry being exact, and the agreement does not.",
+  "what_was_not_held_the_same": "The multi's run wrote four bytes before the swept one and the single type's wrote two. On the low rotor that mattered below value 16 and nowhere else, and the three settings here are 32, 110 and 127."
+ }
 }
