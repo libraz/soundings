@@ -64,6 +64,32 @@ def about(found: dict) -> dict:
     return {key: found[key] for key in SUBJECT if found.get(key) not in (None, "")}
 
 
+#: Where a record that holds several runs puts each one. A run of one of these
+#: carries its own `about`, so a record whose whole subject is a list still says
+#: what each part of it was -- three types at one address, or one type under three
+#: voices.
+WITHIN = ("runs", "findings", "readings", "results")
+
+
+def also_about(found: dict) -> list[dict]:
+    """The subjects a record states one run at a time, where it states none itself.
+
+    Read only when the top level names nothing, because that is the case this is
+    for: a record about a list of parameters has no one subject to put at its top
+    and would otherwise read as a record about nothing at all. It is still the
+    record speaking about itself -- the same fields, one level down -- and a
+    coverage figure that skipped these would count three parameters as none.
+    """
+    seen: list[dict] = []
+    for key in WITHIN:
+        for row in found.get(key) or []:
+            if not isinstance(row, dict) or not isinstance(row.get("about"), dict):
+                continue
+            if (subject := about(row["about"])) and subject not in seen:
+                seen.append(subject)
+    return seen
+
+
 def entry(unit: Path, path: Path) -> dict:
     """One line of the listing, read from the record it names."""
     found = json.loads(path.read_text())
@@ -72,6 +98,8 @@ def entry(unit: Path, path: Path) -> dict:
     if isinstance(found, dict):
         if subject := about(found):
             out["about"] = subject
+        elif nested := also_about(found):
+            out["also_about"] = nested
         if isinstance(stamp, dict):
             if stamp.get("measured_at"):
                 out["measured_at"] = stamp["measured_at"]
@@ -142,14 +170,17 @@ def subjects(stages: dict[str, list[dict]]) -> dict:
     silent: list[str] = []
     for stage, entries in stages.items():
         for entry in entries:
-            key = as_a_subject(entry.get("about") or {})
-            if not key:
+            said = [entry["about"]] if entry.get("about") else entry.get("also_about") or []
+            keys = [key for key in (as_a_subject(one) for one in said) if key]
+            if not keys:
                 silent.append(entry["file"])
                 continue
-            row = grouped.setdefault(key, {"stages": [], "records": []})
-            row["records"].append(entry["file"])
-            if stage not in row["stages"]:
-                row["stages"].append(stage)
+            for key in keys:
+                row = grouped.setdefault(key, {"stages": [], "records": []})
+                if entry["file"] not in row["records"]:
+                    row["records"].append(entry["file"])
+                if stage not in row["stages"]:
+                    row["stages"].append(stage)
     for row in grouped.values():
         row["records"].sort()
         row["stages"].sort()

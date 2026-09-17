@@ -184,3 +184,42 @@ def test_the_stages_that_read_one_parameter_can_all_say_which() -> None:
     for name in ("balance", "balance-bands", "arrival", "vibrato", "motion", "decay", "phase"):
         flags = {s for action in sub.choices[name]._actions for s in action.option_strings}
         assert {"--type", "--slot"} <= flags, f"{name} cannot say what its takes were of"
+
+
+def test_a_record_about_a_list_is_read_one_run_at_a_time() -> None:
+    """A record of three types at one address has no one subject to put at its
+    top, and read only there it looks like a record about nothing. Its runs each
+    say what they were of, which is still the record speaking about itself."""
+    stages = {
+        "balance": [
+            {
+                "file": "balance/three-types.json",
+                "also_about": [
+                    {"type": "01 01", "address": "40 03 15"},
+                    {"type": "01 03", "address": "40 03 15"},
+                ],
+            }
+        ]
+    }
+    found = index.subjects(stages)
+    assert found["subjects"] == 2
+    assert not found["naming_no_subject"]
+    for row in found["by_subject"].values():
+        assert row["records"] == ["balance/three-types.json"]
+
+
+def test_a_top_level_subject_wins_over_the_runs() -> None:
+    """Read one level down only where the top says nothing. A record that names
+    its subject has named it, and going looking for more would file it under
+    settings it merely held."""
+    stages = {
+        "efx-rate": [
+            {
+                "file": "efx-rate/a.json",
+                "about": {"type": "01 22", "address": "40 03 03"},
+                "also_about": [{"type": "99 99", "address": "40 03 99"}],
+            }
+        ]
+    }
+    found = index.subjects(stages)
+    assert list(found["by_subject"]) == ["address 40 03 03, type 01 22"]
