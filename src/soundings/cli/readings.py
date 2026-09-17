@@ -54,8 +54,27 @@ def _open(args) -> int:
     if not items:
         print("nothing open")
         return 0
-    runnable = [i for i in items if i["run"]]
+    made = [i for i in items if i.get("already_recorded")]
+    runnable = [i for i in items if i["run"] and not i.get("already_recorded")]
     blocked = [i for i in items if not i["run"]]
+    if made:
+        # Not under the heading below, and above it. What these need first is the
+        # records read, and a queue that printed them beside the bookings is how
+        # the same run gets made twice.
+        print("== the unit already holds records of this, and the claim cites none")
+        for item in made:
+            run = item["run"]
+            print(
+                f"  {run.get('minutes', '?'):>4} min  {run.get('stage', '?')}  "
+                f"{item['inference']}"
+            )
+            for side in item["already_recorded"]["sides"]:
+                unread = [
+                    f for f in side["records"] if f not in side["the_claim_names"]
+                ]
+                print(f"    {side['side']}: {', '.join(unread) or 'all cited'}")
+        print("\n  read these before booking the time above")
+        print()
     if runnable:
         print("== what a run would settle, soonest first")
         for item in runnable:

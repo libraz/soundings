@@ -232,6 +232,61 @@ def citing_an_inference(root: str | Path) -> list[dict]:
     return out
 
 
+def already_recorded(root: str | Path, unit: str, run: dict, claim: dict) -> dict | None:
+    """Whether the unit already holds records of what a queued run would go and ask.
+
+    Two things land here and they want the same thing done about them. A run made
+    and not yet folded in: the queue is derived from the claims, so a run stays on
+    it until a claim is revised to take its answer in, and it has twice offered one
+    long enough for hardware to be booked against it a second time. And a subject
+    an earlier stage already swept for its own reasons, which is not a run that was
+    made but is a record that has to be read before the time is booked. Neither is
+    a booking, and the unit's listing is generated from its records, so this asks
+    the listing rather than asking a reader to remember.
+
+    Two conditions together, because either alone is wrong. Every side the run
+    names has to have a record, or there is nothing to read first -- one side of a
+    pair usually exists before the run, which is often why the pair was chosen, so
+    one side alone says nothing. And at least one side has to have no record the
+    claim cites anywhere, or what is here has already been read. Neither the run's
+    own prose nor the claim's is consulted: a key saying a run was made is the
+    thing that went stale.
+
+    None where the run does not name a type and an address per side, or where the
+    unit has no listing. A run that does not say what it is about cannot be looked
+    up, and saying so is the answer.
+    """
+    kinds = run.get("types") or ([run["type"]] if run.get("type") else [])
+    addresses = run.get("addresses") or ([run["address"]] if run.get("address") else [])
+    if not kinds or len(kinds) != len(addresses):
+        return None
+    listing = Path(root) / "data" / "units" / unit / "index.json"
+    if not listing.exists():
+        return None
+    entries = json.loads(listing.read_text())["stages"].get(run.get("stage")) or []
+    named = json.dumps(claim, ensure_ascii=False)
+    sides = []
+    for kind, address in zip(kinds, addresses, strict=True):
+        files = sorted(
+            entry["file"]
+            for entry in entries
+            if (entry.get("about") or {}).get("type") == kind
+            and (entry.get("about") or {}).get("address") == address
+        )
+        sides.append(
+            {
+                "side": f"{kind} {address}",
+                "records": files,
+                "the_claim_names": [f for f in files if f in named],
+            }
+        )
+    if not all(side["records"] for side in sides):
+        return None
+    if all(side["the_claim_names"] for side in sides):
+        return None
+    return {"sides": sides}
+
+
 def open_items(root: str | Path) -> list[dict]:
     """What is unresolved, and for each the measurement that would resolve it.
 
@@ -239,6 +294,13 @@ def open_items(root: str | Path) -> list[dict]:
     sounding. An alternative whose `separated_by` is null is unresolved and
     unqueueable, and it is listed with the reason rather than left out -- a queue
     that silently drops what it cannot schedule reads as a shorter queue.
+
+    A queued run the unit already holds records of is carried with
+    `already_recorded` set rather than dropped. What it needs first is those
+    records read, not the time booked, and those are different enough that the
+    queue must not print them under one heading -- but an item that vanished when
+    its subject turned up in the listing would be a question nobody was left to
+    answer.
     """
     root = Path(root)
     out = []
@@ -275,6 +337,11 @@ def open_items(root: str | Path) -> list[dict]:
                     "why_not_separable": separated.get("why_not_separable"),
                     "run": run,
                     "minutes": (run or {}).get("minutes"),
+                    "already_recorded": (
+                        already_recorded(root, path.parent.name, run, claim)
+                        if run
+                        else None
+                    ),
                 }
             )
     out.sort(key=lambda item: (item["minutes"] is None, item["minutes"] or 0))

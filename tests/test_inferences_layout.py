@@ -363,3 +363,62 @@ def test_a_row_can_be_named_by_more_than_one_of_its_fields():
 def test_one_field_still_names_a_row():
     record = {"readings": [{"value": 52, "largest_db": -3.0}]}
     assert inferences.resolve(record, "readings[value=52].largest_db") == -3.0
+
+
+def _listing(tmp_path: Path, unit: str, stage: str, entries: list[dict]) -> Path:
+    where = tmp_path / "data" / "units" / unit
+    where.mkdir(parents=True)
+    (where / "index.json").write_text(
+        json.dumps({"unit_id": unit, "records": len(entries), "stages": {stage: entries}})
+    )
+    return tmp_path
+
+
+RUN = {"stage": "efx-rate", "types": ["11 07", "01 22"],
+       "addresses": ["40 03 08", "40 03 03"]}
+
+BOTH_SIDES = [
+    {"file": "efx-rate/on-the-multi.json", "about": {"type": "11 07", "address": "40 03 08"}},
+    {"file": "efx-rate/on-the-single.json", "about": {"type": "01 22", "address": "40 03 03"}},
+]
+
+
+def test_a_queued_run_whose_records_exist_and_are_uncited_is_flagged(tmp_path: Path):
+    """The queue is derived from the claims, so a made run stays on it.
+
+    Between the takes landing and the fold-in being written the queue offers a run
+    that exists, and that gap has been long enough to book the unit against twice.
+    Nothing here reads a key saying the run was made: that key is the thing that
+    goes stale.
+    """
+    root = _listing(tmp_path, "a-unit", "efx-rate", BOTH_SIDES)
+    found = inferences.already_recorded(root, "a-unit", RUN, {"cites": []})
+    assert found is not None
+    assert [side["side"] for side in found["sides"]] == [
+        "11 07 40 03 08", "01 22 40 03 03",
+    ]
+
+
+def test_one_side_already_recorded_is_not_enough(tmp_path: Path):
+    """One side of a pair usually exists before the run, which is often why the
+    pair was chosen at all. Flagging on that would empty the queue of exactly the
+    entries that were best thought through."""
+    root = _listing(tmp_path, "a-unit", "efx-rate", BOTH_SIDES[1:])
+    assert inferences.already_recorded(root, "a-unit", RUN, {"cites": []}) is None
+
+
+def test_a_run_whose_records_the_claim_already_cites_is_not_flagged(tmp_path: Path):
+    """Folded in. The entry is then a queue item nobody cleared, which is a
+    different defect and not this one's to report."""
+    root = _listing(tmp_path, "a-unit", "efx-rate", BOTH_SIDES)
+    claim = {"cites": [entry["file"] for entry in BOTH_SIDES]}
+    assert inferences.already_recorded(root, "a-unit", RUN, claim) is None
+
+
+def test_a_run_that_does_not_say_what_it_is_about_cannot_be_looked_up(tmp_path: Path):
+    """And says so rather than guessing. A survey stage whose subject is a list
+    is the case this protects: it has no one type and no one address, and a
+    lookup that fell back to the stage alone would match every record it wrote."""
+    root = _listing(tmp_path, "a-unit", "efx-rate", BOTH_SIDES)
+    vague = {"stage": "efx-rate", "minutes": 20}
+    assert inferences.already_recorded(root, "a-unit", vague, {"cites": []}) is None
