@@ -80,6 +80,77 @@ def entry(unit: Path, path: Path) -> dict:
     return out
 
 
+def names_it(value: object) -> bool:
+    """Whether a subject field names the record's subject or describes its reading.
+
+    `channel` is both, depending on the stage that wrote it. On a scan it is the
+    MIDI channel a message was sent on, which is what the record is about; on a
+    stage that reads audio it is an object saying which interface input every
+    figure was taken from and how loud the others were, which is a fact about the
+    reading. A name is a name; anything with structure inside it is not one.
+    """
+    return isinstance(value, str | int) and not isinstance(value, bool)
+
+
+def as_a_subject(about: dict) -> str:
+    """One record's subject as a single key, so two records about one thing meet.
+
+    Empty where the record names no subject, which is not the same as a record
+    whose subject happens to be rare -- so the caller keeps those apart rather
+    than filing them all under one blank.
+    """
+    return ", ".join(
+        f"{key} {about[key]}" for key in SUBJECT if key in about and names_it(about[key])
+    )
+
+
+def subjects(stages: dict[str, list[dict]]) -> dict:
+    """The same records grouped by what they are about rather than by who wrote them.
+
+    The listing is by stage because that is how the directory is laid out. A
+    question about coverage is not a question about the directory: it asks which
+    parameter of which type has been read, and one subject is reached from several
+    stages -- a rate from one, a band profile from another, a balance from a third.
+    So the entries are turned the other way round here and the count falls out of
+    the grouping rather than being kept beside it.
+
+    **The records that name no subject are listed and not counted.** A coverage
+    figure whose denominator quietly drops what it could not read is the failure
+    this section exists to show, and the archive already has thirteen of them: a
+    stage that takes only a directory of takes has nothing on its command line
+    that says what the takes were of, so the subject survives in the file name and
+    in prose and nowhere a query can reach.
+    """
+    grouped: dict[str, dict] = {}
+    silent: list[str] = []
+    for stage, entries in stages.items():
+        for entry in entries:
+            key = as_a_subject(entry.get("about") or {})
+            if not key:
+                silent.append(entry["file"])
+                continue
+            row = grouped.setdefault(key, {"stages": [], "records": []})
+            row["records"].append(entry["file"])
+            if stage not in row["stages"]:
+                row["stages"].append(stage)
+    for row in grouped.values():
+        row["records"].sort()
+        row["stages"].sort()
+    named = sum(len(row["records"]) for row in grouped.values())
+    return {
+        "note": (
+            "Generated from the same entries the listing above holds, grouped by the "
+            "subject each record states. A record naming no subject is in "
+            "`naming_no_subject` and in no group: it is an absence and not a refusal, "
+            "and a count that absorbed it would be a count of what was easy to read."
+        ),
+        "subjects": len(grouped),
+        "records_naming_one": named,
+        "naming_no_subject": sorted(silent),
+        "by_subject": {key: grouped[key] for key in sorted(grouped)},
+    }
+
+
 def survey(unit: str | Path) -> dict:
     """Every record the unit holds, grouped by the stage that wrote it."""
     unit = Path(unit)
@@ -96,12 +167,14 @@ def survey(unit: str | Path) -> dict:
                 kept_by_hand.append(str(rel))
             continue
         stages.setdefault(rel.parts[0], []).append(entry(unit, path))
+    ordered = {stage: stages[stage] for stage in sorted(stages)}
     return {
         "unit_id": meta.get("unit_id", unit.name),
         "note": NOTE,
         "records": sum(len(v) for v in stages.values()),
-        "stages": {stage: stages[stage] for stage in sorted(stages)},
+        "stages": ordered,
         **({"filed_under_no_stage": sorted(kept_by_hand)} if kept_by_hand else {}),
+        "what_they_are_about": subjects(ordered),
     }
 
 
@@ -117,4 +190,20 @@ def render(found: dict) -> str:
     if stray := found.get("filed_under_no_stage"):
         lines.append("\nfiled under no stage")
         lines.extend(f"  {name}" for name in stray)
+    if about := found.get("what_they_are_about"):
+        both = [
+            key
+            for key in about["by_subject"]
+            if key.startswith("address ") and ", type " in key
+        ]
+        lines.append(
+            f"\n{about['subjects']} subjects over {about['records_naming_one']} records, "
+            f"{len(both)} of them one address of one effect type"
+        )
+        if silent := about["naming_no_subject"]:
+            # Printed rather than counted. Each of these is a record whose subject
+            # survives in its file name and in prose and nowhere a query reaches,
+            # and a number would not tell a reader which stage to go and fix.
+            lines.append(f"\n{len(silent)} records name no subject a query can read")
+            lines.extend(f"  {name}" for name in silent)
     return "\n".join(lines)

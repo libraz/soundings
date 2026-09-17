@@ -105,3 +105,54 @@ def test_the_index_says_what_the_directory_holds(unit: Path) -> None:
         f"{unit.name}/index.json disagrees with the directory it lists. Regenerate it "
         f"with\n    soundings index {unit} --out {unit}/index.json"
     )
+
+
+def test_a_subject_is_a_name_and_not_a_description() -> None:
+    """`channel` means two things and only one of them is a subject.
+
+    On a scan it is the MIDI channel a message went out on, which is what the
+    record is about. On a stage that reads audio it is an object saying which
+    interface input every figure came from and how loud the others were, which is
+    a fact about the reading. Grouped by the second, every audio record would be
+    its own subject and the coverage count would be the record count.
+    """
+    assert index.names_it("40 03 05")
+    assert index.names_it(3)
+    assert not index.names_it({"read": 2, "chosen_by": "highest across the takes read"})
+    assert not index.names_it(["01 21", "11 08"])
+    assert not index.names_it(None)
+
+
+def test_two_records_about_one_thing_meet_under_one_key() -> None:
+    """Which is the whole point: a rate from one stage and a band profile from
+    another are two readings of one parameter, and a listing by stage cannot say
+    so."""
+    stages = {
+        "efx-rate": [
+            {"file": "efx-rate/a.json", "about": {"type": "01 22", "address": "40 03 03"}}
+        ],
+        "efx-bands": [
+            {"file": "efx-bands/b.json", "about": {"address": "40 03 03", "type": "01 22"}}
+        ],
+    }
+    found = index.subjects(stages)
+    assert found["subjects"] == 1
+    assert found["records_naming_one"] == 2
+    key = next(iter(found["by_subject"]))
+    assert found["by_subject"][key]["stages"] == ["efx-bands", "efx-rate"]
+
+
+def test_a_record_naming_no_subject_is_listed_and_not_counted() -> None:
+    """An absence, not a refusal. A count that absorbed these would be a count of
+    what happened to be easy to read, and the stage that has to learn a flag would
+    never surface."""
+    stages = {
+        "balance": [{"file": "balance/40-11.json"}],
+        "efx-rate": [
+            {"file": "efx-rate/a.json", "about": {"type": "01 22", "address": "40 03 03"}}
+        ],
+    }
+    found = index.subjects(stages)
+    assert found["naming_no_subject"] == ["balance/40-11.json"]
+    assert found["subjects"] == 1
+    assert found["records_naming_one"] == 1
