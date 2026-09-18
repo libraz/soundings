@@ -3,8 +3,8 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-18T05:44:28.219978+00:00",
-    "made_by": "backup/build-section-gain-models.py, backup/run-section-gain-reproduce.py, backup/write-section-gain-inference.py",
+    "made_at": "2026-09-18T05:54:58.859516+00:00",
+    "made_by": "backup/build-section-gain-models.py, backup/run-section-gain-reproduce.py, backup/build-combination-mid-gain-models.py, backup/run-combination-mid-gain-reproduce.py, backup/write-section-gain-inference.py",
     "rounds": 1,
     "about": {
       "scope": "unit",
@@ -14,6 +14,10 @@
       "addresses": [
         "40 03 09",
         "40 03 0C"
+      ],
+      "checked_on_types": [
+        "04 01",
+        "04 03"
       ]
     }
   },
@@ -4047,8 +4051,9 @@
     },
     {
       "what": "The six other types that print a gain against a peaking section, and the combination types that print one against a mid section.",
-      "why": "One type is read. The gain window itself was folded onto two combination types and holds there, but those runs asked the window's ends and four settings far outside it, which is the one part of the range where every reading in this class agrees.",
-      "what_would": "Four settings in the middle of the window on one of them, which is four takes under a hold this archive has used twice."
+      "why": "One type closed it. Two combination types have now been asked and answer the same way, which is a test rather than a second closing: two settings each is four readings, enough for a reading to come out wrong on and not enough to close a type.",
+      "what_would": "Four settings in the middle of the window on one of them, which is four takes under a hold this archive has used twice.",
+      "and_two_of_them_were_already_asked": "The run that would have been booked for this was not needed either. The runs that checked whether a combination type's equaliser is the single type's section swept their mid gain at nine settings, and two of the nine are six steps inside the window -- which is where these readings differ most. See the block below."
     },
     {
       "what": "Whether the stored section is blended at run time or held as a row per setting.",
@@ -4056,6 +4061,124 @@
       "what_would": "Nothing this archive can measure."
     }
   ],
+  "read_on_two_more_types": {
+    "what": "The same four readings put to the two combination types whose mid gain the archive had already swept, on records taken for another question. Held out in the strong sense: this claim was closed, published and folded into two others before either record was scored for it, and the models carry the centre table, the width table and the gain window from three closed claims without refitting anything.",
+    "why_the_models_are_one_stage": "What the records hold. Both were taken with the type's shelves at the centre of their windows, its compressor and drive stages switched out, its chorus mix at nothing and its level at full, so the only stage doing anything is the mid section. These types print no corner byte for their shelves, so there is no figure for them to carry and they are dropped rather than assumed.",
+    "per_type": {
+      "04 01": {
+        "record": "inferences/models/0401-mixed-with-the-dry-path.json",
+        "settings_read": [
+          58,
+          70
+        ],
+        "the_unit": {
+          "58": 12,
+          "70": 12
+        },
+        "each_reading": {
+          "mixed-with-the-dry-path": {
+            "58": 11,
+            "70": 12
+          },
+          "mixed-towards-a-second-section-at-full-cut": {
+            "58": 23,
+            "70": 12
+          },
+          "built-at-the-gain": {
+            "58": 17,
+            "70": 17
+          },
+          "mixed-with-the-dry-path-in-the-denominator": {
+            "58": 23,
+            "70": 23
+          }
+        },
+        "ranked": [
+          {
+            "candidate": "mixed-with-the-dry-path",
+            "widths_wrong": "0/2",
+            "bands_out": -0.5,
+            "mean_share_of_span": 0.0042
+          },
+          {
+            "candidate": "mixed-towards-a-second-section-at-full-cut",
+            "widths_wrong": "1/2",
+            "bands_out": 5.5,
+            "mean_share_of_span": 0.0046
+          },
+          {
+            "candidate": "built-at-the-gain",
+            "widths_wrong": "2/2",
+            "bands_out": 5.0,
+            "mean_share_of_span": 0.005
+          },
+          {
+            "candidate": "mixed-with-the-dry-path-in-the-denominator",
+            "widths_wrong": "2/2",
+            "bands_out": 11.0,
+            "mean_share_of_span": 0.005
+          }
+        ]
+      },
+      "04 03": {
+        "record": "inferences/models/0403-mixed-with-the-dry-path.json",
+        "settings_read": [
+          58,
+          70
+        ],
+        "the_unit": {
+          "58": 12,
+          "70": 11
+        },
+        "each_reading": {
+          "mixed-with-the-dry-path": {
+            "58": 12,
+            "70": 12
+          },
+          "mixed-towards-a-second-section-at-full-cut": {
+            "58": 23,
+            "70": 12
+          },
+          "built-at-the-gain": {
+            "58": 16,
+            "70": 17
+          },
+          "mixed-with-the-dry-path-in-the-denominator": {
+            "58": 23,
+            "70": 23
+          }
+        },
+        "ranked": [
+          {
+            "candidate": "mixed-with-the-dry-path",
+            "widths_wrong": "0/2",
+            "bands_out": 0.5,
+            "mean_share_of_span": 0.0042
+          },
+          {
+            "candidate": "mixed-towards-a-second-section-at-full-cut",
+            "widths_wrong": "1/2",
+            "bands_out": 6.0,
+            "mean_share_of_span": 0.0046
+          },
+          {
+            "candidate": "built-at-the-gain",
+            "widths_wrong": "2/2",
+            "bands_out": 5.0,
+            "mean_share_of_span": 0.0046
+          },
+          {
+            "candidate": "mixed-with-the-dry-path-in-the-denominator",
+            "widths_wrong": "2/2",
+            "bands_out": 11.5,
+            "mean_share_of_span": 0.0051
+          }
+        ]
+      }
+    },
+    "read_as": "The winner wins on both, within the one band this reading resolves at every one of the four settings, and it is the best residual on both as well. The other three are wrong on both types and wrong in the shapes they were ruled out by here: the section built at the gain is about five bands too wide on the boost and on the cut alike, the blend towards a stored cut is right on the boost and about eleven bands too wide on the cut, and the blend with the stored section at the cut end is eleven bands too wide on both. The unit is symmetric between boost and cut on both types, which is the property that separates the two blends.",
+    "what_it_does_not_do": "Close either type. Two settings is two readings, and a type closes on a sweep. What it does is put this claim's prediction where it could have failed twice on records it never saw, against a reading whose ordering it also predicted -- and neither run was made for it."
+  },
   "what_it_would_change": "Every renderer of this line builds its equaliser sections at the gain asked for, because that is what a filter cookbook says to do. At the ends of the byte that is right and at every other setting it makes the peak too wide -- forty per cent at half gain, which is most of an octave on a mid section and is the part of a parametric equaliser a listener is setting the width byte for. It is also two lines of arithmetic to fix and it makes the gain cheaper rather than dearer.",
   "a_note_on_how_it_was_nearly_missed": "Three gates passed on the reading this refutes, on the same records, for two rounds. The residual is meaned over a record and the settings where the two readings differ are the ones whose profile is smallest, so they carry the least of the record's span; and the lean test looks for a residual that runs with the setting or with frequency, while this one is a hump -- nothing at both ends of the window and nothing at its centre. What found it was asking what the width was doing at the settings nobody had asked about, which is a reading and not a run."
 }
