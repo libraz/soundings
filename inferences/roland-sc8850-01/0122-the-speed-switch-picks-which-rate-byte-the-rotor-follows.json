@@ -4,21 +4,23 @@
   "unit_id": "roland-sc8850-01",
   "state": "standing",
   "made_at": "2026-09-18T22:52:19.125281+00:00",
-  "made_by": "backup/write-the-speed-switch-inference.py",
-  "rounds": 1,
+  "made_by": "backup/write-the-speed-switch-inference.py, backup/the-speed-switch-claim-round-two.py",
+  "rounds": 2,
   "about": {
    "scope": "slot",
    "types": [
-    "01 22"
+    "01 22",
+    "11 07"
    ],
    "addresses": [
     "40 03 0D",
     "40 03 08",
-    "40 03 07"
+    "40 03 07",
+    "40 03 11"
    ]
   }
  },
- "claim": "The rotary's speed switch decides which of the type's two high-rotor rate bytes the rotor follows, and it turns over between 63 and 64 rather than at the 0x7F the page prints against it. Below that it is the slow byte, at every one of the 8 settings asked there; at and above it the fast byte, at every one of the 5, and the two arms are 0.84 Hz and 9.94 Hz apart so nothing turns on a small difference. With the switch on the fast arm the fast byte moves the rotor over the same printed table the slow byte was closed on -- ten settings, none of them further from an entry than the arrival gap already measured -- and the slow byte stops moving it at all, sitting inside 0.0002 Hz across three settings that span the whole of its range. What the byte does not decide is the arrival: below where the rotor already was, the fast byte lands on its entry to two thousandths of a hertz, and above it the rotor stops short by the same six hundredths the slow byte stops short by. That is the sign the mechanism beside this one predicts -- a lag written as an arithmetic right shift underflows climbing and floors falling -- and nothing here was fitted to it.",
+ "claim": "The rotary's speed switch decides which of the type's two high-rotor rate bytes the rotor follows, and it turns over between 63 and 64 rather than at the 0x7F the page prints against it. Below that it is the slow byte, at every one of the 8 settings asked there; at and above it the fast byte, at every one of the 5, and the two arms are 0.84 Hz and 9.94 Hz apart so nothing turns on a small difference. With the switch on the fast arm the fast byte moves the rotor over the same printed table the slow byte was closed on -- ten settings, none of them further from an entry than the arrival gap already measured -- and the slow byte stops moving it at all, sitting inside 0.0002 Hz across three settings that span the whole of its range. What the byte does not decide is the arrival: below where the rotor already was, the fast byte lands on its entry to two thousandths of a hertz, and above it the rotor stops short by the same six hundredths the slow byte stops short by. That is the sign the mechanism beside this one predicts -- a lag written as an arithmetic right shift underflows climbing and floors falling -- and nothing here was fitted to it. Both of the readings this left standing were asked and both fell. The turnover is the machine's rather than this type's: the other type that prints the parameter turns over between the same two settings, with the same two rates under it. And the arrival is not the byte's: the same setting of the same byte stops short when it is written a third of a second after the switch and lands on its entry when it is written two seconds after it, which places the rotor between 4.05 and 4.25 Hz at the shorter gap.",
  "named": "a two-state parameter decoded from the top bit of its byte, selecting which of two entries of one rate table a rotor is sent to",
  "rests_on": {
   "measurements": [
@@ -207,6 +209,88 @@
      "accepts"
     ],
     "read_as": "The store takes every value of this byte and reads it back. That is why the run that wrote it 0x01 got no complaint and no note in its record: what the store accepts is not what the engine reaches, and only a take can tell the two apart."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/11-07-11-which-arm-the-switch-picks-beside-a-phaser.json",
+    "keys": [
+     "readings[value=0].rate_hz",
+     "readings[value=1].rate_hz",
+     "readings[value=32].rate_hz",
+     "readings[value=63].rate_hz",
+     "readings[value=64].rate_hz",
+     "readings[value=65].rate_hz",
+     "readings[value=96].rate_hz",
+     "readings[value=127].rate_hz"
+    ],
+    "values": [
+     0.8374,
+     0.8374,
+     0.8374,
+     0.8374,
+     9.9432,
+     9.9429,
+     9.9429,
+     9.943
+    ],
+    "read_as": "The same switch byte swept on the other type that prints it, under the block a published record of this type's high rotor was taken with -- the phaser silenced at its own level byte, the low rotor at its own, the rotary and the high rotor at full. The turnover is in the same place, and the two arms are the same two rates this type returns: 0.8374 against 0.8373, and 9.943 against 9.9442."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/11-07-11-the-same-setting-after-thirty-seconds.json",
+    "keys": [
+     "readings[value=64].rate_hz"
+    ],
+    "values": [
+     9.9435
+    ],
+    "read_as": "The first setting on the fast arm asked again after thirty seconds instead of ten. It agrees with the ten second take to three ten thousandths of a hertz, which is what says the shorter wait was past arrival -- one wait says nothing and cannot be checked afterwards."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-08-four-settings-across-the-boundary.json",
+    "keys": [
+     "readings[value=84].rate_hz",
+     "readings[value=88].rate_hz",
+     "readings[value=92].rate_hz",
+     "readings[value=96].rate_hz"
+    ],
+    "values": [
+     4.1886,
+     4.3902,
+     4.5884,
+     4.7866
+    ],
+    "read_as": "Four settings four apart across the boundary, with the rate byte written 0.3645 s after the switch -- the gap the published sweep of this address was taken at, reproduced rather than added to. All four stop short, by 0.0588 to 0.0621 Hz. Over the four and not between the ends of them: the largest gap here is not at either end of the settings, so a range read off the first and the last would exclude two of the rows it claims to cover."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-08-the-same-four-two-seconds-after-the-switch.json",
+    "keys": [
+     "readings[value=84].rate_hz",
+     "readings[value=88].rate_hz",
+     "readings[value=92].rate_hz",
+     "readings[value=96].rate_hz"
+    ],
+    "values": [
+     4.2506,
+     4.4489,
+     4.6486,
+     4.8484
+    ],
+    "read_as": "The same four with two seconds between the two writes and nothing else changed. All four land on the entry."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-08-the-same-four-eight-seconds-after-the-switch.json",
+    "keys": [
+     "readings[value=84].rate_hz",
+     "readings[value=88].rate_hz",
+     "readings[value=92].rate_hz",
+     "readings[value=96].rate_hz"
+    ],
+    "values": [
+     4.2505,
+     4.449,
+     4.6486,
+     4.8487
+    ],
+    "read_as": "The same four again at eight seconds. It agrees with the two second pass to 0.0003 Hz, so the rotor had already arrived by two and the landing is not a longer wait continuing to help."
    }
   ],
   "document_rows": [
@@ -281,39 +365,17 @@
   "what_this_is_worth": "Nothing was fitted to this byte, so all ten settings were places it could have disagreed. The one it could not answer is the bottom of the byte: the table puts setting 0 at 0.05 Hz and an eight second take cannot carry two cycles of anything under 0.301, so that row is the take's floor and is published as a null rather than as a rate."
  },
  "which_way_the_rotor_was_sent": {
-  "what_separates_the_two_groups": "Where the rotor already was when the byte arrived, on the reading this claim takes. The settings that land on their entry are the ones below it and the ones that stop short are above it, and the boundary sits between the two settings whose entries are 4.05 and 4.85 Hz.",
+  "what_separates_the_two_groups": "Where the rotor already was when the byte arrived. The settings that land on their entry are the ones below it and the ones that stop short are above it. Round one placed the boundary between the settings whose entries are 4.05 and 4.85 Hz, which is as close as the sweep's own grid could put it; round two asked four settings inside that span and puts it between 4.05 and 4.25.",
   "why_it_is_not_the_byte_s_own_default": "The page prints this byte's default at 7.50 Hz, which is setting 120, and three settings below that stop short. So whatever the boundary is, it is not the byte powering up somewhere -- which is what it is on the slow byte, where the boundary is that byte's own printed default to the setting.",
-  "what_this_run_cannot_say": "Where the boundary is, closer than the 0.8 Hz between the two settings that straddle it, and therefore what it implies about how fast the rotor climbs. The two writes this run makes are 0.35 s apart because that is what the shared preparation waits between writes, and nothing here varied that. Fitting an acceleration to a boundary known to one part in five would be reading a number out of a gap."
+  "what_this_run_cannot_say": "Round one could not say where the boundary was, closer than the 0.8 Hz between the two settings that straddled it, because the gap between the two writes was never varied. It has been: the reading is under `where_the_rotor_was_when_the_byte_arrived`, which places the rotor between 4.05 and 4.25 Hz and shows the boundary moving with the gap. What is still not read is how fast the rotor climbs, which two bounding points do not shape and which the acceleration byte's own claim is the place for."
  },
  "and_the_other_spelling_of_a_two_state_parameter": "This unit prints 58 two-state parameters and spells them two ways: four as 00/7F, all four of them a rotary's speed switch, and 54 as 00/01. The second spelling does not behave like the first. One of them has a sweep in this archive -- the amp switch of 01 10 -- and a whole filter appears between its 0 and its 1: the profile's largest band goes from 3.98 dB to -19.24 and its steepest slope from 1.78 dB per octave to 14.89. So that one is reached at 1 and does not wait for the top bit. Which rule it does follow is not read here and would need its own sweep. What is established is that the spelling is not decoration, and a run that writes a two-state byte without reading which spelling it has can get a null with nothing in the record to say the state was never reached.",
  "alternatives": [
   {
    "reading": "The boundary between landing on the entry and stopping short is a property of the byte or of the table rather than of where the rotor was when the byte arrived.",
    "candidate": null,
-   "standing": true,
-   "separated_by": {
-    "observable": "Whether the boundary moves when the gap between writing the switch and writing the rate byte is changed. Under this claim's reading the rotor is climbing towards the fast byte's default through that gap, so a longer one puts it higher and the boundary goes with it; under the alternative the boundary is a property of the byte and does not move.",
-    "predicts": {
-     "where the rotor was": "the boundary climbs with the gap, and at a gap long enough to reach the default every setting under it lands on its entry",
-     "a property of the byte": "the same boundary between 4.05 and 4.85 Hz at every gap"
-    },
-    "sensitivity_here": "The settings are 0.8 Hz apart where the boundary sits and the run repeats a rate to about 0.001 Hz, so what bounds this is the grid and not the reading. Asked at the settings between 80 and 96 the boundary is located to a fifth of that.",
-    "margin": 4,
-    "run": {
-     "stage": "efx-rate",
-     "type": "01 22",
-     "address": "40 03 08",
-     "settings": [
-      84,
-      88,
-      92,
-      96
-     ],
-     "stimulus": "the same held note and the same block, with the gap between writing the switch and writing the rate byte at the 0.35 s the shared preparation waits and again at 2 s and 8 s -- three passes over four settings, so the boundary is located on each and compared across them",
-     "takes": 12,
-     "minutes": 7
-    }
-   }
+   "standing": false,
+   "ruled_out_by": "It was asked, and one byte at one setting returns two rates. Written 0.3645 s after the switch, all four settings across the boundary stop short by about six hundredths of a hertz; written two seconds after it, all four land on their entry, and at eight seconds they agree with the two second pass to two ten thousandths. A property of the byte or of the table cannot move with when the byte was written, and this one moves the whole way -- from every setting short to every setting landing -- on a change that touches nothing but the gap."
   },
   {
    "reading": "The turnover is a test of the top bit rather than a comparison against 64, or against the halfway point of the printed range.",
@@ -334,34 +396,8 @@
   {
    "reading": "The other three types that print this parameter decode it some other way, so the turnover is this type's and not the machine's.",
    "candidate": null,
-   "standing": true,
-   "separated_by": {
-    "observable": "The same sweep of the switch byte on a type that carries a rotary beside other stages. The archive already reads one of those as reaching this type's own block, so a turnover in a different place would be the stronger result of the two.",
-    "predicts": {
-     "the machine's": "the turnover between 63 and 64 again",
-     "this type's": "anywhere else"
-    },
-    "sensitivity_here": "The two arms are twelve to one apart, so a take says which one it is on and no margin is needed to read it. What decides the run's length is the number of settings and not the floor.",
-    "margin": 10,
-    "run": {
-     "stage": "efx-rate",
-     "type": "11 07",
-     "address": "40 03 11",
-     "settings": [
-      0,
-      1,
-      32,
-      63,
-      64,
-      65,
-      96,
-      127
-     ],
-     "stimulus": "the same held note, the low rotor silenced at its level byte and the fast rate byte parked at the top of its table, which is the block this type was read under before",
-     "takes": 8,
-     "minutes": 5
-    }
-   }
+   "standing": false,
+   "ruled_out_by": "It was asked on one of them. `11 07` prints a rotary beside a phaser and its switch at a different address, and it turns over between 63 and 64 as well: four settings below return 0.8374 Hz and four at and above return 9.9429 to 9.9432. The other two types are not asked, so what this rules out is the reading that the turnover is one type's -- a second type deciding it the same way is not two types deciding it differently."
   }
  ],
  "refuted_by": "A take at a setting below 64 that returns the fast byte's rate, or one at or above it that returns the slow byte's. Either would mean the turnover is not where this puts it, and each of the thirteen settings asked was a place that could have happened. Also by the fast byte returning something that is not the printed table: it was read at ten settings and no entry was fitted, so any of the ten could have refused.",
@@ -374,6 +410,50 @@
  "what_this_does_not_settle": [
   "What the low rotor's fast byte does. The page prints that rotor's acceleration at 3 of 0-15, near the bottom, and the claim beside this one measured a rotor still climbing at ten seconds and at forty-five down there. So it needs a wait this run's ten seconds is not, and asking it under this run's wait would return a ramp's average and look like a rate.",
   "Which rule the 54 parameters printed 00/01 follow. One of them is measured to answer at 1, which is enough to say the two spellings are two decodings and not enough to say what the second one tests.",
-  "Whether every setting of the switch on the slow side is the slow byte or only the eight asked. The eight span the side and include both ends of it, and the byte is read by one test under every reading here, but the 120 not asked are not asked."
- ]
+  "Whether every setting of the switch on the slow side is the slow byte or only the eight asked. The eight span the side and include both ends of it, and the byte is read by one test under every reading here, but the 120 not asked are not asked.",
+  "Whether the other two types that print this parameter turn over there too. One of the three was asked and does; the two that were not are 11 08 and 11 09, and the archive already reads a multi as reaching a single type's block, which makes one rule the thing to expect rather than the thing to assume."
+ ],
+ "where_the_rotor_was_when_the_byte_arrived": {
+  "what_was_varied": "The gap between writing the speed switch and writing the rate byte, and nothing else. The held block, the note, the ten second wait after the rate byte and the four settings are the same in all three passes.",
+  "at_the_gap_the_sweep_used": {
+   "84": 4.1886,
+   "88": 4.3902,
+   "92": 4.5884,
+   "96": 4.7866
+  },
+  "two_seconds_later": {
+   "84": 4.2506,
+   "88": 4.4489,
+   "92": 4.6486,
+   "96": 4.8484
+  },
+  "eight_seconds_later": {
+   "84": 4.2505,
+   "88": 4.449,
+   "92": 4.6486,
+   "96": 4.8487
+  },
+  "what_it_says": "One byte at one setting returns two rates, and which one it returns depends only on when it was written. So the arrival is not a property of the byte or of the table entry: it is a property of where the rotor already was, which is what the lag beside this claim says and what this run was made to test.",
+  "where_the_rotor_was": "Between 4.05 and 4.25 Hz, 0.3645 s after the switch was written. The published sweep lands on the entry at setting 80, whose entry is 4.05, so the rotor was at or above it; this run stops short at setting 84, whose entry is 4.25, so the rotor was below that. Round one could only say the rotor was somewhere between 4.05 and 4.85, and the two settings it had there were 0.8 Hz apart.",
+  "how_the_gap_itself_is_known": "Timed rather than read off the sleep in the source. The preparation writes an address, sleeps 0.350 s and reads it back, and the readback is a round trip to the unit that nothing in the source states: measured ten times it is 0.0145 s, for 0.3645 s between the two writes, 0.3607 to 0.3652 across the ten. Untimed, the shortest pass is a gap of at least a third of a second and the rate above is a bound with one side open.",
+  "what_is_still_not_read_here": "How fast the rotor climbs. Two points on one climb -- at rest when the switch is written and between 4.05 and 4.25 a third of a second later, arrived by two seconds -- bound it and do not shape it, and the byte that sets it has its own claim beside this one. What this adds there is a figure that claim can be held against, not a fit made here."
+ },
+ "the_turnover_is_the_machines_and_not_this_types": {
+  "asked_on": "11 07, which prints a rotary beside a phaser and a switch at 40 03 11 rather than 40 03 0D",
+  "the_slow_arm": {
+   "0": 0.8374,
+   "1": 0.8374,
+   "32": 0.8374,
+   "63": 0.8374
+  },
+  "the_fast_arm": {
+   "64": 9.9432,
+   "65": 9.9429,
+   "96": 9.9429,
+   "127": 9.943
+  },
+  "what_it_says": "The turnover is between 63 and 64 on this type too, so it is the machine's rule for a two-state parameter printed 00/7F and not one type's implementation. Round one could not say which: one type's switch turning over at the top bit is one type's switch.",
+  "and_the_two_types_return_the_same_rates": "The slow arm reads 0.8374 here against 0.8373 there and the fast arm 9.943 against 9.9442, under held blocks that silence the same things. That is the shared table showing up across two types, which is a separate claim's and is cited here rather than made.",
+  "why_the_phaser_had_to_be_silenced": "This type prints two modulators and a take returns whichever dominates it, so a rate read with the other stage audible is not evidence about this byte. The block is copied from the published record that established that here: the same slot with only the phaser turned down returns 6.4202 Hz at a setting where the fully silenced block returns 1.5886."
+ }
 }
