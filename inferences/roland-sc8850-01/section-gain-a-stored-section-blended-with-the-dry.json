@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-18T04:59:22.527891+00:00",
+    "made_at": "2026-09-18T05:44:28.219978+00:00",
     "made_by": "backup/build-section-gain-models.py, backup/run-section-gain-reproduce.py, backup/write-section-gain-inference.py",
     "rounds": 1,
     "about": {
@@ -3115,7 +3115,8 @@
       {
         "claim": "What is worth saving a stored row on is a section with tables behind it, not a shelf with two states.",
         "why": "A mid section has sixteen centres and five widths behind it, so a row per gain setting would be eighty rows multiplied again. A shelf on this type has two corner states and no width, so there are two rows and nothing a blend would save.",
-        "would_be_wrong_if": "The shelves turned out to be blended too, which the one record that sweeps a shelf gain finely was read for and does not show."
+        "would_be_wrong_if": "The shelves turned out to be blended too, which the one record that sweeps a shelf gain finely was read for.",
+        "and_it_is_wrong": "That is what happened. The shelves are blended, from the other end of the range -- inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json. So this prior's cost argument does not hold: a part that has the blend does not stop using it where the saving is small. The claim above does not rest on it and never did -- the mid sections were measured, not inferred from an economy -- and it is kept here, marked, because a prior that turned out wrong is worth more to a reader than one quietly deleted. What is left of it is the part the shelf claim confirms: the number of stored rows does not decide which end the stored one sits at, because it costs the same either way."
       }
     ],
     "community": []
@@ -3135,21 +3136,16 @@
       "ruled_out_by": "It is the winner on the boost side and cannot be told from it there. On the cut side it makes the feature wider as the cut shallows where the unit makes it narrower: 15 settings wrong and 11.42 bands out on average. It is also the only candidate here whose residual leans on a record. A cut that is the boost's mirror is what a coefficient swap gives and what this unit does."
     },
     {
+      "reading": "The same blend with the one stored section at the bottom of the printed range rather than the top, so the near side of the byte is the cut and the boost is that inverted.",
+      "candidate": "mixed-with-the-dry-path-in-the-denominator",
+      "standing": false,
+      "ruled_out_by": "It is this claim's winner turned over, it costs the same three multiply-accumulates, and it is the last of the four here: it makes the feature wider than the width byte asked for by about as much as building at the gain makes it wrong the other way -- 24 settings wrong and 16.45 bands out on average, the worst residual of the four, and the only reading here whose residual leans on two records. It is in the class because the shelves of this same type were measured to do it, which is why it was written and why the mid sections were put to it again."
+    },
+    {
       "reading": "The shelves are reached the same way, and what the shelf record shows is something about reading a shelf rather than about the path.",
       "candidate": null,
-      "standing": true,
-      "equivalent_under_this_test": false,
-      "separated_by": {
-        "observable": "How wide a shelf's transition is at a gain in the middle of its window, read as something a shelf has rather than as a width.",
-        "predicts": {
-          "blended": "The transition tightens as the shelf shrinks, as the peak's does.",
-          "built at the gain": "It does not move at all."
-        },
-        "sensitivity_here": "The count this class uses on a peak was run on the shelf record before the class was scoped, and it is the wrong instrument: what it counts on a shelf is bands from the bottom of the set up to the half-height point, so the band set's own bottom is in the answer. Under it the unit moves by up to six bands across the window and moves the opposite way from the blend, which is enough to refuse the blend and not enough to say what the shelf does instead.",
-        "margin": 1,
-        "run": null,
-        "why_not_separable": "Not by a run but by a reading, and the reading is not written. A shelf's transition has a width in the same sense a peak's does -- the octaves between where it is a quarter of the way up and three quarters -- and nothing in this archive publishes it. The record that would answer it is already taken, at every setting the window has, so what this needs is a reading of takes on disk and not time with the unit."
-      }
+      "standing": false,
+      "ruled_out_by": "Half of it was right and the half that decides was not. The count this class uses on a peak is the wrong instrument on a shelf -- it counts up from the bottom of the band set -- so what that count showed was indeed about the reading. Read a shelf's own way, on the same record and the same takes, the shelves are blended and they are not reached the same way: the stored section is at the other end of the range, which is the winner here turned over and the last of the four on these records. inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json."
     }
   ],
   "refuted_by": "A peaking section at half its gain coming back the width its width byte asks for. Or a cut coming back a different width from the boost of the same height. Or a setting in the middle of the window whose profile is not the blend's, at more than the one band this reading resolves.",
@@ -3175,7 +3171,7 @@
         "file_ends_with": "-in-twelfths.json"
       },
       "then_dropped": [],
-      "why_the_shelves_are_not_in_it": "The two shelf gains carry this same byte and are left out by name. What tells these readings apart is the width of the feature, and a shelf has no width -- counting the bands it stands over half its height in counts the bottom of the band set. The shelf record was scored before that line was drawn and it refuses the blend, which is carried as an alternative of its own rather than folded into a score about a peak."
+      "why_the_shelves_are_not_in_it": "The two shelf gains carry this same byte and are left out by name. What tells these readings apart is the width of the feature, and a shelf has no width -- counting the bands it stands over half its height in counts the bottom of the band set. The shelf record was scored that way before the line was drawn and it refused the blend, which turned out to be the instrument and not the shelf: read a shelf's own way the shelves are blended too, from the other end of the range, and that is a claim of its own -- inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json. Mixing the two into one score would have averaged two different answers into a third that is neither."
     },
     "domain": {
       "settings": {
@@ -3185,7 +3181,7 @@
       "stimulus": [
         "A held note through the effect, its takes read as the energy of each twelfth octave against the run's own flat repeats."
       ],
-      "outside": "The two shelves of this type, which are read and refuse the blend. Every other type that prints a gain against a peaking section -- six of them, none read for this. Settings one to three steps from the centre of the window, where the feature is too small for the band set to hold a width at all. What the part stores rather than computes, which no reading of an output reaches."
+      "outside": "The two shelves of this type, which are read a shelf's own way and answer differently. Every other type that prints a gain against a peaking section -- six of them, none read for this. Settings one to three steps from the centre of the window, where the feature is too small for the band set to hold a width at all. What the part stores rather than computes, which no reading of an output reaches."
     },
     "residual": {
       "median": 0.0039,
@@ -3838,6 +3834,23 @@
             "leaning_records": 0,
             "leaning_on": [],
             "records_the_run_did_not_reach": []
+          },
+          {
+            "candidate": "mixed-with-the-dry-path-in-the-denominator",
+            "model": "inferences/models/section-mixed-with-the-dry-path-in-the-denominator.json",
+            "mean_share_of_span": 0.0181,
+            "worst_share_of_span": 0.0417,
+            "worst_point_share": 0.1629,
+            "records_scored": 5,
+            "contradicts_a_property": true,
+            "properties_contradicted": 24,
+            "bands_out_at_the_middle_of_the_window": 16.45,
+            "leaning_records": 2,
+            "leaning_on": [
+              "01-00-0C-how-big-is-one-step-of-a-gain-again-in-twelfths.json",
+              "01-00-0C-how-big-is-one-step-of-a-gain-in-twelfths.json"
+            ],
+            "records_the_run_did_not_reach": []
           }
         ],
         "decoy": "mixed-towards-a-second-section-at-full-cut",
@@ -3891,6 +3904,14 @@
             "70": 23,
             "72": 25,
             "73": 27
+          },
+          "mixed-with-the-dry-path-in-the-denominator": {
+            "55": 35,
+            "56": 36,
+            "58": 39,
+            "70": 39,
+            "72": 36,
+            "73": 35
           }
         },
         "data/units/roland-sc8850-01/efx-bands/01-00-0C-how-big-is-one-step-of-a-gain-again-in-twelfths.json": {
@@ -3919,6 +3940,14 @@
             "60": 50
           },
           "mixed-towards-a-second-section-at-full-cut": {
+            "55": 54,
+            "56": 56,
+            "57": 58,
+            "58": 59,
+            "59": 61,
+            "60": 63
+          },
+          "mixed-with-the-dry-path-in-the-denominator": {
             "55": 54,
             "56": 56,
             "57": 58,
@@ -3983,22 +4012,38 @@
             "71": 41,
             "72": 42,
             "73": 44
+          },
+          "mixed-with-the-dry-path-in-the-denominator": {
+            "55": 54,
+            "56": 56,
+            "57": 58,
+            "58": 59,
+            "59": 61,
+            "60": 63,
+            "68": 63,
+            "69": 61,
+            "70": 59,
+            "71": 58,
+            "72": 56,
+            "73": 54
           }
         }
       },
-      "read_as": "The unit's width moves with the gain, narrowing as the gain shrinks and doing it the same way on the boost and on the cut. The blend follows it band for band at every one of the 24 settings. Building at the gain gives one number for the whole window, which is the prediction the width byte's own claim rests on and which is right only at the ends. Blending towards a stored cut section follows the boost and runs the wrong way on the cut."
+      "read_as": "The unit's width moves with the gain, narrowing as the gain shrinks and doing it the same way on the boost and on the cut. The blend follows it band for band at every one of the 24 settings. Building at the gain gives one number for the whole window, which is the prediction the width byte's own claim rests on and which is right only at the ends. Blending towards a stored cut section follows the boost and runs the wrong way on the cut. Blending with the stored section at the cut end -- which is what the shelves of this same type do -- runs the wrong way on both."
     },
     "what_the_shelf_did": {
       "record": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
-      "what": "The one record that sweeps a shelf gain at every setting between the window's ends. Scored the same way before this class was scoped.",
-      "read_as": "It refuses the blend: under the same count the unit moves the opposite way from a blended shelf, and the reading that builds at the gain is nearer at eight of the twelve settings. That is what scopes this claim to a peaking section, and it is also what the era argues for -- a shelf here has two corner states and no width, so there are two stored rows and nothing a blend would save."
+      "what": "The one record that sweeps a shelf gain at every setting between the window's ends. Scored the same way before this class was scoped, and then scored again a shelf's own way.",
+      "read_as": "Under the peak's count it refuses the blend, and that is the count reading the bottom of the band set rather than the shelf. Under a reading of where the shelf falls away it is blended, with the stored section at the other end of the range: inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json. What still scopes this claim to a peaking section is that the two answers are different, not that the shelf has none -- and the era reading that was offered for the difference, that a shelf has too few stored rows to be worth blending, is refuted by the same record."
     }
   },
   "what_this_does_not_close": [
     {
       "what": "What a shelf's gain does instead.",
-      "why": "The blend is refused and nothing is put in its place. The count that refuses it is a peak's instrument used on a shelf, so it is enough to say the shelf is not blended and not enough to say what it is.",
-      "what_would": "A reading of a shelf's transition width -- the octaves between a quarter and three quarters of the way up it -- applied to the record that is already on disk. No time with the unit."
+      "why": "The blend looked refused, and what refused it was a peak's instrument used on a shelf.",
+      "what_would": "A reading of a shelf's own shape applied to the record that is already on disk. No time with the unit.",
+      "answered_by": "inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json",
+      "what_it_turned_out_to_be": "The shelf is blended as well, with the one stored section at the bottom of the printed range rather than the top -- the same three multiply-accumulates moved from the numerator to the denominator. The reading that answered is where the shelf has fallen to half of what it is at a band inside its own plateau, which is a position and not a width, because a shelf has no far side to have a width between."
     },
     {
       "what": "The six other types that print a gain against a peaking section, and the combination types that print one against a mid section.",

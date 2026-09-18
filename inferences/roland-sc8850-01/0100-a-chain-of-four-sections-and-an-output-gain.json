@@ -4,7 +4,7 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T08:36:59.055224+00:00",
-    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py, backup/build-eq-models-from-the-tables.py, backup/add-round-three-to-the-eq-inference.py, backup/fold-in-how-a-gain-reaches-a-section.py",
+    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py, backup/build-eq-models-from-the-tables.py, backup/add-round-three-to-the-eq-inference.py, backup/fold-in-how-a-gain-reaches-a-section.py, backup/fold-in-what-a-shelf-gain-does.py",
     "rounds": 3,
     "about": {
       "scope": "unit",
@@ -3145,10 +3145,14 @@
     }
   },
   "how_a_gain_reaches_these_sections": {
-    "what": "The model this claim was scored against builds each of its four sections at the gain its byte names. For the two peaking sections that is now measured to be wrong everywhere except at the ends of the window and at its centre: the byte blends one stored full-scale section against the dry path, and at six decibels of a twelve decibel range the peak is about forty per cent narrower than the section built at six would be.",
-    "settled_in": "inferences/roland-sc8850-01/section-gain-a-stored-section-blended-with-the-dry.json",
+    "what": "The model this claim was scored against builds each of its four sections at the gain its byte names, and for all four of them that is now measured to be wrong everywhere except at the ends of the window and at its centre. Each byte blends one stored full-scale section against the dry path. Which end the stored section sits at is not the same for the two kinds of section, which is why there are two claims and not one.",
+    "settled_in": {
+      "the two mid sections": "inferences/roland-sc8850-01/section-gain-a-stored-section-blended-with-the-dry.json",
+      "the low shelf": "inferences/roland-sc8850-01/section-gain-a-shelf-stores-the-cut.json",
+      "the high shelf": "Neither. Its own records hold three settings and two of them are the window's ends, where every reading of a gain path is the same section."
+    },
     "why_this_claim_does_not_move": "Nothing this claim says is contradicted. It says the type is a chain of four sections and an output gain and that each byte indexes a short table, and all of that stands; what the other claim identifies is the path between one of those tables and the section it feeds. The two were separable only because this claim's own records were read again with a different instrument -- the width of the feature rather than the residual over the profile -- and this claim's verdict is what the residual said, which is still what it said.",
-    "what_a_reader_rendering_this_type_should_take": "This chain for the topology, the tables and the corners, and the other claim for what the gain bytes of the two mid sections do with them. Taking this model alone reproduces the ends of every gain's range and makes both mid peaks too wide in between.",
-    "why_it_was_not_caught_here": "Three gates passed on it for two rounds, on these records. A residual meaned over a record is nearly blind to it, because the settings where the two paths differ are the ones whose profile is smallest and so carry the least of the record's span; and the lean test looks for a residual running with the setting or with frequency, while this one is a hump that is nothing at both ends of the window and nothing at its centre. The gate that would have caught it is the qualitative one, and nothing had stated the property for it to hold."
+    "what_a_reader_rendering_this_type_should_take": "This chain for the topology, the tables and the corners, and the two claims beside it for what the gain bytes do with them -- the mid sections blending towards a section stored at full boost, the shelves towards one stored at full cut, and the far side of each byte that same section turned over. Taking this model alone reproduces the ends of every gain's range, makes both mid peaks too wide in between, and puts both shelves' transitions about half an octave out in the other direction.",
+    "why_it_was_not_caught_here": "Three gates passed on it for two rounds, on these records. A residual meaned over a record is nearly blind to it, because the settings where the paths differ are the ones whose profile is smallest and so carry the least of the record's span; and the lean test looks for a residual running with the setting or with frequency, while this one is a hump that is nothing at both ends of the window and nothing at its centre. The gate that would have caught it is the qualitative one, and nothing had stated the property for it to hold. On the shelves it was missed twice over: the first reading put to them was a peak's, and under it they refused a blend they are in fact doing."
   }
 }
