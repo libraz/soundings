@@ -1,0 +1,153 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/the-speed-switch-at-the-printed-state",
+      "--type",
+      "01 22",
+      "--slot",
+      "40 03 07",
+      "--setting",
+      "held-16-400307-(?P<value>\\d+)-fast-w10",
+      "--settled",
+      "10.0",
+      "--held",
+      "40 03 06=00",
+      "--held",
+      "40 03 0A=7F",
+      "--held",
+      "40 03 0D=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-rate/01-22-07-the-slow-byte-with-the-switch-at-the-printed-state.json"
+    ],
+    "measured_at": "2026-09-18T22:38:52+00:00",
+    "elapsed_s": 1.1,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "01 22",
+  "address": "40 03 07",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -51.3,
+      -51.9,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "held": [
+    {
+      "address": "40 03 06",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 0A",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 0D",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/the-speed-switch-at-the-printed-state",
+  "manifest": {
+    "lists": 16,
+    "files_present": 16,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    32,
+    110,
+    127
+  ],
+  "readings": [
+    {
+      "value": 32,
+      "rate_hz": 7.4338,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        7.4343,
+        7.4324,
+        7.4342,
+        7.4335
+      ],
+      "heard_db": -51.9,
+      "slowest_measurable_hz": 0.301,
+      "hold_s": 8.045,
+      "take": "held-16-400307-032-fast-w10-00.wav",
+      "settled_s": 10.0,
+      "named_by": "file name"
+    },
+    {
+      "value": 110,
+      "rate_hz": 7.4338,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        7.4343,
+        7.4326,
+        7.4343,
+        7.4333
+      ],
+      "heard_db": -51.9,
+      "slowest_measurable_hz": 0.301,
+      "hold_s": 8.045,
+      "take": "held-16-400307-110-fast-w10-00.wav",
+      "settled_s": 10.0,
+      "named_by": "file name"
+    },
+    {
+      "value": 127,
+      "rate_hz": 7.434,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        7.4343,
+        7.4325,
+        7.4343,
+        7.4336
+      ],
+      "heard_db": -51.9,
+      "slowest_measurable_hz": 0.301,
+      "hold_s": 8.045,
+      "take": "held-16-400307-127-fast-w10-00.wav",
+      "settled_s": 10.0,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 13,
+    "settings": [
+      "400307-032-fast-w30",
+      "400308-000-fast-w10",
+      "400308-000-fast-w30",
+      "400308-016-fast-w10",
+      "400308-032-fast-w10",
+      "400308-032-fast-w30",
+      "400308-048-fast-w10",
+      "400308-064-fast-w10",
+      "400308-080-fast-w10",
+      "400308-096-fast-w10",
+      "400308-110-fast-w10",
+      "400308-120-fast-w10",
+      "400308-127-fast-w10"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}

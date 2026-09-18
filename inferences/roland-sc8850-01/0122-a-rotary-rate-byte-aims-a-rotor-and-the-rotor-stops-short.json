@@ -4,7 +4,7 @@
   "unit_id": "roland-sc8850-01",
   "state": "parked",
   "made_at": "2026-09-15T13:02:06.817109+00:00",
-  "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-an-entry-the-unit-stated.py, backup/fold-the-write-timing-into-the-rotary-claim.py, backup/the-speed-switch-was-written-a-value-the-page-prints-no-state-for.py",
+  "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-an-entry-the-unit-stated.py, backup/fold-the-write-timing-into-the-rotary-claim.py, backup/the-speed-switch-was-written-a-value-the-page-prints-no-state-for.py, backup/the-new-records-enter-the-parked-claims-comparison-set.py",
   "rounds": 4,
   "about": {
    "scope": "slot",
@@ -285,7 +285,7 @@
     "data/units/roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json",
     "data/units/roland-sc8850-01/efx-rate/01-22-07-which-way-the-rotor-came.json"
    ],
-   "generated_from": "data/units/roland-sc8850-01/index.json, every efx-rate record filed under type 01 22 at the two slow rate addresses, less the ones whose own held block does not silence the other rotor. Three records made later enter by that same rule and are scored rather than dropped: their held blocks silence the other rotor, which is the whole of what the rule asks, and two of them are what took this claim's bottom away",
+   "generated_from": "data/units/roland-sc8850-01/index.json, every efx-rate record filed under type 01 22 at the two slow rate addresses, less the ones whose own held block does not silence the other rotor. Three records made later enter by that same rule and are scored rather than dropped: their held blocks silence the other rotor, which is the whole of what the rule asks, and two of them are what took this claim's bottom away. Two published later enter by that rule and are dropped by it: they sweep one of those addresses with the speed switch on the fast arm, where the rotor is not following the address being swept.",
    "filter": {
     "index": "data/units/roland-sc8850-01/index.json",
     "stage": "efx-rate",
@@ -327,6 +327,14 @@
     {
      "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-which-rate-table-005to100.json",
      "why": "no Level byte is held. Three of its four readings are 0.35 Hz -- the low rotor at its default -- whatever this byte is set to, and the fourth is found by two partials of four."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-the-slow-byte-with-the-switch-at-the-printed-state.json",
+     "why": "the speed switch is held at a value that reaches the fast arm, so the address this record sweeps is not the one the rotor is following. It is the other half of the mirror that shows the switch works, and the rows say so themselves: all of them return one rate, 7.4338 to 7.434 Hz, whatever the byte is. A record of a byte the rotor is deaf to is not evidence about that byte's table."
+    },
+    {
+     "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-the-same-settings-after-thirty-seconds.json",
+     "why": "the speed switch is held at a value that reaches the fast arm, so the address this record sweeps is not the one the rotor is following. It is the other half of the mirror that shows the switch works, and the rows say so themselves: all of them return one rate, 7.4338 Hz, whatever the byte is. A record of a byte the rotor is deaf to is not evidence about that byte's table."
     }
    ],
    "excluded": []
