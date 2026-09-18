@@ -4,7 +4,7 @@
   "unit_id": "roland-sc8850-01",
   "state": "parked",
   "made_at": "2026-09-15T13:02:06.817109+00:00",
-  "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-an-entry-the-unit-stated.py, backup/fold-the-write-timing-into-the-rotary-claim.py",
+  "made_by": "backup/what-the-rotary-subtracts.py, backup/build-the-rotary-models.py, backup/write-the-rotary-inference.py, backup/which-way-the-rotor-came.py, backup/what-scales-the-acceleration.py, backup/what-the-acceleration-table-holds.py, backup/fold-in-which-way-the-rotor-came.py, backup/what-the-entry-at-sixteen-is.py, backup/fold-in-an-entry-the-unit-stated.py, backup/fold-the-write-timing-into-the-rotary-claim.py, backup/the-speed-switch-was-written-a-value-the-page-prints-no-state-for.py",
   "rounds": 4,
   "about": {
    "scope": "slot",
@@ -165,6 +165,34 @@
      2.0487
     ],
     "why": "Two rotors sent down onto one entry of this claim's table from the top of it, at acceleration bytes forty times apart. What this claim says about a descent is that it arrives, so these are readings of the entry rather than of a stopping distance -- and the two agreeing to four decimals while the byte that sets how hard the rotor is pulled moves five entries is what says so within the record."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-08-silence-the-other-stage-HiFastswitchfast.json",
+    "keys": [
+     "held[address=40 03 0D].bytes",
+     "readings[value=32].rate_hz",
+     "readings[value=110].rate_hz"
+    ],
+    "values": [
+     "01",
+     0.8373,
+     0.8374
+    ],
+    "read_as": "The high rotor's fast byte with the switch written 0x01, which is the arm this record was taken to be. It returns the same rate at both settings, and the same rate the arm written 0x00 returns -- so the two arms are one condition measured twice."
+   },
+   {
+    "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowswitchfast.json",
+    "keys": [
+     "held[address=40 03 0D].bytes",
+     "readings[value=32].rate_hz",
+     "readings[value=110].rate_hz"
+    ],
+    "values": [
+     "01",
+     1.5887,
+     6.0414
+    ],
+    "read_as": "The high rotor's *slow* byte, taken under that same held block. It moves with its setting where the fast byte does not, which is what says the rotor was on Slow rather than that it had stopped answering: a rotor that ignored the block would move with neither."
    }
   ],
   "document_rows": [
@@ -831,7 +859,7 @@
   "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json"
  ],
  "what_this_does_not_settle": [
-  "What the rotary's two fast rate bytes do. Every take of them returns whichever rotor was left at its slow rate, at both settings of the byte the page prints as the speed switch -- so the switch was not switched, and until it is those two bytes have no reading at all. Whether the address this claim's records wrote is the switch is the first thing to ask.",
+  "What the rotary's two fast rate bytes do. Every take of them returns whichever rotor was left at its slow rate, and the switch was not thrown -- but not because the address is wrong, which is what this entry used to say should be asked first. The address is the one the page prints. What was written to it is not: the page prints two states, 0x00 and 0x7F, and every take wrote 0x01, which this unit stores and reads back and which the rotor answers as Slow. So those two bytes still have no reading, and a run that writes the printed state is now what would give them one. It is not a round on this claim: this claim is about the slow byte, and what the fast bytes do is a reading nothing here states.",
   "What sets where a rotor rests. Every take here reset the unit first, so the resting rate is one number per rotor and it is neither a table entry nor either rotor's default. The two runs that would say what it is are in the alternatives.",
   "Whether the rate class's refusal can be lifted mechanically. The check that refuses a slot on a type with more than one printed rate does not read the record's held block, so it refuses these five records too, and they were admitted here by hand with the reason written down. Teaching it to read a Level byte at nothing would reopen this type inside the class -- and would move the tally of refusals the closed claim carries, which is why it is named rather than done.",
   "Whether the other sixty-four types that take a rate byte have an arrival of their own. None of them prints an acceleration, and the closed rate claim's twenty-one slots answer the table with no gap anywhere, so the expectation is that they do not -- but an arrival smaller than one entry would not have shown, and nothing here bounds it.",
@@ -929,6 +957,20 @@
    "measured_by": "The same byte at the same value, on the same type, under three different counts of how many bytes the run wrote before it. At value 12: two writes returns 0.5934 Hz, three returns 0.5472 and thirteen returns 0.4042. The record this claim rests on wrote two.",
    "what_it_does_not_touch": "The table, the constant above value 32, and which way the rotor was sent. Those are read where nothing is in transit and none of them moved: the low rotor's gap holds at 0.244 to 0.246 Hz from value 16 to 127 in every state asked here, on both types.",
    "found_by": "inferences/roland-sc8850-01/1107-a-renumbered-rotary-is-one-rotor-above-the-transient.json"
+  },
+  {
+   "what": "The four records standing for the switch thrown were taken with that byte at a value the page prints no state for, so the fast side was never asked.",
+   "which_records": [
+    "data/units/roland-sc8850-01/efx-rate/01-22-03-which-way-the-rotor-turns-fast-settlenotrecorded.json",
+    "data/units/roland-sc8850-01/efx-rate/01-22-04-which-way-the-rotor-turns-fast-settlenotrecorded.json",
+    "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowswitchfast.json",
+    "data/units/roland-sc8850-01/efx-rate/01-22-08-silence-the-other-stage-HiFastswitchfast.json"
+   ],
+   "measured_by": "The records' own held blocks, against the states the page prints for that address. Every one of them wrote 0x01; the page prints the parameter's two states as 0x00 and 0x7F, and this unit's write probe accepts and reads back every value of the byte, so nothing refused the write and nothing in the record says the state was not reached.",
+   "how_it_shows_in_the_figures": "The high rotor's fast byte returns 0.8373 and 0.8374 Hz on the arm written 0x01, against 0.8373 and 0.8373 on the arm written 0x00 -- one condition measured twice. The slow byte taken under the same block moves from 1.5887 to 6.0414 Hz across the same two settings, which is the control: a rotor deaf to the whole block would move with neither byte, and this one moves with the slow one.",
+   "what_it_does_not_touch": "Everything this claim states. The table, the distance the rotor stops short by, which way it was sent and what the acceleration byte does are read off the slow bytes, and those records hold the switch at 0x00 -- the state the fast arm turns out to have been in as well. Nothing here was read on a condition that has now changed; what was read is one condition rather than two, and no figure moves.",
+   "why_the_control_did_not_catch_it": "The run built the right control and it could not fire. Sweeping one slot with the switch thrown is evidence only if the other slot then stops answering, which is what it asked -- but with both arms on Slow the mirror compared a condition against itself and agreed to three hundredths of a per cent, which reads exactly like a byte that does nothing. A control that cannot separate the two states is not a control, and what would have said so is the one thing neither the run nor the record checked: whether the value written is a value the parameter has.",
+   "found_by": "backup/the-speed-switch-was-written-a-value-the-page-prints-no-state-for.py"
   }
  ]
 }
