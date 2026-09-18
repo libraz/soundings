@@ -83,7 +83,7 @@ def _open(args) -> int:
                 f"  {run.get('minutes', '?'):>4} min  {run.get('stage', '?')} "
                 f"{run.get('type', '')} {run.get('address', '')}"
             )
-            print(f"            {item.get('reading', item['why_open'])}")
+            print(f"            {item['reading']}")
             print(f"            {item.get('observable', '')}")
         print(f"\n  {sum(i['minutes'] or 0 for i in runnable):.0f} minutes with the unit sounding")
     if blocked:
@@ -92,9 +92,9 @@ def _open(args) -> int:
         # scheduled is usually the most useful sentence about the type.
         print("\n== open and not answerable by a run this rig can make")
         for item in blocked:
-            print(f"  {item['inference']}")
-            print(f"    {item.get('reading', item['why_open'])}")
-            print(f"    {item.get('why_not_separable') or item.get('could_have_been_refuted_by')}")
+            print(f"  {item['inference']}  ({item['why_open']})")
+            print(f"    {item['reading']}")
+            print(f"    {item['why_there_is_no_run']}")
     return 0
 
 

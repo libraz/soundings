@@ -85,21 +85,47 @@ def test_a_claim_says_what_would_refute_it(path: Path):
 
 
 @pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
-def test_an_untested_claim_says_what_could_have_contradicted_it(path: Path):
-    """The rule that keeps the era and the forum from closing anything.
+def test_a_claim_open_by_its_state_says_why(path: Path):
+    """A state that holds a claim open owes the sentence that says what is left.
 
-    A claim resting on what was buildable at the time, or on somebody's report, is
-    worth reading only if it can name the measurement the unit could have answered
-    it with. Without that it says nothing about this unit at all, however
-    plausible it is.
+    The rule that keeps the era and the forum from closing anything: a claim resting
+    on what was buildable at the time, or on somebody's report, is worth reading only
+    if it can name the measurement the unit could have answered it with. Without that
+    it says nothing about this unit at all, however plausible it is. A parked claim
+    owes the same debt in its own terms -- what the rounds found and what they gave
+    up -- because the queue lists it and the reason it cannot be scheduled is usually
+    the most useful sentence about the type.
+
+    Asked of every open state rather than of one, which is the defect this replaces:
+    the check existed for the untested state alone, the query read both reasons out
+    of the untested state's key, and the two parked claims printed a reason of `None`
+    in a queue whose whole argument for listing them is that the reason is worth
+    reading. Both had written one.
     """
     claim = inferences.load(path)
-    if claim["inference"]["state"] != "standing_untested":
+    state = claim["inference"]["state"]
+    if state not in inferences.OPEN_STATES:
         return
-    assert claim.get("could_have_been_refuted_by"), (
-        f"{path.name} stands on priors and cannot name a measurement that could have "
-        "contradicted it"
+    where = ".".join(inferences.OPEN_STATES[state]["reason_at"])
+    assert inferences.why_the_state_holds_it_open(claim), (
+        f"{path.name} is open as `{state}` and says nothing at `{where}` about why"
     )
+
+
+def test_the_queue_gives_a_reason_for_everything_it_cannot_schedule():
+    """Nothing reaches the unschedulable heading without the sentence it exists for.
+
+    The query's own argument for printing these at all is that the reason one cannot
+    be scheduled is worth more than the booking would have been. An entry that
+    reaches that heading with nothing to say is the heading arguing against itself.
+    """
+    for item in inferences.open_items(ROOT):
+        if item["run"]:
+            continue
+        assert item["reading"] and item["why_there_is_no_run"], (
+            f"{item['inference']} is listed as unschedulable and gives no reason: "
+            f"{item['why_open']}"
+        )
 
 
 @pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)

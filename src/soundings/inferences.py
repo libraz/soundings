@@ -41,14 +41,38 @@ from pathlib import Path
 
 SCHEMA_VERSION = 1
 
-OPEN_STATES = frozenset({"standing_untested", "parked"})
-"""States that are open whatever their alternatives say.
+OPEN_STATES = {
+    "standing_untested": {
+        "what_is_open": (
+            "The claim rests on the era, on a printed page or on somebody's report, "
+            "and no measurement has been in a position to contradict it."
+        ),
+        "reason_at": ("could_have_been_refuted_by",),
+    },
+    "parked": {
+        "what_is_open": (
+            "The model was revised as far as this project revises one. What it found "
+            "is kept and what it gave up stays open rather than being closed."
+        ),
+        "reason_at": ("inference", "why_parked"),
+    },
+}
+"""States that are open whatever their alternatives say, and where each says why.
 
 `standing_untested` is a claim resting on the era, on a printed page or on
 somebody's report, which no measurement has yet been in a position to contradict.
 It is counted as unresolved on purpose: plausibility cannot close anything here,
 and a state that read as closed would let a catalogue of reasonable guesses stand
 in for a measured one.
+
+**The two reasons are different claims and live in different places.**
+`could_have_been_refuted_by` sits beside `refuted_by` at the top of the file
+because both are about what the claim says: one names the measurement that would
+show it wrong, the other the measurement that could have and was never made.
+`why_parked` sits under `inference` beside `rounds`, because parking is a fact
+about how far the reading was taken and not about what it states. Reading both out
+of the first key printed a parked claim's reason as `None` -- the one sentence
+about it a queue exists to carry, dropped by the query meant to keep it.
 """
 
 ROUND_CEILING = 3
@@ -295,6 +319,24 @@ def already_recorded(root: str | Path, unit: str, run: dict, claim: dict) -> dic
     return {"sides": sides}
 
 
+def why_the_state_holds_it_open(claim: dict) -> str | None:
+    """What a claim says about the state that holds it open, wherever it says it.
+
+    None where the state closes nothing, and None where an open state says nothing --
+    which is a defect in the claim rather than in the reading of it, and the layout
+    suite is what refuses it.
+    """
+    state = claim["inference"]["state"]
+    if state not in OPEN_STATES:
+        return None
+    found = claim
+    for step in OPEN_STATES[state]["reason_at"]:
+        if not isinstance(found, dict):
+            return None
+        found = found.get(step)
+    return found
+
+
 def open_items(root: str | Path) -> list[dict]:
     """What is unresolved, and for each the measurement that would resolve it.
 
@@ -309,6 +351,13 @@ def open_items(root: str | Path) -> list[dict]:
     queue must not print them under one heading -- but an item that vanished when
     its subject turned up in the listing would be a question nobody was left to
     answer.
+
+    **Both kinds of item carry the same two sentences**, `reading` and
+    `why_there_is_no_run`, because the queue prints them the same way and a caller
+    reading one kind's key off the other prints nothing. A claim open by its state
+    and a claim held open by an alternative are open for different reasons, and that
+    is what `why_open` is for; what a reader wants off either is what is unresolved
+    and why no run is booked against it.
     """
     root = Path(root)
     out = []
@@ -323,7 +372,8 @@ def open_items(root: str | Path) -> list[dict]:
                 {
                     "inference": name,
                     "why_open": state,
-                    "could_have_been_refuted_by": claim.get("could_have_been_refuted_by"),
+                    "reading": OPEN_STATES[state]["what_is_open"],
+                    "why_there_is_no_run": why_the_state_holds_it_open(claim),
                     "run": None,
                     "minutes": None,
                 }
@@ -342,7 +392,7 @@ def open_items(root: str | Path) -> list[dict]:
                     "reading": alternative["reading"],
                     "observable": separated.get("observable"),
                     "margin": separated.get("margin"),
-                    "why_not_separable": separated.get("why_not_separable"),
+                    "why_there_is_no_run": separated.get("why_not_separable"),
                     "run": run,
                     "minutes": (run or {}).get("minutes"),
                     "already_recorded": (
