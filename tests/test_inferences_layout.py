@@ -232,6 +232,31 @@ def test_no_claim_has_run_past_its_rounds():
         )
 
 
+@pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
+def test_a_verdict_is_one_of_the_words_the_schema_names(path: Path):
+    """The field two queries print, held to the six values it is allowed.
+
+    A verdict is not prose. `inferences.closed` puts it in a listing and the
+    readings query prints it, so a claim answering with anything else prints
+    something else where every other claim prints a word -- and a reader comparing
+    two claims is comparing a word against an object.
+
+    The temptation is real and one claim took it: a reading that holds over part of
+    a byte's range wants to say so, and keying the verdict by the range it covers
+    reads better than a word does. Where it holds goes beside the verdict, not
+    inside it. Nothing failed for the day that claim sat there, because the schema
+    states the enum and nothing was checking claims against it.
+    """
+    verdict = (inferences.load(path).get("reproduces") or {}).get("verdict")
+    if verdict is None:
+        return
+    allowed = SCHEMA["$defs"]["reproduces"]["properties"]["verdict"]["enum"]
+    assert verdict in allowed, (
+        f"{path.name} has a verdict of {verdict!r}, which is not one of {allowed}. "
+        "Where a verdict holds is said beside it and not inside it."
+    )
+
+
 def _prose_lists(node, path: str):
     """Every list in a claim that holds prose, with where in the claim it sits."""
     if isinstance(node, dict):
