@@ -4,7 +4,7 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T08:36:59.055224+00:00",
-    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py, backup/build-eq-models-from-the-tables.py, backup/add-round-three-to-the-eq-inference.py, backup/fold-in-how-a-gain-reaches-a-section.py, backup/fold-in-what-a-shelf-gain-does.py",
+    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py, backup/build-eq-models-from-the-tables.py, backup/add-round-three-to-the-eq-inference.py, backup/fold-in-how-a-gain-reaches-a-section.py, backup/fold-in-what-a-shelf-gain-does.py, backup/fold-in-two-more-centres-to-the-chain.py",
     "rounds": 3,
     "about": {
       "scope": "unit",
@@ -206,6 +206,10 @@
         "data/units/roland-sc8850-01/efx-bands/01-00-08-how-much-is-twelve-db-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-null-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+        "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-null-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-null-in-twelfths.json",
         "data/units/roland-sc8850-01/efx-bands/01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
@@ -423,44 +427,16 @@
       "outside": "One byte at a time. No setting where two of the four sections are away from their centre together was asked, so the chain's sections are shown to be right one at a time and not shown to combine. Nothing above 16 kHz, where the unit's output ends. Nothing about phase: the phase records for this type exist and this run did not read them."
     },
     "residual": {
-      "median": 0.012,
-      "worst": 0.0382,
+      "median": 0.0132,
+      "worst": 0.0435,
       "unit": "share of the span the effect commands in that record",
       "worst_at": null,
       "structured": false,
-      "why": "Of the 22 records that carry an effect, none has a residual that leans across its settings or its bands by more than the run's own floor. Two do not level off inside the band set and are counted apart, as they were before: what leans there is the bound a corner was transcribed from and not the model, and each record says so itself."
+      "why": "Of the 24 records that carry an effect, none has a residual that leans across its settings or its bands by more than the run's own floor. 2 do not level off inside the band set and are counted apart: what leans there is the bound a corner was transcribed from and not the model, and each record says so itself."
     },
     "breaks_down_at": {
-      "where": [
-        {
-          "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
-          "at": {
-            "value": 23,
-            "hz": 374.6
-          },
-          "residual": 9.19,
-          "share_of_span": 0.7
-        },
-        {
-          "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
-          "at": {
-            "value": 4,
-            "hz": 166.9
-          },
-          "residual": 6.65,
-          "share_of_span": 0.526
-        },
-        {
-          "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
-          "at": {
-            "value": 0,
-            "hz": 166.9
-          },
-          "residual": 6.64,
-          "share_of_span": 0.533
-        }
-      ],
-      "why": "Where a single setting's residual is more than half the span that record's own effect commands. Every one of them is a centre frequency record and every one is at the same place: the model's frequency table takes its third entry from the printed third octave and the unit does not put it there. That is the point the frequency class already carries as its own breakdown, arriving here because this chain reads the same table.",
+      "where": [],
+      "why": "Nothing. No setting's residual reaches half the span its record commands. The three points that used to stand here were the two mid centres fitted rather than identified, and they went when the round below put the identified tables in -- this field went on naming them afterwards and no longer does.",
       "what_it_does_not_reach": "The gain rows. Twenty-five settings of one peaking section's gain were added to this set and none of them leans under this reading, so what the chain has wrong is where a centre sits and not what a gain is worth."
     },
     "gates": {
@@ -1374,6 +1350,86 @@
           {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
             "value": 5,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+            "value": 1,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+            "value": 3,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+            "value": 4,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+            "value": 0,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+            "value": 1,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+            "value": 2,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+            "value": 3,
+            "property": "the sign of the largest deviation",
+            "unit": "boost",
+            "model": "boost",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+            "value": 4,
             "property": "the sign of the largest deviation",
             "unit": "boost",
             "model": "boost",
@@ -2886,6 +2942,20 @@
             "same": true
           },
           {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 1.97 dB",
+            "model": "0 dB",
+            "same": true
+          },
+          {
+            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-null-in-twelfths.json",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 1.97 dB",
+            "model": "0 dB",
+            "same": true
+          },
+          {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges-null-in-twelfths.json",
             "property": "the unit's null control shows nothing, and so must the model",
             "unit": "nothing above a floor of 2.1 dB",
@@ -2915,10 +2985,10 @@
           {
             "candidate": "first-order-shelves-peaking-tables-and-the-odd-entry",
             "model": "inferences/models/0100-first-order-shelves-peaking-tables-and-the-odd-entry.json",
-            "mean_share_of_span": 0.012,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0132,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 0,
             "leaning_on": [],
             "records_the_run_did_not_reach": [
@@ -2929,10 +2999,10 @@
           {
             "candidate": "first-order-shelves-peaking-tables",
             "model": "inferences/models/0100-first-order-shelves-peaking-tables.json",
-            "mean_share_of_span": 0.012,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0132,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 3,
             "leaning_on": [
               "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
@@ -2947,10 +3017,10 @@
           {
             "candidate": "low-first-high-second-order-shelves",
             "model": "inferences/models/0100-low-first-high-second-order-shelves.json",
-            "mean_share_of_span": 0.012,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0132,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 2,
             "leaning_on": [
               "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
@@ -2964,10 +3034,10 @@
           {
             "candidate": "first-order-shelves-peaking-pairs",
             "model": "inferences/models/0100-first-order-shelves-peaking-pairs.json",
-            "mean_share_of_span": 0.0123,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0135,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 2,
             "leaning_on": [
               "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
@@ -2981,10 +3051,10 @@
           {
             "candidate": "second-order-shelves-peaking-tables",
             "model": "inferences/models/0100-second-order-shelves-peaking-tables.json",
-            "mean_share_of_span": 0.0133,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0144,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 4,
             "leaning_on": [
               "01-00-03-where-the-eq-hinges-in-twelfths.json",
@@ -3000,10 +3070,10 @@
           {
             "candidate": "second-order-shelves-peaking-pairs",
             "model": "inferences/models/0100-second-order-shelves-peaking-pairs.json",
-            "mean_share_of_span": 0.0136,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0146,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 3,
             "leaning_on": [
               "01-00-03-where-the-eq-hinges-in-twelfths.json",
@@ -3018,10 +3088,10 @@
           {
             "candidate": "low-second-high-first-order-shelves",
             "model": "inferences/models/0100-low-second-high-first-order-shelves.json",
-            "mean_share_of_span": 0.0139,
-            "worst_share_of_span": 0.0382,
+            "mean_share_of_span": 0.0149,
+            "worst_share_of_span": 0.0435,
             "worst_point_share": 0.75,
-            "records_scored": 31,
+            "records_scored": 35,
             "leaning_records": 3,
             "leaning_on": [
               "01-00-03-where-the-eq-hinges-in-twelfths.json",
@@ -3036,15 +3106,16 @@
           {
             "candidate": "first-order-shelves-peaking-printed-q",
             "model": "inferences/models/0100-first-order-shelves-peaking-printed-q.json",
-            "mean_share_of_span": 0.0197,
+            "mean_share_of_span": 0.0215,
             "worst_share_of_span": 0.0602,
             "worst_point_share": 0.8361,
-            "records_scored": 31,
-            "leaning_records": 11,
+            "records_scored": 35,
+            "leaning_records": 12,
             "leaning_on": [
               "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
               "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-07-where-the-eq-hinges-in-twelfths.json",
+              "01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
               "01-00-08-where-the-eq-hinges-in-twelfths.json",
               "01-00-09-how-much-is-twelve-db-fine-in-twelfths.json",
               "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
@@ -3056,13 +3127,14 @@
             ],
             "records_the_run_did_not_reach": [
               "01-00-05-where-the-eq-hinges-in-twelfths.json",
-              "01-00-08-the-width-at-the-bottom-in-twelfths.json"
+              "01-00-08-the-width-at-the-bottom-in-twelfths.json",
+              "01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json"
             ]
           }
         ],
         "decoy": "first-order-shelves-peaking-tables",
         "beaten_by": "leaning where the winner does not",
-        "separation": 0.011,
+        "separation": 0.016,
         "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
       },
       "breakdown": {
@@ -3154,5 +3226,24 @@
     "why_this_claim_does_not_move": "Nothing this claim says is contradicted. It says the type is a chain of four sections and an output gain and that each byte indexes a short table, and all of that stands; what the other claim identifies is the path between one of those tables and the section it feeds. The two were separable only because this claim's own records were read again with a different instrument -- the width of the feature rather than the residual over the profile -- and this claim's verdict is what the residual said, which is still what it said.",
     "what_a_reader_rendering_this_type_should_take": "This chain for the topology, the tables and the corners, and the two claims beside it for what the gain bytes do with them -- the mid sections blending towards a section stored at full boost, the shelves towards one stored at full cut, and the far side of each byte that same section turned over. Taking this model alone reproduces the ends of every gain's range, makes both mid peaks too wide in between, and puts both shelves' transitions about half an octave out in the other direction.",
     "why_it_was_not_caught_here": "Three gates passed on it for two rounds, on these records. A residual meaned over a record is nearly blind to it, because the settings where the paths differ are the ones whose profile is smallest and so carry the least of the record's span; and the lean test looks for a residual running with the setting or with frequency, while this one is a hump that is nothing at both ends of the window and nothing at its centre. The gate that would have caught it is the qualitative one, and nothing had stated the property for it to hold. On the shelves it was missed twice over: the first reading put to them was a peak's, and under it they refused a blend they are in fact doing."
+  },
+  "the_width_byte_read_at_two_more_centres": {
+    "what": "Four records of `40 03 08` entered this claim's comparison set without being chosen for it: a run swept the byte at all five entries at two centres the width class needed, and the set is generated from the index rather than listed by hand. They are the first records of this type taken with the centre byte anywhere but the two ends of its table.",
+    "records": [
+      "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-in-twelfths.json",
+      "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-3150-null-in-twelfths.json",
+      "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-in-twelfths.json",
+      "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-two-more-centres-400-null-in-twelfths.json"
+    ],
+    "and_the_chain_answers_them": {
+      "records_scored": 35,
+      "winner": "first-order-shelves-peaking-tables-and-the-odd-entry",
+      "mean_share_of_span": 0.0132,
+      "worst_share_of_span": 0.0435,
+      "leaning_records": 0,
+      "verdict": "reproduces"
+    },
+    "why_it_is_not_a_round": "The model file does not move and the claim does not move. Four records of a byte already in the domain were added to a set the claim regenerates, and the same chain answers them at the same residual. What a round is for is a chain that had to change.",
+    "what_it_adds": "The two mid centres were only ever read at the ends of their own table in this set, and a table read at its ends is a table two points constrain. These sit at its fourth and thirteenth entries, and the chain renders both within the same residual it renders everything else at -- so the sixteen-entry table is answering inside its range and not just across it."
   }
 }
