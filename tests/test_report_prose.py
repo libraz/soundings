@@ -11,6 +11,19 @@ exist verbatim as a string in the source. Rewording a published method statement
 means the archive and the code no longer agree about how a measurement was made,
 and that has to be a deliberate act with the data reissued, not a side effect of
 moving the sentence to another module.
+
+**What this gate is about is the harness's own prose**, and one block of a record
+is not that. A run's `about` is what its driver closed over the takes with, carried
+into the record by not being named in `ABOUT_IS_NOT` rather than by being listed --
+so a run may state one control more than the run before it. There is no source
+string for it to drift from: the driver is a one-off, the manifest froze the
+sentence when the run ended, and nothing will rewrite either. Putting it in the
+package to satisfy this gate would be the opposite of what the archive asks, since
+a statement about one type of one unit does not belong in a module constant.
+
+The cost is that prose under `about` is unchecked. That is not new -- a key there
+not named `why_something` was never reached by this gate either -- and what changes
+is that the rule is now one rule instead of an accident of naming.
 """
 
 from __future__ import annotations
@@ -91,10 +104,21 @@ def _is_prose(key: str) -> bool:
     return key in PROSE or key.startswith("why_")
 
 
+ITS_OWN_ACCOUNT = "about"
+"""The block a run supplies about itself, which this gate does not reach into.
+
+Not a file exclusion and not a key exclusion: one block, for the reason in the
+module docstring. Named here rather than spelled inline so that a reader looking
+for what is exempt finds one name and its reason together.
+"""
+
+
 def _prose(obj, path: str = "") -> list[tuple[str, str]]:
     if isinstance(obj, dict):
         out = []
         for key, value in obj.items():
+            if key == ITS_OWN_ACCOUNT:
+                continue
             if isinstance(value, str) and _is_prose(key) and len(value) > 60:
                 out.append((f"{path}/{key}", value))
             else:
