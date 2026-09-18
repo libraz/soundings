@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-18T08:21:37.603118+00:00",
-    "made_by": "backup/what-the-two-lo-fi-filters-are.py, backup/write-the-lo-fi-filters-inference.py",
-    "rounds": 1,
+    "made_by": "backup/what-the-two-lo-fi-filters-are.py, backup/write-the-lo-fi-filters-inference.py, backup/does-the-band-set-move-the-notch.py, backup/take-up-the-tap-on-the-lo-fi-pre-filter.py",
+    "rounds": 2,
     "about": {
       "scope": "slot",
       "types": [
@@ -17,7 +17,7 @@
       ]
     }
   },
-  "claim": "`Pre Filter 1 - 2 - 6` at `40 03 03` and `Post Filter 1 - 2 - 6` at `40 03 05` sit on one type, one on each side of its degrader, and are printed with the same name ending over the same range and the same six byte values. **They are two tables.**\n\n**What the pre filter holds is a gain ladder with one stage switched across it.** Five of its six entries are three rungs 5.99 dB apart, and the rungs are gains rather than shapes: over the bands this reads they are the same number in every band to within 0.53 dB, against 0.62 dB from the same six entries swept twice in two sessions, and they tilt by 0.04 dB per octave at worst over six of them. The odd entries carry one stage and the even entries carry it with something else added, and the something else is the same curve both times: the step from entry one to entry two and the step from entry three to entry four agree to 0.16 dB at the median and 0.69 dB at worst. Entry nought is not a fourth rung: it stands 17.13 dB under entry one with a spread of 1.76 dB and a tilt of -0.27 dB per octave, both outside what the floor produces, so it is a different shape and not the bottom of the ladder.\n\n**And what that stage is, is a notch and not a low pass.** It falls to -8.20 dB at 8000 Hz and comes back to nothing above it, reaching a quarter of a decibel of flat again by fifteen kilohertz -- which a corner cannot do and a dip in the middle of the band can. Fitted as a second order notch with its centre, its sharpness and its depth all free, the centre lands at 8000 Hz (Q 0.42, 0.61 of the way to a full null, residual 0.146 dB), and moving the centre five hundred hertz either way more than doubles that residual. **8000 Hz is a quarter of 32000 Hz**, which is the clock this archive reads on classes that share no takes with these -- a delay ladder, a degrader's own two nulls -- and which nothing in this fit was told.\n\n**What the post filter holds is not that.** The same three rungs, asked the same way, are shapes and not gains: they spread 2.90 to 2.96 dB where the pre filter's spread 0.31 to 0.53. The same alternation is there and its stage agrees with itself just as well (0.20 dB), but it is a different stage: deepest at 132 Hz where the pre filter's is deepest at 8000 Hz, with nothing below it coming back, and the two differ from each other by 5.28 dB at the median against a floor of 0.15. The entry that passes the most is the last of one byte and the first of the other.\n\n**So a rule closed on one of them does not reach the other**, and the two are indistinguishable to anything reading the printed page: same last word, same range, same hex values, same type.",
+  "claim": "`Pre Filter 1 - 2 - 6` at `40 03 03` and `Post Filter 1 - 2 - 6` at `40 03 05` sit on one type, one on each side of its degrader, and are printed with the same name ending over the same range and the same six byte values. **They are two tables.**\n\n**What the pre filter holds is a gain ladder with one stage switched across it.** Five of its six entries are three rungs 5.99 dB apart, and the rungs are gains rather than shapes: over the bands this reads they are the same number in every band to within 0.53 dB, against 0.62 dB from the same six entries swept twice in two sessions, and they tilt by 0.04 dB per octave at worst over six of them. The odd entries carry one stage and the even entries carry it with something else added, and the something else is the same curve both times: the step from entry one to entry two and the step from entry three to entry four agree to 0.16 dB at the median and 0.69 dB at worst. Entry nought is not a fourth rung: it stands 17.13 dB under entry one with a spread of 1.76 dB and a tilt of -0.27 dB per octave, both outside what the floor produces, so it is a different shape and not the bottom of the ladder.\n\n**And what that stage is, is a notch and not a low pass.** It falls to -8.20 dB at 8000 Hz and comes back to nothing above it, reaching a quarter of a decibel of flat again by fifteen kilohertz -- which a corner cannot do and a dip in the middle of the band can. Fitted as a second order notch with its centre, its sharpness and its depth all free, the centre lands at 8000 Hz (Q 0.42, 0.61 of the way to a full null, residual 0.146 dB), and moving the centre five hundred hertz either way more than doubles that residual. **That stage is one tap added at two samples.** Held out a half of the band set at a time, the tap predicts the bands it was not shown to 0.44 and 0.31 dB while the freely centred section misses them by 2.33 and 3.25 -- and the section's centre lands at 9300 Hz from one half and 5550 Hz from the other, so the range as a whole is what was placing it. Rendering both through the band energies the unit was read as, rather than sampling them at the band centres, moves either curve by at most 0.042 dB and changes nothing. **8000 Hz is a quarter of 32000 Hz**, which is the clock this archive reads on classes that share no takes with these -- a delay ladder, a degrader's own two nulls -- and which nothing in this fit was told.\n\n**What the post filter holds is not that.** The same three rungs, asked the same way, are shapes and not gains: they spread 2.90 to 2.96 dB where the pre filter's spread 0.31 to 0.53. The same alternation is there and its stage agrees with itself just as well (0.20 dB), but it is a different stage: deepest at 132 Hz where the pre filter's is deepest at 8000 Hz, with nothing below it coming back, and the two differ from each other by 5.28 dB at the median against a floor of 0.15. The entry that passes the most is the last of one byte and the first of the other.\n\n**So a rule closed on one of them does not reach the other**, and the two are indistinguishable to anything reading the printed page: same last word, same range, same hex values, same type.",
   "named": "A gain ladder with a notch switched across it, and a shelf table -- two tables under one printed name.",
   "why_not_named": "The pre filter's own name is what this contradicts, so it is not reused. Five of its six entries move level and one fixed curve in and out, and the curve is a dip at a quarter of the clock rather than anything with a corner. Whether the dip is one tap added at two samples or a second order section is an open reading below.",
   "rests_on": {
@@ -3264,8 +3264,71 @@
         "rms_db": 0.333
       }
     },
-    "read_as": "The section wins on the residual and it has three free parameters to the tap's one, so the residual is not what is read out of this. What is read out is where the free centre went: it went to a quarter of the clock, which is the one frequency the tap could have put it at and is not a frequency the fit was given. A section placed there by its own fit and a tap that cannot be placed anywhere else are two accounts of one measurement, and which of them the part holds is open below.",
-    "not_rendered_through_the_band_set": "Both candidates are read at the band centres and the unit is read as band energies, which is the comparison this project has measured to matter on a narrow feature. The dip here is an octave wide at half its depth, so the correction is small -- but it is not zero and it is not made, and the residual difference between the two candidates is the size where it could matter. That is the reason the choice between them is left open rather than the reason it is made."
+    "read_as": "One tap added at two samples, weight 0.461. The second order section fits the whole range better and has three free parameters to the tap's one, so the residual over the whole range is not what this rests on: held out a half at a time the section predicts the bands it was not shown five to ten times worse than the tap, and its free centre lands on a different frequency depending on which half it was shown. The tap has nothing to move, returns the same length and weight from either half, and its dip can only be at a quarter of the clock -- which is where the dip is.",
+    "the_band_set_and_a_held_out_half": {
+      "why_the_band_set_was_asked": "The claim was fitted by sampling each candidate at the band centres and the unit was read by summing the energy of every bin inside each band. This project has measured those to be different numbers where a feature is narrow against a band.",
+      "how_it_was_rendered": "The bins `efx-bands` sums, reproduced rather than approximated: the transform zero padded to 2**19 at the take's rate, the band edges at the centre times two to the plus and minus one twenty-fourth, and the same search convention. A model's band figure is the mean of its squared response over those bins, because every figure the record reports is against the same band of the flat setting and the bin count divides out.",
+      "what_rendering_moved": {
+        "a_notch_worst_db": 0.0177,
+        "a_notch_worst_at_hz": 9513.7,
+        "one_tap_worst_db": 0.024,
+        "one_tap_worst_at_hz": 8979.7,
+        "median_db": 0.0003,
+        "they_stand_apart_db": {
+          "sampled_at_the_band_centres": 0.1884,
+          "rendered_through_the_bands": 0.1883
+        }
+      },
+      "the_tap_refitted_through_the_bands": {
+        "rms_db": 0.3324,
+        "weight": 0.4605,
+        "samples": 2,
+        "its_dip_can_only_be_at_hz": 8000.0,
+        "why_this_is_exact_and_not_a_bound": "The tap's squared response is one plus the weight squared plus twice the weight times a cosine of the frequency, which is affine in the weight with a coefficient the weight does not appear in. So the cosine's average over a band is taken once per tap length and every weight is read off it exactly, rather than each weight costing its own rendering."
+      },
+      "a_half_held_out": {
+        "fitted below the dip, scored above it": {
+          "bands_shown": 73,
+          "bands_scored": 11,
+          "a_notch": {
+            "centre_hz": 9300.0,
+            "q": 0.3,
+            "depth": 0.65,
+            "rms_in_db": 0.09,
+            "rms_out_db": 2.326
+          },
+          "one_tap": {
+            "samples": 2,
+            "weight": 0.46,
+            "rms_in_db": 0.3148,
+            "rms_out_db": 0.4372
+          },
+          "apart_out_db": -1.889,
+          "the_tap_is_better_by_times": 5.32
+        },
+        "fitted above the dip, scored below it": {
+          "bands_shown": 11,
+          "bands_scored": 73,
+          "a_notch": {
+            "centre_hz": 5550.0,
+            "q": 0.24,
+            "depth": 0.73,
+            "rms_in_db": 0.093,
+            "rms_out_db": 3.253
+          },
+          "one_tap": {
+            "samples": 2,
+            "weight": 0.4595,
+            "rms_in_db": 0.4372,
+            "rms_out_db": 0.3148
+          },
+          "apart_out_db": -2.939,
+          "the_tap_is_better_by_times": 10.34
+        },
+        "what_it_says": "The section predicts what it was not shown worse than the tap does, by five times one way round and ten the other, while fitting what it was shown better both times. Its centre is not identified by either half on its own -- 9300 Hz from the bands below the dip and 5550 Hz from those above -- and it reaches 8000 Hz only when it is shown the whole range.",
+        "what_it_does_not_say": "Not that no second order section reproduces this stage. One with its centre at a quarter of the clock does, and that is the member the tap names. What the held-out halves say is that the measurement does not pick that member out of the family on its own, and the tap does not have to be picked."
+      }
+    }
   },
   "the_post_filters_table": {
     "rungs": [
@@ -3386,7 +3449,7 @@
     {
       "reading": "The stage the pre filter's even entries switch in is one tap added at two samples, rather than a second order section placed at the same frequency.",
       "candidate": null,
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
       "separated_by": {
         "observable": "The shape of the dip's flanks against frequency, read against both candidates rendered through the same band set the unit was read on.",
@@ -3395,8 +3458,10 @@
           "a section": "Flanks whose width is set by a sharpness that has nothing to do with the depth."
         },
         "sensitivity_here": "The two stand 0.187 dB apart in residual on the reading made here, and the reading made here is the one that has not been rendered through the band set.",
-        "why_not_separable": "Not by a run, and the run is not what it wants. Both candidates are already fitted on published takes and what separates them is an arithmetic this reading did not do: rendering each through the band energies the unit was read as, rather than sampling it at the band centres. This project has measured that correction to decide a comparison on a narrow feature and has not measured it on one an octave wide. Until it is made, the smaller residual is not a reason to prefer the section, and the tap's inability to put its dip anywhere but where the dip is, is not a reason to prefer the tap."
-      }
+        "why_not_separable": "Not by a run, and the run is not what it wants. Both candidates are already fitted on published takes and what separates them is an arithmetic this reading did not do: rendering each through the band energies the unit was read as, rather than sampling it at the band centres. This project has measured that correction to decide a comparison on a narrow feature and has not measured it on one an octave wide. Until it is made, the smaller residual is not a reason to prefer the section, and the tap's inability to put its dip anywhere but where the dip is, is not a reason to prefer the tap.",
+        "answered": "The arithmetic this asked for was made and did not separate them: rendering each candidate through the bins the unit's reading sums moves either curve by at most 0.0417 dB anywhere and 0.0003 dB at the median, against the 0.1883 dB they stand apart, so the reading the claim was fitted with and the reading the unit was made with return the same ranking. What separated them was a half of the band set held out."
+      },
+      "taken_up_by": "A half of the band set held out, both ways round. Shown the 73 bands below the dip and scored on the 11 above it, the tap misses by 0.437 dB and the section by 2.326, which is 5.3 times worse; with the halves exchanged the tap misses by 0.315 dB and the section by 3.253, 10.3 times worse. The section fits whichever half it is shown better than the tap does and predicts the other half worse, which is what a residual bought with free parameters looks like when the parameters are not allowed to see the answer. The tap returns the same length and the same weight either way (2 samples, 0.4595 against 0.4600), because it has nothing to move."
     },
     {
       "reading": "The pre filter's rungs are six filters that differ only outside the bands this reads, and the six decibels is their passband gain.",
