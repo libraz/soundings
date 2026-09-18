@@ -4,7 +4,7 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-18T05:42:32.450535+00:00",
-    "made_by": "backup/build-shelf-gain-models.py, backup/run-shelf-gain-reproduce.py, backup/write-shelf-gain-inference.py",
+    "made_by": "backup/build-shelf-gain-models.py, backup/run-shelf-gain-reproduce.py, backup/write-shelf-gain-inference.py, backup/the-shelves-a-combination-type-does-not-print-a-corner-for.py, backup/where-a-shelf-hinges.py, backup/run-combination-shelf-reproduce.py, backup/fold-in-a-combination-types-shelves.py",
     "rounds": 1,
     "about": {
       "scope": "unit",
@@ -13,6 +13,9 @@
       ],
       "addresses": [
         "40 03 04"
+      ],
+      "checked_on_types": [
+        "04 01"
       ]
     }
   },
@@ -2179,33 +2182,8 @@
     {
       "reading": "The high shelf is reached the same way as the low one, so this is a fact about shelves rather than about this shelf.",
       "candidate": null,
-      "standing": true,
-      "equivalent_under_this_test": false,
-      "separated_by": {
-        "observable": "Where the high shelf has fallen to half of what it is at a band inside its own plateau, at settings in the middle of its window, read exactly as the low shelf's was.",
-        "predicts": {
-          "the high shelf stores the cut too": "The figure moves outwards as the shelf shrinks, half an octave across the window, the same as the low shelf.",
-          "the two shelves are one stored row": "The high shelf stores the boost and the figure moves inwards instead -- because a low shelf cut is a high shelf boost to within a constant, so a part holding one row per corner state has each shelf reaching it from the end the other one does not."
-        },
-        "sensitivity_here": "The two predictions are an octave apart at the middle of the window against a reading that resolves a twelfth, and the low shelf's own run placed sixteen of its twenty-two settings at that resolution. What is not carried over is the anchor: the high shelf's plateau sits where this stimulus is weakest, so the run has to be read at a band the takes reach rather than at the top of the set.",
-        "margin": 12,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 00",
-          "address": "40 03 06",
-          "settings": [
-            55,
-            58,
-            61,
-            67,
-            70,
-            73
-          ],
-          "held": "the low shelf and both mid gains at the centre of their windows, as the record beside it held them",
-          "takes": 12,
-          "minutes": 5
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "A high shelf was asked and it is reached the same way. Not the slot this alternative named -- it named the standalone type's, and what was run is a combination type's pair, which is the mechanism the reading proposed rather than the address it pointed at. On that type both shelves store the cut: the high shelf's transition moves outwards as the shelf shrinks, which is the reading this claim closed on, and it is 0 of 4 settings out of place against 4 for the opposite end and 4 for the section built at its gain. The reading that wanted one row shared between a type's two shelves needed the high one to move inwards. It does not. data/units/roland-sc8850-01/efx-bands/04-01-10-the-shelves-a-combination-type-does-not-print-a-corner-for-in-twelfths.json."
     }
   ],
   "refuted_by": "A shelf at half its gain falling away where the width of the stored full-scale boost would put it, or where the section built at that gain would. Or a boost whose shape is not its cut's, at more than the one band this reading resolves. Or the same reading on another type's shelf coming back the mid sections' way.",
@@ -3022,5 +3000,111 @@
     }
   ],
   "what_it_would_change": "A renderer of this line building its shelves at the gain asked for is right at the ends of the byte and puts the shelf's own transition half an octave out in between, which is most of what a shelf at a modest setting sounds like. A renderer that took the mid sections' answer and carried it across to the shelves -- the obvious thing to do with the claim beside this one -- would be wrong by twice that, and in the other direction.",
-  "a_note_on_the_two_halves_of_this_class": "The mid sections and the shelves of one type were put to the same four readings on records from the same runs, and they answered oppositely: the peaks store the boost and the shelves store the cut. The first scoring of the shelves was done with the peaks' instrument -- the count of bands a feature stands over half its height in -- which on a shelf counts up from the bottom of the band set, and under it the shelves merely refused the blend without saying what stood instead. The reading that answered is a shelf's own, and the candidate it found was not in the class at the time: three readings were scored, all three were wrong, and the one that fits was written because the runner-up fitted one half of the byte and its mirror fitted the other."
+  "a_note_on_the_two_halves_of_this_class": "The mid sections and the shelves of one type were put to the same four readings on records from the same runs, and they answered oppositely: the peaks store the boost and the shelves store the cut. The first scoring of the shelves was done with the peaks' instrument -- the count of bands a feature stands over half its height in -- which on a shelf counts up from the bottom of the band set, and under it the shelves merely refused the blend without saying what stood instead. The reading that answered is a shelf's own, and the candidate it found was not in the class at the time: three readings were scored, all three were wrong, and the one that fits was written because the runner-up fitted one half of the byte and its mirror fitted the other.",
+  "read_on_another_types_pair_of_shelves": {
+    "what": "The two shelves of `04 01`, a combination type whose equaliser prints a low gain, a mid section and a high gain and prints no corner byte for either shelf. Thirty takes, eleven settings a byte: the two ends of the gain window, two settings past each of them, the centre, and three, six and nine steps either side. Read by importing the run that made the claims rather than by restating their numbers.",
+    "why_the_candidates_are_scored_at_their_own_corners": "These shelves have no corner byte, so no candidate can be handed a corner off a table the way the standalone type's was. Each is given the corner that suits it best, scanned at the ends of the window where all four are the same section -- and then judged on the shape across the window, which one number cannot fix.",
+    "the_high_shelf": {
+      "record": "data/units/roland-sc8850-01/efx-bands/04-01-10-the-shelves-a-combination-type-does-not-print-a-corner-for-in-twelfths.json",
+      "corner_the_winner_wants_hz": 7855.0,
+      "order": 1,
+      "the_unit": {
+        "55": 1.208,
+        "58": 1.4,
+        "70": 1.427,
+        "73": 1.272
+      },
+      "each_reading": {
+        "mixed-with-the-dry-path-in-the-denominator": {
+          "55": 1.247,
+          "58": 1.44,
+          "70": 1.44,
+          "73": 1.246
+        },
+        "mixed-with-the-dry-path": {
+          "55": 0.912,
+          "58": 0.76,
+          "70": 0.76,
+          "73": 0.911
+        },
+        "mixed-towards-a-second-section-at-full-cut": {
+          "55": 0.861,
+          "58": 1.02,
+          "70": 0.797,
+          "73": 0.955
+        },
+        "built-at-the-gain": {
+          "55": 0.689,
+          "58": 0.629,
+          "70": 0.083,
+          "73": 0.33
+        }
+      },
+      "ranked": [
+        {
+          "candidate": "mixed-with-the-dry-path-in-the-denominator",
+          "corner_hz": 7855.0,
+          "out_of_place": "0/4",
+          "octaves_out": 0.017,
+          "median_share_of_span": 0.0038
+        },
+        {
+          "candidate": "mixed-with-the-dry-path",
+          "corner_hz": 5168.9,
+          "out_of_place": "4/4",
+          "octaves_out": -0.491,
+          "median_share_of_span": 0.0063
+        },
+        {
+          "candidate": "mixed-towards-a-second-section-at-full-cut",
+          "corner_hz": 10978.6,
+          "out_of_place": "4/4",
+          "octaves_out": -0.418,
+          "median_share_of_span": 0.0084
+        },
+        {
+          "candidate": "built-at-the-gain",
+          "corner_hz": 10978.6,
+          "out_of_place": "4/4",
+          "octaves_out": -0.894,
+          "median_share_of_span": 0.0092
+        }
+      ],
+      "settings_the_reading_could_not_place": [
+        61,
+        67
+      ],
+      "read_as": "The unit's figure moves outwards as the shelf shrinks and does it the same way on the boost and on the cut, which is what this claim's low shelf does on another type. The winner follows it within half a band at every setting the reading places and is the best residual of the four. The other three are wrong at every one of them, by five to eleven bands, and two of them are wrong asymmetrically where the unit is symmetric."
+    },
+    "the_low_shelf": {
+      "record": "data/units/roland-sc8850-01/efx-bands/04-01-0C-the-shelves-a-combination-type-does-not-print-a-corner-for-in-twelfths.json",
+      "corner_hz": 113.3,
+      "what_it_answers": "The window and the corner, and not the path. Its corner lands near the bottom of the band set, so the shelf's plateau is under the lowest band this stimulus reaches and there is nothing to anchor the reading on: every candidate is out of place, including the one the high shelf settles on. That was stated before the scoring and not found in it.",
+      "what_would_answer_it": "A stimulus with something below thirty hertz in it, which is not this archive's held note, or a band set that does not end at twenty-five. Neither is a run: it is a different reading of a take that does not carry the frequencies."
+    },
+    "where_the_shelves_hinge": {
+      "what": "A figure no page prints and no record here held. Scanned over a grid at the ends of the gain window, and calibrated first on a shelf whose corner is already published: on the standalone type's low shelf the same scan returns 214.3 Hz where the chain claim holds 217.1, which is 0.019 octaves.",
+      "the_low_shelf_hz": 113.3,
+      "and_it_is_the_first_state_of_the_printed_pair": "The standalone type gives its low shelf two states and the chain claim holds them at 118.0 and 217.1 Hz. This one is 0.06 octaves from the first of those, which is under one band of the set it was read on. So a combination type's low shelf is the standalone type's low shelf with its corner byte stuck at the lower state -- and not at the state the standalone type powers up holding, which is the other one.",
+      "the_high_shelf_hz": 7855.0,
+      "and_it_matches_neither_state": "The standalone type's high shelf states are held at 6727.2 and 10960.9 Hz. This one is 0.23 octaves above the first and 0.47 below the second, so it is neither -- but the comparison is not like for like, because those two figures come from a record that sweeps the corner byte and this one from a record that sweeps a gain. Put to the standalone type's own high shelf gain record, this scan wants a corner at the top of what a thirty-two kilohertz chain can hold, so the instrument cannot state that state at all."
+    },
+    "and_the_window_held": {
+      "what": "The gain class's window and clamp on two bytes that had never been asked, read off the high shelf's plateau because the low shelf's is under the band set.",
+      "plateau_db": {
+        "0": -11.74,
+        "52": -11.58,
+        "55": -8.84,
+        "58": -5.97,
+        "61": -3.03,
+        "64": 0.01,
+        "67": 3.02,
+        "70": 5.98,
+        "73": 8.89,
+        "76": 11.8,
+        "127": 11.66
+      },
+      "read_as": "A decibel a step from 52 to 76 and clamped outside it, to a tenth of a decibel over eleven settings. 0 returns what 52 returns and 127 what 76 returns."
+    }
+  }
 }
