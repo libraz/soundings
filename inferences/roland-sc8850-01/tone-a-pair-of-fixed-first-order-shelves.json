@@ -4,7 +4,7 @@
   "unit_id": "roland-sc8850-01",
   "state": "standing",
   "made_at": "2026-09-17T01:17:46.644825+00:00",
-  "made_by": "backup/is-the-shelf-the-same-shelf.py, backup/write-the-shelf-inference.py, backup/fold-in-the-shelf-on-four-more-front-halves.py, backup/fold-the-new-records-into-the-shelf-comparison-set.py, backup/fold-the-new-records-into-the-shelf-comparison-set.py, backup/re-read-the-tone-corner-through-the-corrected-shelf.py",
+  "made_by": "backup/is-the-shelf-the-same-shelf.py, backup/write-the-shelf-inference.py, backup/fold-in-the-shelf-on-four-more-front-halves.py, backup/fold-the-new-records-into-the-shelf-comparison-set.py, backup/re-read-the-tone-corner-through-the-corrected-shelf.py, backup/the-tone-corner-was-a-grid-step-not-a-precision.py",
   "rounds": 2,
   "about": {
    "scope": "unit",
@@ -22,7 +22,7 @@
    ]
   }
  },
- "claim": "The tone controls these two types carry are one pair of first-order shelves whose corners are fixed and have no byte: a low shelf at 161 Hz and a high shelf at or above 6987 Hz. The pair is the same pair on both types -- fitted to each type on its own the low corners land 0.0 octaves apart and the high ones 0.0119, and one shared pair scores each record as well as its own fit does. The section is one pole and one zero: a unit-slope second-order shelf is two to three times worse on the median of every one of the four records and three times worse at its worst, and its worst band is in the shelf's own transition every time. The gain is not fitted here at all -- it is the window the gain class closed on, twenty-five values centred on 64 that stick at both ends, and the same window that type 01 00 was read with. Six front halves carry one pair, and the corner is a range and not a number. Four further front halves were swept at the same two addresses, chosen for having nothing in common with the first two or with each other: 01 02 (a generator of harmonics with nothing summed in), 01 20 (eight all-pass sections turned down to the dry signal), 01 25 (an amplitude modulator at no depth), 02 06 (two blocks in series). The pair reproduces all four to a median of 0.160 dB or better against spans of twenty decibels and more, worst band 4.78 dB, and the second-order pair is beaten on every record the same way it was beaten before -- its best worst band anywhere in the six is 6.22 dB and it is inside the shelf's own transition every time. Three of the four carry no balance byte at all, so on those there is no direct half to park and what reached the gains is what the front half passed. **The corner is a range, and the round that closed this claim published it as a number.** Scanned over five octaves rather than refined around one grid point, every corner between 112 and 161 Hz fits the low shelf inside every record's own floor, and every corner between 6987 and 7880 Hz fits the high one: the widths run to 1.55 octaves and the narrowest is 0.52. The two corners the model carries sit inside those ranges and are kept, because nothing measured moves them and a second point estimate would be the same artefact with a different value. What the agreement between types is worth is that no type's range sits outside the others' -- which is what was being asked, and is now asked of six.",
+ "claim": "The tone controls these two types carry are one pair of first-order shelves whose corners are fixed and have no byte: a low shelf near 161 Hz and a high shelf near 6987 Hz, each of them a point inside a range these readings leave open rather than a number they resolve. The pair is the same pair on both types -- fitted to each type on its own the low corners land 0.0 octaves apart and the high ones 0.0119, and one shared pair scores each record as well as its own fit does. The section is one pole and one zero: a unit-slope second-order shelf is two to three times worse on the median of every one of the four records and three times worse at its worst, and its worst band is in the shelf's own transition every time. The gain is not fitted here at all -- it is the window the gain class closed on, twenty-five values centred on 64 that stick at both ends, and the same window that type 01 00 was read with. Six front halves carry one pair, and the corner is a range and not a number. Four further front halves were swept at the same two addresses, chosen for having nothing in common with the first two or with each other: 01 02 (a generator of harmonics with nothing summed in), 01 20 (eight all-pass sections turned down to the dry signal), 01 25 (an amplitude modulator at no depth), 02 06 (two blocks in series). The pair reproduces all four to a median of 0.160 dB or better against spans of twenty decibels and more, worst band 4.78 dB, and the second-order pair is beaten on every record the same way it was beaten before -- its best worst band anywhere in the six is 6.22 dB and it is inside the shelf's own transition every time. Three of the four carry no balance byte at all, so on those there is no direct half to park and what reached the gains is what the front half passed. **The corner is a range, and the round that closed this claim published it as a number.** Scanned over five octaves rather than refined around one grid point, every corner between 112 and 161 Hz fits the low shelf inside every record's own floor: those widths run to 1.55 octaves and the narrowest is 0.52. The high side has been read twice since -- once through a shelf whose half-gain point is where its parameter says it is, and once on a grid 25 times finer than the one that found it -- and it comes back 6872 to 7240 Hz, a band of 5.4 per cent shared by the five records whose own floors close on it. It is far narrower than it was and it is still a range. The two corners the model carries sit inside those ranges and are kept, because nothing measured moves them and a second point estimate would be the same artefact with a different value. What the agreement between types is worth is that no type's range sits outside the others' -- which is what was being asked, and is now asked of six.",
  "named": "a fixed first-order shelf pair, the part's tone control",
  "rests_on": {
   "measurements": [
@@ -466,9 +466,7 @@
   "Whether the equaliser's own shelves are this pair. They are first-order on a separate comparison of thirty-one records, which is the same section, but their corners are byte-selected and land at 118 or 217 Hz and 6.7 or 11.0 kHz -- none of them these. So what is shared is the section and not the constants.",
   "What the tone controls sit in front of or behind. Both records were taken with the rest of the chain held, and where in the chain a shelf sits is not a thing a magnitude reading of a linear chain can say.",
   "Whether the thirty-six types printing this pair that were not swept carry it. Six were read because six were swept, and they are six front halves with nothing in common -- which is what the pair belonging to the part rather than to a type would look like, and is not the same as having asked the rest.",
-  "Where the low corner is, beyond the range published here: anywhere between 112 and 161 Hz fits every record inside its own floor, and nothing in these takes narrows it. The high corner is no longer in that position -- all six records put it on one point near 6992 Hz and five of them exclude the grid points either side -- but how far inside one step of that point it sits is not read here, and a step is 6.2%.",
-  "Where the low corner is, beyond the range published here: anywhere between 112 and 161 Hz fits every record inside its own floor, and nothing in these takes narrows it. The high corner is no longer in that position -- all six records put it on one point near 6992 Hz and five of them exclude the grid points either side -- but how far inside one step of that point it sits is not read here, and a step is 6.2%.",
-  "Where the low corner is, beyond the range published here: anywhere between 112 and 161 Hz fits every record inside its own floor, and nothing in these takes narrows it. The high corner is no longer in that position -- all six records put it on one point near 6992 Hz and five of them exclude the grid points either side -- but how far inside one step of that point it sits is not read here, and a step is 6.2%."
+  "Where either corner is, beyond the ranges published here. Anywhere between 112 and 161 Hz fits the low shelf inside every record's own floor, and anywhere between 6872 and 7240 Hz fits the high one -- a band of 5.4 per cent, bounded on both sides and shared by the five of the six records that constrain it at all; the other fits every corner that was tried, its floor being three times the tightest. Nothing in these takes narrows either corner further, and on the high side it is those floors that stop it and not the grid: the scan ran a quarter of a step past where the coarse grid had already excluded, and none of the bands that close reaches the end of it. Narrowing this wants quieter takes or a reading that carries phase, not a finer grid."
  ],
  "how_well_the_corner_is_determined": {
   "what": "Every corner that fits a record as well as the best one does, scanned over five octaves and judged against that record's own floor rather than a tolerance chosen here. Reported for all six front halves, including the two this claim was originally fitted on.",
@@ -625,21 +623,21 @@
     160.6
    ],
    "high": [
-    6992.4,
-    6992.4
+    6871.6,
+    7240.3
    ]
   },
-  "what_the_first_round_said_and_why_it_is_withdrawn": "That the two types' low corners landed 0.0 octaves apart and their high corners 0.0119. Both figures are true and neither is a precision. The search that produced them scanned a grid of sixty points and then refined one step either side of the winner, so two records whose residual basin covers several grid points return the same point -- and the basin here is six tenths of an octave wide on the cleanest records and wider on the noisiest. Scanned finely the best corner moves to about a hundred and twelve hertz and about seven point nine kilohertz on all six records that can be read, including the record the published pair was fitted from, and the residual difference between there and the published corner is under every one of those records' floors. The reading is that the corner is a range; the published values are a point inside it and are left where they are.",
+  "what_the_first_round_said_and_why_it_is_withdrawn": "That the two types' low corners landed 0.0 octaves apart and their high corners 0.0119. Both figures are true and neither is a precision. The search that produced them scanned a grid of sixty points and then refined one step either side of the winner, so two records whose residual basin covers several grid points return the same point -- and the basin here is six tenths of an octave wide on the cleanest records and wider on the noisiest. Scanned finely the best corner moves to about a hundred and twelve hertz on the low side and, through the shelf as it was rendered then, to about seven point nine kilohertz on the high side, on all six records that can be read, including the record the published pair was fitted from, and the residual difference between there and the published corner is under every one of those records' floors. The reading is that the corner is a range; the published values are a point inside it and are left where they are. The high figure there is superseded twice over and is left as what was said: the shelf was corrected and the high side re-read, and then read again on a finer grid. Where it sits now is below.",
   "what_is_not_withdrawn": "That the two shelves are one pair shared across front halves, and that each is one pole and one zero. Neither rests on where inside the range the corner sits: the first rests on one pair reproducing six records taken through six unrelated front halves, and the second on a second-order pair putting its worst band inside the shelf's own transition on every one of them.",
   "re_scanned_through_the_corrected_shelf": {
    "why": "The renderer was prewarping a first-order shelf at the frequency the analogue prototype puts a factor of the root of the gain away from the corner rather than at the corner, so its half-gain point was not where its parameter said once the corner approached the model's own Nyquist. This corner is up there. The low side is exact at 161 Hz and was not re-scanned.",
    "the_high_band_was": [
-    6992.4,
-    6992.4
+    5187.2,
+    7879.5
    ],
    "the_high_band_is": [
-    6992.4,
-    6992.4
+    6871.6,
+    7240.3
    ],
    "where_each_record_now_puts_it_hz": {
     "01 42|high": 6992.4,
@@ -649,11 +647,113 @@
     "01 25|high": 6992.4,
     "02 06|high": 6992.4
    },
-   "what_the_range_became": "A grid point. Every one of the six records now puts the corner on the same point, and five of the six put every neighbouring point outside their own floor -- where before the six agreed only on a band six tenths of an octave wide. The sixth is the one whose floor is three times the others', and its band contains that point rather than disagreeing with it. So what the first round withdrew as a precision it did not have is a precision the reading now does have, and the reason it did not is that the section being scanned was not the section the model named.",
-   "and_what_this_width_is_not": "A measurement of zero. The scan walks sixty-one points over a factor of six either way, which is a step of about six per cent, so a band of one point says the corner is inside one step and not that it is known exactly. What would narrow it is the same scan on a finer grid around this point, on the record whose floor is tightest.",
+   "what_the_range_became": "A band of a few per cent, bounded on both sides and shared by every record whose own floor closes on it -- five of the six -- where before the six agreed only on a band six tenths of an octave wide that was open at the top. That is the result, and it is a large move. What was published here first was that the range had become a point, because every record put the corner on one grid point and five of the six put both neighbouring points outside their own floor. Both of those are true and neither is a precision: a band about one grid step wide lands on one point almost wherever it sits, and this band is about one step wide. The reading that says so is under `then_read_again_on_a_finer_grid`.",
    "what_does_not_move": "What the claim says about six front halves carrying one pair, and about the second-order reading, is unchanged -- the second-order shelf is refuted by more than it was.",
    "the_model_carries_hz": 6986.979260633256,
-   "grid_steps_apart": 0.013
+   "grid_steps_apart": 0.013,
+   "then_read_again_on_a_finer_grid": {
+    "what": "The same six records and the same scan, on a grid of 0.25 per cent instead of 6.15, run over one and a quarter coarse steps either side of the point the coarse scan returned. A quarter of a step past where the coarse scan had already excluded, so that a band running off the end of this grid would be visible as one.",
+    "measured_in": "Hz, and per cent for the widths",
+    "per_record": {
+     "01 42|high": {
+      "best_hz": 6923.1,
+      "best_median_abs_db": 0.04,
+      "the_floor_it_is_judged_against_db": 0.08,
+      "every_corner_that_fits_as_well_hz": [
+       6719.5,
+       7240.3
+      ],
+      "how_wide_that_is_per_cent": 7.75,
+      "it_runs_off_the_end_of_this_grid": false,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.085,
+      "the_worst_corner_on_the_grid_db": 0.125,
+      "does_the_reading_saturate": "No. Corners on this grid are outside the record's floor, so its ends are told from its middle and the band it returns is a reading."
+     },
+     "01 50|high": {
+      "best_hz": 7009.8,
+      "best_median_abs_db": 0.015,
+      "the_floor_it_is_judged_against_db": 0.035,
+      "every_corner_that_fits_as_well_hz": [
+       6871.6,
+       7276.4
+      ],
+      "how_wide_that_is_per_cent": 5.89,
+      "it_runs_off_the_end_of_this_grid": false,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.08,
+      "the_worst_corner_on_the_grid_db": 0.095,
+      "does_the_reading_saturate": "No. Corners on this grid are outside the record's floor, so its ends are told from its middle and the band it returns is a reading."
+     },
+     "01 02|high": {
+      "best_hz": 6975.0,
+      "best_median_abs_db": 0.03,
+      "the_floor_it_is_judged_against_db": 0.09,
+      "every_corner_that_fits_as_well_hz": [
+       6636.4,
+       7367.5
+      ],
+      "how_wide_that_is_per_cent": 11.02,
+      "it_runs_off_the_end_of_this_grid": false,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.08,
+      "the_worst_corner_on_the_grid_db": 0.11,
+      "does_the_reading_saturate": "No. Corners on this grid are outside the record's floor, so its ends are told from its middle and the band it returns is a reading."
+     },
+     "01 20|high": {
+      "best_hz": 6975.0,
+      "best_median_abs_db": 0.04,
+      "the_floor_it_is_judged_against_db": 0.09,
+      "every_corner_that_fits_as_well_hz": [
+       6719.5,
+       7385.9
+      ],
+      "how_wide_that_is_per_cent": 9.92,
+      "it_runs_off_the_end_of_this_grid": false,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.08,
+      "the_worst_corner_on_the_grid_db": 0.12,
+      "does_the_reading_saturate": "No. Corners on this grid are outside the record's floor, so its ends are told from its middle and the band it returns is a reading."
+     },
+     "01 25|high": {
+      "best_hz": 6992.4,
+      "best_median_abs_db": 0.03,
+      "the_floor_it_is_judged_against_db": 0.09,
+      "every_corner_that_fits_as_well_hz": [
+       6702.8,
+       7349.2
+      ],
+      "how_wide_that_is_per_cent": 9.64,
+      "it_runs_off_the_end_of_this_grid": false,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.1,
+      "the_worst_corner_on_the_grid_db": 0.13,
+      "does_the_reading_saturate": "No. Corners on this grid are outside the record's floor, so its ends are told from its middle and the band it returns is a reading."
+     },
+     "02 06|high": {
+      "best_hz": 6957.7,
+      "best_median_abs_db": 0.08,
+      "the_floor_it_is_judged_against_db": 0.25,
+      "every_corner_that_fits_as_well_hz": [
+       6489.4,
+       7534.4
+      ],
+      "how_wide_that_is_per_cent": 16.1,
+      "it_runs_off_the_end_of_this_grid": true,
+      "how_much_the_median_moves_across_the_whole_grid_db": 0.13,
+      "the_worst_corner_on_the_grid_db": 0.21,
+      "does_the_reading_saturate": "Yes. Every corner on this grid is inside the record's own floor, so the grid is narrower than what the record can tell apart and the band it returns is the grid rather than a reading."
+     }
+    },
+    "shared_hz": [
+     6871.6,
+     7240.3
+    ],
+    "how_wide_that_is_per_cent": 5.37,
+    "how_many_records_the_band_rests_on": 5,
+    "what_it_says": "Five of the six records return a band their own floor closes on both sides inside this grid, and every one of those is wider than one coarse step -- which is why the coarse grid reported a point. The remaining one fits every corner on the grid and so constrains nothing at this resolution; that is said here rather than left to stand as a wide band which happens to contain the others', and it is the record whose floor is three times the tightest. The bands that do constrain overlap, and the corner the model carries is inside the overlap.",
+    "why_the_coarse_reading_said_a_point": "Because a grid cannot report a band narrower than its own step, and it reports a band of about one step as one point. Nothing about that is specific to this corner: it is what the archive has repeatedly caught itself doing in the other direction, reading a bound off where a scan ended. The guard is the same one -- ask what the reading can resolve before saying what it resolved.",
+    "is_seven_kilohertz_inside_it": true,
+    "what_that_is_worth": "Nothing on its own. A band this wide contains every frequency in it, and seven kilohertz was named before the scan ran only so that naming it afterwards could not be a choice. What would make it evidence is a second type reading the same number off a different front half, or a rate this record measured rather than carried.",
+    "why_no_coefficient_is_offered": "The model's sample rate is carried from the classes that measured it and is not fitted here, so a corner is published in hertz. Turning it into a filter coefficient would multiply a measured frequency by an unmeasured rate and publish the product as though both were read.",
+    "why_this_is_not_a_round": "Nothing was asked of the unit, no candidate was built or scored, and no verdict moved. The model's corner did not move either, so every residual this claim publishes is the figure it published before. What changed is a statement about how well the same records determine the same number, and it changed because it was too strong.",
+    "made_by": "backup/the-tone-corner-was-a-grid-step-not-a-precision.py"
+   }
   }
  },
  "what_the_other_front_halves_returned": {
