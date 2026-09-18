@@ -1206,3 +1206,119 @@ def test_the_clock_term_is_not_a_constant_beside_the_code() -> None:
         "a default here would be one unit's measurement arriving as another's "
         "assumption, which is the one thing no stage in this repo may do"
     )
+
+
+def _q_at_the_midpoint(transfer, freq) -> tuple[float, float]:
+    """How tall a section stands and how wide it is between its half-gain points.
+
+    The width every filter cookbook defines its own width parameter at, read off a
+    rendering rather than taken from the coefficients -- so that a section reached
+    two ways is measured the same way both times.
+    """
+    db = 20 * np.log10(np.abs(transfer))
+    top = int(np.argmax(np.abs(db)))
+    half = db[top] / 2.0
+    edges = []
+    for step in (-1, 1):
+        j = top
+        while 0 < j < len(freq) - 1 and (db[j] - half) * (db[j + step] - half) > 0:
+            j += step
+        edges.append(freq[j])
+    low, high = sorted(edges)
+    return float(db[top]), float(np.sqrt(low * high) / (high - low))
+
+
+def _a_peak(freq):
+    from functools import partial
+
+    return partial(reproduce._peaking, freq, centre_hz=1250.0, q=1.0, fs=32000.0)
+
+
+def test_a_stage_that_says_nothing_about_its_gain_is_built_at_it():
+    """The path every model in the archive was written against, unchanged.
+
+    A renderer that grew a second way of reaching a section and quietly moved the
+    first onto it would restate every closed claim without anything failing.
+    """
+    freq = np.geomspace(60.0, 15000.0, 6000)
+    for gain in (-12.0, -6.0, 0.0, 6.0, 12.0):
+        direct = reproduce._peaking(freq, centre_hz=1250.0, q=1.0, gain_db=gain, fs=32000.0)
+        through = reproduce._how_the_gain_reaches({"kind": "peaking"}, _a_peak(freq), gain)
+        assert np.allclose(direct, through)
+
+
+def test_a_mixed_section_stands_where_the_byte_asked_at_every_setting():
+    """The mix is solved and not guessed.
+
+    A blend whose mix runs with the byte rather than with what the byte asks for
+    would be a different gain law as well as a different shape, and the residual
+    could not say which of the two it was reading.
+    """
+    freq = np.geomspace(60.0, 15000.0, 6000)
+    for stage in (
+        {"kind": "peaking", "reached_by": {"full_db": 12.0}},
+        {
+            "kind": "peaking",
+            "reached_by": {
+                "full_db": 12.0,
+                "cut": "towards-a-second-section-stored-at-full-cut",
+            },
+        },
+    ):
+        for gain in (-12.0, -6.0, -1.0, 1.0, 6.0, 12.0):
+            top, _ = _q_at_the_midpoint(
+                reproduce._how_the_gain_reaches(stage, _a_peak(freq), gain), freq
+            )
+            assert top == pytest.approx(gain, abs=0.02), (stage, gain, top)
+
+
+def test_the_two_ways_of_reaching_a_section_agree_at_the_ends_and_not_between():
+    """What this class is scored on, on the model side.
+
+    At the top of the byte's range the blend is the whole section and the two
+    readings are one curve; at the middle of it they are not, and by more than any
+    run's floor. A renderer that returned the same width at half gain would make
+    the class untestable while every gate went on passing.
+    """
+    freq = np.geomspace(60.0, 15000.0, 6000)
+    built = {"kind": "peaking"}
+    mixed = {"kind": "peaking", "reached_by": {"full_db": 12.0}}
+    at_full = [
+        _q_at_the_midpoint(reproduce._how_the_gain_reaches(s, _a_peak(freq), 12.0), freq)[1]
+        for s in (built, mixed)
+    ]
+    assert at_full[0] == pytest.approx(at_full[1], rel=1e-6)
+    at_half = [
+        _q_at_the_midpoint(reproduce._how_the_gain_reaches(s, _a_peak(freq), 6.0), freq)[1]
+        for s in (built, mixed)
+    ]
+    assert at_half[1] > 1.3 * at_half[0], at_half
+
+
+def test_an_inverted_cut_mirrors_its_boost_and_a_second_section_does_not():
+    """The two cut readings, which is the whole of what separates them.
+
+    Swapping a section's numerator for its denominator makes a cut the boost's
+    mirror, so its width at any setting is the width of the boost at that setting.
+    Blending towards a second section stored at full cut makes the cut wider, which
+    is the asymmetry this reading has to be able to be wrong about.
+    """
+    freq = np.geomspace(60.0, 15000.0, 6000)
+    inverted = {"kind": "peaking", "reached_by": {"full_db": 12.0}}
+    second = {
+        "kind": "peaking",
+        "reached_by": {
+            "full_db": 12.0,
+            "cut": "towards-a-second-section-stored-at-full-cut",
+        },
+    }
+    widths = {}
+    for name, stage in (("inverted", inverted), ("second", second)):
+        widths[name] = {
+            gain: _q_at_the_midpoint(
+                reproduce._how_the_gain_reaches(stage, _a_peak(freq), gain), freq
+            )[1]
+            for gain in (6.0, -6.0)
+        }
+    assert widths["inverted"][-6.0] == pytest.approx(widths["inverted"][6.0], rel=1e-3)
+    assert widths["second"][-6.0] < 0.6 * widths["second"][6.0], widths

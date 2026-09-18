@@ -47,6 +47,8 @@ a measurement; only a class whose claim is the structure itself is waiting on th
 from __future__ import annotations
 
 import json
+import math
+from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -216,6 +218,46 @@ def _peaking(freq_hz, *, centre_hz: float, q: float, gain_db: float, fs: float):
         1 + alpha / amp, -2 * cos0, 1 - alpha / amp,
         2 * np.pi * freq_hz / fs,
     )
+
+
+def _reached_by_a_mix(
+    at_full: np.ndarray, *, gain_db: float, towards_db: float, invert: bool
+) -> np.ndarray:
+    """A section built once at full scale and blended with the dry path.
+
+    The other way a byte can reach a section it has a gain over. Rather than
+    building the section at the gain asked for -- which costs a coefficient set per
+    setting, or the transcendental functions to compute one -- a part stores the
+    section at the top of its printed range and crossfades the dry path against it.
+    In coefficients that is not a crossfade at all: blending `b/a` towards 1 gives
+    `((1-m)a + m b)/a`, so what a gain change costs is three multiply-accumulates
+    over a numerator, with the denominator untouched.
+
+    The two readings agree at both ends of the byte's range and nowhere between, and
+    they are not near each other in between. A section built at half its full gain
+    keeps the width its width byte asked for; a section blended halfway towards flat
+    does not, because the point the width is defined at moves with the height while
+    the shape does not.
+
+    How the byte reaches the other side of its range is a separate reading, and
+    `invert` is which one. Inverting the blend is one coefficient swap -- numerator
+    for denominator, which is what the peaking section of every filter cookbook does
+    to turn a boost into a cut -- and it makes the cut the boost's mirror. Blending
+    towards a second section stored at full cut does not: it makes a cut of the same
+    height wider than the boost, which is the asymmetry a constant-width graphic
+    equaliser is known for.
+
+    `at_full` is the section already rendered at `towards_db`, which is the caller's
+    to choose because the two readings blend towards different sections on the cut
+    side. The mix is solved against that same section rather than against the top of
+    the range, so what comes back stands where the byte asked whichever reading it is.
+    """
+    if abs(gain_db) < 1e-9:
+        return np.ones_like(at_full, dtype=complex)
+    wanted = 10.0 ** ((abs(gain_db) if invert else gain_db) / 20.0)
+    mix = (wanted - 1.0) / (10.0 ** (towards_db / 20.0) - 1.0)
+    blended = 1.0 + mix * (at_full - 1.0)
+    return 1.0 / blended if invert and gain_db < 0 else blended
 
 
 def _allpass_chain(
@@ -425,6 +467,32 @@ def _pole_cascade(
     return _biquad(b0, b1, b2, 1 + alpha, -2 * cos0, 1 - alpha, w) ** sections
 
 
+def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
+    """One section of the chain, built the way the model says its gain reaches it.
+
+    A stage with nothing to say takes the gain into the section it is built from,
+    which is what every model in this archive did while nobody had asked. A stage
+    carrying `reached_by` says the section is stored once at full scale and the byte
+    blends it against the dry path instead, which is a different curve at every
+    setting between the ends and the same curve at both of them.
+
+    `section` is called with a gain and returns that section's transfer. Calling it
+    rather than being handed a rendering is what keeps the two readings comparable:
+    the same shelf or the same peak, built by the same code, reached two ways.
+    """
+    reach = stage.get("reached_by")
+    if reach is None:
+        return section(gain_db=gain_db)
+    full_db = float(reach["full_db"])
+    invert = reach.get("cut", "the-same-section-inverted") != (
+        "towards-a-second-section-stored-at-full-cut"
+    )
+    towards = full_db if invert else math.copysign(full_db, gain_db)
+    return _reached_by_a_mix(
+        section(gain_db=towards), gain_db=gain_db, towards_db=towards, invert=invert
+    )
+
+
 def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.ndarray:
     """The whole chain's transfer at the frequencies asked for, for one setting.
 
@@ -444,14 +512,19 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
             corner = _value(stage["corner_hz"], bytes_now)
             order = int(stage.get("order", 1))
             shelf = _first_order_shelf if order == 1 else _second_order_shelf
-            out = out * shelf(safe, side=stage["side"], corner_hz=corner, gain_db=gain_db, fs=fs)
+            out = out * _how_the_gain_reaches(
+                stage,
+                partial(shelf, safe, side=stage["side"], corner_hz=corner, fs=fs),
+                gain_db,
+            )
         elif kind == "peaking":
-            out = out * _peaking(
-                safe,
-                centre_hz=_value(stage["centre_hz"], bytes_now),
-                q=_value(stage["q"], bytes_now),
-                gain_db=_value(stage["gain_db"], bytes_now),
-                fs=fs,
+            centre = _value(stage["centre_hz"], bytes_now)
+            q = _value(stage["q"], bytes_now)
+            gain_db = _value(stage["gain_db"], bytes_now)
+            out = out * _how_the_gain_reaches(
+                stage,
+                partial(_peaking, safe, centre_hz=centre, q=q, fs=fs),
+                gain_db,
             )
         elif kind == "allpass-chain":
             returned, resonance = stage.get("feedback"), stage.get("q")
