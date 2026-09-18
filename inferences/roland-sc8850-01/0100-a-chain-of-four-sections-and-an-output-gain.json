@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-13T08:36:59.055224+00:00",
-    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py",
-    "rounds": 2,
+    "made_by": "backup/run-eq-reproduce.py, backup/write-eq-inference.py, backup/build-eq-models-from-the-tables.py, backup/add-round-three-to-the-eq-inference.py",
+    "rounds": 3,
     "about": {
       "scope": "unit",
       "types": [
@@ -26,7 +26,7 @@
       ]
     }
   },
-  "claim": "This type is a chain of four fixed filter sections and an output gain: a low shelf, two peaking sections that share one law, a high shelf. The low shelf is one pole and one zero. Each parameter byte selects from a short table rather than driving a formula -- a gain answers over twenty-five values and sticks at both ends, a corner has two states, a width has five entries and returns the first for anything past them, a centre moves in equal steps of log frequency for every eighth value of its byte.",
+  "claim": "This type is a chain of four fixed filter sections and an output gain: a low shelf, two peaking sections that share one law, a high shelf. The low shelf is one pole and one zero. Each parameter byte selects from a short table rather than driving a formula -- a gain answers over twenty-five values and sticks at both ends, a corner has two states, a width has five entries and returns the first for anything past them, a centre moves in equal steps of log frequency for every eighth value of its byte, at the named third octaves between the printed ends and at one entry that is not one of them.",
   "named": null,
   "why_not_named": "Naming it would add nothing the claim does not already say and would carry a topology this run did not test. The high shelf's order is open, and a name would close it by implication.",
   "rests_on": {
@@ -144,7 +144,7 @@
   "alternatives": [
     {
       "reading": "The high shelf is one pole and one zero, as the low one is.",
-      "candidate": "first-order-shelves-peaking-pairs",
+      "candidate": "first-order-shelves-peaking-tables-and-the-odd-entry",
       "standing": true,
       "equivalent_under_this_test": true,
       "separated_by": {
@@ -169,7 +169,13 @@
       "reading": "The width byte selects the Q values the manual prints against it.",
       "candidate": "first-order-shelves-peaking-printed-q",
       "standing": false,
-      "ruled_out_by": "It leans on six of the fourteen records that carry an effect, against none for the measured widths, and its residual is the largest of the five candidates on every record. The printed figures are about twice the measured ones, which is the size of a bandwidth-convention difference, and the unit answers to the measured ones."
+      "ruled_out_by": "It leans on 11 of the 22 records that carry an effect, against none for the winner, and its residual is the largest of the eight candidates on every record that carries one. Since this was first written the width byte has a class of its own and the printed figures were scored against every record of this type that sweeps one: they give seven times the winner's residual there and are refuted by the width the unit puts over half its peak, which is forty-nine bands where the printed figures render thirty."
+    },
+    {
+      "reading": "The third entry of the centre table is a third octave like the other fifteen, and what the runs read there is something about the reading rather than about the table.",
+      "candidate": "first-order-shelves-peaking-tables",
+      "standing": false,
+      "ruled_out_by": "The chain carrying 315 Hz there breaks down at the setting that selects it -- 6.57 dB, a share of 0.527 of that record's span -- and every record whose residual leans is a record that sweeps across it. The chain carrying 279 does neither, and the two differ in nothing else. The entry is two bands of this reading below the series against the half band it resolves, five settings across the type's two mid addresses return it, and the same section inside two combination types returns it as well. What is not settled is why, and that is a different sentence."
     }
   ],
   "the_cut_that_is_not_the_boost": {
@@ -180,7 +186,7 @@
     "what_would_settle_it": "The same mirrored pairs at the three widths not yet asked, and on a centre away from the middle of the band set. Whether the asymmetry is a constant, a function of the width, or a rounding is not read yet, and the pairs that are inside a quarter of a decibel bound it to something small over most of the byte."
   },
   "reproduces": {
-    "model": "inferences/models/0100-low-first-high-second-order-shelves.json",
+    "model": "inferences/models/0100-first-order-shelves-peaking-tables-and-the-odd-entry.json",
     "compared_against": {
       "records": [
         "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges-in-twelfths.json",
@@ -421,8 +427,8 @@
       "worst": 0.0382,
       "unit": "share of the span the effect commands in that record",
       "worst_at": null,
-      "structured": true,
-      "why": "Of the 22 records that carry an effect, 2 have a residual that leans across their settings or their bands by more than the run's own floor: 01-00-07-the-entry-that-is-not-printed-in-twelfths.json, 01-00-0A-the-entry-that-is-not-printed-in-twelfths.json. The records whose residual leans and whose profile the band set did not contain are counted apart -- what leans there is the bound the model's corner was transcribed from and not the model, and the record says so itself."
+      "structured": false,
+      "why": "Of the 22 records that carry an effect, none has a residual that leans across its settings or its bands by more than the run's own floor. Two do not level off inside the band set and are counted apart, as they were before: what leans there is the bound a corner was transcribed from and not the model, and each record says so itself."
     },
     "breaks_down_at": {
       "where": [
@@ -2904,8 +2910,40 @@
         "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
       },
       "power": {
-        "passed": false,
+        "passed": true,
         "ranking": [
+          {
+            "candidate": "first-order-shelves-peaking-tables-and-the-odd-entry",
+            "model": "inferences/models/0100-first-order-shelves-peaking-tables-and-the-odd-entry.json",
+            "mean_share_of_span": 0.012,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 31,
+            "leaning_records": 0,
+            "leaning_on": [],
+            "records_the_run_did_not_reach": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json",
+              "01-00-08-the-width-at-the-bottom-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "first-order-shelves-peaking-tables",
+            "model": "inferences/models/0100-first-order-shelves-peaking-tables.json",
+            "mean_share_of_span": 0.012,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 31,
+            "leaning_records": 3,
+            "leaning_on": [
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json"
+            ],
+            "records_the_run_did_not_reach": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json",
+              "01-00-08-the-width-at-the-bottom-in-twelfths.json"
+            ]
+          },
           {
             "candidate": "low-first-high-second-order-shelves",
             "model": "inferences/models/0100-low-first-high-second-order-shelves.json",
@@ -2933,6 +2971,25 @@
             "leaning_records": 2,
             "leaning_on": [
               "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json"
+            ],
+            "records_the_run_did_not_reach": [
+              "01-00-05-where-the-eq-hinges-in-twelfths.json",
+              "01-00-08-the-width-at-the-bottom-in-twelfths.json"
+            ]
+          },
+          {
+            "candidate": "second-order-shelves-peaking-tables",
+            "model": "inferences/models/0100-second-order-shelves-peaking-tables.json",
+            "mean_share_of_span": 0.0133,
+            "worst_share_of_span": 0.0382,
+            "worst_point_share": 0.75,
+            "records_scored": 31,
+            "leaning_records": 4,
+            "leaning_on": [
+              "01-00-03-where-the-eq-hinges-in-twelfths.json",
+              "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+              "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
               "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json"
             ],
             "records_the_run_did_not_reach": [
@@ -3003,46 +3060,15 @@
             ]
           }
         ],
-        "decoy": "first-order-shelves-peaking-pairs",
-        "beaten_by": null,
+        "decoy": "first-order-shelves-peaking-tables",
+        "beaten_by": "leaning where the winner does not",
         "separation": 0.011,
         "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
       },
       "breakdown": {
-        "passed": false,
-        "breaks_down_at": [
-          {
-            "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
-            "at": {
-              "value": 23,
-              "hz": 374.6
-            },
-            "residual": 9.19,
-            "share_of_span": 0.7
-          },
-          {
-            "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
-            "at": {
-              "value": 4,
-              "hz": 166.9
-            },
-            "residual": 6.65,
-            "share_of_span": 0.526
-          },
-          {
-            "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
-            "at": {
-              "value": 0,
-              "hz": 166.9
-            },
-            "residual": 6.64,
-            "share_of_span": 0.533
-          }
-        ],
-        "leaning_records": [
-          "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
-          "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json"
-        ],
+        "passed": true,
+        "breaks_down_at": null,
+        "leaning_records": null,
         "records_the_run_did_not_reach": [
           {
             "record": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges-in-twelfths.json",
@@ -3058,7 +3084,7 @@
         "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
       }
     },
-    "verdict": "breaks_down"
+    "verdict": "reproduces"
   },
   "refuted_by": "A setting of any of the eleven bytes whose band profile the chain cannot produce at all -- a second peak, an asymmetric one, a corner that moves with the gain applied through it. Or a byte turning out to answer at values the tables here say are repeats: the widths at 5 and above, the centres between multiples of eight, the gains outside 52 to 76.",
   "what_it_would_change": [],
@@ -3067,6 +3093,55 @@
     "The high shelf's order, and with it its asymptotic gain and its corner as a value rather than a bound.",
     "Whether the sections combine as the chain says. Every reading was taken with one byte away from its centre.",
     "Phase. The archive holds phase records for this type below 1 kHz and this run compared band energies only.",
-    "Whether the same eleven bytes behave this way on any other unit, or under the MSB 04 composite types that print the same rows."
-  ]
+    "Whether the same eleven bytes behave this way on any other unit, or under the MSB 04 composite types that print the same rows.",
+    "Why one entry of the centre table is not a third octave. The chain reproduces with it and breaks down without it, on five settings across two addresses and on two more types, so it is the unit's and not the reading's. What produced it is not read here and this model carries it as a figure rather than as a law."
+  ],
+  "the_round_that_took_the_identified_tables_in": {
+    "what_moved": "The two mid centres and the two mid widths. They were curves fitted to this type's own records and they are now the tables their own parameter classes identified: the named third octaves between the printed ends indexed by the byte's top four bits, and the five printed widths halved. Nothing else in the chain changed -- the shelves, the gain window, the corner states and the output level are the same numbers as before.",
+    "why_it_was_not_done_earlier": "Neither byte had a class when this type was first scored. A readout is what a model may carry while its quantity is unidentified, and it was published as one rather than dressed as a law. What a readout cannot do is come out wrong, which is why the fitted numbers passed every gate they could fail while sitting a sixth of an octave from the table at the bottom of the range.",
+    "what_it_cost_before": {
+      "broke_down_at": [
+        {
+          "record": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+          "residual_db": 9.19,
+          "now": "gone"
+        },
+        {
+          "record": "data/units/roland-sc8850-01/efx-bands/01-00-08-the-width-at-the-bottom-in-twelfths.json",
+          "residual_db": 6.65,
+          "now": "2.03, and no longer a breakdown"
+        },
+        {
+          "record": "data/units/roland-sc8850-01/efx-bands/01-00-0A-the-entry-that-is-not-printed-in-twelfths.json",
+          "residual_db": 6.64,
+          "now": "gone at the setting it was read at, and the same record broke down instead at the setting that selects the entry the series misses"
+        }
+      ],
+      "read_as": "Two of the three worst points were the fitted centre and not the chain. The fit that produced them is pulled towards the longer flank of a peak and the peaks at the bottom of the table are two octaves wide, so the error was largest exactly where the table is easiest to check -- and it was invisible while the model and the record carried the same number."
+    },
+    "what_the_one_entry_buys": {
+      "with_it": {
+        "candidate": "first-order-shelves-peaking-tables-and-the-odd-entry",
+        "leaning_records": 0,
+        "mean_share_of_span": 0.012
+      },
+      "without_it": {
+        "candidate": "first-order-shelves-peaking-tables",
+        "leaning_records": 3,
+        "leaning_on": [
+          "01-00-07-the-entry-that-is-not-printed-in-twelfths.json",
+          "01-00-07-the-table-read-narrow-one-wider-in-twelfths.json",
+          "01-00-0A-the-entry-that-is-not-printed-in-twelfths.json"
+        ],
+        "mean_share_of_span": 0.012
+      },
+      "read_as": "The two chains differ in one number out of every number in them: the third entry of the centre table, 279.1 Hz against the named third octave's 315. The residual barely moves -- that entry is eight of a hundred and twenty-eight settings -- and the breakdown gate turns over, because every record whose residual leaned is a record that sweeps across that entry. A residual meaned over a type is nearly blind to one entry of one table, and the gate that is not is the one that decides.",
+      "and_what_it_does_not_buy": "It does not make the entry understood. Fifteen entries of this table could have come out wrong and did not; the sixteenth is read off a record and could not have. The frequency class holds it open and publishes it as a readout, and this chain carries the readout with the entry named rather than folding it into the series and calling the series right."
+    },
+    "the_decoy_this_time": {
+      "candidate": "first-order-shelves-peaking-tables",
+      "beaten_by": "leaning where the winner does not",
+      "why_it_is_the_right_one": "The runner-up is this same chain without the one entry, which is the strongest competitor there is: it is not a different reading of the type, it is the reading with the one thing this round added taken back out. A decoy that differed in the shelves or in the widths would have been beaten on something this round did not change."
+    }
+  }
 }
