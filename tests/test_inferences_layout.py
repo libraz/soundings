@@ -232,6 +232,57 @@ def test_no_claim_has_run_past_its_rounds():
         )
 
 
+def _prose_lists(node, path: str):
+    """Every list in a claim that holds prose, with where in the claim it sits."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _prose_lists(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        # Below about thirty characters a repeated string is a value -- an address,
+        # a verdict, a byte -- and a list repeating one of those is ordinary.
+        if any(isinstance(x, str) and len(x) > 30 for x in node):
+            yield path, node
+        for index, value in enumerate(node):
+            yield from _prose_lists(value, f"{path}[{index}]")
+
+
+@pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
+def test_a_claim_does_not_say_the_same_thing_twice(path: Path):
+    """What a round script that ran twice leaves behind, and it leaves it silently.
+
+    A round edits a published claim in place: it appends its name to `made_by`,
+    appends what it raised to `what_this_does_not_settle`, and rewrites the
+    figures it moved. Rewriting twice lands on the same value and nothing shows.
+    Appending twice does not, and it had happened four times here before anything
+    looked -- one claim carrying the same open item three times, and one carrying
+    a round's three scripts five times each.
+
+    The cost is not tidiness. An open item printed three times is a reader being
+    told three times that the same thing is unsettled, and a count of what is open
+    that is wrong by two; a name twice in the provenance says a script ran twice
+    and not what it did.
+    """
+    claim = inferences.load(path)
+
+    names = [
+        name.strip()
+        for name in (claim["inference"].get("made_by") or "").split(",")
+        if name.strip()
+    ]
+    assert len(set(names)) == len(names), (
+        f"{path.name} names a script more than once in `made_by`. A round script is "
+        "not idempotent unless it drops its own entries before writing them again."
+    )
+
+    for where, items in _prose_lists(claim, ""):
+        strings = [x for x in items if isinstance(x, str)]
+        if len(strings) != len(items):
+            continue
+        assert len(set(strings)) == len(strings), (
+            f"{path.name} holds the same entry more than once in {where or 'the claim'}"
+        )
+
+
 def test_the_listing_is_the_files():
     for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
         listing = json.loads((HERE / unit / "index.json").read_text())
