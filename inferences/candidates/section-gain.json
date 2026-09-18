@@ -1,6 +1,6 @@
 {
   "class": "section-gain",
-  "what_the_class_is": "Not where a filter section sits or how wide it is, but how the byte that says how far up or down it goes reaches it. Every model in this archive has assumed one answer without asking: that the section is built at the gain the byte names. There is a second answer the era has better reasons for, and the two agree at both ends of the byte's range and nowhere between -- which is why nothing noticed. Four slots of the standalone equaliser take such a byte and one of them was read at every setting it has.",
+  "what_the_class_is": "Not where a filter section sits or how wide it is, but how the byte that says how far up or down it goes reaches it. Every model in this archive has assumed one answer without asking: that the section is built at the gain the byte names. The others cost less and the era has better reasons for them, and all of them agree at both ends of the byte's range and nowhere between -- which is why nothing noticed. Four slots of the standalone equaliser take such a byte, two over peaking sections and two over shelves, and one of each was read at every setting it has. The two kinds of section did not answer the same way, so the class carries a claim for each and the difference between them is a finding rather than an inconsistency.",
 
   "era": {
     "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
@@ -8,6 +8,7 @@
       "Building a section at an arbitrary gain is the expensive answer and it is expensive twice over. The coefficients want a sine and a square root of the gain, which the control processor would rather not run on every parameter change; storing them instead costs a coefficient set per setting, and a gain that answers over twenty-five values is twenty-five sets per entry of the tables beside it.",
       "Blending one stored section against the dry path is the cheap answer, and in coefficients it is not a blend at all. Mixing `b/a` towards unity gives `((1-m)a + m b)/a`: the denominator never moves and the numerator is three multiply-accumulates between two stored rows. One section per entry of the frequency and width tables, one multiplier per setting of the gain.",
       "A cut is a coefficient swap. The peaking section every filter cookbook of the period prints turns a boost into a cut by exchanging its numerator and its denominator, so a part that has the boost has the cut for nothing and does not store a second section for it. The alternative -- a second stored section at full cut, blended towards -- is what a constant-width graphic equaliser does, and it is the reason those are known for cutting narrower than they boost.",
+      "Which end of the range the one stored section sits at is a second question and not a spelling of the first. Blending `b/a` towards `a/a` moves the numerator and leaves the denominator alone; blending it towards `b/b` moves the denominator and leaves the numerator alone. Both are three multiply-accumulates between two stored rows, both stand where the byte asked, both make the two halves of the byte mirrors of each other, and both are the whole section at the ends -- and in between they are two decibels apart on a section of twelve. Nothing in the cost argues for either, so what decides it is what else the part already has: a first order low shelf cut is a high shelf boost to within a constant, so a part storing one shelf row for both shelves has the end it stores chosen for it by the other shelf.",
       "The gain law and the path are separate questions. What the byte asks for is a decibel a step over a window of twenty-five values, which is measured and closed; how what it asks for reaches the section is this one. A blend solved against the section it blends towards asks for the same decibels either way."
     ],
     "would_be_wrong_if": "The section at half its full gain had the width its width byte asks for, read at a resolution the run can tell apart -- which is what it would have if the section were built at the gain."
@@ -20,7 +21,8 @@
       "predicts": {
         "the_width_at_half_gain": "The width the width byte asks for, the same at every setting of the gain.",
         "the_shape_at_the_ends": "The same as every other candidate: at full gain all of them are one section.",
-        "the_residual_against_a_fine_gain_sweep": "Flat in the gain. A model of this shape is as right at six decibels as at twelve."
+        "the_residual_against_a_fine_gain_sweep": "Flat in the gain. A model of this shape is as right at six decibels as at twelve.",
+        "where_a_shelf_has_fallen_by_half": "Nearly still. The octaves from a band inside a shelf's plateau to where the shelf is half of what it is there move by about a tenth across the whole window, because a one-pole shelf's pole and zero part by the gain and the shape between them barely changes."
       }
     },
     {
@@ -29,7 +31,8 @@
       "predicts": {
         "the_width_at_half_gain": "Narrower than the width byte asks for, by about forty per cent on a peak at half of twelve decibels -- because the half-gain points the width is defined at move inwards as the peak shrinks while the stored shape does not.",
         "the_shape_at_the_ends": "As above, and at the byte's centre too: the blend is nothing there.",
-        "the_residual_against_a_fine_gain_sweep": "Nothing at both ends and at the centre, and largest between them, which is a shape no monotone lean test sees."
+        "the_residual_against_a_fine_gain_sweep": "Nothing at both ends and at the centre, and largest between them, which is a shape no monotone lean test sees.",
+        "where_a_shelf_has_fallen_by_half": "Much sooner as the shelf shrinks -- half an octave nearer the anchor by the middle of the window, because the stored shape is fixed in amplitude and the half point of a smaller shelf sits further up its own flank."
       }
     },
     {
@@ -38,7 +41,18 @@
       "predicts": {
         "the_width_at_half_gain": "Narrower on the boost side exactly as above, and wider on the cut side -- half the boost's width at six decibels down.",
         "the_shape_at_the_ends": "The same as the others again.",
-        "the_residual_against_a_fine_gain_sweep": "The same hump on the boost side and a larger one of the opposite sense on the cut side, so the two blends are told apart by a cut and not by a boost."
+        "the_residual_against_a_fine_gain_sweep": "The same hump on the boost side and a larger one of the opposite sense on the cut side, so the two blends are told apart by a cut and not by a boost.",
+        "where_a_shelf_has_fallen_by_half": "The boost side as the blend above, and the cut side as the one below: this candidate is each of the two single-section readings on one half of the byte, which is what makes it the one to beat on either half alone."
+      }
+    },
+    {
+      "id": "mixed-with-the-dry-path-in-the-denominator",
+      "what": "The same blend with the one stored section at the bottom of the printed range rather than the top, so the near side of the byte is the cut and the far side is that inverted. In coefficients the three multiply-accumulates move from the numerator to the denominator and nothing else changes.",
+      "predicts": {
+        "the_width_at_half_gain": "Wider than the width byte asks for by about as much as the blend above is narrower, and the same on the boost and the cut.",
+        "the_shape_at_the_ends": "The same as the others: at the ends of the range every candidate here is the one section.",
+        "the_residual_against_a_fine_gain_sweep": "The same hump as the blend above and of the opposite sense, which is why no residual and no lean test tells the two apart and a shape has to.",
+        "where_a_shelf_has_fallen_by_half": "Further out as the shelf shrinks -- half an octave further by the middle of the window, and by the same amount on the boost and the cut."
       }
     }
   ],
@@ -49,6 +63,8 @@
     "Whether the same path serves a stage that is not a filter. A balance, a level and a send all have a byte that says how far up something goes and none of them has a section for it to reach.",
     "What happens past the window. Every candidate here inherits the clamp, which was measured fifty steps out on two types."
   ],
+
+  "what_the_reading_has_to_be": "One reading per kind of section, and a peak's is not a shelf's. On a peak it is the width -- how many bands of the set the feature stands over half its own height in. On a shelf that same count counts up from the bottom of the band set, because a shelf has no far side, so what is read instead is where the shelf has fallen to half of what it is at a band inside its own plateau. Anchored on a band and not on the plateau: at the top of the window the low shelf is still climbing at the bottom band, so a figure taken as a fraction of a plateau would be a fraction of a number the run does not hold at one setting and does hold at another. Both readings go through the same count on the unit's profile and on every rendering, and both are stated before a candidate is scored.",
 
   "note": "The reading that separates these is the width of the feature at a gain in the middle of the window, and it is nearly free: the archive already holds a gain byte swept at every one of the thirty-three values between the window's ends and four steps past each of them. What it costs is asking the residual a question it has not been asked, because a residual meaned over a record is smallest where the candidates differ most -- the settings in the middle of a gain window are the settings whose profile is smallest, so they carry the least of the record's own span."
 }

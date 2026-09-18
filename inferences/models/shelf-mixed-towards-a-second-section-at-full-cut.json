@@ -1,13 +1,13 @@
 {
   "model": {
     "schema_version": 1,
-    "id": "mixed-with-the-dry-path",
+    "id": "shelf-mixed-towards-a-second-section-at-full-cut",
     "class": "section-gain",
-    "candidate": "mixed-with-the-dry-path",
+    "candidate": "mixed-towards-a-second-section-at-full-cut",
     "unit_id": "roland-sc8850-01",
     "type": "01 00",
     "kind": "lti",
-    "made_by": "backup/build-section-gain-models.py"
+    "made_by": "backup/build-shelf-gain-models.py"
   },
   "sample_rate_hz": 32000,
   "why_this_rate": "The unit's own output ends between sixteen and eighteen kilohertz, measured: thirty-two decibels over silence at sixteen, sixteen at seventeen, nothing at eighteen. A chain running at thirty-two kilohertz ends exactly there. The rate is part of the candidate rather than a constant, so a reading above the half-rate is dropped by name instead of being answered with a number the model never said.",
@@ -39,6 +39,12 @@
           "from": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
           "why": "The byte answers over a window of twenty-five values centred on 64 and sticks at both ends. Read at every value between 48 and 80: 52 and below return the same cut and 76 and above the same boost."
         }
+      },
+      "reached_by": {
+        "full_db": 12.0,
+        "stored_at": "full-boost",
+        "the_other_side": "a-second-section-stored-at-the-other-end",
+        "why": "The same blend with a second shelf stored at full cut for the other side of the byte rather than the boost inverted. A shelf is two rows a corner state, so storing the cut costs little and the argument that ruled this out for a peak -- eighty rows doubled -- does not reach it here."
       }
     },
     {
@@ -196,6 +202,12 @@
           "from": "data/units/roland-sc8850-01/efx-bands/01-00-04-how-much-is-twelve-db-fine-in-twelfths.json",
           "why": "The byte answers over a window of twenty-five values centred on 64 and sticks at both ends. Read at every value between 48 and 80: 52 and below return the same cut and 76 and above the same boost."
         }
+      },
+      "reached_by": {
+        "full_db": 12.0,
+        "stored_at": "full-boost",
+        "the_other_side": "a-second-section-stored-at-the-other-end",
+        "why": "The same blend with a second shelf stored at full cut for the other side of the byte rather than the boost inverted. A shelf is two rows a corner state, so storing the cut costs little and the argument that ruled this out for a peak -- eighty rows doubled -- does not reach it here."
       }
     },
     {
@@ -697,6 +709,6 @@
     }
   ],
   "the_second_mid_is_not_measured_separately": "M2's centre and width were asked at three settings each and returned M1's figures to the printed digit, so the two mids share one map here. Three settings is what asking whether they answer alike costs; it is not a second reading of the curve.",
-  "what_varies": "Whether the two peaking sections are built at the gain their bytes name or stored once at full scale and blended against the dry path. The shelves build at their gain in every candidate here, and every table, corner, window and level in the chain is the one the type's own claim closed on.",
-  "rendered_through": "The equaliser, because it is the type whose gain bytes the archive has swept at every setting between the ends of their window. The claim being tested is about how a gain reaches a section and not about the equaliser; the other types that carry one of these sections are not scored here."
+  "what_varies": "Whether the two shelves are built at the gain their bytes name or stored once at full scale and blended against the dry path. Both mid sections are blended in every candidate here, which is what their own class closed on, and every table, corner, window and level is the one the type's claim closed on.",
+  "rendered_through": "The equaliser's low shelf, because its gain byte is the only shelf gain in the archive swept at every setting between the ends of its window. The high shelf's records are scored too and separate nothing: they hold three settings and two of them are the window's ends, where all three candidates are one section."
 }

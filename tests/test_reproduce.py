@@ -1261,9 +1261,10 @@ def test_a_mixed_section_stands_where_the_byte_asked_at_every_setting():
             "kind": "peaking",
             "reached_by": {
                 "full_db": 12.0,
-                "cut": "towards-a-second-section-stored-at-full-cut",
+                "the_other_side": "a-second-section-stored-at-the-other-end",
             },
         },
+        {"kind": "peaking", "reached_by": {"full_db": 12.0, "stored_at": "full-cut"}},
     ):
         for gain in (-12.0, -6.0, -1.0, 1.0, 6.0, 12.0):
             top, _ = _q_at_the_midpoint(
@@ -1300,8 +1301,8 @@ def test_an_inverted_cut_mirrors_its_boost_and_a_second_section_does_not():
 
     Swapping a section's numerator for its denominator makes a cut the boost's
     mirror, so its width at any setting is the width of the boost at that setting.
-    Blending towards a second section stored at full cut makes the cut wider, which
-    is the asymmetry this reading has to be able to be wrong about.
+    Blending towards a second section stored at the other end does not: it makes the
+    cut wider, which is the asymmetry this reading has to be able to be wrong about.
     """
     freq = np.geomspace(60.0, 15000.0, 6000)
     inverted = {"kind": "peaking", "reached_by": {"full_db": 12.0}}
@@ -1309,7 +1310,7 @@ def test_an_inverted_cut_mirrors_its_boost_and_a_second_section_does_not():
         "kind": "peaking",
         "reached_by": {
             "full_db": 12.0,
-            "cut": "towards-a-second-section-stored-at-full-cut",
+            "the_other_side": "a-second-section-stored-at-the-other-end",
         },
     }
     widths = {}
@@ -1322,3 +1323,34 @@ def test_an_inverted_cut_mirrors_its_boost_and_a_second_section_does_not():
         }
     assert widths["inverted"][-6.0] == pytest.approx(widths["inverted"][6.0], rel=1e-3)
     assert widths["second"][-6.0] < 0.6 * widths["second"][6.0], widths
+
+
+def test_which_end_the_stored_section_sits_at_is_a_third_curve():
+    """Which end the stored section sits at is a reading and not a spelling.
+
+    Storing the cut and inverting for the boost costs the same three multiply-
+    accumulates as storing the boost and inverting for the cut. Both stand where the
+    byte asked, both make the two halves of the byte mirrors of each other, and both
+    are the whole section at the ends of the range -- so nothing separates them
+    except the shape in between, where they are nearly two decibels apart on a
+    section of twelve. A renderer that ignored the field would make the two readings
+    one curve and the class would close on whichever was written first.
+    """
+    freq = np.geomspace(60.0, 15000.0, 6000)
+    boost_end = {"kind": "peaking", "reached_by": {"full_db": 12.0}}
+    cut_end = {"kind": "peaking", "reached_by": {"full_db": 12.0, "stored_at": "full-cut"}}
+    for stage in (boost_end, cut_end):
+        for gain in (12.0, 6.0, 3.0):
+            up = reproduce._how_the_gain_reaches(stage, _a_peak(freq), gain)
+            down = reproduce._how_the_gain_reaches(stage, _a_peak(freq), -gain)
+            assert np.allclose(up, 1.0 / down, rtol=1e-9), (stage, gain)
+    apart = {}
+    for gain in (12.0, 6.0, -6.0):
+        said = [
+            20.0 * np.log10(np.abs(reproduce._how_the_gain_reaches(s, _a_peak(freq), gain)))
+            for s in (boost_end, cut_end)
+        ]
+        apart[gain] = float(np.abs(said[0] - said[1]).max())
+    assert apart[12.0] == pytest.approx(0.0, abs=1e-9)
+    assert apart[6.0] > 1.5
+    assert apart[-6.0] == pytest.approx(apart[6.0], rel=1e-6)

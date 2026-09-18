@@ -221,7 +221,7 @@ def _peaking(freq_hz, *, centre_hz: float, q: float, gain_db: float, fs: float):
 
 
 def _reached_by_a_mix(
-    at_full: np.ndarray, *, gain_db: float, towards_db: float, invert: bool
+    at_full: np.ndarray, *, gain_db: float, towards_db: float, mirrored: bool
 ) -> np.ndarray:
     """A section built once at full scale and blended with the dry path.
 
@@ -240,24 +240,32 @@ def _reached_by_a_mix(
     the shape does not.
 
     How the byte reaches the other side of its range is a separate reading, and
-    `invert` is which one. Inverting the blend is one coefficient swap -- numerator
-    for denominator, which is what the peaking section of every filter cookbook does
-    to turn a boost into a cut -- and it makes the cut the boost's mirror. Blending
-    towards a second section stored at full cut does not: it makes a cut of the same
-    height wider than the boost, which is the asymmetry a constant-width graphic
-    equaliser is known for.
+    `mirrored` says this setting is on it. Inverting the blend is one coefficient
+    swap -- numerator for denominator, which is what the peaking section of every
+    filter cookbook does to turn a boost into a cut -- and it makes the far side the
+    near side's mirror. Blending towards a second section stored at the other end
+    does not: it makes a cut of the same height wider than the boost, which is the
+    asymmetry a constant-width graphic equaliser is known for.
+
+    Which end the stored section sits at is the caller's to say, and it is not a
+    detail of the same reading. Storing the boost blends `b/a` towards `a/a`, which
+    moves the numerator and leaves the denominator alone; storing the cut blends the
+    denominator and leaves the numerator alone. Both cost three multiply-accumulates
+    between two stored rows, both stand where the byte asked, and between the ends
+    of the range they are not the same curve -- so a part can be measured to do one
+    rather than the other.
 
     `at_full` is the section already rendered at `towards_db`, which is the caller's
-    to choose because the two readings blend towards different sections on the cut
-    side. The mix is solved against that same section rather than against the top of
-    the range, so what comes back stands where the byte asked whichever reading it is.
+    to choose for the same reason. The mix is solved against that same section rather
+    than against the top of the range, so what comes back stands where the byte asked
+    whichever reading it is.
     """
     if abs(gain_db) < 1e-9:
         return np.ones_like(at_full, dtype=complex)
-    wanted = 10.0 ** ((abs(gain_db) if invert else gain_db) / 20.0)
+    wanted = 10.0 ** ((-gain_db if mirrored else gain_db) / 20.0)
     mix = (wanted - 1.0) / (10.0 ** (towards_db / 20.0) - 1.0)
     blended = 1.0 + mix * (at_full - 1.0)
-    return 1.0 / blended if invert and gain_db < 0 else blended
+    return 1.0 / blended if mirrored else blended
 
 
 def _allpass_chain(
@@ -479,17 +487,27 @@ def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
     `section` is called with a gain and returns that section's transfer. Calling it
     rather than being handed a rendering is what keeps the two readings comparable:
     the same shelf or the same peak, built by the same code, reached two ways.
+
+    `stored_at` is which end of the byte's range the one stored section sits at, and
+    a model that does not say takes the boost. It is not a spelling of the same
+    reading: the near side of the range is the blend and the far side is whatever
+    `the_other_side` says, so moving the stored section moves which half of the byte
+    is which. A second section stored at the other end makes both sides near, and
+    then which end the first one sat at says nothing.
     """
     reach = stage.get("reached_by")
     if reach is None:
         return section(gain_db=gain_db)
     full_db = float(reach["full_db"])
-    invert = reach.get("cut", "the-same-section-inverted") != (
-        "towards-a-second-section-stored-at-full-cut"
-    )
-    towards = full_db if invert else math.copysign(full_db, gain_db)
+    stored = -full_db if reach.get("stored_at") == "full-cut" else full_db
+    if reach.get("the_other_side", "the-same-section-inverted") == (
+        "a-second-section-stored-at-the-other-end"
+    ):
+        towards, mirrored = math.copysign(full_db, gain_db), False
+    else:
+        towards, mirrored = stored, gain_db * stored < 0
     return _reached_by_a_mix(
-        section(gain_db=towards), gain_db=gain_db, towards_db=towards, invert=invert
+        section(gain_db=towards), gain_db=gain_db, towards_db=towards, mirrored=mirrored
     )
 
 
