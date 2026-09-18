@@ -1,0 +1,122 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/the-switch-beside-a-phaser",
+      "--type",
+      "11 07",
+      "--slot",
+      "40 03 11",
+      "--setting",
+      "held-16-400311-(?P<value>\\d+)-w30",
+      "--settled",
+      "30.0",
+      "--held",
+      "40 03 13=00",
+      "--held",
+      "40 03 15=7F",
+      "--held",
+      "40 03 0B=00",
+      "--held",
+      "40 03 0F=7F",
+      "--held",
+      "40 03 0D=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-rate/11-07-11-the-same-setting-after-thirty-seconds.json"
+    ],
+    "measured_at": "2026-09-18T23:13:29+00:00",
+    "elapsed_s": 0.5,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "11 07",
+  "address": "40 03 11",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "channel": {
+    "read": 3,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -75.8,
+      -51.9,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "held": [
+    {
+      "address": "40 03 13",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 15",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 0B",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 0F",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 0D",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/the-switch-beside-a-phaser",
+  "manifest": {
+    "lists": 9,
+    "files_present": 9,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    64
+  ],
+  "readings": [
+    {
+      "value": 64,
+      "rate_hz": 9.9435,
+      "agreeing": 4,
+      "of": 4,
+      "rates": [
+        9.9468,
+        9.9421,
+        9.942,
+        9.9448
+      ],
+      "heard_db": -52.5,
+      "slowest_measurable_hz": 0.301,
+      "hold_s": 8.045,
+      "take": "held-16-400311-064-w30-00.wav",
+      "settled_s": 30.0,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 8,
+    "settings": [
+      "400311-000-w10",
+      "400311-001-w10",
+      "400311-032-w10",
+      "400311-063-w10",
+      "400311-064-w10",
+      "400311-065-w10",
+      "400311-096-w10",
+      "400311-127-w10"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}
