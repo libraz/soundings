@@ -4,14 +4,35 @@ This is the only place in the repository that derives. What it produces goes
 under `inferences/`, never under `data/`, and it exists because a structure that
 cannot be checked against the unit is a structure nobody should publish.
 
-**Waveforms are not compared and cannot be.** Two recordings of the same setting
-drift apart by tens of parts per million over a take, and the coherence between
-them has fallen to a tenth by four kilohertz. So the model is not held against
-the unit's audio; it is held against the quantities the archive publishes, read
-out of the model by the same code that read them out of the unit. The reader's
-own bias then sits on both sides of the subtraction and cancels -- which matters,
-because that bias has already been measured and is the same to four decimal
-places across types.
+**A band profile is the reading, and a waveform is the reading it cannot make.**
+Every figure the gates below are computed on is band energy: the model is rendered
+and then measured exactly as the unit was, so the reader's own bias sits on both
+sides of the subtraction and cancels. That bias has been measured and is the same
+to four decimal places across types, which is what makes the cancellation worth
+having. What band energy has none of is phase, so a section of the wrong order, a
+chain in the wrong order, and a gain that reaches a section by a route the model
+does not have are all invisible to it as long as they land on the same curve.
+
+**Which waveforms can be subtracted is a measured question, not a closed one.** It
+was written here that they cannot be, and that is right for the stimulus the band
+records were taken on and wrong in general. Two takes of the eight-second noise
+voice those records use, aligned and level fitted against each other, leave a tenth
+of a decibel below the take -- a subtraction that achieves nothing, because the
+voice has no phase to repeat. A struck note is a different fact: the `repeat` stage
+reads this unit at fifty-five decibels down, two above its own noise floor, and it
+still does through a static effect. Through a modulated one it does not, because a
+note-on does not reset the modulator: the same measurement comes back fifty-nine
+decibels above the floor.
+
+So a model of a type that does not modulate can be applied to a flat take, aligned
+to a swept take and subtracted, and the residual carries the phase. Three things
+decide whether the number means anything, and all three have been wrong here once:
+the stimulus has to repeat (octaves struck together beat, and their floor moves
+thirty decibels between settings), the alignment has to reach a fraction of a
+sample (half a sample is thirty-seven degrees at ten kilohertz, and reading with
+whole samples put the floor at thirty decibels instead of fifty-five), and the
+floor has to be divided by the same take as the reading (read against the flat take
+instead, a setting eight decibels louder comes back eight decibels better for it).
 
 **The residual is a detector, not a target.** Once the gates below are passed,
 whether it is one decibel or half of one changes no verdict, and driving it down
@@ -157,12 +178,30 @@ def _first_order_shelf(freq_hz, *, side: str, corner_hz: float, gain_db: float, 
     convenience: a shelf parameterised at its 3 dB point and a measurement taken
     at its half-gain point disagree by a factor that grows with the gain, and the
     disagreement would land in the residual looking like a structural error.
+
+    **The half-gain point has to be placed after the bilinear transform, not
+    before it.** The analogue prototype puts it a factor of the square root of the
+    gain away from the section's own corner, so the shifted frequency is what used
+    to be prewarped -- and prewarping it puts the half point where the tangent
+    sends it rather than where it was asked for. Below a tenth of the rate the two
+    agree to thousandths. On a thirty-two kilohertz chain they do not: asked for a
+    twelve decibel shelf half way up at eleven kilohertz, the section returned
+    9.9 dB there instead of 6.0, and at fourteen kilohertz 12.0 instead of 6.0 --
+    a shelf already at its full height where it should have been at half. The cut
+    and the boost also stopped being each other's inverse, by 2.2 dB at eleven
+    kilohertz and 8.7 at fourteen, which is a property no shelf has.
+
+    Prewarping the corner itself and shifting afterwards puts the half-gain point
+    exactly on the corner at every frequency below Nyquist, and returns the cut and
+    the boost to exact inverses. The cookbook shelf next door was already exact
+    this way, so the two orders were being compared on unequal terms -- which is
+    the comparison the equaliser's standing alternative is about.
     """
     g = 10.0 ** (gain_db / 20.0)
     if abs(gain_db) < 1e-9:
         return np.ones_like(freq_hz, dtype=complex)
-    a = 2 * np.pi * corner_hz / np.sqrt(g) if side == "low" else 2 * np.pi * corner_hz * np.sqrt(g)
-    k = np.tan(np.pi * (a / (2 * np.pi)) / fs)
+    k = np.tan(np.pi * corner_hz / fs)
+    k = k / np.sqrt(g) if side == "low" else k * np.sqrt(g)
     inv = 1.0 / k
     if side == "low":
         b0, b1 = inv + g, g - inv
@@ -918,6 +957,142 @@ def score_against_bands(
         "bands_hz": centres,
         "readings_left_out": left_out,
         "rows": rows,
+    }
+
+
+# ------------------------------------------------------------- a chain against a wave
+
+
+def band_limited(wave: np.ndarray, rate: int, ceiling_hz: float) -> np.ndarray:
+    """One take with everything the model does not speak for taken out of it.
+
+    A model declares its own rate and has no response above half of it. Leaving
+    that band in charges the model for a part of the take it never claimed, and
+    cutting it out of one side only charges it for the cut.
+    """
+    spectrum = np.fft.rfft(wave)
+    spectrum[np.fft.rfftfreq(wave.size, 1.0 / rate) >= ceiling_hz] = 0.0
+    return np.fft.irfft(spectrum, n=wave.size)
+
+
+def subtracted(target: np.ndarray, offered: np.ndarray) -> dict:
+    """What is left of `target` once `offered` is aligned to it and level fitted.
+
+    **The alignment has to reach a fraction of a sample.** Two takes of one setting
+    are struck a few milliseconds apart, and a whole-sample lag leaves up to half a
+    sample behind. Half a sample at forty-eight kilohertz is a thirty-seven degree
+    phase error at ten kilohertz, and subtracting two waves thirty-seven degrees
+    apart leaves six tenths of the amplitude standing -- so read with whole samples
+    this unit's own repeat floor comes back at thirty decibels where interpolating
+    reads it at fifty-five. The limit was the reading, not the unit.
+
+    So the cross correlation's peak is interpolated and the shift applied as a ramp
+    on the phase, which is exact for a band-limited take. One gain follows it, and
+    both are returned: a model needing a different level from every other setting
+    is saying something, and so is one needing a different delay.
+    """
+    size = 1 << int(np.ceil(np.log2(target.size + offered.size)))
+    cross = np.fft.irfft(
+        np.fft.rfft(target, size) * np.conj(np.fft.rfft(offered, size)), size
+    )
+    peak = int(np.argmax(np.abs(cross)))
+    before, here, after = cross[peak - 1], cross[peak], cross[(peak + 1) % size]
+    curve = before - 2.0 * here + after
+    fraction = 0.0 if curve == 0 else float(
+        np.clip(0.5 * (before - after) / curve, -0.5, 0.5)
+    )
+    lag = (peak - size if peak > size // 2 else peak) + fraction
+    turns = np.fft.rfftfreq(size)
+    shifted = np.fft.irfft(
+        np.fft.rfft(offered, size) * np.exp(-2j * np.pi * turns * lag), size
+    )[: target.size]
+    power = float(np.dot(shifted, shifted))
+    gain = float(np.dot(target, shifted)) / power if power > 0 else 0.0
+    left = target - gain * shifted
+    rms = np.sqrt(np.mean(left**2)) / np.sqrt(np.mean(target**2))
+    return {
+        "residual_db": round(float(20 * np.log10(max(rms, 1e-12))), 2),
+        "lag_samples": round(lag, 3),
+        "level_fit_db": round(float(20 * np.log10(max(abs(gain), 1e-12))), 3),
+    }
+
+
+def score_against_waves(
+    model: dict,
+    *,
+    flat: np.ndarray,
+    swept: list[np.ndarray],
+    rate: int,
+    bytes_now: dict[str, int],
+    bytes_flat: dict[str, int],
+) -> dict:
+    """One setting of one type, answered by the model in the domain that has phase.
+
+    The band profile this module's other scorers work on is magnitude and nothing
+    else. Here the model is applied to a flat take as a complex response, the result
+    is aligned to a take of the swept setting and subtracted, and what is left is
+    reported against two numbers that bound it.
+
+    * `floor_db` -- the setting's own two takes subtracted from each other. No model
+      can go below it, and it is the setting's own takes rather than the flat ones
+      because a residual is reported against what it is a residual of: read against
+      the flat take, a setting eight decibels louder comes back eight decibels better
+      for having been louder.
+    * `doing_nothing_db` -- the flat take against the swept one, unfiltered. The whole
+      of what the setting did, and the span the model has to remove. A run where this
+      sits at the floor is a run where the setting did nothing the take can see, and
+      it carries no reading whatever the model scores.
+
+    `magnitude_only_db` repeats the subtraction with the response stripped to its
+    magnitude. Nobody proposes that as a candidate: it is the most a band reading
+    could ever have constrained, so the gap between it and `model_db` is the part of
+    this comparison the published readings could not have made.
+
+    **This applies to a type that does not modulate, on a stimulus that repeats.**
+    A note-on does not reset a modulator, so a take through one does not repeat and
+    neither will any model of it; and the eight-second noise voice the band records
+    use has no phase to repeat even with the effect switched out. The caller has to
+    bring takes that clear their own floor, which is why the floor is returned beside
+    every figure rather than checked here and thrown away.
+    """
+    ceiling = float(model["sample_rate_hz"]) / 2.0
+    spectrum = np.fft.rfft(flat)
+    freq = np.fft.rfftfreq(flat.size, 1.0 / rate)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = response(model, bytes_now, freq) / response(model, bytes_flat, freq)
+    ratio = np.nan_to_num(ratio, nan=0.0, posinf=0.0, neginf=0.0)
+
+    cut = partial(band_limited, rate=rate, ceiling_hz=ceiling)
+    plain = cut(flat)
+    made = cut(np.fft.irfft(spectrum * ratio, n=flat.size))
+    flattened = cut(np.fft.irfft(spectrum * np.abs(ratio).astype(complex), n=flat.size))
+    wet = [cut(one) for one in swept]
+
+    floor = subtracted(wet[0], wet[1])["residual_db"] if len(wet) > 1 else float("nan")
+    rows = [
+        {
+            "doing_nothing_db": subtracted(one, plain)["residual_db"],
+            "magnitude_only_db": subtracted(one, flattened)["residual_db"],
+            **subtracted(one, made),
+        }
+        for one in wet
+    ]
+    mean = {
+        key: round(float(np.mean([row[key] for row in rows])), 2)
+        for key in ("residual_db", "doing_nothing_db", "magnitude_only_db")
+    }
+    return {
+        "floor_db": round(float(floor), 2),
+        "doing_nothing_db": mean["doing_nothing_db"],
+        "model_db": mean["residual_db"],
+        "magnitude_only_db": mean["magnitude_only_db"],
+        "removed_db": round(mean["residual_db"] - mean["doing_nothing_db"], 2),
+        "over_the_floor_db": round(mean["residual_db"] - float(floor), 2),
+        "what_the_phase_was_worth_db": round(
+            mean["magnitude_only_db"] - mean["residual_db"], 2
+        ),
+        "ceiling_hz": ceiling,
+        "takes": rows,
     }
 
 
