@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-19T16:27:56+00:00",
-    "made_by": "backup/does-a-combinations-flanger-loop-around-its-own-delay.py, backup/read-the-combinations-flanger-comb.py, backup/write-the-combinations-flanger-inference.py",
-    "rounds": 1,
+    "made_by": "backup/does-a-combinations-flanger-loop-around-its-own-delay.py, backup/read-the-combinations-flanger-comb.py, backup/write-the-combinations-flanger-inference.py, backup/what-rate-a-series-combinations-flanger-runs-at.py, backup/which-held-byte-doubles-the-parallel-flangers-rate.py, backup/which-held-byte-the-doubling-needs.py, backup/what-the-flangers-loop-does-to-its-own-rate.py, backup/add-round-two-to-the-combinations-flanger-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -19,7 +19,7 @@
       ]
     }
   },
-  "claim": "The delay a type prints `FL Dly` against and the loop it prints `FL Fb` against are, in both types that print them inside a larger chain, the delay and the loop of the stereo flanger that stands alone. Read as a comb at two settings of the delay byte and on both signs of the loop, all four readings of each type return the single type's figures exactly: 0.618 ms at a delay byte of 6 and 1.318 ms at 13 with the loop in phase, 0.624 and 1.296 with it inverted. That holds where the chorus runs into the flanger and where it sits beside it, so neither arrangement carries a delay line of its own. The teeth are 22.58 dB deep at the shallowest against the 16.05 dB the deepest of these records asks of one, and each profile scores as a comb of that spacing by at least 1.55 times what the same profile scores read on the other sign -- which is the control a filter sitting somewhere cannot imitate, since a peak scores the same either way.",
+  "claim": "The delay a type prints `FL Dly` against and the loop it prints `FL Fb` against are, in both types that print them inside a larger chain, the delay and the loop of the stereo flanger that stands alone. Read as a comb at two settings of the delay byte and on both signs of the loop, all four readings of each type return the single type's figures exactly: 0.618 ms at a delay byte of 6 and 1.318 ms at 13 with the loop in phase, 0.624 and 1.296 with it inverted. That holds where the chorus runs into the flanger and where it sits beside it, so neither arrangement carries a delay line of its own. The teeth are 22.58 dB deep at the shallowest against the 16.05 dB the deepest of these records asks of one, and each profile scores as a comb of that spacing by at least 1.55 times what the same profile scores read on the other sign -- which is the control a filter sitting somewhere cannot imitate, since a peak scores the same either way. The modulator behind that delay is the single type's too, on the type the chorus runs into it. Its rate byte returns a table over ten settings whose four published ones are the single flanger's to four figures -- 1.6499 against 1.65, 4.9994 against 4.9993, 6.1007 against 6.0974, 9.9991 against 9.9986 Hz -- and the settings between them fall on the same line. Its depth byte buys the single flanger's excursion at every setting either run reads, to within 1.71 per cent against the 0.42 per cent one setting taken twice repeats to. On the type the chorus sits beside, the modulator is not read here: the reading that returns a rate picks a period out of an autocorrelation, and on that type the frequency series of a partial stands taller at twice the rate than at it.",
   "named": null,
   "adds": "The single type's claim says the byte is a loop and says what it is around. It says that on one type. These two print the same pair of bytes at the same addresses over the same printed ranges, and nothing structural had been read on either of them -- the only claims naming them were the two that run across every type, about what a parameter powers up holding and about what happens to a byte its page prints no state for. What is added is that the stage a combination names after another type is that type's stage, read on the one quantity a delay line cannot fake: where its comb sits.",
   "rests_on": {
@@ -955,6 +955,411 @@
           ]
         ],
         "why": "The single type, at the longer of the two delay settings. This is the prediction the two combinations were held against, and it is cited so that a republication of it makes this claim stale rather than leaving it standing."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/02-0B-09-the-flanger-rate-table-inside-the-series-combination.json",
+        "keys": [
+          "settings_asked",
+          "held",
+          "why_held",
+          "readings[value=32].rate_hz",
+          "readings[value=32].agreeing",
+          "readings[value=99].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          [
+            4,
+            8,
+            12,
+            16,
+            19,
+            24,
+            32,
+            99,
+            110,
+            127
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+          1.6499,
+          4,
+          4.9994,
+          6.1007,
+          9.9991
+        ],
+        "why": "The rate table one combination's flanger returns, and the single type's own, so the two are one comparison."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-23-06-which-rate-table-005to100.json",
+        "keys": [
+          "settings_asked",
+          "held",
+          "readings[value=32].rate_hz",
+          "readings[value=99].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          [
+            32,
+            99,
+            110,
+            127
+          ],
+          [],
+          1.65,
+          4.9993,
+          6.0974,
+          9.9986
+        ],
+        "why": "The rate table one combination's flanger returns, and the single type's own, so the two are one comparison."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/vibrato/02-0B-0A-what-a-depth-byte-is-worth-near-the-printed-pre-delay.json",
+        "keys": [
+          "by_setting.held-16 at 016",
+          "by_setting.held-16 at 064",
+          "by_setting.held-16 at 127",
+          "searched_hz",
+          "control"
+        ],
+        "values": [
+          [
+            {
+              "rate_hz": 0.995,
+              "depth_cents": 12.96,
+              "f0_hz": 440.09,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1670,
+              "frames_below_floor": 12,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.59,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 61.02,
+              "f0_hz": 439.924,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1669,
+              "frames_below_floor": 13,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.51,
+              "notes": []
+            },
+            {
+              "rate_hz": 0.995,
+              "depth_cents": 61.18,
+              "f0_hz": 439.872,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1669,
+              "frames_below_floor": 13,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.59,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 147.07,
+              "f0_hz": 439.537,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1668,
+              "frames_below_floor": 14,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.45,
+              "notes": []
+            }
+          ],
+          [
+            0.5,
+            15.0
+          ],
+          {
+            "injected_rate_hz": 5.3,
+            "depths_tried_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "depths_recovered_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "shallowest_recovered_cents": 3.0,
+            "why": "A modulation the tracker cannot recover from a take it was put into by hand is not evidence that the unit applied none, and nothing in the output separates the two. So every run puts a known modulation into one of its own takes and reports which depths came back. It bounds the run in both directions and neither alone: a null is worth reading only over the depths the control recovered, and a rate found at a depth shallower than the shallowest of those is a fit the tracker was never shown able to make on this material."
+          }
+        ],
+        "why": "What the depth byte buys as a pitch excursion, read the way the single types' were and searched over the same band."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/vibrato/02-0B-0A-what-a-depth-byte-is-worth-well-clear-of-the-floor.json",
+        "keys": [
+          "by_setting.held-16 at 016",
+          "by_setting.held-16 at 064",
+          "by_setting.held-16 at 127",
+          "searched_hz",
+          "control"
+        ],
+        "values": [
+          [
+            {
+              "rate_hz": 0.995,
+              "depth_cents": 13.12,
+              "f0_hz": 440.079,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1670,
+              "frames_below_floor": 12,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.51,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 60.66,
+              "f0_hz": 439.915,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1669,
+              "frames_below_floor": 13,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.58,
+              "notes": []
+            },
+            {
+              "rate_hz": 0.995,
+              "depth_cents": 60.61,
+              "f0_hz": 439.949,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1668,
+              "frames_below_floor": 14,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.51,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 146.21,
+              "f0_hz": 439.651,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1667,
+              "frames_below_floor": 15,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.54,
+              "notes": []
+            }
+          ],
+          [
+            0.5,
+            15.0
+          ],
+          {
+            "injected_rate_hz": 5.3,
+            "depths_tried_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "depths_recovered_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "shallowest_recovered_cents": 3.0,
+            "why": "A modulation the tracker cannot recover from a take it was put into by hand is not evidence that the unit applied none, and nothing in the output separates the two. So every run puts a known modulation into one of its own takes and reports which depths came back. It bounds the run in both directions and neither alone: a null is worth reading only over the depths the control recovered, and a rate found at a depth shallower than the shallowest of those is a fit the tracker was never shown able to make on this material."
+          }
+        ],
+        "why": "What the depth byte buys as a pitch excursion, read the way the single types' were and searched over the same band."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-well-clear-of-the-floor.json",
+        "keys": [
+          "by_setting.held-16 at 016",
+          "by_setting.held-16 at 064",
+          "by_setting.held-16 at 127",
+          "searched_hz",
+          "control"
+        ],
+        "values": [
+          [
+            {
+              "rate_hz": 0.995,
+              "depth_cents": 12.9,
+              "f0_hz": 440.079,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1670,
+              "frames_below_floor": 12,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.49,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 60.98,
+              "f0_hz": 439.908,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1669,
+              "frames_below_floor": 13,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.52,
+              "notes": []
+            },
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 61.24,
+              "f0_hz": 439.814,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1669,
+              "frames_below_floor": 13,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.52,
+              "notes": []
+            }
+          ],
+          [
+            {
+              "rate_hz": 0.994,
+              "depth_cents": 147.05,
+              "f0_hz": 438.905,
+              "searched_hz": [
+                0.5,
+                15.0
+              ],
+              "tracked_frames": 1667,
+              "frames_below_floor": 15,
+              "frames_without_pitch": 0,
+              "noise_floor_db": -110.54,
+              "notes": []
+            }
+          ],
+          [
+            0.5,
+            15.0
+          ],
+          {
+            "injected_rate_hz": 5.3,
+            "depths_tried_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "depths_recovered_cents": [
+              100.0,
+              50.0,
+              25.0,
+              12.0,
+              6.0,
+              3.0
+            ],
+            "shallowest_recovered_cents": 3.0,
+            "why": "A modulation the tracker cannot recover from a take it was put into by hand is not evidence that the unit applied none, and nothing in the output separates the two. So every run puts a known modulation into one of its own takes and reports which depths came back. It bounds the run in both directions and neither alone: a null is worth reading only over the depths the control recovered, and a rate found at a depth shallower than the shallowest of those is a fit the tracker was never shown able to make on this material."
+          }
+        ],
+        "why": "What the depth byte buys as a pitch excursion, read the way the single types' were and searched over the same band."
       }
     ],
     "document_rows": [
@@ -1002,7 +1407,7 @@
       "ruled_out_by": "They return the single type's figures, not a third pair. There is nothing left for this reading to be about."
     },
     {
-      "reading": "The flanger halves agree on where the comb sits and differ somewhere this run does not look -- in the modulator, in the balance, or in the output stage.",
+      "reading": "The half named inside `11 02` agrees on where the comb sits and differs somewhere -- in the modulator, in the balance, or in the output stage. On `02 0B` this is answered for the modulator and the alternative no longer reaches it.",
       "standing": true,
       "equivalent_under_this_test": false,
       "ruled_out_by": null,
@@ -1012,20 +1417,19 @@
           "one stage throughout": "the combination's depth byte buys the single flanger's excursion at every setting",
           "the same delay under a different modulator": "the excursions differ by more than either repeats to"
         },
-        "sensitivity_here": "The single types' depth runs repeat to 2.74 per cent and the flanger and the chorus differ there by a ratio from 1.316 to 1.501, so the reading separates two modulators by two orders of magnitude more than it repeats to.",
+        "sensitivity_here": "The single types' depth runs repeat to 2.74 per cent and the flanger and the chorus differ there by a ratio from 1.316 to 1.501, so the reading separates two modulators by two orders of magnitude more than it repeats to. The rate the two sides are read at has to be established from the height of the frequency series at a named frequency rather than from the period a picker returns: the two differ by an octave on this type.",
         "margin": 48,
         "why_not_separable": null,
         "run": {
           "stage": "vibrato",
           "types": [
-            "02 0B",
             "11 02"
           ],
           "addresses": [
             "40 03 0A"
           ],
-          "minutes": 25,
-          "why": "The depth byte of each combination's flanger half, read as a pitch excursion the way both single types' were. That reading is what separated the flanger's modulator from the chorus's on the types that stand alone, and it is the same question here one level down: a stage that shares a delay may still be driven by a modulator of its own. It is asked at the pre-delay the comb here was read at, so the two readings are of one configuration."
+          "minutes": 20,
+          "why": "The depth byte of the flanger half named inside the type the chorus sits beside, read as a pitch excursion the way both single types' were. On the other combination that reading answered and the alternative no longer reaches it, so only this type is asked. Two things the first attempt got wrong are fixed in the asking. It is not asked at the pre-delay the comb was read at: the single types' own depth run had already shown that setting clamps, the deepest settings driving the sweep past the bottom of the delay they sweep around, so it is asked at the two the single types' published excursions were read at. And the rate the two sides are compared at cannot be chosen from a period picked out of an autocorrelation, because on this type the frequency series stands taller at twice the rate than at it and a byte chosen that way put the comparison at two rates an octave apart while reporting them as one."
         }
       }
     }
@@ -1278,5 +1682,12 @@
     }
   ],
   "why_this_is_not_a_round_of_the_single_types_claim": "The claim it tests has had three rounds, which is where this project parks one so that a single type cannot absorb the work. And what is claimed here is about two other types: a finding about `02 0B` and `11 02` filed under a file named after `01 23` is a finding nobody looking for those two would find.",
-  "the_reading_was_corrected_before_this_was_scored": "The bar a tooth has to clear is three times the spread across the run's own repeats of one setting, which is the record's own `floor_db`. It was being taken from the bypass control instead. The two are the same size on the single type -- 3.14 dB against 1.37 -- and they are not on a type whose effect-alone path sits far from its dry one, where the control stands 20.38 dB off while the repeats stand 3.71, and teeth 26 dB deep were being refused by it. A bar that tightens as the effect gets louder is backwards. The correction moved nothing the single type's claim quotes: it returns the same two delays, and two settings it had refused now read and return them as well."
+  "the_reading_was_corrected_before_this_was_scored": "The bar a tooth has to clear is three times the spread across the run's own repeats of one setting, which is the record's own `floor_db`. It was being taken from the bypass control instead. The two are the same size on the single type -- 3.14 dB against 1.37 -- and they are not on a type whose effect-alone path sits far from its dry one, where the control stands 20.38 dB off while the repeats stand 3.71, and teeth 26 dB deep were being refused by it. A bar that tightens as the effect gets louder is backwards. The correction moved nothing the single type's claim quotes: it returns the same two delays, and two settings it had refused now read and return them as well.",
+  "the_round_that_read_the_modulators": {
+    "what_was_asked": "Whether the modulator driving each combination's flanger delay is the single type's, which is the half of round one's standing alternative a rate and a depth can reach.",
+    "what_came_back_on_the_series_type": "The rate table over ten settings, monotonic from 0.4482 Hz at a byte of 8 to 9.9991 at 127, with four partials of four agreeing at eight of the ten. The four settings the single flanger's table is published at agree to four figures. The depth byte buys the single flanger's excursion at every setting either run reads.",
+    "what_came_back_on_the_parallel_type": "Nothing this claim can carry. A run of this project read the same slot of that type at twice the published figures at every setting both types carry, and the published record of the slot -- taken with nothing else written -- returns the single flanger's figures with four partials of four agreeing. Both cannot be readings of one thing.",
+    "why_the_doubled_reading_was_not_published": "It was bisected to one byte and then to the reading. Adding each part of the held block to the bare type one at a time doubled nothing; leaving each part out of the whole block returned the single flanger's line only when the flanger's feedback byte was the part left out. Swept across that byte the slot returns four values and no others -- a third of the single type's figure, a half of it, it, and twice it -- which is a period picker landing on a multiple rather than a rate moving. The height of the frequency series at each of those four frequencies says which: on the parallel type the second harmonic is the tallest at eleven of twelve settings of that byte and the fundamental is present at all twelve, while on the series type the fundamental is the tallest at ten of twelve.",
+    "why_two_readings_agreeing_was_not_a_check": "The level of a partial and its instantaneous frequency are two quantities, and they agreed on the doubled figure on both channels of the interface. They are not two readings: both are handed to one period picker, so a multiple that wins for one wins for the other. A reading is corroborated by a second reading and not by a second input to the first."
+  }
 }
