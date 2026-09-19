@@ -161,6 +161,50 @@ def test_a_pair_withdrawn_for_naming_an_unprinted_value_says_that_and_not_silenc
     assert "silent" not in row["why_asked_again"]
 
 
+def test_a_pair_the_run_refused_says_so_rather_than_naming_a_verdict_it_never_took(
+    tmp_path,
+) -> None:
+    """A refused pair is the absence of a verdict, not a verdict to disbelieve.
+
+    The other reasons a row is asked again all describe a reading that cannot be
+    trusted, and each of their sentences says what the reading would have been
+    taken for. A refused run took no reading at all, and putting one of those on
+    it would have the record say the run found something it never looked at.
+    """
+    refused = _record("40 03 03", audible=False, shape=False, level=False)
+    refused["refused"] = {
+        "why": "Something was sounding before the note",
+        "measured": {"asked_for_dbfs": -60.0, "loudest_lead_in_dbfs": -52.7},
+    }
+    _write(tmp_path, "first.json", refused)
+    again = tmp_path / "again.json"
+    again.write_text(json.dumps(_record("40 03 03", audible=True, shape=True, level=False)))
+    control = tmp_path / "control.json"
+    control.write_text(json.dumps(_record("40 42 22", audible=True, shape=True, level=True)))
+    found = efxparams.read_directory(
+        tmp_path,
+        "04 02",
+        [7],
+        control,
+        [],
+        supersede={"40 03 03": str(again)},
+        # The pair is outside this parameter's printed values too, and that is the
+        # reason the row would have carried before a refusal had one of its own.
+        printed={"40 03 03": "0F-71"},
+        slots=["40 03 03"],
+    )
+    row = found["parameters"][0]
+    assert row["why_asked_again"] == efxparams.WHY_THE_TAKES_HAD_NO_FLOOR
+    assert "not printed as having" not in row["why_asked_again"]
+    # What the first takes were refused for is readable nowhere else once the
+    # record that carried it has been replaced.
+    assert row["withdrawn_pair"]["refused"]["measured"]["loudest_lead_in_dbfs"] == -52.7
+    # And the slot is answered rather than still outstanding, which is the whole
+    # point of asking it again.
+    assert found["coverage"]["refused"] == []
+    assert found["coverage"]["answered"] == 1
+
+
 def test_the_record_carries_its_control_and_its_limits(tmp_path) -> None:
     """A run of nulls is readable only beside the thing that proves it could have found one."""
     _write(tmp_path, "a.json", _record("40 03 03", audible=False, shape=False, level=False))

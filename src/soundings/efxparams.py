@@ -67,6 +67,20 @@ WHY_SILENT_PAIR = (
     "again at a pair where both settings sound."
 )
 
+#: An address whose first pair the run would not answer, because the takes had no
+#: silence in front of the note to be judged against.
+WHY_THE_TAKES_HAD_NO_FLOOR = (
+    "The run would not answer this pair. At one of its settings the take carried no silence "
+    "before the note, so the noise floor -- the yardstick every number here is judged against "
+    "-- was the parameter's own output, and nothing measured from those takes would have meant "
+    "anything. The refusal beside this names the tail of the take before it as the cause; the "
+    "takes do not bear that out. A tail falls take over take and these are flat across every "
+    "take of the run, with the first one silent and every one after it at the same level. What "
+    "does not stop is what the parameter is: a delay at either end of its feedback range loses "
+    "a sixth of a decibel per repeat, and a hum at its own level does not decay at all. Asked "
+    "again at a pair whose settings die away between takes."
+)
+
 #: An address whose pair named a value the page gives its parameter none of.
 WHY_OUTSIDE_ITS_PRINTED_VALUES = (
     "The pair was the two ends of what this address was measured to accept, and this address "
@@ -599,19 +613,33 @@ def read_directory(
         record, withdrawn = found[address], None
         if address in supersede:
             # Why the first pair was withdrawn is read off that pair rather than
-            # assumed. Three things send an address round again and they are not
-            # the same finding: a setting that left the part silent, a setting the
-            # page gives the parameter none of, and a pair whose two values are one
-            # setting of it. Naming one of them for all three would put the wrong
-            # reason on the row, and the reason is the whole of what a withdrawn
-            # pair carries.
-            if asked_outside_its_printed_values(record, printed.get(address)):
+            # assumed. Four things send an address round again and they are not
+            # the same finding: a pair the run would not answer at all, a setting
+            # that left the part silent, a setting the page gives the parameter
+            # none of, and a pair whose two values are one setting of it. Naming
+            # one of them for all four would put the wrong reason on the row, and
+            # the reason is the whole of what a withdrawn pair carries.
+            #
+            # The refusal comes first because it is the one that says the pair was
+            # never read. The others describe a verdict that cannot be believed;
+            # this one is the absence of a verdict, and a row saying the pair was
+            # outside its printed values implies a null that was never taken.
+            if record.get("refused"):
+                why_again = WHY_THE_TAKES_HAD_NO_FLOOR
+            elif asked_outside_its_printed_values(record, printed.get(address)):
                 why_again = WHY_OUTSIDE_ITS_PRINTED_VALUES
             elif asked_at_one_setting(record, settings.get(address)):
                 why_again = WHY_ASKED_AT_ONE_SETTING
             else:
                 why_again = WHY_SILENT_PAIR
             withdrawn = {"values": record["values"], "why": why_again}
+            # The refusal's own measurement travels with the row it was withdrawn
+            # from. Superseding replaces the record, so what the first takes were
+            # refused for is otherwise readable nowhere: the published file would
+            # show a parameter asked twice and nothing about the first attempt
+            # beyond the pair.
+            if record.get("refused"):
+                withdrawn["refused"] = record["refused"]
             record = json.loads(Path(supersede[address]).read_text())
         # A refused run holds no takes to read a verdict out of, so it cannot
         # become a row. It is not missing either, and the difference is the
