@@ -173,6 +173,83 @@ def test_a_block_measured_to_be_a_window_is_not_counted_as_one_left_to_ask(tmp_p
     assert stages["offsets and shapes"]["verdict"] != completion.UNMET
 
 
+def test_a_block_a_later_offsets_run_asked_is_not_reported_as_never_asked(tmp_path) -> None:
+    """The stage files more than one record, and the count is over all of them.
+
+    The first run sweeps what the map held and a later one asks the blocks it
+    skipped. Read off the first record's own total, every block the later one
+    reached comes back as unasked -- work that is already done, in a figure that
+    decides whether the unit is finished.
+    """
+    _write(
+        tmp_path,
+        "sweep/whole-map.json",
+        {
+            "complete": True,
+            "trustworthy": True,
+            # Two kinds, so neither block can stand for the other and each has
+            # to be reached by the record that asked it.
+            "regions": _regions(("40 11", [2]), ("40 12", [4])),
+        },
+    )
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 11", ["00"])))
+    _write(tmp_path, "offsets/the-rest.json", _offsets(("40 12", ["00"])))
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["offsets and shapes"]["verdict"] != completion.UNMET, (
+        "the second record's block was counted as never asked"
+    )
+
+
+def test_a_block_asked_at_some_offsets_is_not_a_block_asked_at_every_offset(
+    tmp_path,
+) -> None:
+    """A run that asked the offsets a document names has not asked the block.
+
+    The two are one row apart in the same directory and only one of them carries
+    a shape, so counting them together would report a unit as covered by runs
+    that never put the question the stage exists to put.
+    """
+    _write(
+        tmp_path,
+        "sweep/whole-map.json",
+        {
+            "complete": True,
+            "trustworthy": True,
+            "regions": _regions(("40 11", [2]), ("40 12", [4])),
+        },
+    )
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 11", ["00"])))
+    partial = _offsets(("40 12", ["00"]))
+    partial["blocks"][0]["offsets_asked"] = 3
+    _write(tmp_path, "offsets/documented-only.json", partial)
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["offsets and shapes"]["verdict"] == completion.UNMET
+    short = stages["offsets and shapes"]["remaining"]
+    assert list(short["kinds with no block asked at every offset"]) == ["40 12, sizes [4]"]
+
+
+def test_a_kind_repeated_across_blocks_is_one_representative_and_not_sixteen(
+    tmp_path,
+) -> None:
+    """The bar is one block of each kind, which is what the stages around it count.
+
+    Sixteen parts are sixteen copies of one thing, and a bar over blocks reports
+    fifteen pieces of work that would each measure what the first one measured.
+    It would also keep a unit short of finished for declining to sweep a block no
+    document gives a function to, which is what the scope here says not to ask.
+    """
+    blocks = [(f"40 4{n:X}", [2]) for n in range(16)]
+    _write(
+        tmp_path,
+        "sweep/whole-map.json",
+        {"complete": True, "trustworthy": True, "regions": _regions(*blocks)},
+    )
+    _write(tmp_path, "offsets/whole-map.json", _offsets(("40 40", ["00"])))
+    stages = {s["stage"]: s for s in completion.survey(tmp_path)["stages"]}
+    assert stages["offsets and shapes"]["verdict"] != completion.UNMET
+    assert "all 1 kinds" in stages["offsets and shapes"]["evidence"]
+
+
 def test_an_offsets_run_that_lost_the_unit_does_not_stand_as_coverage(tmp_path) -> None:
     record = _offsets(("40 11", ["00"]))
     record["stopped"] = "the canary stopped answering"

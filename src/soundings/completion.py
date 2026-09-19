@@ -268,7 +268,23 @@ def _representatives(shapes: dict[tuple, list[str]]) -> dict[str, tuple]:
 
 
 def offsets_and_shapes(unit: Path) -> Stage:
-    """Every offset of every block asked, and the shapes those answers fall into."""
+    """One block of every kind the map holds, asked at every offset.
+
+    Counted over kinds and not over blocks, which is the reading the stages
+    around it already use. An address space repeats: on the unit this was settled
+    against, thirty-one of the blocks the map holds are one kind, and a bar over
+    blocks reports thirty-one pieces of work where there is one representative
+    and a fold. The figure would then move when a machine has more parts rather
+    than when more is known about it, and it would keep a unit short of finished
+    for declining to sweep a block its documents give no function to -- which the
+    scope this repository works to says not to ask.
+
+    The kind is the one the sweep's own region sizes give, not the one the
+    answers fall into. The shapes below are what a block's offsets turn out to
+    hold, so nothing has them until it has been asked, and a bar folded by them
+    could not say what was left to do. What the map holds before anything is
+    asked is a length, and that is what a representative is picked by.
+    """
     name = "offsets and shapes"
     found = _load(unit, f"offsets/{WHOLE_MAP}")
     if found is None:
@@ -292,27 +308,47 @@ def offsets_and_shapes(unit: Path) -> Stage:
         if finding.get("kind") == "blocks-that-are-a-window"
         for top in finding.get("blocks", [])
     }
-    want = len(
-        {
-            " ".join(r["address"].split()[:2])
-            for r in (mapped or {}).get("regions", [])
-            if r["address"].split()[0] not in windows
-        }
-    )
-    got = found.get("blocks_asked", 0)
+    want = {
+        " ".join(r["address"].split()[:2])
+        for r in (mapped or {}).get("regions", [])
+        if r["address"].split()[0] not in windows
+    }
+    # Asked over every offsets record rather than off the whole-map record's own
+    # total, and by the offsets each block was actually put the question at rather
+    # than by a tally. A later run asks the offsets a document names in blocks the
+    # first one skipped, and reading the first record alone reports a block that has
+    # since been asked as never asked -- the defect `_asked` exists to close, in the
+    # same directory, and this was the one caller that did not use it.
+    whole = {block for block, offsets in _asked(unit).items() if len(offsets) >= BLOCK}
+    # A block asked at a few named offsets is not a block asked at every offset,
+    # and both arrive as a row in this directory. Only the second can stand for
+    # its kind: the first was put a narrower question than this stage asks.
+    kinds = {
+        kind: here
+        for kind, blocks in block_kinds(unit).items()
+        if (here := [block for block in blocks if block in want])
+    }
+    uncovered = {
+        _kind_name(kind, here): len(here)
+        for kind, here in kinds.items()
+        if not any(block in whole for block in here)
+    }
     shapes = _shapes(unit) or {}
-    if mapped is not None and got < want:
+    if mapped is not None and uncovered:
         return Stage(
             name,
             UNMET,
-            f"{got} of the map's {want} blocks were asked at every offset",
-            {"blocks not asked": want - got},
+            f"{len(kinds) - len(uncovered)} of the map's {len(kinds)} kinds of block "
+            "had one asked at every offset",
+            {"kinds with no block asked at every offset": uncovered},
         )
     return Stage(
         name,
         UNDECIDED,
-        f"{got} blocks asked, falling into {len(shapes)} shapes. Whether each shape's "
-        "fold was checked against a second block of that shape is read from the record",
+        f"{len(whole & want)} blocks asked at every offset, covering all {len(kinds)} "
+        f"kinds the map holds and falling into {len(shapes)} shapes. Whether each "
+        "shape's fold was checked against a second block of that shape is read from "
+        "the record",
     )
 
 
