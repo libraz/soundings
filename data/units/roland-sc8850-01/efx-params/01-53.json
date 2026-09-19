@@ -37,6 +37,8 @@
       "40 03 00=01 53",
       "--prepare",
       "40 42 22=01",
+      "--supersede",
+      "40 03 0B=.cache/efx-params-01-53-again/40-03-0B.json",
       "--out",
       "data/units/roland-sc8850-01/efx-params/01-53.json",
       "--states-from",
@@ -44,7 +46,7 @@
       "--first-parameter",
       "40 03 03"
     ],
-    "measured_at": "2026-09-16T18:29:14+00:00",
+    "measured_at": "2026-09-19T03:57:41+00:00",
     "elapsed_s": 0.0,
     "midi_device_id": null,
     "midi_model_id": null
@@ -75,33 +77,16 @@
     "why": "Routing the stimulus's part through this type against bypassing it, under the same type, the same note and the same protocol. Without it a run of nulls says only that something in the chain was doing nothing, and which thing would be open."
   },
   "results": {
-    "audible": 13,
+    "audible": 14,
     "not audible under the note asked": 6,
-    "asked": 19
+    "asked": 20
   },
   "coverage": {
     "slots": 20,
-    "answered": 19,
+    "answered": 20,
     "never_asked": [],
     "held_still": [],
-    "refused": [
-      {
-        "parameter": 8,
-        "address": "40 03 0B",
-        "at": "struck_kit",
-        "why": "Something was sounding before the note: the tail of the take before it, or another process driving the same unit. The noise floor sets the yardstick every number here is judged against, so nothing measured from these takes would mean anything.",
-        "measured": {
-          "asked_for_dbfs": -60.0,
-          "loudest_lead_in_dbfs": -50.6,
-          "note_over_the_lead_in_db": [
-            60.3,
-            3.3
-          ],
-          "channel": 3
-        }
-      }
-    ],
-    "why_refused": "A parameter slot whose comparison ran, would not answer, and said which of its own conditions the takes failed. It is kept apart from the slots with no record at all because only one of the two is work outstanding: asking this one again the same way gets the same refusal, and reading it as unasked would put it in a queue it can never leave. It carries no verdict either way -- what was refused was the takes, and nothing here says whether the parameter does anything.",
+    "refused": [],
     "outside_the_slots": []
   },
   "why_never_asked": "A parameter slot the run set out to ask and has no record for. The comparison was attempted and did not return one -- so this slot is unasked, and a record that simply omitted it would report the type as having one parameter fewer than it has. Counted against the slots the type map gives the type rather than against the files present, since a directory holding nineteen records of a twenty slot type reads exactly like a complete answer.",
@@ -334,6 +319,53 @@
       "changed_the_level": false,
       "printed_values": "00\u20137F",
       "asked_inside_its_printed_values": true
+    },
+    {
+      "type": "01 53",
+      "parameter": 8,
+      "address": "40 03 0B",
+      "default": 80,
+      "asked_at": [
+        64,
+        80
+      ],
+      "audible": true,
+      "verdict": "audible",
+      "conclusive": true,
+      "takes_per_setting": 4,
+      "each_setting_unrepeatable_db": [
+        -42.98,
+        -47.65
+      ],
+      "same_setting_residual_db": -40.54,
+      "across_setting_residual_db": -16.08,
+      "across_setting_level_db": 0.212,
+      "noise_floor_db": -53.85,
+      "changed_the_shape": true,
+      "changed_the_level": false,
+      "printed_values": "0F\u201371",
+      "asked_inside_its_printed_values": true,
+      "withdrawn_pair": {
+        "values": [
+          127,
+          0
+        ],
+        "why": "The run would not answer this pair. At one of its settings the take carried no silence before the note, so the noise floor -- the yardstick every number here is judged against -- was something already sounding, and nothing measured from those takes would have meant anything. The refusal beside this names the tail of the take before it, which is one of two things that leave a take without a floor and not the one that has to be true: a tail falls from take to take, and a setting the parameter never brings to an end holds at a level instead. Which of them it was is read off the takes the run kept and is not decided here. Asked again at a pair the parameter lets go of between takes.",
+        "refused": {
+          "at": "struck_kit",
+          "why": "Something was sounding before the note: the tail of the take before it, or another process driving the same unit. The noise floor sets the yardstick every number here is judged against, so nothing measured from these takes would mean anything.",
+          "measured": {
+            "asked_for_dbfs": -60.0,
+            "loudest_lead_in_dbfs": -50.6,
+            "note_over_the_lead_in_db": [
+              60.3,
+              3.3
+            ],
+            "channel": 3
+          }
+        }
+      },
+      "why_asked_again": "The run would not answer this pair. At one of its settings the take carried no silence before the note, so the noise floor -- the yardstick every number here is judged against -- was something already sounding, and nothing measured from those takes would have meant anything. The refusal beside this names the tail of the take before it, which is one of two things that leave a take without a floor and not the one that has to be true: a tail falls from take to take, and a setting the parameter never brings to an end holds at a level instead. Which of them it was is read off the takes the run kept and is not decided here. Asked again at a pair the parameter lets go of between takes."
     },
     {
       "type": "01 53",
