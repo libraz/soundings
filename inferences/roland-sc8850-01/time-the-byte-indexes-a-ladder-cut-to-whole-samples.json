@@ -4,7 +4,7 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-14T18:27:58.739066+00:00",
-    "made_by": "backup/write-time-candidates.py, backup/write-time-inference.py, backup/a-delay-time-at-every-step.py (01 53), backup/fold-in-the-four-tap-delay.py",
+    "made_by": "backup/write-time-candidates.py, backup/write-time-inference.py, backup/a-delay-time-at-every-step.py (01 53), backup/fold-in-the-four-tap-delay.py, backup/a-delay-time-at-every-step.py (the delays behind a stage), backup/fold-in-four-delays-behind-a-stage.py",
     "rounds": 2,
     "about": {
       "scope": "slot",
@@ -15,18 +15,23 @@
         "01 52",
         "01 53",
         "01 57",
-        "04 00"
+        "02 08",
+        "02 09",
+        "04 00",
+        "11 00",
+        "11 01"
       ],
       "addresses": [
         "40 03 03",
         "40 03 04",
         "40 03 05",
         "40 03 06",
+        "40 03 08",
         "40 03 13"
       ]
     }
   },
-  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. Which ladder a slot is on is picked by the conversion column the effect list cites beside it, not by the range the page prints -- two slots print the same range and cite different columns, and they return ladders fifty milliseconds apart. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ. One slot of the five does not read its ladder from wherever it is asked. On the type whose delay glides, a setting reached from below is short of its cited column by a thousand and sixteen whole samples of the same clock, and the same setting reached from above returns that column times a hundred and twenty-seven over a hundred and twenty-eight exactly -- the same one-byte ratio every entry here carries. So the shortfall the sweep found is the sweep's own direction and not a second regime in the table, and the byte the page prints beside it as an acceleration is worth exactly half of it, from its top bit alone and from no other bit in the nibble. The ladder a column picks is the same ladder at every address that cites it. One type prints four of these rows at four addresses, three of which nothing in this class had been read at, and prints a different default against each -- 500ms, 300ms, 400ms, 200ms -- where the conversion column is one column for all four. All four return the ladder read on the type beside it, to within 0.042 ms at every setting either was asked at, against a floor of 0.0834 ms on the noisiest of them and 0.0 on the other three. So the printed default is not what picks a ladder either, which the page gives no other way to tell.",
+  "claim": "A delay-time byte does not scale a time and does not run a formula. It indexes a ladder of round decimal milliseconds whose step changes a few times over the byte, and every entry is then cut back to a whole step of a clock running at 32000 Hz -- which is what a delay addressed as a sample count does to a time written in milliseconds. Which ladder a slot is on is picked by the conversion column the effect list cites beside it, not by the range the page prints -- two slots print the same range and cite different columns, and they return ladders fifty milliseconds apart. On 0 - 500m the step is a tenth of a millisecond to setting fifty, then a half to sixty, then one to ninety, then ten to a hundred and sixteen, then twenty to a hundred and twenty-six; on 0 - 100m it is the same tenth to fifty and half to sixty, then one to a hundred, then two to a hundred and twenty-five; on 200m - 990m/1sec the byte starts at two hundred milliseconds and steps five to setting seventy, then ten to a hundred and fifteen, where it reaches one second; on 0m - 635m the step never changes at all -- five milliseconds from the first setting to the last; and 0m - 500m, which the page spells with an m the other five-hundred range does not have, is that range's ladder entry for entry. Four of the five reach the printed end before the byte ends and repeat it at every setting above, and the fifth reaches it at its last setting, so where a ladder stops is read off the record in both directions. The cut is not a detail of the ladder: it is what the settings at the short end actually return, and it is what decides which settings the reading brings back a tall peak for. It is also why two of the five ranges say nothing about the clock -- every entry on them is five milliseconds or more, which is already a whole step of it, so there is no setting at which the two readings differ. One slot of the five does not read its ladder from wherever it is asked. On the type whose delay glides, a setting reached from below is short of its cited column by a thousand and sixteen whole samples of the same clock, and the same setting reached from above returns that column times a hundred and twenty-seven over a hundred and twenty-eight exactly -- the same one-byte ratio every entry here carries. So the shortfall the sweep found is the sweep's own direction and not a second regime in the table, and the byte the page prints beside it as an acceleration is worth exactly half of it, from its top bit alone and from no other bit in the nibble. The ladder a column picks is the same ladder at every address that cites it. One type prints four of these rows at four addresses, three of which nothing in this class had been read at, and prints a different default against each -- 500ms, 300ms, 400ms, 200ms -- where the conversion column is one column for all four. All four return the ladder read on the type beside it, to within 0.042 ms at every setting either was asked at, against a floor of 0.0834 ms on the noisiest of them and 0.0 on the other three. So the printed default is not what picks a ladder either, which the page gives no other way to tell. A column's ladder does not change for what stands in front of the delay either. Four types that print this row put another stage before or beside it -- an enhancer, a chorus in front, a chorus beside, a flanger beside -- and every one of them returns the ladder its column was read on, to within 0.000 ms at all eight settings asked of each, on a reading quantised to 0.020833 ms. Two more print it behind a waveshaper and are not read here, for a reason that is about the reading and not about the byte.",
   "named": null,
   "why_not_named": "The ladder is the claim and it is written out. A name for it would be a name for a table somebody laid out by hand, and there is nothing to call it but the numbers.",
   "rests_on": {
@@ -1321,6 +1326,446 @@
           1000.0208
         ],
         "why": "The fourth of four taps one type prints on one conversion column, read at 06 -- an address this class had never been read at"
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/02-08-08-every-step-of-a-delay-behind-a-stage-0208.json",
+        "keys": [
+          "settings_asked",
+          "floor_ms",
+          "held",
+          "with_the_effect_out",
+          "readings[value=25].ms",
+          "readings[value=50].ms",
+          "readings[value=64].ms",
+          "readings[value=70].ms",
+          "readings[value=90].ms",
+          "readings[value=100].ms",
+          "readings[value=116].ms",
+          "readings[value=127].ms"
+        ],
+        "values": [
+          [
+            25,
+            50,
+            64,
+            70,
+            90,
+            100,
+            116,
+            127
+          ],
+          0.0,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          {
+            "takes": [
+              "held-126-out-00-00.wav",
+              "held-126-out-01-00.wav"
+            ],
+            "ms": 0.0833,
+            "stands": 77.04,
+            "would_be_read_as_a_delay": false,
+            "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+            "with_nothing_in_its_path": {
+              "take": "held-126-out-00-00.wav",
+              "against": "held-126-out-01-00.wav",
+              "ms": 86.1875,
+              "stands": 4.53,
+              "admitted": false
+            },
+            "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+          },
+          2.5,
+          5.0,
+          14.0,
+          20.0,
+          40.0,
+          140.0,
+          300.0,
+          500.0
+        ],
+        "why": "The delay EH → Delay prints at one address, read with the stage before or beside it parked the way that type's own page allows. The delay itself is set the same in all four, which is what makes four types one comparison rather than four readings."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/02-09-08-every-step-of-a-delay-behind-a-stage-0209.json",
+        "keys": [
+          "settings_asked",
+          "floor_ms",
+          "held",
+          "with_the_effect_out",
+          "readings[value=25].ms",
+          "readings[value=50].ms",
+          "readings[value=64].ms",
+          "readings[value=70].ms",
+          "readings[value=90].ms",
+          "readings[value=100].ms",
+          "readings[value=116].ms",
+          "readings[value=127].ms"
+        ],
+        "values": [
+          [
+            25,
+            50,
+            64,
+            70,
+            90,
+            100,
+            116,
+            127
+          ],
+          0.0,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          {
+            "takes": [
+              "held-126-out-00-00.wav",
+              "held-126-out-01-00.wav"
+            ],
+            "ms": 0.0833,
+            "stands": 76.48,
+            "would_be_read_as_a_delay": false,
+            "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+            "with_nothing_in_its_path": {
+              "take": "held-126-out-00-00.wav",
+              "against": "held-126-out-01-00.wav",
+              "ms": 187.1875,
+              "stands": 5.19,
+              "admitted": false
+            },
+            "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+          },
+          2.5,
+          5.0,
+          14.0,
+          20.0,
+          40.0,
+          140.0,
+          300.0,
+          500.0
+        ],
+        "why": "The delay Cho → Delay prints at one address, read with the stage before or beside it parked the way that type's own page allows. The delay itself is set the same in all four, which is what makes four types one comparison rather than four readings."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/11-00-08-every-step-of-a-delay-behind-a-stage-1100.json",
+        "keys": [
+          "settings_asked",
+          "floor_ms",
+          "held",
+          "with_the_effect_out",
+          "readings[value=25].ms",
+          "readings[value=50].ms",
+          "readings[value=64].ms",
+          "readings[value=70].ms",
+          "readings[value=90].ms",
+          "readings[value=100].ms",
+          "readings[value=116].ms",
+          "readings[value=127].ms"
+        ],
+        "values": [
+          [
+            25,
+            50,
+            64,
+            70,
+            90,
+            100,
+            116,
+            127
+          ],
+          0.0,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 15",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          {
+            "takes": [
+              "held-126-out-00-00.wav",
+              "held-126-out-01-00.wav"
+            ],
+            "ms": 0.0833,
+            "stands": 76.86,
+            "would_be_read_as_a_delay": false,
+            "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+            "with_nothing_in_its_path": {
+              "take": "held-126-out-00-00.wav",
+              "against": "held-126-out-01-00.wav",
+              "ms": 155.6875,
+              "stands": 4.93,
+              "admitted": false
+            },
+            "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+          },
+          2.5,
+          5.0,
+          14.0,
+          20.0,
+          40.0,
+          140.0,
+          300.0,
+          500.0
+        ],
+        "why": "The delay Cho / Delay prints at one address, read with the stage before or beside it parked the way that type's own page allows. The delay itself is set the same in all four, which is what makes four types one comparison rather than four readings."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/11-01-08-every-step-of-a-delay-behind-a-stage-1101.json",
+        "keys": [
+          "settings_asked",
+          "floor_ms",
+          "held",
+          "with_the_effect_out",
+          "readings[value=25].ms",
+          "readings[value=50].ms",
+          "readings[value=64].ms",
+          "readings[value=70].ms",
+          "readings[value=90].ms",
+          "readings[value=100].ms",
+          "readings[value=116].ms",
+          "readings[value=127].ms"
+        ],
+        "values": [
+          [
+            25,
+            50,
+            64,
+            70,
+            90,
+            100,
+            116,
+            127
+          ],
+          0.0,
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 15",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ],
+          {
+            "takes": [
+              "held-126-out-00-00.wav",
+              "held-126-out-01-00.wav"
+            ],
+            "ms": 0.0833,
+            "stands": 76.76,
+            "would_be_read_as_a_delay": false,
+            "why": "The same chain with the part routed past the effect, which is what every reading below is taken against. It does two things and they are different. It is subtracted, so whatever the stimulus, the converters and the room put into a log spectrum is taken out of each reading rather than being read as a copy. And its own strongest peak is published, because a chain that puts a peak of its own somewhere is a chain that could hand a reading a delay the effect never made -- so a reader can see whether any setting landed near it. That peak is this curve before anything is taken off it, and near the bottom of the search it is the shape of the source itself, which sits there whatever is in the path. So it is not what says whether the chain would be read as a delay; the reading below is, because that is this curve put through the same subtraction every setting gets.",
+            "with_nothing_in_its_path": {
+              "take": "held-126-out-00-00.wav",
+              "against": "held-126-out-01-00.wav",
+              "ms": 35.875,
+              "stands": 5.0,
+              "admitted": false
+            },
+            "why_nothing_in_its_path": "One take with the effect out, read as though it were a setting, against another take with the effect out as its control. That is the whole reading with the delay taken out of it, so what it returns is what a row has to stand over to be a delay rather than the chain, measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity a negative needs: a bottom setting that returned nothing means nothing unless a take that certainly holds no copy also returns nothing here. Null where the run made only one such take, in which case there is no second one to read it against and the run measured no null."
+          },
+          2.5,
+          5.0,
+          14.0,
+          20.0,
+          40.0,
+          140.0,
+          300.0,
+          500.0
+        ],
+        "why": "The delay FL / Delay prints at one address, read with the stage before or beside it parked the way that type's own page allows. The delay itself is set the same in all four, which is what makes four types one comparison rather than four readings."
       }
     ],
     "document_rows": [
@@ -2051,5 +2496,12 @@
     "what_came_back": "Every prediction. The three taps read at eight settings each landed on the ladder's own figure at every one of them, and the setting each took four times came back the same four times, so their floor is nothing and what bounds them is the step the reading is quantised to, 0.020833 ms. The tap read at fourteen settings landed within 0.042 ms of it at every setting, against its own floor of 0.0834 ms -- so no reading on any of the four stands as far from the ladder as that tap's own repeats stand from each other.",
     "the_three_readings_this_does_not_cite": "At two settings of the first tap and one of the fourth, a peak the chain carries near nine hundred and fifty milliseconds stood above the tap's own. It is not the effect's: every record in this class that searches that far reports it under `with_the_effect_out`, including the one this ladder was read from, and the stage says in as many words that it would be read as a delay. At all three the predicted figure is in the same take's `also_ms`. They are left out of the citation rather than argued away, and the records carry both figures so the exclusion can be checked rather than taken.",
     "why_the_rounds_did_not_go_up": "A round is a revision of the model and nothing here revised it. The count exists to stop a model being patched until it fits, not to stop it being tested; spending the last revision this claim is allowed on a confirmation would say it had been taken further than it has."
+  },
+  "four_types_behind_another_stage_read_after_this_was_made": {
+    "why_they_were_held_out": "All four print their delay time at one address and cite the conversion column the stereo delay and the 3D delay were read on. Nothing structural had been read on any of them, and no reading of this class had been made at that address. Nothing about them was used to build the ladder.",
+    "what_was_predicted_before_the_unit_was_touched": "The column's own ladder at eight settings -- 2.5, 5, 14, 20, 40, 140, 300 and 500 ms -- on every one of the six types that print the row, with no copy from the stage in front of the delay reaching the reading.",
+    "what_came_back": "Four of the six returned every one of the eight to 0.000 ms, against a reading quantised to 0.020833 ms and a floor of nothing: the setting each took four times came back the same four times. The bottom of the byte was not asked, because the column's own reading returns the chain's own peak there rather than a delay, which is a limit of the reading already in that record.",
+    "the_two_that_did_not_and_why_they_are_not_published": "The two whose front stage is a waveshaper. A peak at 0.104 ms -- three samples of the clock this claim already reads the ladder as cut to -- stood above the copy at the three longest settings on one and at all eight on the other, and at every one of those the ladder's own figure is in the same take beside it. A distortion moves the log spectrum, and the shortest quefrencies are where a cepstrum reads what a log spectrum does. The stage takes a floor and one above that peak would have returned the prediction everywhere; it would also have been a window chosen after seeing which window answered, since the only way to argue it from the run's design is to say the shortest time asked for was two and a half milliseconds -- which is this ladder, assumed. So no record of those two is published, the takes are kept, and what they want is a stimulus or a subtraction that survives a waveshaper rather than another booking of this run.",
+    "why_the_rounds_did_not_go_up": "The model predicted and was right on four types it had never seen, and the two it did not reach were not reached by the reading rather than contradicted by the unit. Neither is a revision."
   }
 }
