@@ -14,13 +14,14 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-19T04:52:17+00:00",
-    "made_by": "backup/what-a-two-state-byte-does-above-one.py, backup/write-the-printed-states-inference.py",
-    "rounds": 1,
+    "made_by": "backup/what-a-two-state-byte-does-above-one.py, backup/write-the-printed-states-inference.py, backup/above-a-longer-printed-list.py, backup/add-round-two-to-the-printed-states-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
         "01 00",
         "01 03",
+        "01 10",
         "01 21",
         "01 22",
         "04 01",
@@ -40,7 +41,7 @@
       ]
     }
   },
-  "claim": "An effect parameter whose page prints a list of states takes no byte that is not one of them, and what it does instead is nothing: the parameter goes on sounding the state it was already in. The store is not what refuses -- it keeps every seven-bit value and reads it back, 02 for a write of 02 -- so whatever drops the value sits between the store and the sound. Read on five two-state slots across three of the effect map's high bytes, where nought against one is audible by 11.74 to 15.49 dB of level and one against two, one against 127 and nought against two are all null -- fifteen pairs whose two settings sit between 2.94 dB under and 0.27 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict here has to clear, and none of which moves the level by more than 0.02 dB. The last of those three pairs is the one that decides it: four of the five slots power up in the second state, so a byte that reached the state they power up in would have made nought against two as loud as nought against one. Three printed lists of different lengths agree -- a two-state corner holds at the 1 it had, a three-state amp table and a five-state width both hold at the 0 they had -- and the four slots the page prints as `00/7F` are not this: every byte of those is taken and the turnover is the top bit.",
+  "claim": "An effect parameter whose page prints a list of states takes no byte that is not one of them, and what it does instead is nothing: the parameter goes on sounding the state it was already in. The store is not what refuses -- it keeps every seven-bit value and reads it back, 02 for a write of 02 -- so whatever drops the value sits between the store and the sound. Read on five two-state slots across three of the effect map's high bytes, where nought against one is audible by 11.74 to 15.49 dB of level and one against two, one against 127 and nought against two are all null -- fifteen pairs whose two settings sit between 2.94 dB under and 0.27 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict here has to clear, and none of which moves the level by more than 0.02 dB. The last of those three pairs is the one that decides it: four of the five slots power up in the second state, so a byte that reached the state they power up in would have made nought against two as loud as nought against one. Three printed lists of different lengths agree -- a two-state corner holds at the 1 it had, a three-state amp table and a five-state width both hold at the 0 they had. Those three were all asked on slots that power up at the first entry, where holding what they had and folding to the first are one number, so two longer lists were then asked on slots that power up inside them: a four-state amp table that powers up at 1, and a five-state width inside a multi-effect that powers up at 2. Each was asked one past its top three times over -- standing at nought, standing at the value it powers up in, and standing at its last printed state -- and the three readings that a longer list leaves standing each predict a different two of those three to be audible. All six are null, between 2.86 dB under and 0.87 dB over the yardstick their own settings' repeats set, while the three in-range pairs of the same two slots are audible by 16.08 to 36.68 dB over theirs. Neither slot moves again further up: nought against 127 and the last printed state against 127 are null on both. The four slots the page prints as `00/7F` are not this: every byte of those is taken and the turnover is the top bit.",
   "named": null,
   "why_not_named": "There is nothing here to name. This is what the machine does with a value it has no state for, not a structure that processes a signal, and calling it a bound test or a table lookup would assert which of the two it is -- which is the one thing about it these measurements cannot reach.",
   "rests_on": {
@@ -979,6 +980,470 @@
           ]
         ],
         "why": "What each type loads into each slot when it is selected. The whole reading turns on these: four of the five slots asked power up at 1 and one at 0, and a rule that returned the power-on value would have been indistinguishable if they had all powered up at the same place."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-nought-and-the-default.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=1].reads"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          true,
+          false,
+          -8.09,
+          -44.77,
+          6.676,
+          "00",
+          "01"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 0 against 1: a control, inside the printed list. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 1 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-nought-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=3].reads"
+        ],
+        "values": [
+          [
+            0,
+            3
+          ],
+          true,
+          true,
+          false,
+          -5.44,
+          -35.9,
+          7.416,
+          "00",
+          "03"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 0 against 3: a control, inside the printed list. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 3 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-the-default-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=1].reads",
+          "setting_read_back[setting=3].reads"
+        ],
+        "values": [
+          [
+            1,
+            3
+          ],
+          true,
+          true,
+          false,
+          -8.54,
+          -37.02,
+          0.656,
+          "01",
+          "03"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 1 against 3: a control, inside the printed list. The pair is written in order with nothing reset between, so 1 is what the parameter was standing in when 3 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-nought-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=4].reads"
+        ],
+        "values": [
+          [
+            0,
+            4
+          ],
+          false,
+          true,
+          false,
+          -46.86,
+          -44.0,
+          -0.009,
+          "00",
+          "04"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 0 against 4: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 4 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-the-default-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=1].reads",
+          "setting_read_back[setting=4].reads"
+        ],
+        "values": [
+          [
+            1,
+            4
+          ],
+          false,
+          true,
+          false,
+          -40.55,
+          -41.14,
+          0.039,
+          "01",
+          "04"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 1 against 4: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 1 is what the parameter was standing in when 4 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-the-top-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=3].reads",
+          "setting_read_back[setting=4].reads"
+        ],
+        "values": [
+          [
+            3,
+            4
+          ],
+          false,
+          true,
+          false,
+          -33.13,
+          -31.83,
+          -0.025,
+          "03",
+          "04"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 3 against 4: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 3 is what the parameter was standing in when 4 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-nought-and-the-highest-byte.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=127].reads"
+        ],
+        "values": [
+          [
+            0,
+            127
+          ],
+          false,
+          true,
+          false,
+          -43.95,
+          -44.34,
+          -0.019,
+          "00",
+          "7F"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 0 against 127: the top of the byte, standing at the first value. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 127 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-amp-type-the-top-and-the-highest-byte.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=3].reads",
+          "setting_read_back[setting=127].reads"
+        ],
+        "values": [
+          [
+            3,
+            127
+          ],
+          false,
+          true,
+          false,
+          -32.97,
+          -32.83,
+          -0.009,
+          "03",
+          "7F"
+        ],
+        "why": "Amp Type (Small/BltIn/2-Stk/3-Stk) on 40 03 04, 3 against 127: the top of the byte, standing at the first value. The pair is written in order with nothing reset between, so 3 is what the parameter was standing in when 127 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-nought-and-the-default.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=2].reads"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          true,
+          true,
+          false,
+          -16.79,
+          -32.87,
+          -1.833,
+          "00",
+          "02"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 0 against 2: a control, inside the printed list. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 2 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-nought-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=4].reads"
+        ],
+        "values": [
+          [
+            0,
+            4
+          ],
+          true,
+          true,
+          false,
+          -14.01,
+          -33.37,
+          -2.971,
+          "00",
+          "04"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 0 against 4: a control, inside the printed list. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 4 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-the-default-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=2].reads",
+          "setting_read_back[setting=4].reads"
+        ],
+        "values": [
+          [
+            2,
+            4
+          ],
+          true,
+          true,
+          false,
+          -15.21,
+          -33.15,
+          -1.104,
+          "02",
+          "04"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 2 against 4: a control, inside the printed list. The pair is written in order with nothing reset between, so 2 is what the parameter was standing in when 4 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-nought-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=5].reads"
+        ],
+        "values": [
+          [
+            0,
+            5
+          ],
+          false,
+          true,
+          false,
+          -33.44,
+          -34.31,
+          -0.006,
+          "00",
+          "05"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 0 against 5: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 5 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-the-default-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=2].reads",
+          "setting_read_back[setting=5].reads"
+        ],
+        "values": [
+          [
+            2,
+            5
+          ],
+          false,
+          true,
+          false,
+          -34.38,
+          -34.76,
+          0.006,
+          "02",
+          "05"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 2 against 5: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 2 is what the parameter was standing in when 5 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-the-top-and-past-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=4].reads",
+          "setting_read_back[setting=5].reads"
+        ],
+        "values": [
+          [
+            4,
+            5
+          ],
+          false,
+          true,
+          false,
+          -34.29,
+          -33.66,
+          0.005,
+          "04",
+          "05"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 4 against 5: one past the printed top, standing at the first value. The pair is written in order with nothing reset between, so 4 is what the parameter was standing in when 5 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-nought-and-the-highest-byte.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=0].reads",
+          "setting_read_back[setting=127].reads"
+        ],
+        "values": [
+          [
+            0,
+            127
+          ],
+          false,
+          true,
+          false,
+          -33.89,
+          -34.62,
+          0.011,
+          "00",
+          "7F"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 0 against 127: the top of the byte, standing at the first value. The pair is written in order with nothing reset between, so 0 is what the parameter was standing in when 127 arrived."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-multi-mid-width-the-top-and-the-highest-byte.json",
+        "keys": [
+          "values",
+          "audible",
+          "conclusive",
+          "reset_before_each_setting",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].same_setting_residual_db",
+          "by_stimulus[stimulus_name=struck_kit].across_setting_level_db",
+          "setting_read_back[setting=4].reads",
+          "setting_read_back[setting=127].reads"
+        ],
+        "values": [
+          [
+            4,
+            127
+          ],
+          false,
+          true,
+          false,
+          -33.32,
+          -33.39,
+          0.011,
+          "04",
+          "7F"
+        ],
+        "why": "EQ M Q (0.5/1.0/2.0/4.0/9.0) on 40 03 0E, 4 against 127: the top of the byte, standing at the first value. The pair is written in order with nothing reset between, so 4 is what the parameter was standing in when 127 arrived."
       }
     ],
     "document_rows": [
@@ -1008,32 +1473,32 @@
     ],
     "community": []
   },
-  "adds": "Each cited record says what one slot did at the settings it was asked at. None of them says what happens to a value the page has no state for, because each on its own has at least two readings that fit it: the runs that swept past a printed list all reset and reloaded the type between settings, which put the parameter's loaded value and its standing value in the same place, and the one slot anybody had looked at past its list powers up at 0, where folding to the first state, returning the loaded value and keeping the current one are three names for the same number. What is added is the pair that pulls them apart -- nought against two, written in that order with nothing reset in between, on slots that power up at 1 -- and the reading of all of them together as one rule rather than as a habit of one type.",
+  "adds": "Each cited record says what one slot did at the settings it was asked at. None of them says what happens to a value the page has no state for, because each on its own has at least two readings that fit it: the runs that swept past a printed list all reset and reloaded the type between settings, which put the parameter's loaded value and its standing value in the same place, and the one slot anybody had looked at past its list powers up at 0, where folding to the first state, returning the loaded value and keeping the current one are three names for the same number. What is added is the pair that pulls them apart -- nought against two, written in that order with nothing reset in between, on slots that power up at 1 -- and the reading of all of them together as one rule rather than as a habit of one type. Round two adds the shape that lets one slot answer alone. A list of more than two states has three predecessors worth standing in -- nought, the value the type loads, and the last printed state -- and asking one past the top from each of them separates keeping the current state from returning the loaded value, from folding to the first, and from clamping to the last, without putting two slots side by side to do it.",
   "alternatives": [
     {
       "reading": "The engine reads the byte as nought against not-nought, so every value from 1 up reaches the second state.",
       "standing": false,
-      "ruled_out_by": "Nought against two is null on all five slots, and four of them -- 01 03 40 03 04, 01 21 40 03 09, 04 01 40 03 0B, 11 06 40 03 0E -- power up in the second state. Under this reading that pair is the two states against each other and would have read as loud as nought against one did, which on those four is 11.74 to 15.49 dB of level over a yardstick 33.1 to 39.8 dB down. The store read the 2 back as 02 in every one of them, so it is not a clamp on the way in."
+      "ruled_out_by": "Nought against two is null on all five slots, and four of them -- 01 03 40 03 04, 01 21 40 03 09, 04 01 40 03 0B, 11 06 40 03 0E -- power up in the second state. Under this reading that pair is the two states against each other and would have read as loud as nought against one did, which on those four is 11.74 to 15.49 dB of level over a yardstick 33.1 to 39.8 dB down. The store read the 2 back as 02 in every one of them, so it is not a clamp on the way in. A longer list refutes it on one pair of its own: the four-state amp table of 01 10 reads 1 against 3 -- both of them not nought -- audible by 28.48 dB over its own yardstick, where this reading has them in one state."
     },
     {
       "reading": "A value past the list folds back to the first state.",
       "standing": false,
-      "ruled_out_by": "The two-state corners of 01 00 power up in the second state, and every value from 2 to 127 reads where the second state reads -- the low corner's half-power point at 315 Hz against the first state's 200 Hz. The reading held only because the one slot it was first noticed on, the five-state width, powers up at 0, where folding to the first state and keeping the current one are the same answer."
+      "ruled_out_by": "The two-state corners of 01 00 power up in the second state, and every value from 2 to 127 reads where the second state reads -- the low corner's half-power point at 315 Hz against the first state's 200 Hz. The reading held only because the one slot it was first noticed on, the five-state width, powers up at 0, where folding to the first state and keeping the current one are the same answer. It now falls on one slot at a time. Standing at the value it powers up in, neither longer list moves when a byte past its top arrives -- 0.59 dB and 0.38 dB over their own yardsticks -- while nought against that same value is audible on both."
     },
     {
       "reading": "A value past the list puts the parameter back to the value the type loads it with.",
       "standing": false,
-      "ruled_out_by": "Nought against two is null on the four slots whose loaded value is 1. The contrast writes the pair in order with no reset between, so the parameter is standing at 0 when the 2 arrives; under this reading it would have gone to 1 and the pair would have been audible. It is not. Every run that had asked this before reset and reloaded the type between settings, which put the loaded value and the standing value in the same place and is why the two readings had never come apart."
+      "ruled_out_by": "Nought against two is null on the four slots whose loaded value is 1. The contrast writes the pair in order with no reset between, so the parameter is standing at 0 when the 2 arrives; under this reading it would have gone to 1 and the pair would have been audible. It is not. Every run that had asked this before reset and reloaded the type between settings, which put the loaded value and the standing value in the same place and is why the two readings had never come apart. And on the two longer lists, standing at nought: a byte past the top leaves them there -- -2.86 dB and 0.87 dB over their own yardsticks -- where this reading sends them to the 1 and the 2 their types load, which are audible against nought by 36.68 and 16.08 dB."
     },
     {
       "reading": "A value past the list is clamped to the last state.",
       "standing": false,
-      "ruled_out_by": "The five-state width reads 5, 64 and 127 at the width of state 0, not of state 4: band for band they are within 0.06 dB of state 0 while the four real states stand 3.46 to 10.31 dB away from it. The three-state amp table of 04 05 reads its value 3 on state 0's profile in all three of the records that asked it -- 21 to 27 of 113 bands outside their own repeat floor and at worst 5 times it, against 104 to 110 bands and 48 to 532 times it for either real state."
+      "ruled_out_by": "The five-state width reads 5, 64 and 127 at the width of state 0, not of state 4: band for band they are within 0.06 dB of state 0 while the four real states stand 3.46 to 10.31 dB away from it. The three-state amp table of 04 05 reads its value 3 on state 0's profile in all three of the records that asked it -- 21 to 27 of 113 bands outside their own repeat floor and at worst 5 times it, against 104 to 110 bands and 48 to 532 times it for either real state. Asked directly, from nought, on two lists whose last state is audible against nought by 30.46 and 19.36 dB: one past the top returns null on both, and so does the top of the byte."
     },
     {
       "reading": "The engine reads the bottom bit of the byte.",
       "standing": false,
-      "ruled_out_by": "One against two is null on all five slots: the two settings sit between 2.31 dB under and 0.13 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict has to clear, and the level moves under 0.02 dB. Under this reading it is the two states against each other."
+      "ruled_out_by": "One against two is null on all five slots: the two settings sit between 2.31 dB under and 0.13 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict has to clear, and the level moves under 0.02 dB. Under this reading it is the two states against each other. The four-state amp table refutes it twice over: 1 against 3 share a bottom bit and are audible by 28.48 dB, and 3 against 4 differ in one and are null."
     },
     {
       "reading": "The value is dropped on its way to the engine rather than ignored when the engine reads it -- the write path tests it, or the parameter is read through a table lookup that has no row for it.",
@@ -1061,7 +1526,8 @@
     "Whether all 54 of the slots this page prints `00/01` against follow it. Five were asked, and two more were already swept over the whole byte for another question. The other 47 carry a verdict at nought against one and nothing above it.",
     "Whether one mechanism accounts for both spellings. The four slots printed `00/7F` take every byte and turn over at the top bit, and the ones printed `00/01` take two values. A single rule that scales the byte by the printed top would produce both, and nothing measured here asks it to.",
     "What happens to a value below a list that does not start at nought. Every list on this page starts at 00, so the question has no slot on this unit.",
-    "Where in the path the value is dropped, which is carried as an alternative that this test cannot separate rather than as an open question."
+    "Where in the path the value is dropped, which is carried as an alternative that this test cannot separate rather than as an open question.",
+    "Which of the rows printed with four or five states follow it. Two were asked here and three more had been swept above their top for other questions, but all three of those power up at the first entry and say nothing on their own. That leaves 28 of the 33 rows carrying no reading above their printed list, and the four rows printed `00/01/02` carry only the one confounded slot."
   ],
   "the_slots_asked_and_where_each_powers_up": [
     {
@@ -1170,5 +1636,389 @@
       ]
     }
   ],
-  "why_the_control_is_in_the_run": "Four of the five verdicts wanted here are nulls, and a null from a chain that was not routed that evening is the same null as one from a byte that was not taken. So nought against one was taken again on every slot rather than carried from the run three days before that established it. It came back at 11.938, 11.740, 15.490, 11.931 and 11.936 dB against that run's 11.92, 11.73, 15.50, 11.93 and 11.95 -- the same comparison, within two hundredths of a decibel."
+  "why_the_control_is_in_the_run": "Four of the five verdicts wanted here are nulls, and a null from a chain that was not routed that evening is the same null as one from a byte that was not taken. So nought against one was taken again on every slot rather than carried from the run three days before that established it. It came back at 11.938, 11.740, 15.490, 11.931 and 11.936 dB against that run's 11.92, 11.73, 15.50, 11.93 and 11.95 -- the same comparison, within two hundredths of a decibel.",
+  "the_round_that_asked_a_longer_list": {
+    "why_a_longer_list_was_asked": "Round one read the rule on lists of two, three and five states, but the three-state and the five-state slots both power up at the first entry. Every reading that returns a fixed state returns the same number there, so those two slots narrow nothing on their own and the conclusion rested on putting them beside the two-state corners, which power up at 1. A slot powering up inside its own list carries the separation by itself.",
+    "how_the_three_predecessors_separate": {
+      "keeps the state it was in": [
+        "null",
+        "null",
+        "null"
+      ],
+      "returns the value the type loads": [
+        "audible",
+        "null",
+        "audible"
+      ],
+      "folds back to the first state": [
+        "null",
+        "audible",
+        "audible"
+      ],
+      "clamps to the last printed state": [
+        "audible",
+        "audible",
+        "null"
+      ],
+      "read_as": "The three columns are one past the printed top, asked while standing at nought, at the value the type loads, and at the last printed state. No two readings predict the same three, so what comes back names one of them rather than leaving a set."
+    },
+    "slots": [
+      {
+        "type": "01 10",
+        "address": "40 03 04",
+        "printed": "Amp Type (Small/BltIn/2-Stk/3-Stk)",
+        "states_printed": 4,
+        "powers_up_at": 1,
+        "pairs": [
+          {
+            "values": [
+              0,
+              1
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 36.68,
+            "moved_the_level_db": 6.676,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 1,
+                "reads": "01",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              3
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 30.46,
+            "moved_the_level_db": 7.416,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 3,
+                "reads": "03",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              1,
+              3
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 28.48,
+            "moved_the_level_db": 0.656,
+            "the_store_read_back": [
+              {
+                "setting": 1,
+                "reads": "01",
+                "took": true
+              },
+              {
+                "setting": 3,
+                "reads": "03",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              4
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": -2.86,
+            "moved_the_level_db": -0.009,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              1,
+              4
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.59,
+            "moved_the_level_db": 0.039,
+            "the_store_read_back": [
+              {
+                "setting": 1,
+                "reads": "01",
+                "took": true
+              },
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              3,
+              4
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": -1.3,
+            "moved_the_level_db": -0.025,
+            "the_store_read_back": [
+              {
+                "setting": 3,
+                "reads": "03",
+                "took": true
+              },
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              127
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.39,
+            "moved_the_level_db": -0.019,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 127,
+                "reads": "7F",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              3,
+              127
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": -0.14,
+            "moved_the_level_db": -0.009,
+            "the_store_read_back": [
+              {
+                "setting": 3,
+                "reads": "03",
+                "took": true
+              },
+              {
+                "setting": 127,
+                "reads": "7F",
+                "took": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "04 01",
+        "address": "40 03 0E",
+        "printed": "EQ M Q (0.5/1.0/2.0/4.0/9.0)",
+        "states_printed": 5,
+        "powers_up_at": 2,
+        "pairs": [
+          {
+            "values": [
+              0,
+              2
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 16.08,
+            "moved_the_level_db": -1.833,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 2,
+                "reads": "02",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              4
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 19.36,
+            "moved_the_level_db": -2.971,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              2,
+              4
+            ],
+            "verdict": "audible",
+            "over_its_own_yardstick_db": 17.94,
+            "moved_the_level_db": -1.104,
+            "the_store_read_back": [
+              {
+                "setting": 2,
+                "reads": "02",
+                "took": true
+              },
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              5
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.87,
+            "moved_the_level_db": -0.006,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 5,
+                "reads": "05",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              2,
+              5
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.38,
+            "moved_the_level_db": 0.006,
+            "the_store_read_back": [
+              {
+                "setting": 2,
+                "reads": "02",
+                "took": true
+              },
+              {
+                "setting": 5,
+                "reads": "05",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              4,
+              5
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": -0.63,
+            "moved_the_level_db": 0.005,
+            "the_store_read_back": [
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              },
+              {
+                "setting": 5,
+                "reads": "05",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              0,
+              127
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.73,
+            "moved_the_level_db": 0.011,
+            "the_store_read_back": [
+              {
+                "setting": 0,
+                "reads": "00",
+                "took": true
+              },
+              {
+                "setting": 127,
+                "reads": "7F",
+                "took": true
+              }
+            ]
+          },
+          {
+            "values": [
+              4,
+              127
+            ],
+            "verdict": "null",
+            "over_its_own_yardstick_db": 0.07,
+            "moved_the_level_db": 0.011,
+            "the_store_read_back": [
+              {
+                "setting": 4,
+                "reads": "04",
+                "took": true
+              },
+              {
+                "setting": 127,
+                "reads": "7F",
+                "took": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "the_span_pairs": "Nought against 127 and the last printed state against 127 are null on both slots, between 0.14 dB under and 0.73 dB over their own yardstick. Nothing else turns over between the printed top and the end of the byte.",
+    "what_the_store_did": "Every one of the sixteen pairs read back both values it wrote, including 04 on a list printed to 03, 05 on a list printed to 04, and 7F on both. So the nulls are not a ceiling on the way in."
+  }
 }
