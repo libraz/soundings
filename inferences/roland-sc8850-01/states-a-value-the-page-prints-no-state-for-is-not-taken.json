@@ -1,0 +1,1174 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": null,
+    "stage": null,
+    "invocation": null,
+    "measured_at": "2026-09-19T04:52:17+00:00",
+    "elapsed_s": null,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-19T04:52:17+00:00",
+    "made_by": "backup/what-a-two-state-byte-does-above-one.py, backup/write-the-printed-states-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 00",
+        "01 03",
+        "01 21",
+        "01 22",
+        "04 01",
+        "04 05",
+        "11 06"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 04",
+        "40 03 05",
+        "40 03 07",
+        "40 03 08",
+        "40 03 09",
+        "40 03 0B",
+        "40 03 0D",
+        "40 03 0E"
+      ]
+    }
+  },
+  "claim": "An effect parameter whose page prints a list of states takes no byte that is not one of them, and what it does instead is nothing: the parameter goes on sounding the state it was already in. The store is not what refuses -- it keeps every seven-bit value and reads it back, 02 for a write of 02 -- so whatever drops the value sits between the store and the sound. Read on five two-state slots across three of the effect map's high bytes, where nought against one is audible by 11.74 to 15.49 dB of level and one against two, one against 127 and nought against two are all null -- fifteen pairs whose two settings sit between 2.94 dB under and 0.27 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict here has to clear, and none of which moves the level by more than 0.02 dB. The last of those three pairs is the one that decides it: four of the five slots power up in the second state, so a byte that reached the state they power up in would have made nought against two as loud as nought against one. Three printed lists of different lengths agree -- a two-state corner holds at the 1 it had, a three-state amp table and a five-state width both hold at the 0 they had -- and the four slots the page prints as `00/7F` are not this: every byte of those is taken and the turnover is the top bit.",
+  "named": null,
+  "why_not_named": "There is nothing here to name. This is what the machine does with a value it has no state for, not a structure that processes a signal, and calling it a bound test or a table lookup would assert which of the two it is -- which is the one thing about it these measurements cannot reach.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 03 Drive Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 03 Drive Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            127
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 127,
+              "reads": "7F",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 03 Drive Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 03 Drive Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-09-auto-wah-nought-and-one.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 21 Polarity (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-09-auto-wah-one-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 21 Polarity (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-09-auto-wah-one-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            127
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 127,
+              "reads": "7F",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 21 Polarity (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-09-auto-wah-nought-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "01 21 Polarity (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0B-gtr-multi-2-nought-and-one.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 01 OD Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0B-gtr-multi-2-one-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 01 OD Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0B-gtr-multi-2-one-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            127
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 127,
+              "reads": "7F",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 01 OD Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0B-gtr-multi-2-nought-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 01 OD Sw (Off/On) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-07-bass-multi-nought-and-one.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 05 OD Sel (Odrv/Dist) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-07-bass-multi-one-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 05 OD Sel (Odrv/Dist) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-07-bass-multi-one-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            127
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 127,
+              "reads": "7F",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 05 OD Sel (Odrv/Dist) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-07-bass-multi-nought-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "04 05 OD Sel (Odrv/Dist) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-od-autowah-nought-and-one.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            1
+          ],
+          true,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            }
+          ]
+        ],
+        "why": "11 06 AW Pol (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-od-autowah-one-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "11 06 AW Pol (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-od-autowah-one-and-the-top.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            1,
+            127
+          ],
+          false,
+          [
+            {
+              "setting": 1,
+              "reads": "01",
+              "took": true
+            },
+            {
+              "setting": 127,
+              "reads": "7F",
+              "took": true
+            }
+          ]
+        ],
+        "why": "11 06 AW Pol (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/contrast/40-03-0E-od-autowah-nought-and-two.json",
+        "keys": [
+          "values",
+          "audible",
+          "setting_read_back"
+        ],
+        "values": [
+          [
+            0,
+            2
+          ],
+          false,
+          [
+            {
+              "setting": 0,
+              "reads": "00",
+              "took": true
+            },
+            {
+              "setting": 2,
+              "reads": "02",
+              "took": true
+            }
+          ]
+        ],
+        "why": "11 06 AW Pol (Down/Up) at the pair this file is named for, the verdict, and what the store read back after each write."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-03-where-the-eq-hinges.json",
+        "keys": [
+          "readings[value=0].half_above_hz",
+          "readings[value=1].half_above_hz",
+          "readings[value=2].half_above_hz",
+          "readings[value=3].half_above_hz",
+          "readings[value=4].half_above_hz",
+          "readings[value=32].half_above_hz",
+          "readings[value=64].half_above_hz",
+          "readings[value=96].half_above_hz",
+          "readings[value=126].half_above_hz",
+          "readings[value=127].half_above_hz"
+        ],
+        "values": [
+          200,
+          315,
+          315,
+          315,
+          315,
+          315,
+          315,
+          315,
+          315,
+          315
+        ],
+        "why": "A two-state corner swept over the byte. It powers up at 1, and everything from 1 upward reads where 1 reads."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-05-where-the-eq-hinges.json",
+        "keys": [
+          "readings[value=0].half_below_hz",
+          "readings[value=1].half_below_hz",
+          "readings[value=2].half_below_hz",
+          "readings[value=3].half_below_hz",
+          "readings[value=4].half_below_hz",
+          "readings[value=32].half_below_hz",
+          "readings[value=64].half_below_hz",
+          "readings[value=96].half_below_hz",
+          "readings[value=126].half_below_hz",
+          "readings[value=127].half_below_hz"
+        ],
+        "values": [
+          5000,
+          8000,
+          8000,
+          8000,
+          8000,
+          8000,
+          8000,
+          8000,
+          8000,
+          8000
+        ],
+        "why": "The other corner of the same type, read at the other half-power point, and the same shape of answer."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-08-where-the-eq-hinges.json",
+        "keys": [
+          "readings[value=0].half_below_hz",
+          "readings[value=1].half_below_hz",
+          "readings[value=2].half_below_hz",
+          "readings[value=3].half_below_hz",
+          "readings[value=4].half_below_hz",
+          "readings[value=5].half_below_hz",
+          "readings[value=64].half_below_hz",
+          "readings[value=127].half_below_hz",
+          "readings[value=0].half_above_hz",
+          "readings[value=4].half_above_hz",
+          "readings[value=5].half_above_hz",
+          "readings[value=64].half_above_hz",
+          "readings[value=127].half_above_hz"
+        ],
+        "values": [
+          250,
+          400,
+          630,
+          800,
+          1000,
+          250,
+          250,
+          250,
+          5000,
+          1600,
+          5000,
+          5000,
+          5000
+        ],
+        "why": "A five-state width on the same type, which powers up at 0. The five states are five widths; 5, 64 and 127 are the width of 0 and not the width of 4."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-05-09-the-amp-table-the-page-prints-short.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=1].largest_db",
+          "readings[value=2].largest_db",
+          "readings[value=3].largest_db",
+          "readings[value=0].heard_db",
+          "readings[value=3].heard_db"
+        ],
+        "values": [
+          2.22,
+          30.29,
+          46.93,
+          1.09,
+          -52.5,
+          -52.49
+        ],
+        "why": "A three-state amp table on a second type, asked one past its last state, under a different drive setting in each of the three records."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-05-09-the-bass-amp-fully-driven.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=1].largest_db",
+          "readings[value=2].largest_db",
+          "readings[value=3].largest_db",
+          "readings[value=0].heard_db",
+          "readings[value=3].heard_db"
+        ],
+        "values": [
+          -1.94,
+          27.64,
+          44.63,
+          -1.29,
+          -51.38,
+          -51.37
+        ],
+        "why": "A three-state amp table on a second type, asked one past its last state, under a different drive setting in each of the three records."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-05-09-the-bass-amp-barely-driven.json",
+        "keys": [
+          "readings[value=0].largest_db",
+          "readings[value=1].largest_db",
+          "readings[value=2].largest_db",
+          "readings[value=3].largest_db",
+          "readings[value=0].heard_db",
+          "readings[value=3].heard_db"
+        ],
+        "values": [
+          -2.53,
+          21.86,
+          40.56,
+          -4.34,
+          -63.79,
+          -63.78
+        ],
+        "why": "A three-state amp table on a second type, asked one past its last state, under a different drive setting in each of the three records."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/write-probe/40-03-under-04-02.json",
+        "keys": [
+          "regions[start=40 03 03].bytes[address=40 03 04].range",
+          "regions[start=40 03 03].bytes[address=40 03 04].classification",
+          "regions[start=40 03 03].bytes[address=40 03 09].range",
+          "regions[start=40 03 03].bytes[address=40 03 09].classification",
+          "regions[start=40 03 03].bytes[address=40 03 0B].range",
+          "regions[start=40 03 03].bytes[address=40 03 0B].classification",
+          "regions[start=40 03 03].bytes[address=40 03 07].range",
+          "regions[start=40 03 03].bytes[address=40 03 07].classification",
+          "regions[start=40 03 03].bytes[address=40 03 0E].range",
+          "regions[start=40 03 03].bytes[address=40 03 0E].classification",
+          "regions[start=40 03 03].classifications.accepts"
+        ],
+        "values": [
+          "00..7F",
+          "accepts",
+          "00..7F",
+          "accepts",
+          "00..7F",
+          "accepts",
+          "00..7F",
+          "accepts",
+          "00..7F",
+          "accepts",
+          20
+        ],
+        "why": "What the store does with these addresses, measured before any of this: all twenty slots of the block take every seven-bit value and read it back."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-0D-which-arm-the-switch-picks-over-the-whole-byte.json",
+        "keys": [
+          "readings[value=0].rate_hz",
+          "readings[value=1].rate_hz",
+          "readings[value=2].rate_hz",
+          "readings[value=63].rate_hz",
+          "readings[value=64].rate_hz",
+          "readings[value=65].rate_hz",
+          "readings[value=96].rate_hz",
+          "readings[value=126].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          0.8373,
+          0.8373,
+          0.8373,
+          0.8373,
+          9.9442,
+          9.9442,
+          9.9443,
+          9.9455,
+          9.9442
+        ],
+        "why": "The other spelling, over the whole byte. This slot powers up at 0 and the run asked in ascending order, so a value it did not take would have read slow -- 64, 65, 96 and 126 all read fast, which is the byte being taken."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-map/types.json",
+        "keys": [
+          "effects[type=01 00].parameters",
+          "effects[type=01 03].parameters",
+          "effects[type=01 21].parameters",
+          "effects[type=01 22].parameters",
+          "effects[type=04 01].parameters",
+          "effects[type=04 05].parameters",
+          "effects[type=11 06].parameters"
+        ],
+        "values": [
+          [
+            1,
+            69,
+            1,
+            52,
+            72,
+            0,
+            72,
+            56,
+            0,
+            56,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            127
+          ],
+          [
+            48,
+            1,
+            0,
+            127,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            64,
+            64,
+            64,
+            127
+          ],
+          [
+            1,
+            0,
+            68,
+            62,
+            40,
+            72,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            64,
+            64,
+            64,
+            96
+          ],
+          [
+            6,
+            113,
+            24,
+            127,
+            17,
+            120,
+            88,
+            64,
+            96,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            64,
+            64,
+            0,
+            127
+          ],
+          [
+            70,
+            127,
+            90,
+            1,
+            0,
+            80,
+            2,
+            1,
+            1,
+            76,
+            56,
+            2,
+            69,
+            54,
+            0,
+            8,
+            96,
+            102,
+            0,
+            80
+          ],
+          [
+            72,
+            100,
+            75,
+            1,
+            0,
+            48,
+            0,
+            0,
+            1,
+            66,
+            72,
+            1,
+            68,
+            64,
+            0,
+            5,
+            20,
+            102,
+            64,
+            76
+          ],
+          [
+            0,
+            48,
+            1,
+            1,
+            0,
+            1,
+            0,
+            68,
+            62,
+            40,
+            72,
+            1,
+            0,
+            0,
+            0,
+            0,
+            96,
+            127,
+            127,
+            127
+          ]
+        ],
+        "why": "What each type loads into each slot when it is selected. The whole reading turns on these: four of the five slots asked power up at 1 and one at 0, and a rule that returned the power-on value would have been indistinguishable if they had all powered up at the same place."
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "01 00 Low Freq, 200/400, 00/01",
+          "01 00 Hi Freq, 4k/8k, 00/01",
+          "01 00 M1 Q, 0.5/1.0/2.0/4.0/9.0, 00/01/02/03/04",
+          "01 03 Drive Sw, Off/On, 00/01",
+          "01 21 Polarity, Down/Up, 00/01",
+          "01 22 Speed, Slow/Fast, 00/7F",
+          "04 01 OD Sw, Off/On, 00/01",
+          "04 05 OD Sel, Odrv/Dist, 00/01",
+          "04 05 OD Amp, Small/BltIn/2-Stk, 00/01/02",
+          "11 06 AW Pol, Down/Up, 00/01"
+        ],
+        "read_as": "Evidence that a page prints a list of states against an address, and nothing about the unit. What the claim takes from the rows is how many states each list has and which byte values they are, so that `outside the list` is a thing the page fixes rather than a thing this project chose. The page prints this unit's two-state parameters two ways -- 54 as `00/01` and four as `00/7F` -- and the claim is about the first of those."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "A parameter of this period whose page prints a short list of states is an index into a table, and the write path tests it before it stores it.",
+        "why": "A handful of printed states against a byte that carries a hundred and twenty-eight is an index, and an index read without a bound test walks off the end of its table into whatever follows it. A machine that has to survive a MIDI file written by anybody tests the value instead, and the cheapest thing to do with one that fails is nothing.",
+        "would_be_wrong_if": "A value past the list reached a state at all -- clamped to the last, folded to the first, or reaching something not on the list. Two of those were asked for and neither happened."
+      }
+    ],
+    "community": []
+  },
+  "adds": "Each cited record says what one slot did at the settings it was asked at. None of them says what happens to a value the page has no state for, because each on its own has at least two readings that fit it: the runs that swept past a printed list all reset and reloaded the type between settings, which put the parameter's loaded value and its standing value in the same place, and the one slot anybody had looked at past its list powers up at 0, where folding to the first state, returning the loaded value and keeping the current one are three names for the same number. What is added is the pair that pulls them apart -- nought against two, written in that order with nothing reset in between, on slots that power up at 1 -- and the reading of all of them together as one rule rather than as a habit of one type.",
+  "alternatives": [
+    {
+      "reading": "The engine reads the byte as nought against not-nought, so every value from 1 up reaches the second state.",
+      "standing": false,
+      "ruled_out_by": "Nought against two is null on all five slots, and four of them -- 01 03 40 03 04, 01 21 40 03 09, 04 01 40 03 0B, 11 06 40 03 0E -- power up in the second state. Under this reading that pair is the two states against each other and would have read as loud as nought against one did, which on those four is 11.74 to 15.49 dB of level over a yardstick 33.1 to 39.8 dB down. The store read the 2 back as 02 in every one of them, so it is not a clamp on the way in."
+    },
+    {
+      "reading": "A value past the list folds back to the first state.",
+      "standing": false,
+      "ruled_out_by": "The two-state corners of 01 00 power up in the second state, and every value from 2 to 127 reads where the second state reads -- the low corner's half-power point at 315 Hz against the first state's 200 Hz. The reading held only because the one slot it was first noticed on, the five-state width, powers up at 0, where folding to the first state and keeping the current one are the same answer."
+    },
+    {
+      "reading": "A value past the list puts the parameter back to the value the type loads it with.",
+      "standing": false,
+      "ruled_out_by": "Nought against two is null on the four slots whose loaded value is 1. The contrast writes the pair in order with no reset between, so the parameter is standing at 0 when the 2 arrives; under this reading it would have gone to 1 and the pair would have been audible. It is not. Every run that had asked this before reset and reloaded the type between settings, which put the loaded value and the standing value in the same place and is why the two readings had never come apart."
+    },
+    {
+      "reading": "A value past the list is clamped to the last state.",
+      "standing": false,
+      "ruled_out_by": "The five-state width reads 5, 64 and 127 at the width of state 0, not of state 4: band for band they are within 0.06 dB of state 0 while the four real states stand 3.46 to 10.31 dB away from it. The three-state amp table of 04 05 reads its value 3 on state 0's profile in all three of the records that asked it -- 21 to 27 of 113 bands outside their own repeat floor and at worst 5 times it, against 104 to 110 bands and 48 to 532 times it for either real state."
+    },
+    {
+      "reading": "The engine reads the bottom bit of the byte.",
+      "standing": false,
+      "ruled_out_by": "One against two is null on all five slots: the two settings sit between 2.31 dB under and 0.13 dB over the yardstick those settings' own repeats set, against the 6 dB a verdict has to clear, and the level moves under 0.02 dB. Under this reading it is the two states against each other."
+    },
+    {
+      "reading": "The value is dropped on its way to the engine rather than ignored when the engine reads it -- the write path tests it, or the parameter is read through a table lookup that has no row for it.",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "ruled_out_by": null,
+      "separated_by": {
+        "observable": "Where in the path the byte stops. Nothing that leaves the sockets reports it.",
+        "predicts": {
+          "dropped on the way in": "the parameter goes on sounding what it had",
+          "ignored on the way out": "the parameter goes on sounding what it had"
+        },
+        "sensitivity_here": "Not applicable: the two predict the same sound and the same read-back, which is 02 for a write of 02 either way.",
+        "margin": 1,
+        "why_not_separable": "Both put the same number in the store and the same state in the engine. Separating them needs the code, and this project measures a machine from outside it."
+      }
+    }
+  ],
+  "refuted_by": "A slot whose page prints a list of states, asked from one of them at a value outside the list, coming back audible. Cheapest on a slot that powers up in a state it is not being written from: on this unit that is any of the four asked here at nought against two, and the same pair on a printed list longer than two would extend it further. It would also be refuted by a slot where the store does not read back what was written, because then the refusal is the store's and this claim is about the wrong thing.",
+  "what_it_would_change": [
+    "A renderer given a MIDI file that writes 2 to a two-state effect parameter must leave the parameter alone. Setting it to the second state is what every reading of the byte short of this one implies, and it is wrong in the one direction that is audible: the parameter is left wherever the file last put it, which after a type change is the value the type loads.",
+    "inferences/roland-sc8850-01/width-the-byte-halves-the-printed-table.json reads its own three settings past the fifth as returning the first entry, and now says that its slot also powers up there and that its takes cannot tell the two apart. Which of them it is, is this claim's, and the answer is neither: the parameter holds what it held, which in a run that reloads the type between settings is the same number."
+  ],
+  "what_this_does_not_settle": [
+    "Whether all 54 of the slots this page prints `00/01` against follow it. Five were asked, and two more were already swept over the whole byte for another question. The other 47 carry a verdict at nought against one and nothing above it.",
+    "Whether one mechanism accounts for both spellings. The four slots printed `00/7F` take every byte and turn over at the top bit, and the ones printed `00/01` take two values. A single rule that scales the byte by the printed top would produce both, and nothing measured here asks it to.",
+    "What happens to a value below a list that does not start at nought. Every list on this page starts at 00, so the question has no slot on this unit.",
+    "Where in the path the value is dropped, which is carried as an alternative that this test cannot separate rather than as an open question."
+  ],
+  "the_slots_asked_and_where_each_powers_up": [
+    {
+      "type": "01 03",
+      "address": "40 03 04",
+      "printed": "Drive Sw (Off/On)",
+      "powers_up_at": 1,
+      "nought_against_one_db": 11.938,
+      "nought_against_two_db": -0.011,
+      "its_own_yardstick_db": -35.92,
+      "the_store_read_back": [
+        {
+          "setting": 0,
+          "reads": "00",
+          "took": true
+        },
+        {
+          "setting": 2,
+          "reads": "02",
+          "took": true
+        }
+      ]
+    },
+    {
+      "type": "01 21",
+      "address": "40 03 09",
+      "printed": "Polarity (Down/Up)",
+      "powers_up_at": 1,
+      "nought_against_one_db": 11.74,
+      "nought_against_two_db": 0.007,
+      "its_own_yardstick_db": -39.76,
+      "the_store_read_back": [
+        {
+          "setting": 0,
+          "reads": "00",
+          "took": true
+        },
+        {
+          "setting": 2,
+          "reads": "02",
+          "took": true
+        }
+      ]
+    },
+    {
+      "type": "04 01",
+      "address": "40 03 0B",
+      "printed": "OD Sw (Off/On)",
+      "powers_up_at": 1,
+      "nought_against_one_db": 15.49,
+      "nought_against_two_db": -0.01,
+      "its_own_yardstick_db": -33.12,
+      "the_store_read_back": [
+        {
+          "setting": 0,
+          "reads": "00",
+          "took": true
+        },
+        {
+          "setting": 2,
+          "reads": "02",
+          "took": true
+        }
+      ]
+    },
+    {
+      "type": "04 05",
+      "address": "40 03 07",
+      "printed": "OD Sel (Odrv/Dist)",
+      "powers_up_at": 0,
+      "nought_against_one_db": 11.931,
+      "nought_against_two_db": -0.014,
+      "its_own_yardstick_db": -37.35,
+      "the_store_read_back": [
+        {
+          "setting": 0,
+          "reads": "00",
+          "took": true
+        },
+        {
+          "setting": 2,
+          "reads": "02",
+          "took": true
+        }
+      ]
+    },
+    {
+      "type": "11 06",
+      "address": "40 03 0E",
+      "printed": "AW Pol (Down/Up)",
+      "powers_up_at": 1,
+      "nought_against_one_db": 11.936,
+      "nought_against_two_db": -0.016,
+      "its_own_yardstick_db": -33.37,
+      "the_store_read_back": [
+        {
+          "setting": 0,
+          "reads": "00",
+          "took": true
+        },
+        {
+          "setting": 2,
+          "reads": "02",
+          "took": true
+        }
+      ]
+    }
+  ],
+  "why_the_control_is_in_the_run": "Four of the five verdicts wanted here are nulls, and a null from a chain that was not routed that evening is the same null as one from a byte that was not taken. So nought against one was taken again on every slot rather than carried from the run three days before that established it. It came back at 11.938, 11.740, 15.490, 11.931 and 11.936 dB against that run's 11.92, 11.73, 15.50, 11.93 and 11.95 -- the same comparison, within two hundredths of a decibel."
+}
