@@ -1,0 +1,122 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "contrast",
+    "invocation": [
+      "contrast",
+      "--address",
+      "40 03 05",
+      "--values",
+      "0,1",
+      "--prepare",
+      "40 03 00=01 11",
+      "--prepare",
+      "40 42 22=01",
+      "--stimulus",
+      "struck_kit",
+      "--takes",
+      "4",
+      "--audio",
+      "Scarlett",
+      "--save",
+      "~/Projects/soundings/.cache/takes/three-state-and-breadth/distortion-amp-switch/40-03-05-nought-and-one",
+      "--out",
+      "data/units/roland-sc8850-01/contrast/40-03-05-distortion-amp-switch-nought-and-one.json"
+    ],
+    "measured_at": "2026-09-19T15:49:02+00:00",
+    "elapsed_s": 50.2,
+    "midi_device_id": "10",
+    "midi_model_id": "42"
+  },
+  "device_id": "10",
+  "controller": null,
+  "address": "40 03 05",
+  "values": [
+    0,
+    1
+  ],
+  "prepared": [
+    {
+      "address": "40 03 00",
+      "bytes": "01 11"
+    },
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    }
+  ],
+  "prepared_caveat": "Everything here was measured with the unit put in the state above, and a null is about that state as much as about the address. A parameter the prepared state does not reach -- an insertion effect parameter its loaded type has no use for, say -- reads as inaudible here while another state may hear it. The state also holds every controller still except the one under test, so a parameter that does nothing but scale what a moving controller does has nothing here to scale.",
+  "reset_before_each_setting": false,
+  "stimuli": [
+    {
+      "name": "struck_kit",
+      "program": 0,
+      "note": 49,
+      "velocity": 100,
+      "channel": 1,
+      "writes": [
+        [
+          "40 12 15",
+          1
+        ]
+      ],
+      "also": [],
+      "moves": [],
+      "during": [],
+      "hold_s": 0.15,
+      "captured_s": 4.0,
+      "lead_s": 0.6,
+      "sees": "a modulated delay, being broadband, aperiodic and on a melodic part all at once, which nothing else here manages",
+      "blind_to": "anything keyed to pitch, and anything a rhythm part is excluded from -- which is the thing it is partly there to find out"
+    }
+  ],
+  "setting_read_back": [
+    {
+      "setting": 0,
+      "reads": "00",
+      "took": true
+    },
+    {
+      "setting": 1,
+      "reads": "01",
+      "took": true
+    }
+  ],
+  "why_read_back": "The setting under test was read back after each write, as the preparation already was. An address that takes a write and keeps what it had leaves both sets of takes at one setting, which reads as a parameter that does nothing -- a null indistinguishable from a real one with nothing in the record to tell them apart. An address that answers no one-byte read is recorded as unchecked rather than refused, since some are readable only as part of a wider region and refusing them would drop them from the sweep for being unreadable.",
+  "method": "The same note was played several times under each setting. Takes of one setting are compared with each other to measure what the unit fails to repeat, and takes of the two settings are compared the same way to measure the change. The second must clear the first by the margin, so a unit that repeats badly cannot be read as a parameter that does something. Level is judged separately, because the alignment divides out the best fitting gain and a parameter that only changes level would otherwise leave no trace. A parameter is asked under one or more named stimuli, because a null is a fact about the note as much as about the parameter, and the answer over a set of them is a union.",
+  "label": "address 40 03 05 0 against 1",
+  "audible": true,
+  "heard_by": [
+    "struck_kit"
+  ],
+  "not_heard_by": [],
+  "inconclusive_under": [],
+  "conclusive": true,
+  "verdict_rule": "Audible under any stimulus is audible: one note hearing the change proves the parameter reaches the signal path, and the others failing to hear it says only that they asked the wrong question. The reverse does not hold, so a null carries the list of what was tried. A stimulus whose takes of one setting barely resemble each other is reported as inconclusive rather than as a null, since no change could have cleared that yardstick.",
+  "by_stimulus": [
+    {
+      "label": "address 40 03 05 0 against 1",
+      "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
+      "stimulus_name": "struck_kit",
+      "takes_per_setting": 4,
+      "same_setting_residual_db": -30.6,
+      "each_setting_unrepeatable_db": [
+        -39.68,
+        -37.87
+      ],
+      "across_setting_residual_db": -4.94,
+      "same_setting_level_db": -0.03,
+      "across_setting_level_db": 5.948,
+      "across_setting_level_is_a_lower_bound": false,
+      "margin_db": 6.0,
+      "noise_floor_db": -51.05,
+      "changed_the_shape": true,
+      "changed_the_repeatability": false,
+      "changed_the_level": false,
+      "audible": true,
+      "inconclusive": false,
+      "caveat": "A null is about this stimulus. A parameter heard only on a longer note, at another velocity, or after note-off would read as inaudible here."
+    }
+  ]
+}
