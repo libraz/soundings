@@ -51,7 +51,12 @@ METHOD = (
 LIMITS = (
     "`slowest_measurable_hz` is the slowest rate this take was long enough to carry "
     "two cycles of, and a reading within a few per cent of it is a floor rather than "
-    "a rate. `heard_db` is the level over the take of the one channel named in "
+    "a rate. `fastest_measurable_hz` is the top of the band the period was looked for "
+    "in, and it is not a property of the take: a modulation above it cannot be "
+    "returned whatever the take holds, and what comes back instead is a divisor of it "
+    "that does fit. A reading near half the ceiling is the one to check against "
+    "`lines`, which are found in the same band but are not made to choose. "
+    "`heard_db` is the level over the take of the one channel named in "
     "`channel`: a "
     "reading taken from a take near the noise floor is a reading of the floor, and it "
     "is stable, which is what makes it dangerous. `settled_s` is how long the run "
@@ -162,15 +167,22 @@ def _read_take(
         # record's own channel block, so both stages say this the same way.
         "_own": int(np.argmax(takes.channel_levels(samples))),
         "slowest_measurable_hz": swings[0].get("slowest_measurable_hz") if swings else None,
+        "fastest_measurable_hz": rates.FASTEST_HZ,
         "hold_s": round(hold, 3),
         "take": name,
     }
     if shared_lines:
-        # What the partials' level spectra have in common, for the takes that may
-        # hold more than one modulation. A vote returns one answer and can land
-        # between two lines; this returns both, so a type with a modulator per
-        # stage is readable without silencing either.
-        reading["lines"] = rates.common(body, rate)
+        # What the partials' spectra have in common, for the takes that may hold
+        # more than one modulation. A vote returns one answer and can land between
+        # two lines; this returns both, so a type with a modulator per stage is
+        # readable without silencing either.
+        #
+        # Both series: the same rate's harmonics come out in different proportions
+        # in each, so a line plain in one can be buried in the other. Neither is a
+        # check on the other for whether a rate is the rate -- see `rates.LEVEL`.
+        reading["lines"] = rates.common(body, rate, which=rates.LEVEL)
+        reading["lines_in_the_frequency_series"] = rates.common(
+            body, rate, which=rates.FREQUENCY)
     return reading
 
 

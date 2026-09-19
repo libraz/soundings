@@ -367,24 +367,51 @@ APART = 0.05
 
 
 
-def spectrum(signal: np.ndarray, rate: int, how_many: int = 4) -> tuple[np.ndarray, np.ndarray]:
-    """The summed spectrum of the partials' level series, and its frequency axis.
+LEVEL, FREQUENCY = "level", "frequency"
+"""The two series a modulator can be read off, named so a caller says which.
+
+They put their energy in different harmonics of the same rate, so a line plain in
+one can be buried in the other, and which is which is not predictable from the
+type. Read whichever the question needs, and where a rate is in doubt read both.
+
+**Neither breaks the tie the other cannot.** A sweep that crosses a cancellation
+on the way up and again on the way down puts every event at half the period, and
+the fundamental leaves *both* series: the pull on a partial follows where the
+notch sits relative to it, not which way the sweep is going. A flanger with no
+loop does exactly this, which is the printed centre of its feedback byte, which is
+where every run that is not asking about the loop parks it. What tells a rate from
+twice it there is a sweep of that neighbouring byte, not a second series.
+"""
+
+
+def spectrum(
+    signal: np.ndarray, rate: int, how_many: int = 4, which: str = LEVEL
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """The summed spectrum of the partials' series, its frequency axis, and the
+    width one line occupies on it.
 
     Each partial is normalised before the sum so that a loud partial does not
     decide the answer on its own -- the question is which period they share, not
     which of them is loudest.
+
+    The width is returned because the transform is zero-padded: the grid is far
+    finer than the take can resolve, so a caller cutting a line out by counting
+    bins would cut a hundredth of it. What sets the width is the length of the
+    series, and it is the same for every line on the axis.
     """
     signal = np.asarray(signal, dtype=np.float64)
     step = max(1, int(rate / READ_AT_HZ))
     srate = rate / step
-    total = None
+    total, width = None, 0.0
     for centre in partials(signal, rate, how_many):
-        _, amplitude = demodulate(signal, rate, centre)
+        swing, amplitude = demodulate(signal, rate, centre)
         edge = int(0.15 * rate)
-        amplitude = amplitude[edge:-edge]
-        in_db = 20.0 * np.log10(np.maximum(amplitude, amplitude.max() * 1e-6))
-        whole = (in_db.size // step) * step
-        thinned = in_db[:whole].reshape(-1, step).mean(axis=1)
+        swing, amplitude = swing[edge:-edge], amplitude[edge:-edge]
+        series = (swing if which == FREQUENCY
+                  else 20.0 * np.log10(np.maximum(amplitude, amplitude.max() * 1e-6)))
+        whole = (series.size // step) * step
+        thinned = series[:whole].reshape(-1, step).mean(axis=1)
+        width = srate / thinned.size
         thinned = (thinned - thinned.mean()) * np.hanning(thinned.size)
         magnitude = np.abs(np.fft.rfft(thinned, n=1 << 16))
         peak = magnitude.max()
@@ -392,15 +419,72 @@ def spectrum(signal: np.ndarray, rate: int, how_many: int = 4) -> tuple[np.ndarr
             magnitude = magnitude / peak
         total = magnitude if total is None else total + magnitude
     if total is None:
-        return np.empty(0), np.empty(0)
+        return np.empty(0), np.empty(0), 0.0
     freq = np.fft.rfftfreq(1 << 16, 1.0 / srate)
     inside = (freq >= BAND_HZ[0]) & (freq <= BAND_HZ[1])
-    return freq[inside], total[inside] / total.max()
+    return freq[inside], total[inside] / total.max(), width
 
 
-def common(signal: np.ndarray, rate: int, how_many: int = 5) -> list[tuple[float, float]]:
-    """The strongest lines the partials share, tallest first, heights relative to the tallest."""
-    freq, power = spectrum(signal, rate)
+NEARBY = 1.6
+"""How far either side of a frequency its floor is read, as a ratio.
+
+A modulation spectrum falls steeply across this band, so a median over the whole
+of it sits below the roughness at the bottom and above it at the top -- which
+reports a line wherever the question is asked low and hides one wherever it is
+asked high. Read off one partial that put a control at 469 times its floor where
+a local window put it at 1.6. Summed over four partials and normalised the two
+floors come out close, so this is insurance on the single-partial case rather
+than a correction to every reading.
+"""
+
+CUT_WIDTHS = 3
+"""How many line widths either side of a frequency are the line rather than floor."""
+
+
+def over_the_floor(
+    freq: np.ndarray, power: np.ndarray, width: float, hz: float, lines=()
+) -> float | None:
+    """How far the spectrum stands at `hz` above the roughness beside it.
+
+    The roughness is read from a window around `hz` rather than from the band, and
+    every line the take is expected to carry is cut out of it first -- so a tall
+    line does not raise the bar it is itself judged against.
+
+    `None` where there is no roughness left to measure: at the bottom of the band
+    a line is wider than the gap to its neighbours, so the window is entirely cut
+    away and the question cannot be asked of this take. Returned rather than
+    reported as nothing, which is the answer a caller would act on.
+    """
+    if freq.size == 0 or width <= 0 or hz <= 0:
+        return None
+    cut = CUT_WIDTHS * width
+    keep = (freq >= hz / NEARBY) & (freq <= hz * NEARBY)
+    for line in [*lines, hz]:
+        if line > 0:
+            keep &= np.abs(freq - line) > cut
+    within = np.abs(freq - hz) <= cut
+    if not keep.any() or not within.any():
+        return None
+    floor = float(np.median(power[keep]))
+    return float(power[within].max() / floor) if floor > 0 else None
+
+
+def _rounded(value: float | None) -> float | None:
+    """A height rounded for publication, keeping `None` as the absence it is."""
+    return None if value is None else round(value, 2)
+
+
+def common(
+    signal: np.ndarray, rate: int, how_many: int = 5, which: str = LEVEL
+) -> list[dict]:
+    """The strongest lines the partials share, tallest first.
+
+    Each line carries two heights, because they answer different questions. How
+    tall it stands against the tallest line says which of the lines here matters;
+    how far it stands out of the roughness beside it says whether it is a line at
+    all. A reading that only has the first cannot tell a small line from none.
+    """
+    freq, power, width = spectrum(signal, rate, which=which)
     if freq.size == 0:
         return []
     peaks = [
@@ -409,10 +493,15 @@ def common(signal: np.ndarray, rate: int, how_many: int = 5) -> list[tuple[float
         if power[i] > power[i - 1] and power[i] > power[i + 1]
     ]
     peaks.sort(key=lambda i: -power[i])
-    found: list[tuple[float, float]] = []
+    found: list[dict] = []
     for i in peaks:
-        if all(abs(freq[i] - held) > APART * freq[i] for held, _ in found):
-            found.append((round(float(freq[i]), 4), round(float(power[i]), 3)))
+        if all(abs(freq[i] - held["hz"]) > APART * freq[i] for held in found):
+            found.append({
+                "hz": round(float(freq[i]), 4),
+                "of_the_tallest": round(float(power[i]), 3),
+                "over_the_floor": _rounded(
+                    over_the_floor(freq, power, width, float(freq[i]))),
+            })
         if len(found) == how_many:
             break
     return found
@@ -440,7 +529,7 @@ def fundamental(signal: np.ndarray, rate: int) -> dict | None:
     answer, and each of its divisors is tested: the answer is the smallest one that
     is itself a peak of some substance and that accounts for the other strong lines.
     """
-    freq, power = spectrum(signal, rate)
+    freq, power, _ = spectrum(signal, rate)
     if freq.size == 0:
         return None
     tallest = freq[int(np.argmax(power))]
@@ -455,7 +544,7 @@ def fundamental(signal: np.ndarray, rate: int) -> dict | None:
     # still landing on the tallest itself, and an energy score does not notice that:
     # injected at 0.90 Hz, the fourth of the tallest was preferred to the third,
     # which explained every strong line while the fourth explained two of five.
-    strong = common(signal, rate, how_many=8)
+    strong = [(line["hz"], line["of_the_tallest"]) for line in common(signal, rate, 8)]
     scored: list[tuple[float, float, int]] = []
     for divisor in range(1, DIVIDE_BY + 1):
         candidate = tallest / divisor
@@ -479,21 +568,23 @@ def fundamental(signal: np.ndarray, rate: int) -> dict | None:
     }
 
 
-def height_at(signal: np.ndarray, rate: int, hz: float) -> float:
+def height_at(
+    signal: np.ndarray, rate: int, hz: float, which: str = LEVEL, lines=()
+) -> float | None:
     """How tall the shared spectrum stands at one frequency, over its own floor.
 
-    Reported as a ratio to the median of the band rather than to the tallest line,
-    because the question this answers is whether a line is there at all -- and the
-    tallest line moves from take to take while the floor does not.
+    A ratio to the roughness rather than to the tallest line, because the question
+    this answers is whether a line is there at all -- and the tallest line moves
+    from take to take while the roughness does not. The frequency is the caller's:
+    this is the reading to use where a rate is already known from somewhere else
+    and what is wanted is whether this take carries it, which is the one question
+    a period picker cannot be asked.
+
+    `lines` are the other frequencies the take is expected to carry, so that a
+    neighbouring harmonic is not counted as roughness.
     """
-    freq, power = spectrum(signal, rate)
-    if freq.size == 0:
-        return 0.0
-    inside = np.abs(freq - hz) <= APART * hz
-    if not inside.any():
-        return 0.0
-    floor = float(np.median(power))
-    return float(power[inside].max() / floor) if floor > 0 else 0.0
+    freq, power, width = spectrum(signal, rate, which=which)
+    return over_the_floor(freq, power, width, hz, lines)
 
 
 
