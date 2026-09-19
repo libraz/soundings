@@ -72,13 +72,12 @@ WHY_SILENT_PAIR = (
 WHY_THE_TAKES_HAD_NO_FLOOR = (
     "The run would not answer this pair. At one of its settings the take carried no silence "
     "before the note, so the noise floor -- the yardstick every number here is judged against "
-    "-- was the parameter's own output, and nothing measured from those takes would have meant "
-    "anything. The refusal beside this names the tail of the take before it as the cause; the "
-    "takes do not bear that out. A tail falls take over take and these are flat across every "
-    "take of the run, with the first one silent and every one after it at the same level. What "
-    "does not stop is what the parameter is: a delay at either end of its feedback range loses "
-    "a sixth of a decibel per repeat, and a hum at its own level does not decay at all. Asked "
-    "again at a pair whose settings die away between takes."
+    "-- was something already sounding, and nothing measured from those takes would have meant "
+    "anything. The refusal beside this names the tail of the take before it, which is one of "
+    "two things that leave a take without a floor and not the one that has to be true: a tail "
+    "falls from take to take, and a setting the parameter never brings to an end holds at a "
+    "level instead. Which of them it was is read off the takes the run kept and is not decided "
+    "here. Asked again at a pair the parameter lets go of between takes."
 )
 
 #: An address whose pair named a value the page gives its parameter none of.
