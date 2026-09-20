@@ -475,25 +475,14 @@
       "equivalent_under_this_test": false,
       "ruled_out_by": null,
       "separated_by": {
-        "observable": "How long the output takes to depart from the input after a shift is written, at one ratio, read on a struck note against the same note with the effect out.",
+        "observable": "Whether the output holds a copy of itself at a fixed lag, read off one take by the cepstral stage this archive reads its delay ladder with. Two read-outs overlapped are two copies of the source present at once, a fixed distance apart; one read-out spliced at its own length is one copy at a time and no fixed lag at all. Where the shift is not unison the lag the output carries is the stored offset divided by the ratio, because the read-out scales the time axis the copies are separated on as well as the pitch.",
         "predicts": {
-          "one window, spliced at its own length": "the departure begins one window after the write and not before it",
-          "an overlapped window with a crossfade": "the departure begins where the crossfade does, which is earlier than the window by the overlap"
+          "one window, spliced at its own length": "no lag stands over the chain's own structure at any shift, because at every instant the output is one copy of the source and a single copy leaves a log spectrum as smooth as the one it came from",
+          "an overlapped window with a crossfade": "a lag stands, it is the same stored offset at every state of the mode byte divided by the ratio the pitch bytes ask for, and at unison -- where nothing drifts and nothing splices -- it is the offset itself"
         },
-        "sensitivity_here": "The windows are 32 to 128 ms and the archive's arrival stage resolves an onset well inside a millisecond on this rig, so an overlap of even a tenth of the shortest window is two orders over what the reading would have to separate.",
-        "margin": 30,
-        "why_not_separable": null,
-        "run": {
-          "stage": "arrival",
-          "types": [
-            "01 60"
-          ],
-          "addresses": [
-            "40 03 0B"
-          ],
-          "minutes": 25,
-          "why": "A struck note through the type at one shift, at the shortest window and the longest, against the same note with the part routed past the effect. The two windows are four times apart, so the two readings are their own control: an overlap is a fraction of the window and scales with it, while a fixed crossfade does not. The stage already exists and the takes are short, which is why this is twenty-five minutes rather than an hour -- what it needs is the onset, not eight seconds of holding."
-        }
+        "sensitivity_here": "The stage places a time on the capture's own sample, which is a fiftieth of a millisecond against offsets of tens of milliseconds, so resolution is not what bounds this. What bounds it is whether the copy stands over the structure the chain puts into a log spectrum on its own, and that is measured rather than assumed: the run's control take -- the same note with the part routed past the effect -- is subtracted from every row, and how far each row stood over its own take's roughness is published beside it. The mode byte is the control the question needs on top of that. Its five states are four times apart end to end, so a lag that is the chain's does not move with it and a lag that is the read-out's has to.",
+        "why_the_booked_run_was_withdrawn": "This entry booked twenty-five minutes on the `arrival` stage and neither half of that was right. The stage reads three levels over three windows of one length -- a take's lead, the window a direct sound arrives in and the window a delay's return arrives in -- and it refuses by name any type whose return begins before the direct sound has ended, which a pitch shifter's does at every setting. It returns no onset and no time at all. The quantity the entry named is also not one two takes can carry: measuring how long after a write the output departs means timing the write, and the scatter between two takes on this rig is milliseconds, which this archive's own delay reading states as the reason it works from one take rather than two. The thing in dispute is a fraction of a window, and the shortest window here is thirty-two milliseconds. The booking is withdrawn rather than re-priced.",
+        "why_not_separable": "Not by a booking, and the obstruction is in what was booked rather than in the unit. The stage this entry named returns three levels over three windows and no time at all, and it refuses by name the shape a pitch shifter has; the quantity it named is also not one two takes can carry, for the reason this archive's own delay reading gives for working from one. What is missing is therefore a reading rather than a booking, and the reading is a stage this archive already has pointed at takes it already holds: the mode byte was swept at two shifts on one shifter and at one shift on the other, every pass carries its own control take, and a pitch byte was swept at unison in the same session. Nothing here waits on the unit."
       }
     },
     {
