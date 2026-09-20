@@ -1,0 +1,462 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-20T07:28:42+00:00",
+    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 60"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 04",
+        "40 03 0B"
+      ]
+    }
+  },
+  "claim": "Type `01 60`'s pitch bytes are not read by anything that runs at a rate of its own. They are read out of a window, and the output repeats every time the read-out has drifted that window's length -- so the rate a take carries is `|r - 1| / T`, where `r` is the ratio the two pitch bytes ask for and `T` is the window. Across the coarse byte the ratio was moved from a quarter to double, which is `|r - 1|` from 0.056 to 1.000, and the rate moved with it from 0.90 to 15.63 Hz: over that factor of eighteen `T` stays between 62.1 and 64.7 ms. At unison the line is not slow, it is gone -- byte 64 returns 4.81 Hz, which is this voice's own amplitude wobble and the same figure the fine byte returns at its own unison. On the fine byte, which reaches ratios three orders closer to one than the coarse byte's smallest step does, the four settings whose implied rate clears the run's own floor of 0.3033 Hz come back at 0.4504 to 0.9384 Hz and give `T` of 63.21 to 63.74 ms, while every setting between them returns the voice's wobble instead -- which is what a window rate under the floor looks like and is not something a clock of the stage's own could do. The byte the page prints `Shift Mode` against, over five states and with no unit beside them, moves `T` and moves nothing else. Its five states return 32.00, 42.68, 63.78, 85.27 and 128.0 ms, which is the ratio 3 : 4 : 6 : 8 : 12, read at two shifts an octave apart. The shortest is 1024 steps of the 32000 Hz clock this archive already reads this unit's delay ladder as cut to; the third is 2048 of them and the fifth is 4096, so three of the five are successive powers of two and the two between them sit a fourth and a fifth along -- two octaves reached in four steps. Read at the octave, where the two shortest windows put the rate past the 20 Hz ceiling this reading searches to, those two and only those two come back at exactly half: 15.6261 where 31.25 is asked for, and 11.7221 where 23.44 is.",
+  "named": "a time-domain splicer: one window read out at the pitch ratio and re-entered every time the read-out has drifted the window's length, with a mode byte that picks which of five windows is used",
+  "adds": "Nothing structural had been read on this type. The archive held no reading of either pitch byte and none of the mode byte, whose page prints five numbered states and no unit at all -- so what the number counted was not merely unknown, it had no candidate quantity. This says what it is the length of, and it says it in the unit the rest of this machine's delays are already measured in. It also supplies the one thing a pitch byte's own sweep cannot: a null. A shifter asked for no shift produces no splice, so the setting at the middle of both bytes is the run's own control and it sits inside the sweep rather than beside it.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-60-03-the-coarse-pitch-byte-with-one-shifter-in-the-path.json",
+        "keys": [
+          "readings[value=40].rate_hz",
+          "readings[value=52].rate_hz",
+          "readings[value=63].rate_hz",
+          "readings[value=64].rate_hz",
+          "readings[value=65].rate_hz",
+          "readings[value=71].rate_hz",
+          "readings[value=76].rate_hz",
+          "readings[value=64].agreeing",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          11.9163,
+          7.816,
+          0.904,
+          4.8052,
+          0.9353,
+          7.7841,
+          15.629,
+          4,
+          [
+            40,
+            52,
+            62,
+            63,
+            64,
+            65,
+            66,
+            68,
+            71,
+            76
+          ],
+          [
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "02"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-60-04-the-fine-pitch-byte-at-unison-coarse.json",
+        "keys": [
+          "readings[value=14].rate_hz",
+          "readings[value=39].rate_hz",
+          "readings[value=62].rate_hz",
+          "readings[value=64].rate_hz",
+          "readings[value=89].rate_hz",
+          "readings[value=114].rate_hz",
+          "readings[value=39].slowest_measurable_hz",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          0.8805,
+          0.4504,
+          4.9219,
+          4.8107,
+          0.4598,
+          0.9384,
+          0.3033,
+          [
+            14,
+            39,
+            54,
+            59,
+            62,
+            64,
+            66,
+            69,
+            74,
+            89,
+            114
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "02"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-60-0b-the-mode-byte-at-a-major-third.json",
+        "keys": [
+          "readings[value=0].rate_hz",
+          "readings[value=1].rate_hz",
+          "readings[value=2].rate_hz",
+          "readings[value=3].rate_hz",
+          "readings[value=4].rate_hz",
+          "readings[value=4].rates",
+          "held"
+        ],
+        "values": [
+          8.1238,
+          6.09,
+          4.075,
+          3.0482,
+          2.2393,
+          [
+            2.2866,
+            2.0483,
+            2.0443,
+            2.1919
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "44"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-60-0b-the-mode-byte-at-the-octave.json",
+        "keys": [
+          "readings[value=0].rate_hz",
+          "readings[value=1].rate_hz",
+          "readings[value=2].rate_hz",
+          "readings[value=3].rate_hz",
+          "readings[value=4,take=held-16-004-00.wav].rate_hz",
+          "readings[value=4,take=held-16-004-01.wav].rate_hz",
+          "held"
+        ],
+        "values": [
+          15.6261,
+          11.7221,
+          15.6286,
+          11.7235,
+          7.8141,
+          7.8118,
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "4C"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "01 60 2 Pitch Shifter, address_lsb 03, Coarse 1, -24-0-+12",
+          "01 60 2 Pitch Shifter, address_lsb 04, Fine 1, -100-0-+100",
+          "01 60 2 Pitch Shifter, address_lsb 0B, Shift Mode, 1-3-5, 00-04"
+        ]
+      }
+    ],
+    "era_priors": [],
+    "community": []
+  },
+  "alternatives": [
+    {
+      "reading": "A clock inside the stage runs at a fixed rate and the pitch bytes only change what is read out, so the periodicity is the clock's and not a drift's.",
+      "standing": false,
+      "ruled_out_by": "A fixed clock returns one rate down a sweep. The coarse byte moves the rate from 0.9040 to 15.6290 Hz, a factor of 17.3, and does it monotonically in `|r - 1|` on both sides of unison -- 0.9353 at a ratio above one and 0.9040 at the one an equal distance below. What stays fixed across that is the length the two imply, not the rate."
+    },
+    {
+      "reading": "The periodicity is the shifted voice beating against the direct path, which is what any two copies a semitone apart do.",
+      "standing": false,
+      "ruled_out_by": "A beat between two copies of a tone is at `|r - 1|` times the tone's own frequency, so on this carrier the major third would beat at 114 Hz and the octave at 440. The readings are 4.08 and 15.63 Hz. The run also put the balance at the top of its byte and the second shifter's level at nought, so the direct path is out of the mixture and there is no second copy to beat with."
+    },
+    {
+      "reading": "The shift is done in the frequency domain, and the periodicity is the transform's own hop rather than a splice.",
+      "standing": false,
+      "ruled_out_by": "A hop is a property of the transform and not of the shift, so it would return one rate at every ratio -- the same reading the fixed clock alternative is refuted by. It would also not vanish at unison, where a transform still hops and this stage returns the bypassed voice's own line."
+    },
+    {
+      "reading": "`T` is the interval between splices and the window read out is longer than it, overlapped and crossfaded, so the length named here is not the length of anything stored.",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "ruled_out_by": null,
+      "separated_by": {
+        "observable": "How long the output takes to depart from the input after a shift is written, at one ratio, read on a struck note against the same note with the effect out.",
+        "predicts": {
+          "one window, spliced at its own length": "the departure begins one window after the write and not before it",
+          "an overlapped window with a crossfade": "the departure begins where the crossfade does, which is earlier than the window by the overlap"
+        },
+        "sensitivity_here": "The windows are 32 to 128 ms and the archive's arrival stage resolves an onset well inside a millisecond on this rig, so an overlap of even a tenth of the shortest window is two orders over what the reading would have to separate.",
+        "margin": 30,
+        "why_not_separable": null,
+        "run": {
+          "stage": "arrival",
+          "types": [
+            "01 60"
+          ],
+          "addresses": [
+            "40 03 0B"
+          ],
+          "minutes": 25,
+          "why": "A struck note through the type at one shift, at the shortest window and the longest, against the same note with the part routed past the effect. The two windows are four times apart, so the two readings are their own control: an overlap is a fraction of the window and scales with it, while a fixed crossfade does not. The stage already exists and the takes are short, which is why this is twenty-five minutes rather than an hour -- what it needs is the onset, not eight seconds of holding."
+        }
+      }
+    },
+    {
+      "reading": "The two shifters have a window each, and what was measured is the first one's rather than a property of the type.",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "ruled_out_by": null,
+      "separated_by": {
+        "observable": "The same mode sweep with the second shifter alone in the path -- its level byte at the top and the first shifter's at nought, which is the mirror of what every take here was made with.",
+        "predicts": {
+          "one window for the type": "the five lengths come back the same",
+          "a window each": "they need not, and the mode byte may reach only one of the two"
+        },
+        "sensitivity_here": "The five lengths are 33 per cent apart at the closest and the same length read twice at the octave came back 128.01 and 127.97 ms, so the reading separates them by three orders more than it needs to.",
+        "margin": 1000,
+        "why_not_separable": null,
+        "run": {
+          "stage": "efx-rate",
+          "types": [
+            "01 60"
+          ],
+          "addresses": [
+            "40 03 0B"
+          ],
+          "minutes": 15,
+          "why": "The same five states of the mode byte with the second shifter alone in the path: `40 03 0C` at the top instead of at nought, the second shifter's own coarse byte carrying the shift, and the first one's at unison. Five takes and a control, at the octave, which is where every state of the byte lands inside the reading's ceiling on one side of it and where the repeat is already measured. Fifteen minutes because the held tone is eight seconds and the state is written once per take."
+        }
+      }
+    }
+  ],
+  "refuted_by": "Any setting whose measured rate is not `|r - 1|` over a window the mode byte alone decides. Two shapes of that: a coarse sweep returning one rate rather than one length, which is what a clock of the stage's own would give and is what the eighteenfold sweep was made to look for; or a mode byte that moves the rate at a fixed shift by anything other than the ratio it moves it by at a different shift, which is what a mode byte selecting something other than a length would give. Separately, a rate at unison. The claim says the splice stops there, so a line at byte 64 that is not the line the bypassed voice carries refutes it outright.",
+  "what_it_would_change": [
+    "Rendering this type needs a window and a read-out ratio, not an interpolator with a rate. Which window is the mode byte's whole job, and the five it selects are in the ratio 3 : 4 : 6 : 8 : 12.",
+    "A page that prints five numbered states with no unit beside them has been read here as a length. Any other slot on this machine printing a bare count where a quantity is expected may be one too, and the measurement that settles it is a sweep of something else while the counted byte is held.",
+    "The artefact rate of this type is predictable from the two pitch bytes and the mode byte alone, so a file asking for a shift can be told what it will hear without the unit being asked."
+  ],
+  "what_this_does_not_settle": [
+    "What the window holds or how it is filled. The reading places the splice and weighs nothing: whether the read-out wraps, reverses, or crossfades is outside what a period can say.",
+    "The fifth window to the precision of the other four. At the major third its take does not name one rate -- two of its four partials return 2.0483 and 2.0443 Hz and the other two return 2.2866 and 2.1919, and the record's own agreement rule takes the second pair. The claim rests on the octave, where two takes of that state return 7.8141 and 7.8118 Hz and agree on the length to three parts in ten thousand.",
+    "Whether the two intermediate windows are whole sample counts. At 32000 Hz the measured ratio makes them 4096/3 and 8192/3 steps, which are not whole, while the other three are 1024, 2048 and 4096 exactly. Either the table is three powers of two with two entries that are not sample-aligned, or the ratio is near 3 : 4 : 6 : 8 : 12 rather than on it, and nothing measured here separates those.",
+    "The rest of the type. The pre-delay bytes, the two pan bytes, the level balance between the shifters and the feedback variant beside this type carry no reading here."
+  ],
+  "the_clock_the_lengths_are_counted_in": {
+    "file": "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+    "used_for": "The clock three of the five windows come to round numbers in. That claim reads this unit's delay ladder as cut to whole steps of 32000 Hz, and it was made on a different stage, a different type and a different quantity -- so 1024, 2048 and 4096 are round against a ruler this claim did not choose and could not have arranged. Used as a ruler and not as evidence: the ratio 3 : 4 : 6 : 8 : 12 is what was measured, and it stands whether or not that clock is this stage's clock too."
+  },
+  "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no line of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note."
+}

@@ -1,0 +1,338 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-20T05:42:05+00:00",
+    "made_by": "backup/what-a-step-flangers-two-rate-bytes-do.py, backup/read-the-step-flangers-two-rate-bytes.py, backup/write-the-step-flanger-inference.py",
+    "rounds": 1,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 24"
+      ],
+      "addresses": [
+        "40 03 04",
+        "40 03 08"
+      ]
+    }
+  },
+  "claim": "The byte type `01 24` prints `Step Rate` against is the clock of a sample and hold, and the byte it prints `Rate` against is the waveform that clock samples. Written to the bottom of its own printed table, where the page reads 0.05 Hz and a cycle does not fit inside a take, the step byte stops the flanger moving at all: the partial level swing is the bypassed take's three tenths of a decibel, and the period the reading returns at four of six settings of the other byte is 4.79 to 4.82 Hz, which is this voice's own amplitude wobble and not the effect. With that clock running at a printed 2.00 Hz instead, the other byte returns its own printed table to four figures -- 0.4997, 0.9995 and 1.9987 Hz where the page prints 0.50, 1.00 and 2.00 -- and above the clock it returns what sampling predicts rather than what the page prints: a printed 5.00 comes back at 0.9996, which is its distance from twice the clock. Read the other way round, with the sampled byte held at a printed 1.00 Hz and the step byte swept over a factor of twenty, the output repeats at 0.9994 to 0.9997 Hz at every setting of the clock at or above that rate and never at the clock's own. A period that follows the sampled byte and not the clock, a clock that freezes the stage when it stops, and an alias where the sampled byte runs faster than the clock are the three things a hold does and the three things two modulators reaching one delay do not.",
+  "named": null,
+  "adds": "Nothing structural had been read on this type at all. What the archive held of these two bytes was two rate records, one per byte, each taken with the other byte at what the type powers it up holding -- and neither is a reading of the byte it swept. The first is not monotonic across the printed table and the second does not move with its byte at all. This says what those two records are readings of, which is the pair, and it says which of the two bytes is the quantity and which is the clock. It also says what parks this type, which no run of it had: the bottom of the printed table is a modulator that does not turn inside a take, and it is the only parking either byte offers.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-24-04-the-swept-byte-with-the-step-byte-running.json",
+        "keys": [
+          "readings[value=9].rate_hz",
+          "readings[value=19].rate_hz",
+          "readings[value=39].rate_hz",
+          "readings[value=99].rate_hz",
+          "readings[value=125].rate_hz",
+          "readings[value=9].agreeing",
+          "readings[value=39].agreeing",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          0.4997,
+          0.9995,
+          1.9987,
+          0.9996,
+          1.9947,
+          4,
+          4,
+          [
+            9,
+            19,
+            39,
+            54,
+            99,
+            125
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "0A"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "4F"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "5A"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "50"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "60"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "27"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-24-08-the-step-byte-with-the-swept-byte-running.json",
+        "keys": [
+          "readings[value=19].rate_hz",
+          "readings[value=39].rate_hz",
+          "readings[value=99].rate_hz",
+          "readings[value=125].rate_hz",
+          "readings[value=125].agreeing",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          0.9994,
+          0.9994,
+          0.9997,
+          0.9995,
+          4,
+          [
+            9,
+            19,
+            39,
+            54,
+            99,
+            125
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "0A"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "4F"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "5A"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "50"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "60"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "13"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-24-04-the-swept-byte-with-the-step-byte-at-the-bottom.json",
+        "keys": [
+          "readings[value=19].rate_hz",
+          "readings[value=39].rate_hz",
+          "readings[value=99].rate_hz",
+          "readings[value=125].rate_hz",
+          "held"
+        ],
+        "values": [
+          4.8175,
+          4.8071,
+          4.7874,
+          4.8122,
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "0A"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "4F"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "5A"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "50"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "60"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "00"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-24-08-the-step-byte-with-the-swept-byte-at-the-bottom.json",
+        "keys": [
+          "readings[value=9].rate_hz",
+          "readings[value=19].rate_hz",
+          "readings[value=9].slowest_measurable_hz",
+          "held"
+        ],
+        "values": [
+          0.3332,
+          0.3343,
+          0.3033,
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "0A"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "4F"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "5A"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "50"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "60"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            }
+          ]
+        ]
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "01 24 Step Flanger, address_lsb 04, Rate, 0.05-0.30-10.0",
+          "01 24 Step Flanger, address_lsb 08, Step Rate, 0.05-2.75-10.0"
+        ]
+      },
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/value-conversion.json",
+        "rows": [
+          "column 6, Rate1, Hz: 09 -> 0.50, 13 -> 1.00, 27 -> 2.00, 63 -> 5.00, 7D -> 10.00, 00 -> 0.05"
+        ]
+      }
+    ],
+    "era_priors": [],
+    "community": []
+  },
+  "alternatives": [
+    {
+      "reading": "The two bytes are separate modulators reaching one delay, and the step byte's own line simply falls outside the band this reading searches.",
+      "standing": false,
+      "ruled_out_by": "A line outside the band does not take the modulation with it. With the step byte at the bottom of its table the partial level swing is 0.3 to 0.4 dB at four of the six settings of the other byte, which is what the take with the part routed past the effect returns, and the two settings that read larger do not repeat -- one of them read 0.3 to 5.6 dB on its first take and 0.3 to 0.4 on its second. A modulator whose line is out of band still moves the comb."
+    },
+    {
+      "reading": "The step byte gates the stage rather than clocking it: at the bottom of its table it switches the modulation off, and above that the other byte simply runs.",
+      "standing": false,
+      "ruled_out_by": "A gate cannot produce an alias. With the step byte at a printed 2.00 Hz the swept byte returns its own printed rate at 0.50, 1.00 and 2.00 and stops doing so above the clock: a printed 5.00 comes back at 0.9996, which is its distance from twice the clock, and a printed 10.00 comes back at 1.9947, which is the clock itself. A stage merely switched on returns the byte's own rate at every setting."
+    },
+    {
+      "reading": "The step byte names how many steps there are in one cycle of the other byte's sweep rather than a rate in hertz, and its printed table is a table of something else.",
+      "standing": true,
+      "equivalent_under_this_test": false,
+      "ruled_out_by": null,
+      "separated_by": {
+        "observable": "How many flat segments one folded cycle of a partial's level series holds, read at two settings of the swept byte with the step byte unchanged.",
+        "predicts": {
+          "a rate in hertz": "the count is the step byte's printed rate over the swept byte's, so it quadruples when the swept byte goes from a printed 2.00 Hz to a printed 0.50",
+          "a count of steps per cycle": "the count is the same at both, because it is what the byte names"
+        },
+        "sensitivity_here": "The count is an integer and the two predictions differ by a factor of four at the settings the takes already hold, so what has to be resolved is one step in four rather than a fraction of one. The departure from a sine already rises with the expected count -- 0.27 at one step and 4.79 at ten -- so the quantity is present in the takes.",
+        "margin": 4,
+        "why_not_separable": "Not by either reading tried, and the obstruction is in the reading rather than in the unit. A step edge is where the delay jumps, so it should stand out in the rate of change of a partial's level and in that partial's instantaneous frequency, which is a delay's rate of change times the partial. Both were asked at each take's own printed clock and at the harmonics of its sweep. The level's rate of change is not an edge detector here because a notch crossing the partial is already the largest rate of change in the take; the instantaneous frequency stands hundreds of times over its own roughness but at the sweep's line and its harmonics rather than at the clock's, at nine of the twelve settings. What is missing is therefore a reading rather than a booking: the takes this question needs are recorded, at two settings of the swept byte with the clock unmoved and at six settings of the clock with the swept byte unmoved, so nothing here waits on the unit."
+      }
+    },
+    {
+      "reading": "The hold sits on the delay's control rather than on the modulator's output -- the modulator runs on and what is sampled is the value handed to the delay line.",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "ruled_out_by": null,
+      "separated_by": {
+        "observable": "Nothing this archive can measure.",
+        "predicts": {
+          "a hold after the modulator": "a staircase at the delay",
+          "a hold on the delay's control": "a staircase at the delay"
+        },
+        "sensitivity_here": "The two put the same sequence of delays on the same line at the same instants. Only the output can be asked here, and the output is what they agree on.",
+        "why_not_separable": "Two places to put one sample and hold between a modulator and a delay line differ in where a value is stored and in nothing that leaves the unit. This is recorded as equivalent rather than left open, because refusing to choose between two structures that both reproduce is the answer and not a deferral."
+      }
+    }
+  ],
+  "refuted_by": "A setting of the swept byte whose period comes back at the step byte's printed rate rather than at its own, with the step byte running at a rate the swept byte does not exceed. Or modulation at any setting of the swept byte with the step byte at the bottom of its table: a clock that has stopped cannot leave a stage moving, and the partial level swing there is the bypassed take's.",
+  "what_it_would_change": [
+    "Rendering this type needs one modulator, one sample and hold clocked by the second byte, and the delay of a flanger -- not two modulators summed into one delay, which is what a page printing two rates over one table reads as.",
+    "The two rate records this archive already holds of this type are readings of the pair and not of either byte, and the figures in them are aliases of the two printed rates against each other rather than either byte's table."
+  ],
+  "what_this_does_not_settle": [
+    "What the sampled waveform is. A sine and a triangle sampled at the same clock return the same period and differ only in the shape of one cycle, which this reading reports and does not yet decide on.",
+    "Where the step byte's own printed table lands. Every reading of it here is a reading of what it did to the other byte's line, and the one arrangement that would return the clock's own rate -- a sampled byte slower than the clock -- returns the sampled byte's rate instead, which is the claim.",
+    "The rest of the type. The pre-delay, the depth, the feedback, the phase byte and the balance carry no reading here, beyond that the balance's two paths are equal at 76 rather than at the 64 its page prints as the equal point."
+  ],
+  "why_the_parking_is_a_parking": "The page prints 0.05 Hz at the bottom of both bytes' table, which is one cycle in twenty seconds against a take that holds eight. A byte written there is a modulator that does not turn inside the reading rather than one switched off, and the difference is the whole of why the second section exists: with the sampled byte parked and the clock running, the comb still crawls and the level swing is 13 to 27 dB while nothing periodic is in the band at all -- a staircase following a sweep that takes twenty seconds to cross. Read as a rate that comes back at 0.333 Hz against a floor of 0.303, which the stage refuses, and read as a swing it is the largest in the run. Both are what a hold on a crawling sweep does and neither on its own says so."
+}
