@@ -1,0 +1,406 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-excursion",
+    "invocation": [
+      "efx-excursion",
+      ".cache/takes/the-depth-byte-with-the-loop-the-type-powers-up-holding/020B",
+      "--type",
+      "02 0B",
+      "--slot",
+      "40 03 0A",
+      "--setting",
+      "held-16-(?P<value>\\d{3})-\\d+\\.wav$",
+      "--carrier-hz",
+      "440",
+      "--hold",
+      "8.0",
+      "--held",
+      "40 03 03=00",
+      "--held",
+      "40 03 04=00",
+      "--held",
+      "40 03 05=00",
+      "--held",
+      "40 03 07=00",
+      "--held",
+      "40 03 08=30",
+      "--held",
+      "40 03 09=13",
+      "--held",
+      "40 03 0B=68",
+      "--held",
+      "40 03 0C=5C",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-excursion/02-0b-0a-the-depth-byte-with-the-loop-the-type-powers-up-holding.json"
+    ],
+    "measured_at": "2026-09-20T08:24:03+00:00",
+    "elapsed_s": 514.5,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "How far one insertion effect's modulator swings the delay under it, at each setting of one byte, in milliseconds.",
+  "type": "02 0B",
+  "address": "40 03 0A",
+  "method": "One take per setting of a held tone, with the effect's balance at the point that carries both paths. Each order of the tone that cleared the threshold on the take with the part routed past the effect was demodulated by its own frequency, leaving that partial's phase and its level over the take; a projection was walked across a grid of rates and the largest taken, separately for the phase and for the level. Where the partials disagreed in shape -- which is what a sweeping notch does and a level envelope cannot -- a two path comb was fitted forward to the level series with its rate free. The excursion is that fit's, and the one the phase implies is beside it. Every take is read on one channel named for the whole run, and a setting taken more than once gives the run its floor.",
+  "limits": "The reading returns how far a delay moved and not how long it is: a comb fit returns a centre as well, but the centre is the one parameter an even mixture leaves nearly free, so it is published inside the fit and is not what this stage answers. An excursion is withheld where the fit does not account for the series it was taken on, and a withheld row is not a setting that does not modulate -- it is a setting this reading could not tell a right answer from a wrong rate at. The rows are published with what they returned so the difference can be seen. The model the fit is forward in is two paths and no return, so a run made with a loop closed around the delay is outside it: the series is deeper and shaped differently than any excursion of that model produces, and the fit withholds across the whole sweep rather than at one setting. A record whose rows all withhold is reporting that, and the figure off the phase is what it has left. `slowest_measurable_hz` is the slowest rate the take was long enough to carry two cycles of, and a rate at or under it is the take's length rather than the unit's modulator; `stands_on_the_edge_of_the_search` says so per reading. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous.",
+  "not_in_this_record": "No curve, no table and no verdict. Which shape these excursions lie on as the byte rises, whether two types share one, and what structure would produce it are fits across settings and types and are not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "carrier_hz": 440.0,
+  "grid_hz": [
+    0.2,
+    8.0
+  ],
+  "grid_step_hz": 0.01,
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -48.4,
+      -48.6,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [
+      "held-16-000-00.wav"
+    ],
+    "why": "Which channel of the interface every take was read on, and the highest each channel reached across them. One channel for the run rather than the loudest of each take, because on this stage the input decides the answer twice over. An interface carries inputs the unit is not on which are not silent, and an idle input carries no modulation -- which is what a type without one also returns. And the unit's own two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other, and two types read on different ones are not comparable however loud both were. `loudest_elsewhere` names every take whose own loudest channel was not the one read."
+  },
+  "routed_past_the_effect": {
+    "takes": [
+      "held-16-bypassed-00.wav"
+    ],
+    "read_against": "held-16-bypassed-00.wav",
+    "why": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
+    "with_nothing_in_its_path": null,
+    "why_nothing_in_its_path": "One take with the part routed past the effect, read as though it were a setting, against another take with the part routed past the effect as its floor. That is the whole reading with the swing taken out of it, so what it returns is what a row has to stand over to be a modulated delay rather than the voice -- measured on this run's own stimulus instead of assumed from the bar. It is the sensitivity every refusal needs: a bottom setting that named no excursion means nothing unless a take that certainly holds no swing also names none here. Never a control read against its own floor. That comparison is one by construction and it refuses by construction, so a record built from it would publish a guaranteed refusal as a measured one -- which is the shape of every negative that turns out to be about the reading. Null where the run made only one such take, in which case this run measured no null and nothing here stands in for one."
+  },
+  "why_two_excursions": "Both figures are published and neither is a correction of the other. The one off the phase is a lower bound wherever the effect is not fully wet -- measured by injection on this archive's own carrier, a fifth wet turns a two millisecond sweep into five thousandths of one while detection survives it -- and what it bounds is not stated by the number. The one off the comb fit answers the mixed case and is the figure this stage is for. A setting where the two part company further than its neighbours did is a setting where the mixture moved, which is a reading about the balance and not about the byte that was swept.",
+  "why_admitted": "An excursion is read only where the level series was a comb being swept and the forward fit explained enough of that series to have been told apart from a wrong rate. Both bars come from `efx-partials`, were set against injected combs of known excursion there, and are carried into this record beside the numbers they decide. A setting that fails either is listed with everything it did return, because a record that omitted them would read as a shorter sweep -- and the bottom of a depth byte failing is a reading about the bottom of the range.",
+  "floor": {
+    "ms": null,
+    "as_a_fraction": null,
+    "settings_taken_twice": []
+  },
+  "floor_off_the_phase": {
+    "ms": 0.1645,
+    "as_a_fraction": 0.0155,
+    "settings_taken_twice": [
+      64
+    ],
+    "takes_per_setting": {
+      "64": 2
+    }
+  },
+  "why_floor": "How far apart this reading put one setting's own repeats, which is what a difference between two settings has to clear to be a difference. Reported as the widest spread any repeated setting showed and as a proportion of that setting's own mean, because an excursion an order of magnitude smaller repeats to a smaller number of milliseconds without repeating any better. Null where no setting was taken twice, in which case this run measured no floor and nothing here substitutes for one. There are two floors because there are two quantities, and each is taken over the rows its own gate admitted: two refusals are not two readings of a quantity, and the gate that admits a fitted excursion is not the gate that admits a phase one. A run where the fit withheld throughout still has a floor for the figure it did return, and a record carrying one floor would have had to drop it.",
+  "gates": {
+    "why_the_orders_come_from_the_bypassed_take": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
+    "why_a_grid_and_not_a_line": "The rate is where a projection across a grid is largest, not where a line was fitted. A line is not read under three cycles of the series it is found in, and every type on a unit whose modulators power up under a hertz puts a nine second take under that floor. A projection at a named rate is a matched filter and needs no cycles counted; what it needs is separation, and two rates closer together than one over the length read are one peak here. That figure is `rates_are_separated_by` and it is what bounds the rates the projections report. The comb fit is not bounded by it, because it does not read a peak: it fits the rate, and the model is far sharper in it than the projection is -- a fiftieth of a hertz out at half a hertz, it explains 0.16 of a series it explains 0.91 of when placed. Where a peak and a fitted rate are both given, they are two readings and not one.",
+    "why_a_rate_at_the_edge_of_the_search_is_the_search": "Two ways a rate here can be the reading's own limit rather than the unit's, and both are stated per reading rather than left for a reader to work out. A projection walked across a grid reports where it was largest, and largest *at an end of the grid* means the largest thing seen was at the boundary -- the maximum may be outside it, and a held tone drifting slowly over the take puts its energy exactly there. `rates_are_separated_by` bounds how close two rates can be and says nothing about this. Separately, a take holds only so many cycles of a slow rate: `slowest_measurable_hz` is the rate two cycles of which fill the part of the take that sounded, and the same figure computed the same way elsewhere in this harness was measured to matter -- an injected sweep at 0.15 Hz, one cycle of which does not fit in seven seconds, came back as 0.28. A reading on either count is reported with the figure that bounds it and is not withheld, because which of them disqualifies a reading is a judgement and this record does not make judgements.",
+    "why_the_phase_and_the_level_are_read_apart": "A swept delay turns a partial's phase in proportion to that partial's own frequency. An all-pass section turns every partial by the same angle. A level modulation turns none of them and moves the level instead. Reading the two quantities apart is what tells the three kinds apart; reading either alone returns a number for all three.",
+    "why_the_excursion_off_the_phase_is_a_floor": "Where a delayed path is mixed against a direct one the composite's phase turns by far less than the delayed path's own, and not in proportion. Measured on this carrier by injection: a fifth wet turns a two millisecond sweep into five thousandths of a millisecond, while detection survives it. So an excursion read off the phase is a lower bound wherever the effect is not fully wet, and what it bounds is not stated by the number itself. The comb reading is the one that answers the mixed case, and a type answering to neither is reported as answering to neither.",
+    "why_the_comb_needs_the_partials_to_disagree": "How well a forward comb fit explains its series is a gate against the wrong rate -- told a rate nothing is running at it falls from 0.91 to 0.05 -- and it is no gate at all against the wrong mechanism. A plain level modulation with no delay anywhere in it is fitted as a comb explaining 0.97 of its own series, which is more than any real comb injected here returns. What separates them is not a fit: a comb sweeps a notch, so a partial near it swings far more than one on a peak and the partials disagree in shape, while one envelope over the whole voice moves every partial by the same decibels at the same moment.",
+    "why_an_equivalent_and_not_a_length": "A comb's phase is the delay times the partial's frequency, so a phase swing converts to a delay excursion outright. That conversion is arithmetic and the interpretation is not: a phaser and a wah move notches with all-pass sections and have no delay line to be long, and a level series cannot tell that from a delay. The figure is what a two path comb would need; which types it is a delay for is not decided here.",
+    "why_the_excursion_carries_a_span": "A comb fit returns one excursion and the surface it was found on has a minimum wherever the notches line up, so the number alone says which minimum was deepest and not how much deeper. Beside each excursion is the range of excursions that explain the series to within a twentieth of its own spread, measured over every candidate this fit refined. A wide span settles the reading the one way that matters: the type has not been measured to a number, however much of its series the fit explains. What the span was read against is twenty-four injected combs of known excursion, over centres of three to thirteen milliseconds, excursions of half a millisecond to five, and both a third wet and an even mix, with no feedback anywhere so the model is exactly right and nothing in the material is outside it. The span held the injected excursion in seventeen of the twenty-four. Where it did not, the sweep is shallow and the two paths are mixed evenly -- a millisecond at half wet came back half again too large at two centres -- and one of those closed its span and still sat a fifth away from the answer. So a closed span is not a warrant. It bounds what this fit's own candidates could not tell apart, which is a smaller thing than how far the answer could be from the truth, and the two come apart exactly where a complete notch makes the level series a cusp rather than a curve.",
+    "stands_over_bypassed": 3.0,
+    "agrees_as_one_voice": 0.0,
+    "comb_explains": 0.6,
+    "what_the_gates_were_set_against": {
+      "stands_over_bypassed": "What the same projection returns on the same material with nothing in the path, rate by rate. The record's second bypassed take came back at 1.1 in the phase and 1.3 in the level, against injected sweeps standing 7 to 3000, so the line sits in a gap both controls clear by their own margin. It is not a figure over the grid's own middle: this carrier drifts enough on its own to stand seventeen times its grid median at half a hertz, which any statistic with nothing to subtract reads as a modulator.",
+      "agrees_as_one_voice": "Not a round number but where correlation changes sign. Every comb injected here came back between -0.05 and -0.37 and every level swing between 0.81 and 0.97.",
+      "comb_explains": "Injected combs that returned their excursion exactly explained 0.628 and above, and the same fit told a rate nothing is running at explains 0.042 to 0.055. The line's place inside that gap is a choice, and the gap is narrower than those two figures suggest: swept over the sizes a chorus lives at, the fit returns the excursion to within a few per cent while what it explains falls to 0.64 wherever the two paths are mixed evenly. So a fit can be right and still be withheld here, and what the withholding means is that this reading could not tell a right answer from a wrong rate -- not that the type has no comb in it. On this unit the most any withheld fit explained was 0.552 and the least any published one did was 0.729, so the line could have been put anywhere between those two and this record would read the same. It is 0.048 from the nearer of them. That is where the figures fell, not a property of the gate: a run whose readings crowded the line would have to be read with the figure's exact place in mind."
+    },
+    "orders_read": 8,
+    "rates_are_separated_by": 0.1472
+  },
+  "held": [
+    {
+      "address": "40 03 03",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 08",
+      "bytes": "30"
+    },
+    {
+      "address": "40 03 09",
+      "bytes": "13"
+    },
+    {
+      "address": "40 03 0B",
+      "bytes": "68"
+    },
+    {
+      "address": "40 03 0C",
+      "bytes": "5C"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "Every address written before the takes were made, beside the one that was swept. An excursion is read through the whole chain, so what else was in the chain decides what the reading is of: a feedback path around the delay deepens the notch without moving it, a balance away from the point that carries both paths shallows the series the fit is taken on, and a second modulator on the type returns whichever of the two dominates.",
+  "takes_from": ".cache/takes/the-depth-byte-with-the-loop-the-type-powers-up-holding/020B",
+  "manifest": {
+    "lists": 9,
+    "files_present": 9,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    0,
+    8,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "settings_admitted": [
+    8
+  ],
+  "settings_the_phase_admitted": [
+    0,
+    8,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "readings": [
+    {
+      "value": 0,
+      "take": "held-16-000-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": null,
+      "off_the_phase_ms": 0.0004,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.1857,
+      "explains": null,
+      "fitted_at_hz": null,
+      "mix": null,
+      "read_at_hz": 0.2,
+      "stands_over_bypassed": 1455.188,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": [
+        "the lowest rate searched",
+        "at or under the slowest rate this take could carry two cycles of"
+      ],
+      "orders": 8,
+      "heard_db": -54.1,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 8,
+      "take": "held-16-008-00.wav",
+      "excursion_ms": 1.1513,
+      "excursions_that_explain_it_about_as_well_ms": [
+        0.7021,
+        1.1513
+      ],
+      "off_the_phase_ms": 0.5884,
+      "admitted": true,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.6788,
+      "explains": 0.7288,
+      "fitted_at_hz": 0.49969,
+      "mix": 0.3992,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 53214.059,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -51.7,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 16,
+      "take": "held-16-016-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        1.0062,
+        2.1632
+      ],
+      "off_the_phase_ms": 3.2339,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.5345,
+      "explains": 0.5448,
+      "fitted_at_hz": 0.99936,
+      "mix": 0.8385,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 51884.402,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -52.4,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 24,
+      "take": "held-16-024-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        3.4083,
+        3.4083
+      ],
+      "off_the_phase_ms": 4.696,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.496,
+      "explains": 0.5517,
+      "fitted_at_hz": 0.49974,
+      "mix": 0.4691,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 87612.92,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -51.7,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 32,
+      "take": "held-16-032-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        5.0086,
+        5.0088
+      ],
+      "off_the_phase_ms": 6.0745,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.3624,
+      "explains": 0.3127,
+      "fitted_at_hz": 0.49984,
+      "mix": 0.4668,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 122371.658,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -50.8,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 48,
+      "take": "held-16-048-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        7.2192,
+        7.2382
+      ],
+      "off_the_phase_ms": 7.6785,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.3543,
+      "explains": 0.4074,
+      "fitted_at_hz": 0.49975,
+      "mix": 0.3904,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 183558.915,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -50.5,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-16-064-00.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        0.272,
+        5.1508
+      ],
+      "off_the_phase_ms": 10.6731,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.325,
+      "explains": 0.1238,
+      "fitted_at_hz": 0.9994,
+      "mix": 0.3664,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 212956.868,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -50.3,
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 64,
+      "take": "held-16-064-01.wav",
+      "excursion_ms": null,
+      "excursions_that_explain_it_about_as_well_ms": [
+        10.8601,
+        10.8669
+      ],
+      "off_the_phase_ms": 10.5086,
+      "admitted": false,
+      "the_phase_stands": true,
+      "the_level_swing_is": "a comb being swept",
+      "lowest_agreement": -0.3011,
+      "explains": 0.1811,
+      "fitted_at_hz": 0.49976,
+      "mix": 0.1028,
+      "read_at_hz": 1.0,
+      "stands_over_bypassed": 214398.207,
+      "slowest_measurable_hz": 0.2943,
+      "stands_on_the_edge_of_the_search": null,
+      "orders": 8,
+      "heard_db": -50.3,
+      "settled_s": null,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 0,
+    "settings": [],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}

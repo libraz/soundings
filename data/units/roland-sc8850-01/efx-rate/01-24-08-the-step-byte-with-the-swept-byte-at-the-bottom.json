@@ -1,0 +1,572 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-rate",
+    "invocation": [
+      "efx-rate",
+      ".cache/takes/what-a-step-flangers-two-rate-bytes-do/one-at-a-time",
+      "--setting",
+      "held-16-step-(?P<value>\\d+)-00",
+      "--type",
+      "01 24",
+      "--slot",
+      "40 03 08",
+      "--held",
+      "40 03 03=0A",
+      "--held",
+      "40 03 05=40",
+      "--held",
+      "40 03 06=4F",
+      "--held",
+      "40 03 07=5A",
+      "--held",
+      "40 03 12=50",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=60",
+      "--held",
+      "40 03 04=00",
+      "--lead",
+      "0.6",
+      "--hold",
+      "8.0",
+      "--lines",
+      "--out",
+      "data/units/roland-sc8850-01/efx-rate/01-24-08-the-step-byte-with-the-swept-byte-at-the-bottom.json"
+    ],
+    "measured_at": "2026-09-20T05:36:11+00:00",
+    "elapsed_s": 2.3,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What frequency one insertion effect type's rate slot modulates at, at each setting of the byte.",
+  "type": "01 24",
+  "address": "40 03 08",
+  "method": "A note was held through the effect and the level and frequency of each of the take's strongest partials were followed and searched for a period. The figure reported is the one the partials agreed on, and each partial's own is beside it.",
+  "limits": "`slowest_measurable_hz` is the slowest rate this take was long enough to carry two cycles of, and a reading within a few per cent of it is a floor rather than a rate. `fastest_measurable_hz` is the top of the band the period was looked for in, and it is not a property of the take: a modulation above it cannot be returned whatever the take holds, and what comes back instead is a divisor of it that does fit. A reading near half the ceiling is the one to check against `lines`, which are found in the same band but are not made to choose. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `settled_s` is how long the run waited after writing the setting, which matters for any type that accelerates -- a take begun before it settles returns the ramp's average.",
+  "not_in_this_record": "No law, no table and no verdict: which curve these readings follow is a fit across types and is not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -48.2,
+      -50.1,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "held": [
+    {
+      "address": "40 03 03",
+      "bytes": "0A"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "4F"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "5A"
+    },
+    {
+      "address": "40 03 12",
+      "bytes": "50"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "60"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "00"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. A type with more than one modulator returns whichever dominates, so a reading taken with the other stage turned down and one taken with it running are different readings of different things, and nothing in the numbers says which is which.",
+  "takes_from": ".cache/takes/what-a-step-flangers-two-rate-bytes-do/one-at-a-time",
+  "manifest": {
+    "lists": 17,
+    "files_present": 17,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    9,
+    19,
+    39,
+    54,
+    99,
+    125
+  ],
+  "readings": [
+    {
+      "value": 9,
+      "rate_hz": 0.3332,
+      "agreeing": 2,
+      "of": 4,
+      "rates": [
+        0.3333,
+        0.3331
+      ],
+      "heard_db": -48.6,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-009-00.wav",
+      "lines": [
+        {
+          "hz": 0.3235,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 1.355,
+          "of_the_tallest": 0.264,
+          "over_the_floor": 3.39
+        },
+        {
+          "hz": 1.6235,
+          "of_the_tallest": 0.238,
+          "over_the_floor": 2.08
+        },
+        {
+          "hz": 2.6428,
+          "of_the_tallest": 0.158,
+          "over_the_floor": 2.01
+        },
+        {
+          "hz": 2.3438,
+          "of_the_tallest": 0.148,
+          "over_the_floor": 1.67
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 4.7607,
+          "of_the_tallest": 0.899,
+          "over_the_floor": 1.39
+        },
+        {
+          "hz": 15.7471,
+          "of_the_tallest": 0.883,
+          "over_the_floor": 1.43
+        },
+        {
+          "hz": 5.7556,
+          "of_the_tallest": 0.875,
+          "over_the_floor": 1.39
+        },
+        {
+          "hz": 3.7659,
+          "of_the_tallest": 0.868,
+          "over_the_floor": 1.36
+        },
+        {
+          "hz": 14.7522,
+          "of_the_tallest": 0.861,
+          "over_the_floor": 1.38
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 19,
+      "rate_hz": 0.3343,
+      "agreeing": 2,
+      "of": 4,
+      "rates": [
+        0.666,
+        0.3335,
+        0.4997,
+        0.3351
+      ],
+      "heard_db": -50.4,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-019-00.wav",
+      "lines": [
+        {
+          "hz": 0.4883,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 1.1475,
+          "of_the_tallest": 0.438,
+          "over_the_floor": 3.49
+        },
+        {
+          "hz": 1.4526,
+          "of_the_tallest": 0.377,
+          "over_the_floor": 7.38
+        },
+        {
+          "hz": 2.6062,
+          "of_the_tallest": 0.195,
+          "over_the_floor": 1.8
+        },
+        {
+          "hz": 3.3386,
+          "of_the_tallest": 0.158,
+          "over_the_floor": 1.66
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 15.9973,
+          "of_the_tallest": 0.93,
+          "over_the_floor": 2.95
+        },
+        {
+          "hz": 11.9934,
+          "of_the_tallest": 0.928,
+          "over_the_floor": 2.94
+        },
+        {
+          "hz": 10.0037,
+          "of_the_tallest": 0.923,
+          "over_the_floor": 2.95
+        },
+        {
+          "hz": 14.0015,
+          "of_the_tallest": 0.918,
+          "over_the_floor": 2.89
+        },
+        {
+          "hz": 8.0139,
+          "of_the_tallest": 0.918,
+          "over_the_floor": 2.95
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 39,
+      "rate_hz": 0.3327,
+      "agreeing": 1,
+      "of": 4,
+      "rates": [
+        0.3327,
+        0.3052,
+        0.5725,
+        2.0092
+      ],
+      "heard_db": -50.6,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-039-00.wav",
+      "lines": [
+        {
+          "hz": 0.5737,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 0.3845,
+          "of_the_tallest": 0.98,
+          "over_the_floor": null
+        },
+        {
+          "hz": 0.7751,
+          "of_the_tallest": 0.89,
+          "over_the_floor": 2.71
+        },
+        {
+          "hz": 1.7944,
+          "of_the_tallest": 0.635,
+          "over_the_floor": 2.35
+        },
+        {
+          "hz": 2.1301,
+          "of_the_tallest": 0.545,
+          "over_the_floor": 3.04
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 11.9934,
+          "of_the_tallest": 1.0,
+          "over_the_floor": 3.31
+        },
+        {
+          "hz": 15.9912,
+          "of_the_tallest": 0.973,
+          "over_the_floor": 3.28
+        },
+        {
+          "hz": 7.9956,
+          "of_the_tallest": 0.966,
+          "over_the_floor": 3.19
+        },
+        {
+          "hz": 3.9978,
+          "of_the_tallest": 0.945,
+          "over_the_floor": 3.24
+        },
+        {
+          "hz": 19.989,
+          "of_the_tallest": 0.903,
+          "over_the_floor": 3.06
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 54,
+      "rate_hz": 0.7139,
+      "agreeing": 1,
+      "of": 4,
+      "rates": [
+        0.7139,
+        0.392,
+        0.611,
+        0.7852
+      ],
+      "heard_db": -50.5,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-054-00.wav",
+      "lines": [
+        {
+          "hz": 0.531,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 0.7507,
+          "of_the_tallest": 0.925,
+          "over_the_floor": null
+        },
+        {
+          "hz": 2.2827,
+          "of_the_tallest": 0.611,
+          "over_the_floor": 1.69
+        },
+        {
+          "hz": 1.9104,
+          "of_the_tallest": 0.566,
+          "over_the_floor": 2.05
+        },
+        {
+          "hz": 1.3794,
+          "of_the_tallest": 0.48,
+          "over_the_floor": 1.2
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 5.4993,
+          "of_the_tallest": 1.0,
+          "over_the_floor": 3.57
+        },
+        {
+          "hz": 16.4978,
+          "of_the_tallest": 0.976,
+          "over_the_floor": 3.22
+        },
+        {
+          "hz": 10.9985,
+          "of_the_tallest": 0.968,
+          "over_the_floor": 3.3
+        },
+        {
+          "hz": 6.8054,
+          "of_the_tallest": 0.445,
+          "over_the_floor": 1.49
+        },
+        {
+          "hz": 12.3169,
+          "of_the_tallest": 0.443,
+          "over_the_floor": 1.45
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 99,
+      "rate_hz": 0.906,
+      "agreeing": 1,
+      "of": 4,
+      "rates": [
+        0.906,
+        0.6225,
+        0.3446
+      ],
+      "heard_db": -50.5,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-099-00.wav",
+      "lines": [
+        {
+          "hz": 0.592,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 1.8982,
+          "of_the_tallest": 0.699,
+          "over_the_floor": 1.75
+        },
+        {
+          "hz": 2.2827,
+          "of_the_tallest": 0.528,
+          "over_the_floor": 3.38
+        },
+        {
+          "hz": 2.5879,
+          "of_the_tallest": 0.503,
+          "over_the_floor": 2.83
+        },
+        {
+          "hz": 1.3428,
+          "of_the_tallest": 0.428,
+          "over_the_floor": 1.06
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 9.9976,
+          "of_the_tallest": 1.0,
+          "over_the_floor": 4.97
+        },
+        {
+          "hz": 8.7219,
+          "of_the_tallest": 0.405,
+          "over_the_floor": 1.87
+        },
+        {
+          "hz": 11.2793,
+          "of_the_tallest": 0.399,
+          "over_the_floor": 2.02
+        },
+        {
+          "hz": 18.7195,
+          "of_the_tallest": 0.385,
+          "over_the_floor": 2.12
+        },
+        {
+          "hz": 9.491,
+          "of_the_tallest": 0.377,
+          "over_the_floor": 4.45
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    },
+    {
+      "value": 125,
+      "rate_hz": 0.902,
+      "agreeing": 1,
+      "of": 4,
+      "rates": [
+        0.902,
+        0.6052,
+        1.5269
+      ],
+      "heard_db": -50.5,
+      "slowest_measurable_hz": 0.3033,
+      "fastest_measurable_hz": 20.0,
+      "hold_s": 8.0,
+      "take": "held-16-step-125-00.wav",
+      "lines": [
+        {
+          "hz": 0.5737,
+          "of_the_tallest": 1.0,
+          "over_the_floor": null
+        },
+        {
+          "hz": 1.8738,
+          "of_the_tallest": 0.736,
+          "over_the_floor": 1.88
+        },
+        {
+          "hz": 2.2644,
+          "of_the_tallest": 0.65,
+          "over_the_floor": 2.78
+        },
+        {
+          "hz": 2.9297,
+          "of_the_tallest": 0.279,
+          "over_the_floor": 2.88
+        },
+        {
+          "hz": 3.4546,
+          "of_the_tallest": 0.224,
+          "over_the_floor": 1.23
+        }
+      ],
+      "lines_in_the_frequency_series": [
+        {
+          "hz": 19.9829,
+          "of_the_tallest": 1.0,
+          "over_the_floor": 6.09
+        },
+        {
+          "hz": 1.3,
+          "of_the_tallest": 0.411,
+          "over_the_floor": 1.65
+        },
+        {
+          "hz": 18.689,
+          "of_the_tallest": 0.405,
+          "over_the_floor": 2.71
+        },
+        {
+          "hz": 0.5737,
+          "of_the_tallest": 0.351,
+          "over_the_floor": null
+        },
+        {
+          "hz": 17.6819,
+          "of_the_tallest": 0.274,
+          "over_the_floor": 1.96
+        }
+      ],
+      "settled_s": null,
+      "named_by": "file name"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 11,
+    "settings": [
+      "both-as-printed",
+      "both-parked",
+      "bypassed",
+      "rate-009",
+      "rate-019",
+      "rate-039",
+      "rate-054",
+      "rate-099",
+      "rate-125",
+      "step-039"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}

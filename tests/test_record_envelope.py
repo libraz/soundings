@@ -57,6 +57,7 @@ SENTENCE_KEYS = frozenset(
         "why_one_setting_carries_the_control",
         "why_one_take_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
+        "why_the_byte_names_no_rate",
         "why_the_going_up_fraction",
         "why_the_lead_is_the_floor",
         "why_the_pair_is_in_input_order",
@@ -119,7 +120,17 @@ long against a signal read short differ before either has said anything. A secon
 key spelled for the second stage would make a reader match key names per stage to
 ask one thing, which is the defect this list exists to catch.
 
-So a twenty-fourth entry is a key to go and look at, not a key that is wrong. Read
+`why_the_byte_names_no_rate` is a caveat about how the run was made, like
+`input_is_asserted_not_measured`. The rate stage asks what frequency an effect's
+output repeats at as a byte is moved, and its usual question says that byte is a
+rate slot, which every record the stage had written was made on. A byte naming
+something else -- a pitch ratio, a window length -- can still make the output
+repeat, so the stage takes a mode for it and this key says which mode the record
+was written in. The sentence is the mode's own and not this unit's answer: any
+unit swept on a byte that names no rate gets the same one, and the reading it
+qualifies is in the value beside it.
+
+So a twenty-fifth entry is a key to go and look at, not a key that is wrong. Read
 the value, decide which of the two it is, and either migrate it or add it here.
 """
 
