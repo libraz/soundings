@@ -240,6 +240,49 @@ def read_partials(
     return out
 
 
+def in_agreement(rates: list[float], within: float) -> list[list[float]]:
+    """The readings cut into groups that agree, each reading in exactly one group.
+
+    A tolerance taken around each reading in turn is not a partition and it is not
+    a measure of a group either. It is not a partition because a reading sitting
+    between two others falls inside both neighbourhoods and is counted into both,
+    so which group is called the largest follows the order the partials arrived in
+    rather than the take. And it is not a measure of a group because it is taken
+    from whichever reading the loop is holding: four readings spanning nearly six
+    per cent were counted as agreeing within five, because the one they were all
+    measured from sat in the middle of them.
+
+    A group here is kept while its own span stays inside the tolerance on its own
+    mean, which is the thing the tolerance was meant to say. The groups are built
+    by joining the two neighbours that make the narrowest group first and stopping
+    when no join fits, rather than by walking the sorted readings once and
+    extending: a single walk starting from the lowest reading joins an outlier to
+    the bottom of a real cluster before it reaches the rest of that cluster, and
+    splits three readings that agree into two pairs that do not. Every reading
+    lands in exactly one group and the result does not depend on the order the
+    partials arrived in.
+
+    With four readings and a tolerance this wide, two groupings can both fit and
+    the narrower one is taken. That is a choice the readings do not settle, and it
+    moves a median rather than a count: what the count is for -- whether a rate was
+    agreed and by how many -- is the same under either.
+    """
+    groups = [[value] for value in sorted(rates)]
+    while len(groups) > 1:
+        narrowest = None
+        for index in range(len(groups) - 1):
+            joined = groups[index] + groups[index + 1]
+            span = joined[-1] - joined[0]
+            if span <= (sum(joined) / len(joined)) * within:
+                if narrowest is None or span < narrowest[0]:
+                    narrowest = (span, index)
+        if narrowest is None:
+            break
+        _span, index = narrowest
+        groups[index : index + 2] = [groups[index] + groups[index + 1]]
+    return groups
+
+
 def agreed_rate(readings: list[dict], within: float = 0.05) -> dict:
     """The rate the partials agree on, and how many of them did.
 
@@ -247,21 +290,47 @@ def agreed_rate(readings: list[dict], within: float = 0.05) -> dict:
     account for as the reading's own than one partial's is. Disagreement is
     returned rather than resolved: it is the signature of a type that is not
     delaying its input.
+
+    That holds for a take whose partials scatter, and it has to hold for the take
+    whose partials split evenly between two rates as well. Two of four at one rate
+    and two of four at another is not a reading of either: the take says both and
+    the count says neither, so no rate is named and the two are published as what
+    it split between. Often the pair stand in a small whole ratio, which is a
+    demodulator locking a partial onto every second or third cycle -- and reading
+    the higher of them as the rate on that account would be putting a model inside
+    a record, which is the one thing a record here does not do. The rates are all
+    published either way, so nothing is lost by declining to choose.
+
+    A take where nothing reaches two is left naming the rate it named. That is not
+    the same case and the difference is the gate downstream: a reading fewer than
+    half the partials found is refused by name, so a lone partial's rate is already
+    marked as no agreement and is already out of evidence. An even split is the one
+    shape that passes the gate while having nothing behind it.
     """
     rates = [r["level_swing"]["rate_hz"] for r in readings if r["level_swing"]]
     if not rates:
         return {"rate_hz": None, "agreeing": 0, "of": len(readings), "rates": []}
-    best, most = None, 0
-    for candidate in rates:
-        agreeing = sum(1 for other in rates if abs(other - candidate) <= candidate * within)
-        if agreeing > most:
-            best, most = candidate, agreeing
-    return {
-        "rate_hz": round(float(np.median([r for r in rates if abs(r - best) <= best * within])), 4),
-        "agreeing": most,
-        "of": len(readings),
-        "rates": [round(r, 4) for r in rates],
-    }
+    groups = in_agreement(rates, within)
+    most = max(len(group) for group in groups)
+    largest = [group for group in groups if len(group) == most]
+    published = {"agreeing": most, "of": len(readings),
+                 "rates": [round(r, 4) for r in rates]}
+    if most == 1:
+        # Nothing agreed with anything, so the published rate is one partial's and
+        # `agreeing` says so. Which partial is the one the take was read from
+        # first, rather than the lowest rate it returned: the reading carries no
+        # information either way, and the take's own order is the one a reader can
+        # follow back to a partial.
+        return {"rate_hz": round(float(rates[0]), 4), **published}
+    if len(largest) > 1:
+        return {
+            "rate_hz": None,
+            **published,
+            "split_between_hz": sorted(
+                round(float(np.median(group)), 4) for group in largest
+            ),
+        }
+    return {"rate_hz": round(float(np.median(largest[0])), 4), **published}
 
 
 def arrivals(bypassed: list[float], routed: list[float], apart_hz: float = 40.0) -> list[float]:

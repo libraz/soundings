@@ -184,6 +184,12 @@ def _read_take(
     swings = [r["level_swing"] for r in per_partial if r["level_swing"]]
     reading = {
         "rate_hz": agreed["rate_hz"],
+        # Present only where the partials split evenly between two rates, which is
+        # a take saying both and counting for neither. Carried through rather than
+        # dropped: a row with no rate and no reason reads as a take nothing was
+        # found in, and this one found two things.
+        **({"split_between_hz": agreed["split_between_hz"]}
+           if "split_between_hz" in agreed else {}),
         "agreeing": agreed["agreeing"],
         "of": agreed["of"],
         "rates": agreed["rates"],

@@ -18,7 +18,7 @@ from dataclasses import dataclass
 import numpy as np
 import pytest
 
-from soundings import efxrate, takes
+from soundings import efxrate, rates, takes
 
 SR = 48000
 SECONDS = 6.0
@@ -200,3 +200,80 @@ def test_the_record_says_what_came_from_means_only_when_it_carries_one(
     assert "why_came_from" in from_either_end(approached)
     assert "why_came_from" not in read(crowded)
     assert all("came_from" not in r for r in read(crowded)["readings"])
+
+
+def _partials(rates: list[float]) -> list[dict]:
+    """Partials carrying the rates given, in the shape `agreed_rate` reads."""
+    return [{"level_swing": {"rate_hz": rate}} for rate in rates]
+
+
+def test_an_even_split_between_two_rates_names_neither() -> None:
+    """The failure that passes the gate: two of four and two of four.
+
+    A take whose partials split evenly says both rates and counts for neither,
+    and the count it publishes -- half the partials -- is the count a real
+    reading has. So it reaches every model that asks for half, carrying whichever
+    of the two the partials happened to be ordered in.
+    """
+    got = rates.agreed_rate(_partials([7.5003, 7.4999, 2.4998, 2.4999]))
+    assert got["rate_hz"] is None
+    assert got["agreeing"] == 2
+    assert got["split_between_hz"] == pytest.approx([2.4998, 7.5001], abs=5e-4)
+
+
+def test_the_grouping_does_not_follow_the_order_the_partials_came_in() -> None:
+    """The same four readings in any order are the same four groups.
+
+    A tolerance measured from each reading in turn makes overlapping
+    neighbourhoods, so a reading between two others is counted into both and the
+    larger group is whichever the loop reached first.
+    """
+    readings = [0.9266, 0.8788, 0.8813, 4.8215]
+    first = rates.agreed_rate(_partials(readings))
+    for order in (
+        [4.8215, 0.8813, 0.8788, 0.9266],
+        [0.8813, 4.8215, 0.9266, 0.8788],
+    ):
+        again = rates.agreed_rate(_partials(order))
+        assert again["rate_hz"] == first["rate_hz"]
+        assert again["agreeing"] == first["agreeing"]
+    assert first["rate_hz"] == pytest.approx(0.88, abs=5e-4)
+
+
+def test_readings_wider_than_the_tolerance_are_not_all_one_group() -> None:
+    """Four readings spanning nearly six per cent do not agree within five.
+
+    They were counted as agreeing because the one they were measured from sat in
+    the middle of them, which makes the tolerance a radius about a reading rather
+    than a width the group has to fit inside.
+    """
+    got = rates.agreed_rate(_partials([4.8677, 5.0822, 4.8433, 4.7948]))
+    assert got["agreeing"] == 3
+    assert got["rate_hz"] == pytest.approx(4.8433, abs=5e-4)
+
+
+def test_an_outlier_does_not_break_the_cluster_it_sits_below() -> None:
+    """Joining the narrowest pair first, rather than walking up from the lowest.
+
+    Walking up joins the outlier to the bottom of the cluster before reaching the
+    rest of it, and three readings that agree come apart into two pairs that do
+    not -- which this reading would then publish as a take saying two things.
+    """
+    got = rates.agreed_rate(_partials([4.7677, 4.8072, 4.8245, 4.5556]))
+    assert got["agreeing"] == 3
+    assert "split_between_hz" not in got
+    assert got["rate_hz"] == pytest.approx(4.8072, abs=5e-4)
+
+
+def test_a_take_nothing_agreed_in_still_names_one_partials_rate() -> None:
+    """Not a split, and the count already says it is not a reading.
+
+    A lone partial's rate is refused downstream by the rule that wants half of
+    them, so it is left naming the first partial the take was read from rather
+    than being emptied -- which would lose which partial it came from for a row
+    that was never evidence.
+    """
+    got = rates.agreed_rate(_partials([3.1019, 1.6499, 3.3007, 15.2585]))
+    assert got["agreeing"] == 1
+    assert got["rate_hz"] == pytest.approx(3.1019, abs=5e-4)
+    assert "split_between_hz" not in got

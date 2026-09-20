@@ -1001,11 +1001,17 @@ def cmd_efx_rate(args) -> int:
         at = reading.get("value")
         head = f"{at:5d}" if at is not None else f"{reading['type']:>5s}"
         found = reading["rate_hz"]
+        split = reading.get("split_between_hz")
+        said_rate = (
+            f"{found:8.4f} Hz" if found is not None
+            else f"{'split':>8s}   " if split
+            else f"{'--':>11s}"
+        )
         print(
-            f"  {head} -> "
-            + (f"{found:8.4f} Hz" if found is not None else f"{'--':>11s}")
+            f"  {head} -> {said_rate}"
             + f"  {reading['agreeing']}/{reading['of']} partials"
             f"  floor {reading['slowest_measurable_hz']}  {reading['heard_db']:.0f} dBFS"
+            + (f"  between {' and '.join(f'{r:.4f}' for r in split)} Hz" if split else "")
         )
 
     if args.untouched and args.byte_names_no_rate:
