@@ -178,3 +178,65 @@ def test_a_record_read_from_a_take_says_which_channel_it_was_read_on(path: Path)
         "channel of the interface that audio came from. Which input a take was read "
         "from is part of every quantity taken out of it, not only of a level."
     )
+
+
+def _naming_a_second_output() -> list[Path]:
+    out = []
+    for path in WITH_LEVELS:
+        data = json.loads(path.read_text())
+        beside = data.get("other_channel")
+        if isinstance(beside, dict) and isinstance(beside.get("read"), int):
+            out.append(path)
+    return out
+
+
+NAMING_A_SECOND_OUTPUT = _naming_a_second_output()
+
+
+def test_the_archive_has_a_record_naming_a_second_output() -> None:
+    """Without one, the two rules below pass by having nothing to apply to."""
+    assert NAMING_A_SECOND_OUTPUT, f"no record under {UNITS} names a second output"
+
+
+@pytest.mark.parametrize(
+    "path", NAMING_A_SECOND_OUTPUT, ids=lambda p: f"{p.parent.name}/{p.name}"
+)
+def test_a_second_output_is_the_other_half_of_the_pair(path: Path) -> None:
+    """The unit's other output, and not the loudest channel that is not the first.
+
+    An interface presents its inputs in pairs and the unit is on one of them, so
+    the second output is the partner of the channel that was read. Choosing it by
+    level instead is what three published records did, and on a type whose quieter
+    side sits low an idle input of the interface stands over that side and wins:
+    the record then reports the interface's own noise as the unit's second output,
+    which is the reading that cannot be told from a stage doing nothing.
+    """
+    data = json.loads(path.read_text())
+    read = data["channel"]["read"]
+    beside = data["other_channel"]["read"]
+    first = read - (read % 2)
+    want = first + 1 if read == first else first
+    assert beside == want, (
+        f"{path.relative_to(UNITS)} read channel {read} and names channel {beside} as "
+        f"the unit's other output, where the other half of that pair is {want}. A "
+        "channel outside the pair is an input nothing is plugged into."
+    )
+
+
+@pytest.mark.parametrize(
+    "path", NAMING_A_SECOND_OUTPUT, ids=lambda p: f"{p.parent.name}/{p.name}"
+)
+def test_a_second_output_says_how_far_apart_the_swept_takes_were(path: Path) -> None:
+    """The one figure that says which side of the pair a record is of.
+
+    `reached_db` beside it cannot: it is the highest each channel reached anywhere
+    in the run, and a run's control take has the two sides equal by construction,
+    so the run that was read 22 dB down on every swept take publishes a fifth of a
+    decibel there. The comparison has to be over the swept takes and no others.
+    """
+    over = json.loads(path.read_text())["other_channel"].get("over_the_swept_takes")
+    assert isinstance(over, dict) and isinstance(over.get("apart_db"), (int, float)), (
+        f"{path.relative_to(UNITS)} names a second output and does not say how far "
+        "the swept takes stood apart on the two, which is the only place a run read "
+        "on the silent side of a pair can be seen."
+    )
