@@ -57,6 +57,7 @@ SENTENCE_KEYS = frozenset(
         "why_one_setting_carries_the_control",
         "why_one_take_carries_the_control",
         "why_the_asymmetry_is_the_evidence",
+        "why_the_byte_names_no_delay",
         "why_the_byte_names_no_rate",
         "why_the_going_up_fraction",
         "why_the_lead_is_the_floor",
@@ -76,7 +77,7 @@ value, which is the archive's own rule about one unit's findings turned on its
 own records. Three such keys have come out into `findings` entries, whose kind is
 the question and whose fields are this unit's answer to it.
 
-The twenty-three left are not that. The test cannot tell them apart, because what it
+The twenty-seven left are not that. The test cannot tell them apart, because what it
 measures is how many underscores a key has, so it catches verbosity and the
 defect alike. Each of these was read: some are a limitation of the stage rather
 than a finding of it, some are a caveat about how the run was made, and the rest
@@ -130,7 +131,16 @@ was written in. The sentence is the mode's own and not this unit's answer: any
 unit swept on a byte that names no rate gets the same one, and the reading it
 qualifies is in the value beside it.
 
-So a twenty-fifth entry is a key to go and look at, not a key that is wrong. Read
+`why_the_byte_names_no_delay` is the same caveat on the stage that reads where a
+copy sits. Its usual question says the byte swept is a delay slot and that the
+mixture carried the source and the return together, because that is the run every
+record it had written was made from. A byte naming something else can still leave
+the output holding a copy of itself, and a run made with the source out of the
+mixture reads a different pair -- so the stage takes a mode for it and this key
+says which mode the record was written in. Any unit swept that way gets the same
+sentence.
+
+So a twenty-eighth entry is a key to go and look at, not a key that is wrong. Read
 the value, decide which of the two it is, and either migrate it or add it here.
 """
 
