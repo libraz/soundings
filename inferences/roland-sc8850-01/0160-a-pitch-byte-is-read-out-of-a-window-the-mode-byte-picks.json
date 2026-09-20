@@ -2,10 +2,10 @@
   "inference": {
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
-    "state": "standing",
+    "state": "parked",
     "made_at": "2026-09-20T07:28:42+00:00",
-    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py, backup/add-round-two-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds.py, backup/add-round-three-to-the-pitch-shifters-window-inference.py",
-    "rounds": 3,
+    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py, backup/add-round-two-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds.py, backup/add-round-three-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds-at-unison.py, backup/add-round-four-and-park-the-pitch-shifters-window-inference.py",
+    "rounds": 4,
     "about": {
       "scope": "unit",
       "types": [
@@ -19,7 +19,7 @@
         "40 03 0C"
       ]
     },
-    "at_its_ceiling": "Three rounds is the ceiling. A fourth parks this claim, keeping what it found."
+    "why_parked": "Four rounds, which is this claim's last and was said to be in advance. What it found is kept: the pitch bytes are read out of a window rather than clocked, the mode byte selects the window from five lengths, two read-outs are present at once, and the pair is stored one whole window apart. What it gave up is whether that stored distance follows the mode byte or is a constant, which wants the pitch bytes swept through unison at a second state of that byte -- a booking, and the only one this claim ends with. The rest of the type is untouched and is listed where it always was."
   },
   "claim": "Type `01 60`'s pitch bytes are not read by anything that runs at a rate of its own. They are read out of a window, and the output repeats every time the read-out has drifted that window's length -- so the rate a take carries is `|r - 1| / T`, where `r` is the ratio the two pitch bytes ask for and `T` is the window. Across the coarse byte the ratio was moved from a quarter to double, which is `|r - 1|` from 0.056 to 1.000, and the rate moved with it from 0.90 to 15.63 Hz: over that factor of eighteen `T` stays between 62.1 and 64.7 ms. At unison the line is not slow, it is gone -- byte 64 returns 4.81 Hz, which is this voice's own amplitude wobble and the same figure the fine byte returns at its own unison. On the fine byte, which reaches ratios three orders closer to one than the coarse byte's smallest step does, the four settings whose implied rate clears the run's own floor of 0.3033 Hz come back at 0.4504 to 0.9384 Hz and give `T` of 63.21 to 63.74 ms, while every setting between them returns the voice's wobble instead -- which is what a window rate under the floor looks like and is not something a clock of the stage's own could do. The byte the page prints `Shift Mode` against, over five states and with no unit beside them, moves `T` and moves nothing else. Its five states return 32.00, 42.68, 63.78, 85.27 and 128.0 ms, which is the ratio 3 : 4 : 6 : 8 : 12, read at two shifts an octave apart. The shortest is 1024 steps of the 32000 Hz clock this archive already reads this unit's delay ladder as cut to; the third is 2048 of them and the fifth is 4096, so three of the five are successive powers of two and the two between them sit a fourth and a fifth along -- two octaves reached in four steps. Read at the octave, where the two shortest windows put the rate past the 20 Hz ceiling this reading searches to, those two and only those two come back at exactly half: 15.6261 where 31.25 is asked for, and 11.7221 where 23.44 is.",
   "named": "a time-domain splicer: one window read out at the pitch ratio and re-entered every time the read-out has drifted the window's length, with a mode byte that picks which of five windows is used",
@@ -751,6 +751,162 @@
             }
           ]
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-60-03-a-copy-of-the-output-in-itself-across-the-coarse-byte.json",
+        "keys": [
+          "readings[value=64].ms",
+          "readings[value=64].also_ms",
+          "readings[value=64].stands",
+          "readings[value=64].also_stands",
+          "quefrency_step_ms",
+          "held"
+        ],
+        "values": [
+          64.0,
+          [
+            0.0833,
+            49.7083
+          ],
+          8.55,
+          [
+            8.39,
+            4.11
+          ],
+          0.020833,
+          [
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "02"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-60-04-a-copy-of-the-output-in-itself-across-the-fine-byte.json",
+        "keys": [
+          "readings[value=64].ms",
+          "readings[value=64].also_ms",
+          "readings[value=64].stands",
+          "readings[value=64].also_stands",
+          "quefrency_step_ms",
+          "held"
+        ],
+        "values": [
+          0.1042,
+          [
+            64.0,
+            80.0
+          ],
+          11.46,
+          [
+            8.5,
+            4.72
+          ],
+          0.020833,
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "02"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
       }
     ],
     "document_rows": [
@@ -810,7 +966,7 @@
     "file": "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
     "used_for": "The clock three of the five windows come to round numbers in. That claim reads this unit's delay ladder as cut to whole steps of 32000 Hz, and it was made on a different stage, a different type and a different quantity -- so 1024, 2048 and 4096 are round against a ruler this claim did not choose and could not have arranged. Used as a ruler and not as evidence: the ratio 3 : 4 : 6 : 8 : 12 is what was measured, and it stands whether or not that clock is this stage's clock too."
   },
-  "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no line of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note.",
+  "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no rate of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note.",
   "a_reading_that_moved_after_this_was_made": "One figure moved on a republication this claim did not ask for, and it moved towards what the claim predicts. The coarse byte one semitone below unison was published at 0.9040 hertz and is now 0.8800. The rate read here is the ratio's distance from one over the window, and at this setting that is 0.0561 over 63.78 milliseconds, which is 0.880. The old figure was the reading resolving a tie between two of its partials by the order they arrived in; the new one is the pair that agreed. Nothing was fitted to make it move, and the setting was not one this claim's window was measured from.",
   "a_row_that_declined_after_this_was_made": "The mode byte's longest state at a major third stopped naming a rate under the same change and now publishes the pair its partials split between. This claim already rested on that row twice over: it cites the row's own per-partial rates beside the rate, and it was the weakest of the five there -- which is why the whole sweep was taken again an octave up, where every state returns four times the rate and this one repeats. The octave pass is what the five lengths stand on, and it did not move.",
   "the_round_that_heard_the_other_shifter": {
@@ -1277,6 +1433,83 @@
         1
       ],
       "the_closest_two_windows_as_a_fraction": 0.333
+    }
+  },
+  "what_the_unison_row_also_carries": "The control above is a control of the rate reading and of nothing else, and this says what the same takes turned out to hold when a different reading was put on them. A shifter asked for no shift splices nothing, so the row carries no rate of the effect's and the rate reading came back with the voice, which is what made the lines elsewhere attributable to the byte. It does carry a distance: read for a copy of the output in itself, the same two takes hold one a whole window apart. The two are not in conflict -- a rate is how often something repeats and a distance is how far apart two copies sit, and a pair that neither drifts nor splices has the second and not the first -- but the sentence above was written before anything had read these takes that way, and a state that carries no rate is not a state that carries nothing.",
+  "the_round_that_asked_at_no_shift": {
+    "what_was_asked": "How far apart the two read-outs sit in what is stored, which round three named as the one thing it could not separate. A read-out scales the time axis along with the pitch, so at any shift the arrival is the storage divided by the ratio and no single shift says which of the two it measured. The separator is a ratio of one, and it is a setting of a sweep already recorded rather than a run.",
+    "what_came_back": "At no shift the output holds a copy of itself one whole window apart. Both sweeps put a peak within 0.71 of a quefrency step of the 63.9853 ms this state selects, on 1 of 2 takes as the strongest peak of the take and where it was not the strongest as the next one, standing 8.5 to 8.55 over the take's own roughness against a bar of six. Where it was not, what beat it was 0.1042 ms, 2.0 quefrency steps from where the same chain peaks with the effect out of it, which is itself the 0.0625 ms bottom of the search -- the band this reading cannot separate the type from the chain in, rather than a length of the type's. The two takes are the same pair of bytes in two directories, so the row is measured twice. What the same bytes give at the octave is half of it, and that is also measured twice: the coarse sweep's top setting and the mode sweep's held state are one configuration read in two runs, and they return 32.0 ms with the same two peaks beside it.",
+    "what_it_closes": "The length this claim names is the length of the thing stored, in the axis it is stored in. Round three could say the pair was stored a window apart or half a window apart and could not choose, because it read at one shift and a shift scales what it reads. At a ratio of one there is nothing to scale: the distance that comes back is the distance in the store, and it is the window rather than half of it.",
+    "what_it_does_not_settle": "Whether the stored distance follows the mode byte. Both sweeps hold that byte at one state, so this is one window long and a constant of sixty-four milliseconds would give every figure above. Separating them wants the pitch bytes swept through unison at a second state, which is a booking and not a reading -- those takes are not recorded. The settings between unison and the octave say nothing either way: their peaks are the carrier's own structure rather than a ladder, which is what the major-third pass of round three found and published as a bound.",
+    "what_the_reading_returned": {
+      "the_window_this_state_selects_ms": 63.9853,
+      "at_no_shift": {
+        "the coarse byte": [
+          {
+            "take": "held-16-064-00.wav",
+            "peaks_ms": [
+              64.0,
+              0.0833,
+              49.7083
+            ],
+            "stands": [
+              8.55,
+              8.39,
+              4.11
+            ],
+            "the_window_ms": 64.0,
+            "it_stood": 8.55,
+            "it_was_the_strongest": true,
+            "off_by_in_steps": 0.71,
+            "the_strongest_ms": 64.0,
+            "the_strongest_from_the_chains_own_peak_in_steps": 3069.05,
+            "its_own_peak_ms": 0.0625,
+            "the_shortest_searched_ms": 0.0625
+          }
+        ],
+        "the fine byte": [
+          {
+            "take": "held-16-064-00.wav",
+            "peaks_ms": [
+              0.1042,
+              64.0,
+              80.0
+            ],
+            "stands": [
+              11.46,
+              8.5,
+              4.72
+            ],
+            "the_window_ms": 64.0,
+            "it_stood": 8.5,
+            "it_was_the_strongest": false,
+            "off_by_in_steps": 0.71,
+            "the_strongest_ms": 0.1042,
+            "the_strongest_from_the_chains_own_peak_in_steps": 2.0,
+            "its_own_peak_ms": 0.0625,
+            "the_shortest_searched_ms": 0.0625
+          }
+        ]
+      },
+      "the_same_bytes_read_in_two_directories": {
+        "in_the_coarse_sweep": {
+          "take": "held-16-076-00.wav",
+          "ms": 32.0,
+          "also_ms": [
+            1.125,
+            65.0
+          ]
+        },
+        "in_the_mode_sweep": {
+          "take": "held-16-002-00.wav",
+          "ms": 32.0,
+          "also_ms": [
+            1.125,
+            65.0
+          ]
+        },
+        "agree": true
+      }
     }
   }
 }
