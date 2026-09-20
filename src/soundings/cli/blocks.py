@@ -515,6 +515,16 @@ def register(sub) -> None:
         "its floor, so a run that repeated a setting needs no separate pattern for it",
     )
     p.add_argument(
+        "--byte-names-no-delay",
+        action="store_true",
+        help="the byte swept is not a delay slot, so what comes back is the distance "
+        "the output was measured to hold a copy of itself at rather than a time the "
+        "byte asked for. It also moves what the two copies are: a delay run reads the "
+        "source against its own return, while a run made with the source out of the "
+        "mixture reads whatever the effect's output holds twice. Which of the two a "
+        "record is belongs to the run, because nothing in the numbers says it",
+    )
+    p.add_argument(
         "--control",
         required=True,
         metavar="REGEX",
@@ -1293,6 +1303,7 @@ def cmd_efx_time(args) -> int:
         apart_ms=args.peaks_apart,
         lead_s=args.lead,
         hold_s=args.hold,
+        names_a_delay=not args.byte_names_no_delay,
         progress=said,
     )
     picked = found["channel"]

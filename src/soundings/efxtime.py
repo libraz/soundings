@@ -44,6 +44,14 @@ cepstrum is taken over and above by the same frame, which is stated in the recor
 as the range that was searched rather than left to be inferred from the numbers
 that came back.
 
+**A byte that names no delay can still leave the output holding a copy of itself,
+and that is a second question rather than the first one told loosely.** The
+reading is the same. What differs is what may be concluded from it, and what the
+two copies are: a delay run puts the source and the return in the mixture together
+and reads one against the other, while a run made with the source out of it reads
+whatever the effect's own output holds twice. The record says which of the two it
+is, because nothing in the numbers does.
+
 **The floor is the run's own repeats.** A setting taken more than once gives how
 far apart the reading put the same state twice, and that is the only figure that
 says what a difference between two settings has to clear. Where no setting was
@@ -76,6 +84,38 @@ METHOD = (
     "subtracted, and the strongest peak of what is left is the delay. Two further "
     "peaks are reported beside it. The take is read from one channel named for the "
     "whole run, and a setting taken more than once gives the run its floor."
+)
+
+NO_DELAY_QUESTION = (
+    "At what distance one insertion effect type's output was measured to hold a copy "
+    "of itself, at each setting of a byte that names no delay."
+)
+
+NO_DELAY_METHOD = (
+    "One take per setting. The cepstrum of the held part of the take is averaged over "
+    "every frame that fits in it, the same curve taken with the part routed past the "
+    "effect is subtracted, and the strongest peak of what is left is reported with "
+    "two further peaks beside it. Where the sweep is not of a delay slot this does "
+    "not say a sound was measured against its own copy: what a peak says is that two "
+    "correlated copies were present in the output a fixed distance apart, and which "
+    "paths they came down is decided by what else the run had written, which is in "
+    "the held block. The take is read from one channel named for the whole run, and a "
+    "setting taken more than once gives the run its floor."
+)
+
+NO_DELAY_WHY = (
+    "The byte this record sweeps is not a delay slot, and the distance below is what "
+    "the output was measured to hold a copy of itself at rather than a time the byte "
+    "asked for. The two are read differently and nothing in the numbers separates "
+    "them: a delay slot returning its own setting is the slot answering, while a byte "
+    "that names no delay returning a distance at all is a fact about the structure "
+    "behind it -- and what that structure is, is not decided here. It also moves what "
+    "the two copies are. A delay run puts the source and the return in the mixture "
+    "together and reads one against the other; a run made with the source out of it "
+    "reads whatever the effect's own output holds twice, which is a different pair "
+    "and not a weaker reading of the same one. Which of the two a record is belongs "
+    "to the run, which knows what it wrote; it is not read off the printed page, "
+    "because a page is evidence about a page."
 )
 
 LIMITS = (
@@ -305,6 +345,7 @@ def read_directory(
     lead_s: float = 0.6,
     trim_s: float = 0.5,
     hold_s: float | None = None,
+    names_a_delay: bool = True,
     progress=None,
 ) -> dict:
     """Every take under `where` whose setting matches, read into one record.
@@ -427,10 +468,11 @@ def read_directory(
 
     step_ms = float(quefrency_ms[1] - quefrency_ms[0]) if quefrency_ms.size > 1 else 0.0
     record = {
-        "question": QUESTION,
+        "question": QUESTION if names_a_delay else NO_DELAY_QUESTION,
+        **({} if names_a_delay else {"why_the_byte_names_no_delay": NO_DELAY_WHY}),
         "type": type_id,
         "address": address,
-        "method": METHOD,
+        "method": METHOD if names_a_delay else NO_DELAY_METHOD,
         "limits": LIMITS,
         "not_in_this_record": NOT_HERE,
         "searched_ms": [round(v, 4) for v in searched],
@@ -494,6 +536,9 @@ __all__ = [
     "LIMITS",
     "METHOD",
     "NOT_HERE",
+    "NO_DELAY_METHOD",
+    "NO_DELAY_QUESTION",
+    "NO_DELAY_WHY",
     "QUESTION",
     "STANDS_OUT",
     "VALUE",
