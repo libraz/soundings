@@ -40,7 +40,7 @@
         "values": [
           11.9163,
           7.816,
-          0.904,
+          0.88,
           4.8052,
           0.9353,
           7.7841,
@@ -211,7 +211,7 @@
           "readings[value=1].rate_hz",
           "readings[value=2].rate_hz",
           "readings[value=3].rate_hz",
-          "readings[value=4].rate_hz",
+          "readings[value=4].split_between_hz",
           "readings[value=4].rates",
           "held"
         ],
@@ -220,7 +220,10 @@
           6.09,
           4.075,
           3.0482,
-          2.2393,
+          [
+            2.0463,
+            2.2393
+          ],
           [
             2.2866,
             2.0483,
@@ -375,7 +378,7 @@
     {
       "reading": "A clock inside the stage runs at a fixed rate and the pitch bytes only change what is read out, so the periodicity is the clock's and not a drift's.",
       "standing": false,
-      "ruled_out_by": "A fixed clock returns one rate down a sweep. The coarse byte moves the rate from 0.9040 to 15.6290 Hz, a factor of 17.3, and does it monotonically in `|r - 1|` on both sides of unison -- 0.9353 at a ratio above one and 0.9040 at the one an equal distance below. What stays fixed across that is the length the two imply, not the rate."
+      "ruled_out_by": "A fixed clock returns one rate down a sweep. The coarse byte moves the rate from 0.8800 to 15.6290 Hz, a factor of 17.8, and does it monotonically in `|r - 1|` on both sides of unison -- 0.9353 at a ratio above one and 0.8800 at the one an equal distance below. What stays fixed across that is the length the two imply, not the rate."
     },
     {
       "reading": "The periodicity is the shifted voice beating against the direct path, which is what any two copies a semitone apart do.",
@@ -458,5 +461,7 @@
     "file": "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
     "used_for": "The clock three of the five windows come to round numbers in. That claim reads this unit's delay ladder as cut to whole steps of 32000 Hz, and it was made on a different stage, a different type and a different quantity -- so 1024, 2048 and 4096 are round against a ruler this claim did not choose and could not have arranged. Used as a ruler and not as evidence: the ratio 3 : 4 : 6 : 8 : 12 is what was measured, and it stands whether or not that clock is this stage's clock too."
   },
-  "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no line of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note."
+  "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no line of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note.",
+  "a_reading_that_moved_after_this_was_made": "One figure moved on a republication this claim did not ask for, and it moved towards what the claim predicts. The coarse byte one semitone below unison was published at 0.9040 hertz and is now 0.8800. The rate read here is the ratio's distance from one over the window, and at this setting that is 0.0561 over 63.78 milliseconds, which is 0.880. The old figure was the reading resolving a tie between two of its partials by the order they arrived in; the new one is the pair that agreed. Nothing was fitted to make it move, and the setting was not one this claim's window was measured from.",
+  "a_row_that_declined_after_this_was_made": "The mode byte's longest state at a major third stopped naming a rate under the same change and now publishes the pair its partials split between. This claim already rested on that row twice over: it cites the row's own per-partial rates beside the rate, and it was the weakest of the five there -- which is why the whole sweep was taken again an octave up, where every state returns four times the rate and this one repeats. The octave pass is what the five lengths stand on, and it did not move."
 }

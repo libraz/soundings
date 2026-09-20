@@ -156,18 +156,26 @@
       {
         "file": "data/units/roland-sc8850-01/efx-rate/02-01-09-where-the-table-bends.json",
         "keys": [
-          "readings[value=116].rate_hz",
+          "readings[value=116].split_between_hz",
           "readings[value=119].rate_hz",
-          "readings[value=120].rate_hz",
-          "readings[value=124].rate_hz"
+          "readings[value=120].split_between_hz",
+          "readings[value=124].split_between_hz"
         ],
         "values": [
-          6.6972,
+          [
+            2.2333,
+            6.6972
+          ],
           7.0004,
-          7.5001,
-          9.5011
-        ],
-        "why": "Nine consecutive settings across the place the table's step goes from a tenth of a hertz to a half, on a slot other than the one the bends were measured at. Three of the nine repeat settings the same slot already has, so the run carries its own check that the two agree before their readings are put side by side."
+          [
+            2.4998,
+            7.5001
+          ],
+          [
+            3.1655,
+            9.5011
+          ]
+        ]
       },
       {
         "file": "data/units/roland-sc8850-01/efx-params/01-24.json",
@@ -3464,5 +3472,6 @@
     "what_it_settles": "Both tables came back entry for entry at all 128 settings, bends and flat top included -- the wide one changing step at 100 and at 120 and holding 10.00 Hz over its last three settings, the narrow one stepping a twentieth of a hertz from end to end. The claim was fitted to readings of twenty-one slots and predicted every entry of a list it had not seen.",
     "and_what_it_does_to_the_reason_this_was_not_named": "The reason given was that a name would suggest the lists came from somewhere this run had seen. They had not, and now one of them has been found: the manual prints both and calls them Rate1 and Rate2. Those are labels for two columns of a conversion table rather than a name for an algorithm, so the field stands -- but the sentence under it was true of a state of the reading that has ended, and it is left in place with this beside it rather than quietly rewritten.",
     "and_the_condition_that_would_have_refuted_it": "This claim names a third table as its refutation: a rate row carrying a printed range that is neither of the two. The grid has two rate columns and no more, so the condition is now one a page can be asked about, and asked, it does not fire."
-  }
+  },
+  "rows_that_declined_after_this_was_made": "Three of the rows this rests on stopped naming a rate. The reading that made them was changed to refuse a take whose partials split evenly between two rates rather than resolve it, and at settings 116, 120 and 124 of this byte two partials fall on one rate and two on another. What the rows publish now is the pair. In all three the higher of the pair is the entry this claim reads off the printed table -- 6.70, 7.50 and 9.50 hertz -- and the lower stands to it as one to 2.999, 3.000 and 3.001, which is two partials followed at every third cycle rather than a second modulation. So the rows are still the rows this claim was made on and the thing that chooses between the branches is the printed table, which is where a choice of that kind belongs. The neighbouring settings decide it independently: 117, 118, 119, 121, 122 and 123 name a rate outright and sit on the same two steps, of a tenth below 119 and a half above it, so a table built from the six that did not split predicts all three that did."
 }
