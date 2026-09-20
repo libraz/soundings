@@ -138,6 +138,16 @@ def register(sub) -> None:
         "byte and cannot say what was already there",
     )
     p.add_argument(
+        "--byte-names-no-rate",
+        action="store_true",
+        help="the byte swept is not a rate slot, so what comes back is what the output "
+        "was measured to repeat at rather than what the byte asked for. The reading is "
+        "the same and what may be concluded from it is not: a rate slot returning its "
+        "own setting is the slot answering, while a byte that names no rate returning a "
+        "periodicity at all is a fact about the structure behind it. Which of the two a "
+        "record is belongs to the run, because nothing in the numbers says it",
+    )
+    p.add_argument(
         "--held",
         type=options.write_spec,
         action="append",
@@ -586,6 +596,97 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_time)
 
     p = sub.add_parser(
+        "efx-excursion",
+        help="read how far one insertion effect's modulator swings the delay under it, "
+        "setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, required=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. Two takes matching one value is how this stage gets "
+        "its floor, so a run that repeated a setting needs no separate pattern for it",
+    )
+    p.add_argument(
+        "--carrier-hz",
+        type=float,
+        required=True,
+        help="the fundamental of the note the takes hold. Its orders are what the "
+        "reading is taken on, and the demodulator's window is one period of it, which "
+        "is what puts the neighbouring orders on a null",
+    )
+    p.add_argument(
+        "--bypassed",
+        default="bypassed",
+        help="a pattern naming the takes made with the part routed past the effect. "
+        "Which orders every reading is taken on is decided there and never by the take "
+        "being read: an effect that adds sidebands raises its own quiet orders over the "
+        "threshold and brings a different set of partials into its own answer",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. An "
+        "excursion is read through the whole chain, so a feedback path around the delay "
+        "deepens the notch without moving it and a balance away from the point that "
+        "carries both paths shallows the series the fit is taken on",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held. Said in words "
+        "rather than guessed at, because a record stating an address that was never "
+        "written is wrong in a way a reader cannot see",
+    )
+    p.add_argument(
+        "--settled",
+        type=float,
+        help="seconds the run waited after writing the setting before recording, for any "
+        "type that takes time to reach the state it was asked for",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        default=8.0,
+        help="seconds the note was held for. Half a second is cut from each end of it, "
+        "because an attack and a release are not the steady tone this reads",
+    )
+    p.add_argument("--min-rate", type=float, default=0.20, help="slowest rate the grid reaches, Hz")
+    p.add_argument("--max-rate", type=float, default=8.0, help="fastest rate the grid reaches, Hz")
+    p.add_argument(
+        "--step-hz",
+        type=float,
+        default=0.01,
+        help="how finely the grid is walked. This is not the resolution -- two rates "
+        "closer than one over the length read are one peak however fine the grid is -- "
+        "it is only how precisely that peak can be placed",
+    )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever "
+        "reached highest across the takes read, chosen once for the run: the unit's two "
+        "outputs carry a stereo modulator in antiphase, so a level series read on one is "
+        "not the level series read on the other",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_excursion)
+
+    p = sub.add_parser(
         "efx-params",
         help="read a directory of per-address records into one verdict per parameter of "
         "one insertion effect type, with no machine attached",
@@ -907,6 +1008,10 @@ def cmd_efx_rate(args) -> int:
             f"  floor {reading['slowest_measurable_hz']}  {reading['heard_db']:.0f} dBFS"
         )
 
+    if args.untouched and args.byte_names_no_rate:
+        print("--untouched and --byte-names-no-rate are two different questions:")
+        print("one has no byte at all, the other has a byte that is not a rate slot")
+        return 2
     if args.untouched:
         if args.type or args.slot:
             print("--untouched takes no --type or --slot: nothing was written, and the")
@@ -934,6 +1039,7 @@ def cmd_efx_rate(args) -> int:
             held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
             held_not_spelled_out=args.held_not_spelled_out,
             settled_s=args.settled,
+            names_a_rate=not args.byte_names_no_rate,
             lead_s=args.lead,
             hold_s=args.hold,
             shared_lines=args.lines,
@@ -1222,6 +1328,87 @@ def cmd_efx_time(args) -> int:
             f"  the same setting twice lands {found['floor_ms']:.3f} ms apart, on a "
             f"grid of {found['quefrency_step_ms']:.4f} ms"
         )
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if astray := picked["loudest_elsewhere"]:
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_excursion(args) -> int:
+    """How far a modulator swings the delay under it, read from takes already saved."""
+    from .. import efxexcursion
+
+    def said(reading) -> None:
+        swung = (
+            f"{reading['excursion_ms']:8.3f} ms"
+            if reading["admitted"]
+            else f"{(reading['the_level_swing_is'] or 'nothing read'):>11s}"
+        )
+        span = reading["excursions_that_explain_it_about_as_well_ms"]
+        print(
+            f"  {reading['value']:5d} -> {swung}"
+            + (f"  [{span[0]:.3f} - {span[1]:.3f}]" if span else "")
+            + f"   off the phase {reading['off_the_phase_ms']:7.4f} ms"
+            + f"   at {reading['read_at_hz']:5.2f} Hz"
+        )
+
+    found = efxexcursion.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        carrier_hz=args.carrier_hz,
+        bypassed=args.bypassed,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        held_not_spelled_out=args.held_not_spelled_out,
+        settled_s=args.settled,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        grid_hz=(args.min_rate, args.max_rate),
+        step_hz=args.step_hz,
+        channel=args.channel,
+        progress=said,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
+    asked = len(found["settings_asked"])
+    print(
+        f"  {len(found['settings_admitted'])} of {asked} settings named a fitted "
+        f"excursion; the phase stood over the bypassed take at "
+        f"{len(found['settings_the_phase_admitted'])}"
+    )
+    if (aside := found["routed_past_the_effect"]["with_nothing_in_its_path"]) is None:
+        print("  (only one take with the part routed past: this run measured no null)")
+    else:
+        print(
+            "  with the part routed past the effect, read against another such take, "
+            "the same reading returns "
+            + (
+                f"{aside['excursion_ms']:.3f} ms  <- which would be read as a swing"
+                if aside["admitted"]
+                else f"{aside['the_level_swing_is'] or 'nothing'}"
+            )
+        )
+    floors = (("fitted", found["floor"]), ("off the phase", found["floor_off_the_phase"]))
+    for name, floor in floors:
+        if floor["ms"] is None:
+            print(f"  ({name}: no setting was taken twice, so this run measured no floor)")
+        else:
+            print(
+                f"  {name}: the same setting {max(floor['takes_per_setting'].values())} times "
+                f"spreads {floor['ms']:.4f} ms, {100.0 * floor['as_a_fraction']:.1f} per cent "
+                f"of its own mean, over settings {floor['settings_taken_twice']}"
+            )
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     if astray := picked["loudest_elsewhere"]:

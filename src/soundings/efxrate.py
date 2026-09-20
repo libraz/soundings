@@ -22,6 +22,14 @@ whichever dominates, so a sweep of one of them has to turn the other down or hol
 it still, and the two kinds of reading are not comparable afterwards. The settings
 the run applied are carried into the record with every reading they covered.
 
+**A byte that names no rate can still make the output repeat, and that is a third
+question rather than the first one told loosely.** The reading is the same: what
+periodicity the take carries, by both routes, with what bounds it. What differs is
+what may be concluded from it -- a rate slot returning its own setting is the slot
+answering, while a pitch byte returning a periodicity at all is a fact about the
+structure behind it. The record says which of the two it is, because nothing in
+the numbers does.
+
 **No law, no table, no verdict.** Whether a slot's readings follow one curve or
 another is a fit across several types, and the fit is not made here -- see the
 archive's own note on what this repository does not derive. The printed range for
@@ -113,6 +121,23 @@ of the same byte answer differently and nothing in the row says why. `rest` is
 what a run writes here for a take that followed a reset and nothing else.
 """
 
+NO_RATE_QUESTION = (
+    "What frequency one insertion effect type's output was measured to repeat at, at "
+    "each setting of a byte that names no rate."
+)
+
+NO_RATE_WHY = (
+    "The byte this record sweeps is not a rate slot, and the periodicity below is "
+    "what the output was measured to do rather than what the byte asked for. Stated "
+    "in the question rather than left to be inferred from the address, because the "
+    "two cases are read differently and nothing in the numbers separates them: a "
+    "rate slot returning its own setting is the slot answering, while a byte that "
+    "names no rate returning one at all is a fact about the structure behind it -- "
+    "and what that structure is, is not decided here. Which of the two a record is "
+    "belongs to the run, which knows what it wrote; it is not read off the printed "
+    "page, because a page is evidence about a page."
+)
+
 UNTOUCHED_QUESTION = (
     "What a take carried when one insertion effect type was loaded and no parameter "
     "of it was written."
@@ -195,6 +220,7 @@ def read_directory(
     held: list[dict] | None = None,
     held_not_spelled_out: str | None = None,
     settled_s: float | None = None,
+    names_a_rate: bool = True,
     lead_s: float = 0.6,
     trim_s: float = 0.5,
     hold_s: float | None = None,
@@ -266,7 +292,8 @@ def read_directory(
     readings.sort(key=lambda r: (r[VALUE], str(r.get("came_from") or "")))
     approached = any("came_from" in r for r in readings)
     return {
-        "question": QUESTION,
+        "question": QUESTION if names_a_rate else NO_RATE_QUESTION,
+        **({} if names_a_rate else {"why_the_byte_names_no_rate": NO_RATE_WHY}),
         "type": type_id,
         "address": address,
         "method": METHOD,
