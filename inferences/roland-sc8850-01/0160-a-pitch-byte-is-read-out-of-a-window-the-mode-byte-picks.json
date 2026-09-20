@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-20T07:28:42+00:00",
-    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py",
-    "rounds": 1,
+    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py, backup/add-round-two-to-the-pitch-shifters-window-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -14,7 +14,9 @@
       "addresses": [
         "40 03 03",
         "40 03 04",
-        "40 03 0B"
+        "40 03 07",
+        "40 03 0B",
+        "40 03 0C"
       ]
     }
   },
@@ -359,6 +361,83 @@
             }
           ]
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-60-0b-the-mode-byte-on-the-second-shifter.json",
+        "keys": [
+          "readings[value=0].rate_hz",
+          "readings[value=1].rate_hz",
+          "readings[value=2].rate_hz",
+          "readings[value=3].rate_hz",
+          "readings[value=4,take=held-16-004-00.wav].rate_hz",
+          "readings[value=4,take=held-16-004-01.wav].split_between_hz",
+          "held"
+        ],
+        "values": [
+          15.6256,
+          11.721,
+          15.6315,
+          11.7227,
+          7.8096,
+          [
+            4.1086,
+            7.8091
+          ],
+          [
+            {
+              "address": "40 03 03",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "4C"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
       }
     ],
     "document_rows": [
@@ -419,30 +498,9 @@
     },
     {
       "reading": "The two shifters have a window each, and what was measured is the first one's rather than a property of the type.",
-      "standing": true,
-      "equivalent_under_this_test": false,
-      "ruled_out_by": null,
-      "separated_by": {
-        "observable": "The same mode sweep with the second shifter alone in the path -- its level byte at the top and the first shifter's at nought, which is the mirror of what every take here was made with.",
-        "predicts": {
-          "one window for the type": "the five lengths come back the same",
-          "a window each": "they need not, and the mode byte may reach only one of the two"
-        },
-        "sensitivity_here": "The five lengths are 33 per cent apart at the closest and the same length read twice at the octave came back 128.01 and 127.97 ms, so the reading separates them by three orders more than it needs to.",
-        "margin": 1000,
-        "why_not_separable": null,
-        "run": {
-          "stage": "efx-rate",
-          "types": [
-            "01 60"
-          ],
-          "addresses": [
-            "40 03 0B"
-          ],
-          "minutes": 15,
-          "why": "The same five states of the mode byte with the second shifter alone in the path: `40 03 0C` at the top instead of at nought, the second shifter's own coarse byte carrying the shift, and the first one's at unison. Five takes and a control, at the octave, which is where every state of the byte lands inside the reading's ceiling on one side of it and where the repeat is already measured. Fifteen minutes because the held tone is eight seconds and the state is written once per take."
-        }
-      }
+      "standing": false,
+      "equivalent_under_this_test": true,
+      "ruled_out_by": "The mirror run was made: the same five states of the mode byte with `L.Bal` at the top of its byte, the second shifter's own coarse byte carrying the octave and the first one's at unison. The five lengths come back the same. The worst the two shifters disagree by is under five parts in ten thousand, against five windows whose closest neighbours are a third apart, and it is the size of what one shifter's repeat of a single state already costs. What is not separated by it -- one shared buffer against two configured alike -- is a different reading and is recorded as equivalent under this test rather than left standing as this one."
     }
   ],
   "refuted_by": "Any setting whose measured rate is not `|r - 1|` over a window the mode byte alone decides. Two shapes of that: a coarse sweep returning one rate rather than one length, which is what a clock of the stage's own would give and is what the eighteenfold sweep was made to look for; or a mode byte that moves the rate at a fixed shift by anything other than the ratio it moves it by at a different shift, which is what a mode byte selecting something other than a length would give. Separately, a rate at unison. The claim says the splice stops there, so a line at byte 64 that is not the line the bypassed voice carries refutes it outright.",
@@ -463,5 +521,238 @@
   },
   "why_the_unison_row_is_the_control": "The run's null is a setting of the sweep rather than a take beside it. A shifter asked for no shift has nothing to splice, so the middle of both pitch bytes is a state that certainly carries no line of the effect's -- and it is the one setting where the reading has to come back with the voice. It does: 4.8052 Hz on the coarse sweep and 4.8107 on the fine, both on all four partials, against 4.79 to 4.82 Hz read off this archive's own bypassed takes of the same held tone. That is what makes the lines at every other setting attributable to the byte rather than to the note.",
   "a_reading_that_moved_after_this_was_made": "One figure moved on a republication this claim did not ask for, and it moved towards what the claim predicts. The coarse byte one semitone below unison was published at 0.9040 hertz and is now 0.8800. The rate read here is the ratio's distance from one over the window, and at this setting that is 0.0561 over 63.78 milliseconds, which is 0.880. The old figure was the reading resolving a tie between two of its partials by the order they arrived in; the new one is the pair that agreed. Nothing was fitted to make it move, and the setting was not one this claim's window was measured from.",
-  "a_row_that_declined_after_this_was_made": "The mode byte's longest state at a major third stopped naming a rate under the same change and now publishes the pair its partials split between. This claim already rested on that row twice over: it cites the row's own per-partial rates beside the rate, and it was the weakest of the five there -- which is why the whole sweep was taken again an octave up, where every state returns four times the rate and this one repeats. The octave pass is what the five lengths stand on, and it did not move."
+  "a_row_that_declined_after_this_was_made": "The mode byte's longest state at a major third stopped naming a rate under the same change and now publishes the pair its partials split between. This claim already rested on that row twice over: it cites the row's own per-partial rates beside the rate, and it was the weakest of the five there -- which is why the whole sweep was taken again an octave up, where every state returns four times the rate and this one repeats. The octave pass is what the five lengths stand on, and it did not move.",
+  "the_round_that_heard_the_other_shifter": {
+    "what_was_asked": "Whether the five lengths are the type's or the first shifter's. Every take round one was made from had `L.Bal` at nought, which the page prints as the first shifter alone, so a second shifter with a window of its own -- or a mode byte reaching only one of the two -- would have left the same readings behind.",
+    "what_came_back": "The five windows on the second shifter are 32.00, 42.66, 63.97, 85.30, 128.05 ms, in the ratio 1.0 : 1.3331 : 1.9992 : 2.6659 : 4.0018 against the first shifter's 1.0 : 1.333 : 1.9997 : 2.6658 : 4.0001. The worst the two disagree by is 4.6 parts in ten thousand, at the longest window, and the closest two windows are 33.3 per cent apart -- so the reading separates what it had to separate by 723 times over. The one state either pass takes twice repeats to 2.9 parts in ten thousand on the first shifter and 0.6 on the second, so the disagreement between the two shifters is under twice what one shifter's disagreement with itself already costs.",
+    "what_the_run_controlled": "The mirror is its own control, and it is a control of the balance byte rather than of the mode byte. The shift was moved to the second shifter's coarse byte and the first one's was left at unison, so if the top of `L.Bal` were the first shifter the run would have been listening to a shifter asked for no shift and every take would have returned the voice's own wobble near 4.8 Hz, as the unison rows of both pitch sweeps do. None of the five did. That reads the printed `A 0<B` the way this claim had been taking it, on the unit rather than on the page.",
+    "what_it_closes": "A window each is refused. The same five states of one byte, heard through the other shifter, return the same five lengths and the same ratio between them, and the mode byte reaches both. What the reading cannot separate is one buffer the two shifters share from two buffers a single byte configures alike: both return one set of lengths whichever shifter is in the path, and the output is the only thing that can be asked. That is recorded as equivalent rather than left open.",
+    "the_length_the_two_shifts_disagree_on": "Three of the five lengths agree between the two shifts to within 6 parts in ten thousand, the fifth is the state the major third named no rate at, and one does not: at state 2 the major third gives 63.78 ms and the two octave passes give 63.99 and 63.97, which is 0.31 per cent. The claim publishes the major third's figure and this round does not move it, because the two are not in conflict: the three partials that agreed in that take span 1.1 per cent, which is the third widest of the 17 takes read on this byte and 3.4 times the gap in dispute, so the octave's figure is inside that take's own scatter. The octave cannot settle it either, and for a reason worth stating: at the octave state 2's window returns 15.63 Hz and state 0's returns twice that, which the reading's ceiling sends back as a divisor -- the same number. Those two states are arithmetically indistinguishable in that pass because one window is twice the other, and they are told apart only because the run knows which byte it wrote and because the third pass reads both below the ceiling.",
+    "what_the_second_shifter_returned": {
+      "per_mode": {
+        "0": {
+          "first_shifter_hz": 15.6261,
+          "second_shifter_hz": 15.6256,
+          "read_at": "half its own rate",
+          "first_shifter_window_ms": 31.9977,
+          "second_shifter_window_ms": 31.9988,
+          "apart_as_a_fraction": 3.2e-05,
+          "takes": {
+            "first": 1,
+            "second": 1
+          }
+        },
+        "1": {
+          "first_shifter_hz": 11.7221,
+          "second_shifter_hz": 11.721,
+          "read_at": "half its own rate",
+          "first_shifter_window_ms": 42.6545,
+          "second_shifter_window_ms": 42.6585,
+          "apart_as_a_fraction": 9.4e-05,
+          "takes": {
+            "first": 1,
+            "second": 1
+          }
+        },
+        "2": {
+          "first_shifter_hz": 15.6286,
+          "second_shifter_hz": 15.6315,
+          "read_at": "its own rate",
+          "first_shifter_window_ms": 63.9853,
+          "second_shifter_window_ms": 63.9734,
+          "apart_as_a_fraction": 0.000186,
+          "takes": {
+            "first": 1,
+            "second": 1
+          }
+        },
+        "3": {
+          "first_shifter_hz": 11.7235,
+          "second_shifter_hz": 11.7227,
+          "read_at": "its own rate",
+          "first_shifter_window_ms": 85.2988,
+          "second_shifter_window_ms": 85.3046,
+          "apart_as_a_fraction": 6.8e-05,
+          "takes": {
+            "first": 1,
+            "second": 1
+          }
+        },
+        "4": {
+          "first_shifter_hz": 7.8129,
+          "second_shifter_hz": 7.8094,
+          "read_at": "its own rate",
+          "first_shifter_window_ms": 127.9926,
+          "second_shifter_window_ms": 128.0516,
+          "apart_as_a_fraction": 0.000461,
+          "takes": {
+            "first": 2,
+            "second": 2
+          }
+        }
+      },
+      "the_ratio_the_second_shifter_returns": [
+        1.0,
+        1.3331,
+        1.9992,
+        2.6659,
+        4.0018
+      ],
+      "the_ratio_the_first_shifter_returns": [
+        1.0,
+        1.333,
+        1.9997,
+        2.6658,
+        4.0001
+      ],
+      "worst_disagreement_as_a_fraction": 0.000461,
+      "the_closest_two_windows_as_a_fraction": 0.3331,
+      "times_over_what_had_to_be_separated": 722.6,
+      "the_same_state_taken_twice": {
+        "first_shifter": 0.000294,
+        "second_shifter": 6.4e-05
+      },
+      "across_the_two_shifts": {
+        "window_ms_at_the_third": {
+          "0": 31.995,
+          "1": 42.68,
+          "2": 63.7843,
+          "3": 85.2703
+        },
+        "apart_as_a_fraction": {
+          "0": 8.6e-05,
+          "1": 0.000598,
+          "2": 0.003141,
+          "3": 0.000333
+        },
+        "the_state_the_third_named_no_rate_at": [
+          4
+        ],
+        "how_wide_the_partials_that_agreed_are": {
+          "takes": 17,
+          "ranked": [
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 4,
+              "take": "held-16-004-01.wav",
+              "as_a_fraction": 0.0412,
+              "widest_of_them": 1
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-a-major-third.json",
+              "value": 1,
+              "take": "held-16-001-00.wav",
+              "as_a_fraction": 0.0109,
+              "widest_of_them": 2
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-a-major-third.json",
+              "value": 2,
+              "take": "held-16-002-00.wav",
+              "as_a_fraction": 0.0106,
+              "widest_of_them": 3
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 2,
+              "take": "held-16-002-00.wav",
+              "as_a_fraction": 0.0025,
+              "widest_of_them": 4
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 2,
+              "take": "held-16-002-00.wav",
+              "as_a_fraction": 0.0023,
+              "widest_of_them": 5
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-a-major-third.json",
+              "value": 4,
+              "take": "held-16-004-00.wav",
+              "as_a_fraction": 0.002,
+              "widest_of_them": 6
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-a-major-third.json",
+              "value": 3,
+              "take": "held-16-003-00.wav",
+              "as_a_fraction": 0.0018,
+              "widest_of_them": 7
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-a-major-third.json",
+              "value": 0,
+              "take": "held-16-000-00.wav",
+              "as_a_fraction": 0.0005,
+              "widest_of_them": 8
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 3,
+              "take": "held-16-003-00.wav",
+              "as_a_fraction": 0.0004,
+              "widest_of_them": 9
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 4,
+              "take": "held-16-004-00.wav",
+              "as_a_fraction": 0.0003,
+              "widest_of_them": 10
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 0,
+              "take": "held-16-000-00.wav",
+              "as_a_fraction": 0.0002,
+              "widest_of_them": 11
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 3,
+              "take": "held-16-003-00.wav",
+              "as_a_fraction": 0.0002,
+              "widest_of_them": 12
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 4,
+              "take": "held-16-004-01.wav",
+              "as_a_fraction": 0.0002,
+              "widest_of_them": 13
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 0,
+              "take": "held-16-000-00.wav",
+              "as_a_fraction": 0.0002,
+              "widest_of_them": 14
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 4,
+              "take": "held-16-004-00.wav",
+              "as_a_fraction": 0.0002,
+              "widest_of_them": 15
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-at-the-octave.json",
+              "value": 1,
+              "take": "held-16-001-00.wav",
+              "as_a_fraction": 0.0001,
+              "widest_of_them": 16
+            },
+            {
+              "record": "01-60-0b-the-mode-byte-on-the-second-shifter.json",
+              "value": 1,
+              "take": "held-16-001-00.wav",
+              "as_a_fraction": 0.0001,
+              "widest_of_them": 17
+            }
+          ]
+        }
+      }
+    }
+  }
 }
