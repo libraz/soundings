@@ -96,7 +96,10 @@ def add_subject(
     """
     parser.add_argument(
         "--type",
-        metavar="MSB LSB",
+        # Quoted, because this takes one string and every other metavar here is one
+        # token: an unquoted `MSB LSB` reads as two arguments and was twice given as
+        # two, which argparse answers by naming a hex byte as an unrecognised one.
+        metavar="'MSB LSB'",
         required=required,
         help="the insertion effect type the takes were made under. Without it the "
         "record says what a parameter did without saying whose parameter it was, and "
