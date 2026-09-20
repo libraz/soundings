@@ -153,6 +153,23 @@ def channel_reaching(root: str | Path, names, *, seconds: float = 2.0) -> tuple[
     return int(np.argmax(highest)), highest
 
 
+def other_of_the_pair(used: int, width: int) -> int | None:
+    """The other channel of the stereo pair the read one sits in, or None if alone.
+
+    Structural and not a level judgement, because the judgement is what the caller
+    is being given the numbers to make. `efxpartials` picks its second output by
+    how far down a channel may sit and still be one, which is the right rule for a
+    stage that then reads a rate out of it; a bar loose enough to keep a quiet
+    output is also loose enough to name an unused input on a mono run, and a level
+    published for comparison must never be one of those. Pairing cannot be: an
+    interface presents its inputs in pairs, and the partner of a channel is the
+    partner whatever either reached.
+    """
+    first = used - (used % 2)
+    other = first + 1 if used == first else first
+    return other if other < width else None
+
+
 def channel_pair_reaching(
     root: str | Path, names, *, seconds: float = 2.0
 ) -> tuple[tuple[int, int], list[float]]:
@@ -166,7 +183,8 @@ def channel_pair_reaching(
     """
     picked, highest = channel_reaching(root, names, seconds=seconds)
     first = picked - (picked % 2)
-    return (first, min(first + 1, len(highest) - 1)), highest
+    other = other_of_the_pair(first, len(highest))
+    return (first, first if other is None else other), highest
 
 
 WHY_CHANNEL = (
@@ -196,6 +214,86 @@ WHY_ACROSS_THE_SETTINGS = (
     "whichever take is asked answers mono -- and the one parameter this measurement exists "
     "for is the one it would refuse."
 )
+
+
+WHY_THE_OTHER_OUTPUT_IS_PUBLISHED = (
+    "Every figure in this record is read from one channel, and which one decides "
+    "the answer. A run that read the side the unit was not on returns the idle "
+    "input's own behaviour, which looks like a stage doing nothing rather than like "
+    "a failure: one published run held a byte that panned its effect hard over, read "
+    "the silent side of the pair, and came out looking whole. So each reading carries "
+    "the level of the other output on the same take beside its own, and a reader can "
+    "ask of the swept takes alone whether the side that was read is the side the "
+    "unit was on. `reached_db` cannot answer that, and is not meant to: it is the "
+    "highest each channel reached anywhere in the run, and a run's control take has "
+    "the two sides equal by construction, so the figure it gives is a fifth of a "
+    "decibel on exactly the run that was read 22 dB down on every swept take."
+)
+
+
+def heard_on_both(levels: list[float] | None, used: int) -> dict:
+    """A take's level on the channel a run reads and on the unit's other output.
+
+    Empty where the take has no such channel, so a record says the question was
+    not asked rather than answering it with a nought.
+    """
+    if not levels or used >= len(levels):
+        return {}
+    beside = other_of_the_pair(used, len(levels))
+    return {
+        "heard_db": round(levels[used], 1),
+        "also_heard_db": None if beside is None else round(levels[beside], 1),
+    }
+
+
+def apart_over(rows: list[tuple[float, float]]) -> dict | None:
+    """What a run's own swept takes say about which side of the pair was read.
+
+    `rows` is one (read, other) pair of levels per swept take, and the controls are
+    left out of it on purpose -- they are where the two sides are equal and are what
+    makes the whole-run maximum unable to answer this.
+
+    A positive `apart_db` is the other output standing over the one that was read.
+    It is reported and never judged: a stereo effect may legitimately put its wet
+    path on the quieter side, so which side is louder and which side the effect is
+    deepest on are different questions, and only the first is asked here.
+    """
+    if not rows:
+        return None
+    gaps = sorted(theirs - mine for mine, theirs in rows)
+    read_side = [value for value, _ in rows]
+    other_side = [value for _, value in rows]
+    middle = len(gaps) // 2
+    return {
+        "takes": len(rows),
+        "apart_db": round(
+            gaps[middle] if len(gaps) % 2 else (gaps[middle - 1] + gaps[middle]) / 2.0, 2
+        ),
+        "widest_apart_db": round(gaps[-1], 2),
+        "the_read_side_moves_db": round(max(read_side) - min(read_side), 2),
+        "the_other_side_moves_db": round(max(other_side) - min(other_side), 2),
+        "why": WHY_THE_OTHER_OUTPUT_IS_PUBLISHED,
+    }
+
+
+def other_channel_block(used: int, levels: list[float], readings: list[dict]) -> dict:
+    """The record's account of the unit's second output, assembled in one place.
+
+    Every stage that reads one channel emits this beside its `channel` block, so a
+    reader asks the same question of every record in the same words. The rows come
+    from the readings' own `heard_db` and `also_heard_db`, which means the controls
+    are left out without anyone having to list them.
+    """
+    return {
+        "read": other_of_the_pair(used, len(levels)),
+        "over_the_swept_takes": apart_over(
+            [
+                (r["heard_db"], r["also_heard_db"])
+                for r in readings
+                if r.get("heard_db") is not None and r.get("also_heard_db") is not None
+            ]
+        ),
+    }
 
 
 WHY_THE_FLOOR_IS_THE_PAIRS_OWN = (

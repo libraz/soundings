@@ -51,7 +51,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-bands/01-23-08-what-the-loop-is-around-at-a-short-delay.json"
     ],
-    "measured_at": "2026-09-16T22:02:00+00:00",
+    "measured_at": "2026-09-20T22:06:40+00:00",
     "elapsed_s": 0.3,
     "midi_device_id": null,
     "midi_model_id": null
@@ -315,7 +315,15 @@
       14.337,
       8.47
     ],
-    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against."
+    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against.",
+    "over_the_swept_takes": {
+      "takes": 10,
+      "apart_db": -9.42,
+      "widest_apart_db": -8.61,
+      "the_read_side_moves_db": 10.74,
+      "the_other_side_moves_db": 10.74,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "silence": {
     "takes": [
@@ -1509,6 +1517,7 @@
       "apart_db": -2.99,
       "apart_at_hz": 27.8,
       "heard_db": -42.83,
+      "also_heard_db": -52.88,
       "above_the_silence_db": 67.7,
       "hold_s": 8.045,
       "take": "held-126-fb-000-00.wav",
@@ -1760,6 +1769,7 @@
       "apart_db": -3.48,
       "apart_at_hz": 24.8,
       "heard_db": -42.79,
+      "also_heard_db": -52.84,
       "above_the_silence_db": 67.7,
       "hold_s": 8.045,
       "take": "held-126-fb-008-00.wav",
@@ -2011,6 +2021,7 @@
       "apart_db": -2.43,
       "apart_at_hz": 59.0,
       "heard_db": -44.4,
+      "also_heard_db": -54.5,
       "above_the_silence_db": 66.1,
       "hold_s": 8.045,
       "take": "held-126-fb-016-00.wav",
@@ -2262,6 +2273,7 @@
       "apart_db": -2.16,
       "apart_at_hz": 31.2,
       "heard_db": -51.0,
+      "also_heard_db": -60.92,
       "above_the_silence_db": 59.5,
       "hold_s": 8.045,
       "take": "held-126-fb-032-00.wav",
@@ -2408,6 +2420,7 @@
       "apart_db": 2.58,
       "apart_at_hz": 24.8,
       "heard_db": -53.53,
+      "also_heard_db": -63.05,
       "above_the_silence_db": 57.0,
       "hold_s": 8.045,
       "take": "held-126-fb-064-00.wav",
@@ -2658,6 +2671,7 @@
       "apart_db": 1.44,
       "apart_at_hz": 445.4,
       "heard_db": -53.37,
+      "also_heard_db": -62.69,
       "above_the_silence_db": 57.1,
       "hold_s": 8.045,
       "take": "held-126-fb-080-00.wav",
@@ -2909,6 +2923,7 @@
       "apart_db": 1.61,
       "apart_at_hz": 37.2,
       "heard_db": -51.97,
+      "also_heard_db": -61.01,
       "above_the_silence_db": 58.5,
       "hold_s": 8.045,
       "take": "held-126-fb-096-00.wav",
@@ -3159,6 +3174,7 @@
       "apart_db": 1.57,
       "apart_at_hz": 29.5,
       "heard_db": -45.48,
+      "also_heard_db": -54.14,
       "above_the_silence_db": 65.0,
       "hold_s": 8.045,
       "take": "held-126-fb-112-00.wav",
@@ -3410,6 +3426,7 @@
       "apart_db": 3.04,
       "apart_at_hz": 445.4,
       "heard_db": -43.7,
+      "also_heard_db": -52.31,
       "above_the_silence_db": 66.8,
       "hold_s": 8.045,
       "take": "held-126-fb-120-00.wav",
@@ -3661,6 +3678,7 @@
       "apart_db": 2.28,
       "apart_at_hz": 27.8,
       "heard_db": -43.69,
+      "also_heard_db": -52.32,
       "above_the_silence_db": 66.8,
       "hold_s": 8.045,
       "take": "held-126-fb-127-00.wav",

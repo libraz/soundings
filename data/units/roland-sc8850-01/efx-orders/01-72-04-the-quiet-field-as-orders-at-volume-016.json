@@ -43,8 +43,8 @@
       "--out",
       "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-016.json"
     ],
-    "measured_at": "2026-09-17T18:02:32+00:00",
-    "elapsed_s": 10.2,
+    "measured_at": "2026-09-20T22:08:01+00:00",
+    "elapsed_s": 10.7,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -115,7 +115,15 @@
       -95.04,
       -103.08
     ],
-    "why": "The same orders read on the next loudest channel, as a control on the first. It is named rather than assumed to be the unit's other output; what says it carried the unit is that it follows the setting, and how far the two channels disagree is reported with every reading."
+    "why": "The same orders read on the next loudest channel, as a control on the first. It is named rather than assumed to be the unit's other output; what says it carried the unit is that it follows the setting, and how far the two channels disagree is reported with every reading.",
+    "over_the_swept_takes": {
+      "takes": 3,
+      "apart_db": -1.43,
+      "widest_apart_db": -1.42,
+      "the_read_side_moves_db": 0.0,
+      "the_other_side_moves_db": 0.01,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "silence": {
     "takes": [
@@ -1185,6 +1193,7 @@
       "other_channel_apart_at_order": 13,
       "fundamental_hz": 109.717,
       "heard_db": -37.68,
+      "also_heard_db": -39.11,
       "above_the_silence_db": 72.5,
       "hold_s": 8.045,
       "take": "held-79-degrader-000-00.wav",
@@ -1391,6 +1400,7 @@
       "other_channel_apart_at_order": 13,
       "fundamental_hz": 109.717,
       "heard_db": -37.68,
+      "also_heard_db": -39.11,
       "above_the_silence_db": 72.5,
       "hold_s": 8.045,
       "take": "held-79-degrader-003-00.wav",
@@ -1607,6 +1617,7 @@
       "other_channel_apart_at_order": 13,
       "fundamental_hz": 109.709,
       "heard_db": -37.68,
+      "also_heard_db": -39.1,
       "above_the_silence_db": 72.5,
       "hold_s": 8.045,
       "take": "held-79-degrader-006-00.wav",

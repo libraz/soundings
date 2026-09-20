@@ -41,7 +41,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-bands/01-20-06-what-resonance-does-to-the-notches-in-twelfths.json"
     ],
-    "measured_at": "2026-09-15T06:00:15+00:00",
+    "measured_at": "2026-09-20T22:06:37+00:00",
     "elapsed_s": 0.2,
     "midi_device_id": null,
     "midi_model_id": null
@@ -305,7 +305,15 @@
       12.146,
       6.547
     ],
-    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against."
+    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against.",
+    "over_the_swept_takes": {
+      "takes": 3,
+      "apart_db": -9.31,
+      "widest_apart_db": -8.28,
+      "the_read_side_moves_db": 2.63,
+      "the_other_side_moves_db": 3.69,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "silence": {
     "takes": [
@@ -1216,8 +1224,8 @@
   "why_held": "What else the run had written when it took these readings. A band profile is the whole chain's, so a parameter read with another of the type's stages moved and one read with it at its centre are readings of different things, and nothing in the numbers says which is which.",
   "takes_from": ".cache/takes/where-the-phaser-sits",
   "manifest": {
-    "lists": 23,
-    "files_present": 23,
+    "lists": 36,
+    "files_present": 36,
     "not_listed": [],
     "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
   },
@@ -1474,6 +1482,7 @@
       "apart_db": -2.45,
       "apart_at_hz": 24.8,
       "heard_db": -53.31,
+      "also_heard_db": -62.83,
       "above_the_silence_db": 57.3,
       "hold_s": 8.045,
       "take": "held-126-pilot-r000-m127-00.wav",
@@ -1726,6 +1735,7 @@
       "apart_db": 2.84,
       "apart_at_hz": 35.1,
       "heard_db": -53.49,
+      "also_heard_db": -62.8,
       "above_the_silence_db": 57.1,
       "hold_s": 8.045,
       "take": "held-126-pilot-r064-m127-00.wav",
@@ -1978,6 +1988,7 @@
       "apart_db": -2.51,
       "apart_at_hz": 33.1,
       "heard_db": -50.86,
+      "also_heard_db": -59.14,
       "above_the_silence_db": 59.7,
       "hold_s": 8.045,
       "take": "held-126-pilot-r127-m127-00.wav",
@@ -1985,14 +1996,27 @@
     }
   ],
   "takes_not_matching": {
-    "count": 12,
+    "count": 25,
     "settings": [
       "manual-000",
+      "manual-007",
+      "manual-008",
       "manual-012",
+      "manual-015",
+      "manual-016",
       "manual-024",
+      "manual-032",
+      "manual-040",
       "manual-048",
+      "manual-056",
+      "manual-063",
+      "manual-064",
       "manual-072",
+      "manual-080",
+      "manual-088",
       "manual-096",
+      "manual-104",
+      "manual-112",
       "manual-114",
       "manual-120",
       "manual-127",

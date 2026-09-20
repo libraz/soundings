@@ -391,9 +391,14 @@ def read_directory(
         float(searched_ms[1]),
     )
 
+    # Each take's level on every channel, kept as the take is read so the second
+    # output costs no second pass over the file.
+    heard: dict[str, list[float]] = {}
+
     def curve_of(name: str) -> tuple[np.ndarray, np.ndarray, int]:
         samples, rate = takes.read(where / name)
-        own = int(np.argmax(takes.channel_levels(samples)))
+        heard[name] = takes.channel_levels(samples)
+        own = int(np.argmax(heard[name]))
         if own != used and name not in elsewhere:
             elsewhere.append(name)
         body = _body(samples, rate, index=used, lead_s=lead_s, trim_s=trim_s, hold_s=hold_s)
@@ -447,6 +452,10 @@ def read_directory(
             "also_ms": [round(q, 4) for q, _ in rest],
             "also_stands": [round(s, 2) for _, s in rest],
             "roughness": round(spread, 8),
+            # The take's own level, and the same take on the unit's other output,
+            # so which side of the pair this record is of can be asked of the swept
+            # takes alone.
+            **takes.heard_on_both(heard.get(name), used),
             "named_by": source,
         }
         readings.append(reading)
@@ -503,6 +512,7 @@ def read_directory(
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_CHANNEL,
         },
+        "other_channel": takes.other_channel_block(used, control_levels, readings),
         "with_the_effect_out": {
             "takes": sorted(name for name, _, _ in outs),
             "ms": round(out_at, 4),

@@ -279,11 +279,24 @@ def read_directory(
 
     grid = np.arange(grid_hz[0], grid_hz[1] + step_hz / 2, step_hz)
 
+    beside = takes.other_of_the_pair(used, len(levels))
+
     def body_of(name: str):
         got, rate, own = efxpartials.body_of(where / name, lead_s, hold_s, on=used)
         if own != used and name not in elsewhere:
             elsewhere.append(name)
         return got, rate
+
+    def also_heard_db(name: str) -> float | None:
+        """The same stretch of the same take, on the unit's other output.
+
+        The body and not the whole take, because that is what `heard_db` beside it
+        is, and two levels taken over different stretches are not a comparison.
+        """
+        if beside is None:
+            return None
+        other, _, _ = efxpartials.body_of(where / name, lead_s, hold_s, on=beside)
+        return round(takes.level_db(takes.rms(other)), 1)
 
     first, rate = body_of(controls[0])
     floor = efxpartials.Floor(first, rate, carrier_hz=carrier_hz, grid=grid)
@@ -329,6 +342,7 @@ def read_directory(
             "take": name,
             **_reading(row),
             "heard_db": round(takes.level_db(takes.rms(got)), 1),
+            "also_heard_db": also_heard_db(name),
             "settled_s": settled_s,
             "named_by": source,
         }
@@ -357,6 +371,7 @@ def read_directory(
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_ONE_CHANNEL,
         },
+        "other_channel": takes.other_channel_block(used, levels, readings),
         "routed_past_the_effect": {
             "takes": sorted(controls),
             "read_against": controls[0],

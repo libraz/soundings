@@ -44,8 +44,8 @@
       "--out",
       "data/units/roland-sc8850-01/efx-rate/01-60-0b-the-mode-byte-at-the-octave.json"
     ],
-    "measured_at": "2026-09-20T07:22:07+00:00",
-    "elapsed_s": 5.1,
+    "measured_at": "2026-09-20T22:12:12+00:00",
+    "elapsed_s": 0.8,
     "midi_device_id": null,
     "midi_model_id": null
   },
@@ -69,6 +69,17 @@
     ],
     "loudest_elsewhere": [],
     "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached across the takes this record was built from. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a level, and a rate, belonging to something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "other_channel": {
+    "read": 2,
+    "over_the_swept_takes": {
+      "takes": 6,
+      "apart_db": -0.85,
+      "widest_apart_db": -0.3,
+      "the_read_side_moves_db": 2.5,
+      "the_other_side_moves_db": 2.1,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "held": [
     {
@@ -152,6 +163,7 @@
         15.6249
       ],
       "heard_db": -47.2,
+      "also_heard_db": -47.7,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,
@@ -171,6 +183,7 @@
         3.9105
       ],
       "heard_db": -48.3,
+      "also_heard_db": -49.8,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,
@@ -190,6 +203,7 @@
         5.085
       ],
       "heard_db": -49.2,
+      "also_heard_db": -49.5,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,
@@ -209,6 +223,7 @@
         11.7228
       ],
       "heard_db": -49.1,
+      "also_heard_db": -49.8,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,
@@ -228,6 +243,7 @@
         2.5678
       ],
       "heard_db": -46.7,
+      "also_heard_db": -47.8,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,
@@ -247,6 +263,7 @@
         2.5675
       ],
       "heard_db": -46.7,
+      "also_heard_db": -47.7,
       "slowest_measurable_hz": 0.3033,
       "fastest_measurable_hz": 20.0,
       "hold_s": 8.0,

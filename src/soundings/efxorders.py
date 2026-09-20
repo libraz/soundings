@@ -519,8 +519,11 @@ def read_directory(
         raise ValueError(f"no take under {where} matched the setting {setting!r}")
     reached, reference_levels = takes.channel_reaching(where, naming)
     used = reached if channel is None else int(channel)
-    ranked = sorted(range(len(reference_levels)), key=lambda i: -reference_levels[i])
-    beside = next((i for i in ranked if i != used), None)
+    # The other half of the pair the read channel sits in, and not the second
+    # loudest of the reference takes: an idle input of the interface stands over a
+    # quiet second output and wins that comparison, which is the same reading
+    # `efx-bands` was found publishing on three records.
+    beside = takes.other_of_the_pair(used, len(reference_levels))
     wanted = (used,) if beside is None else (used, beside)
     elsewhere: list[str] = []
 
@@ -704,6 +707,9 @@ def read_directory(
             **apart(found),
             "fundamental_hz": at[used],
             "heard_db": heard[used],
+            # The same take on the unit's other output, so which side of the pair
+            # this record is of can be asked of the swept takes alone.
+            "also_heard_db": None if beside is None else heard[beside],
             "above_the_silence_db": above(heard[used]),
             "hold_s": hold,
             "take": name,
@@ -744,6 +750,13 @@ def read_directory(
             "read": beside,
             "under_the_first_db": beside_middle,
             "why": WHY_OTHER,
+            "over_the_swept_takes": takes.apart_over(
+                [
+                    (r["heard_db"], r["also_heard_db"])
+                    for r in readings
+                    if r.get("heard_db") is not None and r.get("also_heard_db") is not None
+                ]
+            ),
         },
         "silence": {"takes": sorted(quiets), "readings": silent, "why": WHY_SILENCE},
         "reference": {

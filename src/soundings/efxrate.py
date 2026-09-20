@@ -176,6 +176,7 @@ def _read_take(
 ) -> dict:
     """One take read into the fields every reading here carries."""
     samples, rate = takes.read(where / name)
+    beside = takes.other_of_the_pair(index, len(takes.channel_levels(samples)))
     seconds = float(entry.get("seconds") or samples.shape[0] / rate)
     hold = hold_s if hold_s is not None else seconds - 1.0
     body = _body(samples, rate, index=index, lead_s=lead_s, hold_s=hold, trim_s=trim_s)
@@ -194,6 +195,11 @@ def _read_take(
         "of": agreed["of"],
         "rates": agreed["rates"],
         "heard_db": round(_loudness_db(samples, index), 1),
+        # The same take's level on the unit's other output, so a reader can ask of
+        # the swept takes alone which side of the pair was read.
+        "also_heard_db": (
+            None if beside is None else round(_loudness_db(samples, beside), 1)
+        ),
         # Dropped from the reading before it is published and gathered into the
         # record's own channel block, so both stages say this the same way.
         "_own": int(np.argmax(takes.channel_levels(samples))),
@@ -312,6 +318,7 @@ def read_directory(
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_CHANNEL,
         },
+        "other_channel": takes.other_channel_block(used, levels, readings),
         "held": held or [],
         "why_held": "What else the run had written when it took these readings. A "
         "type with more than one modulator returns whichever dominates, so a reading "
@@ -434,6 +441,7 @@ def read_untouched(
             "loudest_elsewhere": sorted(elsewhere),
             "why": WHY_CHANNEL,
         },
+        "other_channel": takes.other_channel_block(used, levels, readings),
         "why_untouched": UNTOUCHED_WHY,
         "takes_from": str(where),
         "manifest": takes.manifest_note(listed, files),

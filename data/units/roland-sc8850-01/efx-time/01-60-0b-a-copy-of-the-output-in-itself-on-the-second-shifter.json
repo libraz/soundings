@@ -52,7 +52,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-time/01-60-0b-a-copy-of-the-output-in-itself-on-the-second-shifter.json"
     ],
-    "measured_at": "2026-09-20T16:24:46+00:00",
+    "measured_at": "2026-09-20T22:14:20+00:00",
     "elapsed_s": 0.1,
     "midi_device_id": null,
     "midi_model_id": null
@@ -108,6 +108,17 @@
       "held-16-004-01.wav"
     ],
     "why": "The channel every figure in this record was read from, and the highest each channel of the interface reached while the takes with the effect out were sounding. Chosen once for the run rather than per take: the interface carries inputs the unit is not on, those inputs are not silent, and a take whose output falls below one of them is read from that input instead -- which returns a full plausible cepstrum of something else. `loudest_elsewhere` names every take whose own loudest channel is not the one used, because a reading that changed channel is exactly what the figures cannot say on their own."
+  },
+  "other_channel": {
+    "read": 3,
+    "over_the_swept_takes": {
+      "takes": 6,
+      "apart_db": 0.9,
+      "widest_apart_db": 1.5,
+      "the_read_side_moves_db": 2.2,
+      "the_other_side_moves_db": 2.5,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "with_the_effect_out": {
     "takes": [
@@ -212,6 +223,8 @@
         16.55
       ],
       "roughness": 0.00658407,
+      "heard_db": -47.7,
+      "also_heard_db": -47.2,
       "named_by": "file name"
     },
     {
@@ -229,6 +242,8 @@
         14.85
       ],
       "roughness": 0.00667797,
+      "heard_db": -49.8,
+      "also_heard_db": -48.3,
       "named_by": "file name"
     },
     {
@@ -246,6 +261,8 @@
         14.54
       ],
       "roughness": 0.00655131,
+      "heard_db": -49.5,
+      "also_heard_db": -49.2,
       "named_by": "file name"
     },
     {
@@ -263,6 +280,8 @@
         14.11
       ],
       "roughness": 0.006499,
+      "heard_db": -49.9,
+      "also_heard_db": -49.2,
       "named_by": "file name"
     },
     {
@@ -280,6 +299,8 @@
         14.11
       ],
       "roughness": 0.00590798,
+      "heard_db": -47.8,
+      "also_heard_db": -46.7,
       "named_by": "file name"
     },
     {
@@ -297,6 +318,8 @@
         13.77
       ],
       "roughness": 0.00592907,
+      "heard_db": -47.8,
+      "also_heard_db": -46.7,
       "named_by": "file name"
     }
   ],

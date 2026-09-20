@@ -43,7 +43,7 @@
       "--out",
       "data/units/roland-sc8850-01/efx-bands/01-10-04-the-amp-table-fully-driven.json"
     ],
-    "measured_at": "2026-09-16T21:52:26+00:00",
+    "measured_at": "2026-09-20T22:06:31+00:00",
     "elapsed_s": 0.2,
     "midi_device_id": null,
     "midi_model_id": null
@@ -307,7 +307,15 @@
       11.943,
       6.559
     ],
-    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against."
+    "why": "The same readings taken from a second channel of the interface, each against that channel's own repeats of the flat setting. A profile measured in one channel is the whole answer only if the other answers the same way, and for a type printed as a stereo one that is a measurement rather than an assumption. Per reading, `other_db` is how far this channel itself moved -- which is also what says whether it carried the unit at all, because an input nobody plugged anything into does not follow a parameter -- and `apart_db` is the largest disagreement between the two, band by band. Each is taken against its own reference first, so a standing difference in level between the channels is not counted as a disagreement about frequency; what is left is the shape, which is the thing one channel cannot report on its own. Which channel this is was not chosen by knowing the wiring: it is the second highest of the reference takes, and `channel.reference_db` is what a reader checks that against.",
+    "over_the_swept_takes": {
+      "takes": 4,
+      "apart_db": -0.12,
+      "widest_apart_db": -0.11,
+      "the_read_side_moves_db": 6.59,
+      "the_other_side_moves_db": 6.57,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
   },
   "silence": {
     "takes": [
@@ -1372,6 +1380,7 @@
       "apart_db": -0.64,
       "apart_at_hz": 39.4,
       "heard_db": -45.61,
+      "also_heard_db": -45.72,
       "above_the_silence_db": 64.9,
       "hold_s": 8.045,
       "take": "held-126-amp-000-00.wav",
@@ -1622,6 +1631,7 @@
       "apart_db": -0.61,
       "apart_at_hz": 29.5,
       "heard_db": -39.02,
+      "also_heard_db": -39.15,
       "above_the_silence_db": 71.5,
       "hold_s": 8.045,
       "take": "held-126-amp-001-00.wav",
@@ -1874,6 +1884,7 @@
       "apart_db": 0.6,
       "apart_at_hz": 88.4,
       "heard_db": -40.03,
+      "also_heard_db": -40.15,
       "above_the_silence_db": 70.5,
       "hold_s": 8.045,
       "take": "held-126-amp-002-00.wav",
@@ -2123,6 +2134,7 @@
       "apart_db": -0.48,
       "apart_at_hz": 62.5,
       "heard_db": -40.34,
+      "also_heard_db": -40.49,
       "above_the_silence_db": 70.2,
       "hold_s": 8.045,
       "take": "held-126-amp-003-00.wav",
