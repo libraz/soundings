@@ -680,3 +680,50 @@ def test_the_booking_is_checked_against_records_the_unit_already_holds(tmp_path:
     assert booked[0]["already_recorded"] is not None, (
         "a booking on a parked claim is not getting the check the other bookings get"
     )
+
+
+def test_a_class_claims_reach_is_read_off_the_page_and_not_off_an_address():
+    """The same low byte is a gain on one type and a rate on the next.
+
+    A reach worked out from a claim's addresses picks up rows that are a different
+    parameter entirely, so the rows are matched on what the page prints against
+    them. What this holds is the arithmetic of that: every printed row carrying a
+    signature is either one the claim names or one outside it, and never both.
+    """
+    for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
+        found = inferences.reach(ROOT, unit)
+        for item in found["claims"]:
+            about = json.loads(
+                (HERE / unit / item["inference"]).read_text()
+            )["inference"]["about"]
+            named = {
+                (t, a) for t in about["types"] for a in about["addresses"]
+            }
+            for row in item["signatures"]:
+                outside = row["outside_the_claim"]
+                assert row["printed_rows"] == row["the_claim_names"] + len(outside), (
+                    f"{item['inference']} counts {row['parameter']} rows that are "
+                    "neither named nor outside"
+                )
+                assert row["the_claim_names"] >= 1, (
+                    f"{item['inference']} carries a signature it names no row of, which "
+                    "would mean the signature came from somewhere other than the claim"
+                )
+                for cell in outside:
+                    assert (cell["type"], cell["address"]) not in named, (
+                        f"{item['inference']} puts a row it names outside itself"
+                    )
+                assert row["reaches_named_types"] >= 1
+
+
+def test_every_claim_about_a_class_is_reported_on():
+    """A query that silently skipped one would read as a class with nothing outside it."""
+    for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
+        found = inferences.reach(ROOT, unit)
+        classes = {
+            p.name
+            for p in sorted((HERE / unit).glob("*.json"))
+            if p.name != "index.json"
+            and json.loads(p.read_text())["inference"]["about"].get("scope") == "class"
+        }
+        assert {item["inference"] for item in found["claims"]} == classes

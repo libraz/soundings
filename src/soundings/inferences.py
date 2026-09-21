@@ -545,6 +545,146 @@ def _touched_by(root: Path, claim: dict) -> set[tuple[str, str]]:
     return out
 
 
+WHY_A_SIGNATURE_AND_NOT_AN_ADDRESS = (
+    "A class is a printed quantity and never a column of the address space. The same "
+    "low byte is a gain on one type, a cutoff on the next and a rate on the one after, "
+    "so a reach worked out from a claim's addresses picks up rows that are a different "
+    "parameter -- measured here, the largest class claim's addresses reach twenty-two "
+    "printed quantities it says nothing about. What a row is matched on is therefore "
+    "the parameter the page prints against it and the range it prints beside that, "
+    "which is the pair a class is defined by."
+)
+
+WHY_THE_SIGNATURES_ARE_NOT_CUT = (
+    "How many of the claim's own types a signature reaches is published rather than "
+    "used as a bar. A claim's `addresses` is a union across its types, so a quantity "
+    "sitting at one of them on two of them arrives here looking like the class's own -- "
+    "a compressor's sustain under a claim about gains, for one. Cutting on the count "
+    "would be choosing the class's definition after seeing what the cut produced, and "
+    "the claim's own text is what defines it. The count is beside each signature so a "
+    "reader can take the ones they mean."
+)
+
+WHY_A_REACH_IS_NOT_A_VERDICT = (
+    "Nothing here is scored. What this returns is which published records lie inside a "
+    "class claim's printed reach and outside what the claim names, which is the set any "
+    "test of that reach has to start from and the part that must not be picked by eye. "
+    "Scoring them is a separate question and not one the models in this project answer "
+    "as they stand: a class model carries a type and a chain of that type's addresses, "
+    "so rendering it on another type needs that type's chain and not a flag."
+)
+
+
+def reach(root: str | Path, unit: str) -> dict:
+    """Where a class claim's printed quantity goes, against where the claim goes.
+
+    A claim whose scope is a class says something about a quantity rather than about a
+    type, so the question its scope raises is which of the printed rows carrying that
+    quantity it was read on and which it was not. The answer is a set of records, and
+    it is derived rather than listed: picking which readings a claim is held against by
+    hand is the way a class passes without having been tested anywhere it might fail.
+    """
+    root = Path(root)
+    cells, document = _printed_cells(root, unit)
+    rows = json.loads(
+        (root / "documents" / document / "effect-list.json").read_text()
+    )["rows"]
+    printed = {
+        (f"{row['msb']} {row['lsb']}", f"{EFFECT_BLOCK} {row['address_lsb']}"): (
+            row.get("parameter", ""),
+            row.get("data", ""),
+        )
+        for row in rows
+        if "address_lsb" in row
+    }
+    listing = json.loads((root / "data" / "units" / unit / "index.json").read_text())
+    published: dict[tuple[str, str], list[str]] = {}
+    for stage, entries in listing["stages"].items():
+        for entry in entries:
+            about = entry.get("about") or {}
+            kind, where = about.get("type"), about.get("address")
+            if not kind or not where:
+                continue
+            for one in str(where).split(","):
+                published.setdefault((str(kind).strip(), one.strip()), []).append(
+                    f"{stage}:{entry['file']}"
+                )
+
+    out = []
+    for path in sorted((root / "inferences" / unit).glob("*.json")):
+        if path.name == "index.json":
+            continue
+        claim = load(path)
+        about = claim["inference"]["about"]
+        if about.get("scope") != "class":
+            continue
+        cited = {c["file"] for c in claim["rests_on"]["measurements"]}
+        named = {
+            (kind, where)
+            for kind in about.get("types", [])
+            for where in about.get("addresses", [])
+            if (kind, where) in printed
+        }
+        types_of: dict[tuple[str, str], set[str]] = {}
+        for pair in named:
+            types_of.setdefault(printed[pair], set()).add(pair[0])
+        signatures = []
+        for mark, types in sorted(types_of.items()):
+            everywhere = {pair for pair, s in printed.items() if s == mark}
+            outside = sorted(everywhere - named)
+            signatures.append(
+                {
+                    "parameter": mark[0],
+                    "printed": mark[1],
+                    "reaches_named_types": len(types),
+                    "printed_rows": len(everywhere),
+                    "the_claim_names": len(everywhere) - len(outside),
+                    "outside_the_claim": [
+                        {
+                            "type": kind,
+                            "address": where,
+                            "records": [
+                                name for name in published.get((kind, where), [])
+                                if name.split(":", 1)[1] not in cited
+                            ],
+                        }
+                        for kind, where in outside
+                    ],
+                }
+            )
+        signatures.sort(key=lambda row: (-row["reaches_named_types"], row["parameter"]))
+        out.append(
+            {
+                "inference": path.name,
+                "state": claim["inference"]["state"],
+                "types": about.get("types", []),
+                "signatures": signatures,
+                "records_outside_it": sorted(
+                    {
+                        name
+                        for row in signatures
+                        for cell in row["outside_the_claim"]
+                        for name in cell["records"]
+                    }
+                ),
+            }
+        )
+    return {
+        "question": (
+            "For each claim whose scope is a class, which printed rows carry the "
+            "quantity it is about, which of them it names, and which published records "
+            "of the rest it has never been held against."
+        ),
+        "unit_id": unit,
+        "document_id": document,
+        "printed_rows": len(cells),
+        "why_a_signature_and_not_an_address": WHY_A_SIGNATURE_AND_NOT_AN_ADDRESS,
+        "why_the_signatures_are_not_cut": WHY_THE_SIGNATURES_ARE_NOT_CUT,
+        "why_a_reach_is_not_a_verdict": WHY_A_REACH_IS_NOT_A_VERDICT,
+        "claims": out,
+    }
+
+
 def coverage(root: str | Path, unit: str) -> dict:
     """How much of what a document prints the claims are about, two ways round.
 

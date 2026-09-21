@@ -55,6 +55,14 @@ def register(sub) -> None:
         help="print a row per printed type rather than the totals alone",
     )
 
+    reached = inner.add_parser(
+        "reach",
+        help="for each claim about a class, which printed rows carry its quantity and "
+        "which published records of them it has never been held against",
+    )
+    reached.add_argument("unit_id")
+    reached.add_argument("--root", default=".", type=Path)
+
 
 def _dispatch(args) -> int:
     return {
@@ -63,6 +71,7 @@ def _dispatch(args) -> int:
         "stale": _stale,
         "index": _index,
         "coverage": _coverage,
+        "reach": _reach,
     }[args.action](args)
 
 
@@ -172,6 +181,32 @@ def _coverage(args) -> int:
                 f"{row['named']:>3} named {row['touched']:>3} touched "
                 f"of {row['printed']:>2} printed"
             )
+    return 0
+
+
+def _reach(args) -> int:
+    """What a class claim's quantity reaches, and which of it the claim never saw."""
+    found = inferences.reach(args.root, args.unit_id)
+    if not found["claims"]:
+        print("no claim here is about a class")
+        return 0
+    for item in found["claims"]:
+        print(f"{item['inference']}  ({item['state']}, {len(item['types'])} types)")
+        for row in item["signatures"]:
+            outside = row["outside_the_claim"]
+            with_records = [cell for cell in outside if cell["records"]]
+            print(
+                f"  {row['parameter']:<14} {row['printed'][:22]:<22} "
+                f"printed on {row['printed_rows']:>3}, named {row['the_claim_names']:>3}, "
+                f"outside {len(outside):>3}, published and uncited {len(with_records):>2}"
+                f"   (reaches {row['reaches_named_types']} of its own types)"
+            )
+            for cell in with_records:
+                print(
+                    f"      {cell['type']} {cell['address']}  "
+                    + ", ".join(name.split("/")[-1] for name in cell["records"])
+                )
+        print()
     return 0
 
 
