@@ -391,7 +391,15 @@ def open_items(root: str | Path) -> list[dict]:
                     {
                         "inference": name,
                         "why_open": f"{state}, and a measurement would take it off the shelf",
-                        "reading": reopen.get("observable"),
+                        # What is being decided, and never the observable twice over:
+                        # the two readings a booking separates are the keys of its own
+                        # `predicts`, and a queue that printed the measurement under
+                        # both headings said nothing about which question it answers.
+                        "reading": (
+                            "whether " + " or ".join(reopen["predicts"])
+                            if reopen.get("predicts")
+                            else reopen.get("observable")
+                        ),
                         "observable": reopen.get("observable"),
                         "margin": reopen.get("margin"),
                         "why_there_is_no_run": reopen.get("why_not_separable"),
