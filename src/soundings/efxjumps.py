@@ -76,7 +76,10 @@ LIMITS = (
     "one is the routed-past take's own behaviour whatever the rate beside it says. "
     "`slowest_measurable_hz` is the rate two cycles of which fill the part of the take "
     "that sounded, and a line at or under it is the take's length rather than the unit. "
-    "A line at an end of the grid is the search's own limit and says so per reading. "
+    "A line at an end of the grid is the search's own limit, and both lines are asked: "
+    "`stands_on_the_edge_of_the_search` is the rectified one's and "
+    "`the_signed_series_on_the_edge` is the signed one's, which is where a take whose "
+    "phase is mostly the voice's own drift lands. "
     "The projection of a train is largest at whichever of its harmonics the material "
     "favours, and which one that is moves between takes of one state, so a peak that "
     "lands a whole factor from another take's is the same train and not a different "
@@ -146,6 +149,9 @@ def _reading(
         ],
         "signed_hz": signed["hz"],
         "the_signed_series_stands": signed["stands_over_bypassed"],
+        "the_signed_series_on_the_edge": efxpartials.on_the_edge(
+            signed["hz"], grid, slowest
+        ),
         "orders": held.orders,
         "slowest_measurable_hz": round(slowest, 4),
         "rates_are_separated_by": round(held.rates_are_separated_by, 4),

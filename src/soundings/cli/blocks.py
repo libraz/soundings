@@ -1662,6 +1662,7 @@ def cmd_efx_jumps(args) -> int:
             )
             + f"   the signed series {row['signed_hz']:7.3f} Hz at "
             f"{row['the_signed_series_stands']:8.1f}x"
+            + ("*" if row["the_signed_series_on_the_edge"] else "")
             + ("   [" + "; ".join(row["stands_on_the_edge_of_the_search"]) + "]"
                if row["stands_on_the_edge_of_the_search"] else "")
         )
