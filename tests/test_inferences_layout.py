@@ -334,6 +334,62 @@ def test_a_claim_does_not_say_the_same_thing_twice(path: Path):
         )
 
 
+def _sentences(text: str) -> list[str]:
+    """The text cut at full stops, keeping only pieces long enough to be prose."""
+    return [
+        piece.strip()
+        for piece in text.split(". ")
+        if len(piece.strip()) > SAID_TWICE_IS_PROSE
+    ]
+
+
+SAID_TWICE_IS_PROSE = 40
+"""How long a sentence has to be before repeating it is a defect rather than a
+figure of speech. Short sentences legitimately recur -- `Not explained here.`,
+`Nothing failed.` -- and a claim is allowed to say those twice.
+
+The bar is not holding anything up: every claim in the archive passes it at thirty
+as well, so it is set where a repeated string stops being a stock phrase rather
+than where the current files happen to sit."""
+
+
+@pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
+def test_a_claim_does_not_say_the_same_sentence_twice_inside_one_string(path: Path):
+    """The same defect one level down, where the list test cannot see it.
+
+    A round that edits a published sentence matches the span it is replacing, and
+    the moment its own wording changes that match stops finding anything: the
+    rewind passes silently and the forward pass writes the new text in front of the
+    old text's tail. A claim shipped carrying the same eight hundred characters
+    twice, inside `claim` itself, and every check here passed -- the list test
+    above walks lists, and a claim's longest prose is a string.
+
+    Cut at full stops rather than compared whole, because the duplicate need not be
+    the entire field: what repeats is the passage a script wrote, and it sits
+    between sentences the script did not write.
+    """
+    for where, text in _prose_strings(inferences.load(path), ""):
+        said = _sentences(text)
+        twice = [s for s in set(said) if said.count(s) > 1]
+        assert not twice, (
+            f"{path.name} says the same sentence more than once inside {where}: "
+            f"{twice[0][:70]}... A round script that edits published prose matches "
+            "the sentences either side of the span rather than the span itself."
+        )
+
+
+def _prose_strings(node, path: str):
+    """Every string in a claim long enough to hold more than one sentence."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _prose_strings(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from _prose_strings(value, f"{path}[{index}]")
+    elif isinstance(node, str) and len(node) > 2 * SAID_TWICE_IS_PROSE:
+        yield path or "the claim", node
+
+
 def test_the_listing_is_the_files():
     for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
         listing = json.loads((HERE / unit / "index.json").read_text())
