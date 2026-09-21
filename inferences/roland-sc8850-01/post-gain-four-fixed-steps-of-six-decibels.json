@@ -1,0 +1,192 @@
+{
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-21T20:03:13.186983+00:00",
+    "made_by": "backup/what-a-limiters-ratio-byte-is-the-ratio-of.py, backup/publish-the-limiter-and-the-compressor.py, backup/write-the-limiter-and-post-gain-inferences.py",
+    "rounds": 1,
+    "about": {
+      "scope": "class",
+      "class": "post-gain",
+      "types": [
+        "01 30",
+        "01 31"
+      ],
+      "addresses": [
+        "40 03 05",
+        "40 03 06"
+      ]
+    }
+  },
+  "claim": "A byte a page prints `Post Gain` against `0/+6/+12/+18` is four fixed steps of six decibels, and it stands after the stage it is named for. Both of the two types the document prints the parameter against were measured, three held states between them and nine steps in all, mean 5.999 decibels over a spread of 0.09. That it is after rather than in front of the stage is the one of the two that a level alone cannot say, and it is read from the set taken where the limiter is taking thirty decibels off: the steps there are 6.03, 6.02 and 5.96 decibels, which a gain written in front of a stage removing that much could not return.",
+  "named": null,
+  "why_not_named": "There is nothing to name. The claim is a mapping from a byte to a number and a position in a chain, and neither is a structure.",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-30-05-the-post-gain-byte-of-the-compressor.json",
+        "keys": [
+          "readings[value=0].heard_db",
+          "readings[value=1].heard_db",
+          "readings[value=2].heard_db",
+          "readings[value=3].heard_db",
+          "reference.floor_db",
+          "channel.read"
+        ],
+        "values": [
+          -45.29,
+          -39.27,
+          -33.24,
+          -27.3,
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.03,
+            0.03,
+            0.0,
+            0.03,
+            0.01,
+            0.07,
+            0.17
+          ],
+          2
+        ],
+        "why": "The compressor's post gain at all four of its values, with the rest of the type where it powers up and its output level byte at the top of its range so that what a standing claim elsewhere holds about that byte is out of this one."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-31-06-the-post-gain-byte-with-the-threshold-byte-at-the-top.json",
+        "keys": [
+          "readings[value=0].heard_db",
+          "readings[value=1].heard_db",
+          "readings[value=2].heard_db",
+          "readings[value=3].heard_db",
+          "reference.floor_db"
+        ],
+        "values": [
+          -51.63,
+          -45.61,
+          -39.59,
+          -33.64,
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.04,
+            0.0,
+            0.01,
+            0.0,
+            0.01,
+            0.0,
+            0.01,
+            0.01,
+            0.11,
+            0.02,
+            0.17,
+            0.37
+          ]
+        ],
+        "why": "The limiter's post gain at the top of its threshold byte, which is where that type is not limiting -- so these four are the byte read with nothing else in the way."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-orders/01-31-06-the-post-gain-byte-with-the-threshold-byte-at-nought.json",
+        "keys": [
+          "readings[value=0].heard_db",
+          "readings[value=1].heard_db",
+          "readings[value=2].heard_db",
+          "readings[value=3].heard_db",
+          "readings[value=0].above_the_silence_db",
+          "readings[value=1].above_the_silence_db",
+          "readings[value=2].above_the_silence_db",
+          "readings[value=3].above_the_silence_db",
+          "reference.floor_db",
+          "channel.read"
+        ],
+        "values": [
+          -80.55,
+          -74.52,
+          -68.5,
+          -62.54,
+          30.0,
+          36.0,
+          42.0,
+          48.0,
+          [
+            0.01,
+            0.02,
+            0.04,
+            0.04,
+            0.05,
+            0.15,
+            0.01,
+            0.35,
+            0.16,
+            0.51,
+            0.0,
+            5.11,
+            1.27,
+            1.39,
+            2.34
+          ],
+          2
+        ],
+        "why": "The same byte at the bottom of the threshold, where the limiter is taking about thirty decibels off. This is the set the position in the chain is read from, and how far each of its readings stood over its own silence is cited beside them because the first pass of this run read this directory off the wrong input and returned four settings that did not move."
+      }
+    ],
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "Compressor, 40 03 05, Post Gain, 0/+6/+12/+18",
+          "Limiter, 40 03 06, Post Gain, 0/+6/+12/+18"
+        ],
+        "why": "That these two addresses are the same printed quantity, and the numbers the claim is held against. These are the only two rows in the document that print this parameter, so the class is measured everywhere it is printed and has nothing outside it -- which is rare here and is the reason the claim is written as a class rather than twice."
+      }
+    ],
+    "era_priors": [
+      {
+        "claim": "Six decibels is a doubling in amplitude, so four states of nought, six, twelve and eighteen are three shifts and cost no multiplier and no table at all.",
+        "why": "It says why a page would print this quantity as four states rather than as a byte with a range, and why those four would be exactly these: any other four numbers would have to be stored.",
+        "would_be_wrong_if": "A step came back at a number that is not six -- five and a half, or six and a quarter -- by more than the repeats. A stage that stores its four gains can store anything, and a stored table landing on six three times would be a coincidence the prior is not needed to explain."
+      }
+    ],
+    "community": []
+  },
+  "adds": "The records say what the level did at each setting of each byte. What is read out of them here is that the three sets are one law rather than three readings that happen to agree, and that the byte's place in the chain follows from the third of them: the two taken where the stage is passing the signal cannot tell a gain in front from a gain behind, because both return six, and the one taken where the stage is removing thirty decibels can. That comparison is between records and is in none of them.",
+  "alternatives": [
+    {
+      "reading": "The byte is a gain in front of the stage, and the six decibels come through because nothing was removing anything.",
+      "standing": false,
+      "ruled_out_by": "The set taken at the bottom of the limiter's threshold byte, where the stage is removing about thirty decibels, steps by 6.03, 6.02 and 5.96. A gain in front of a limiter working that hard is turned back into the threshold and returns a hundredth of itself, not the whole of it."
+    },
+    {
+      "reading": "The four states are a stored table that lands near six decibels rather than three shifts of it.",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "observable": null,
+        "predicts": {
+          "three shifts": "Exactly six decibels a step, at every state.",
+          "a stored table": "Whatever four numbers were stored."
+        },
+        "sensitivity_here": "The repeats of one setting at the first order agree to 0.01 decibels at the worst of the three sets.",
+        "margin": null,
+        "why_not_separable": "A table holding nought, six, twelve and eighteen and three shifts of six are the same four numbers, and no setting of this byte distinguishes them because the byte has only these four settings. What would separate them is a state in which the two disagree, and there is none: the reading is already at the whole of the byte's range. The third step being consistently short of the first two -- see what this does not settle -- is the only figure that leans either way, and it leans by less than a tenth of a decibel.",
+        "run": null
+      }
+    }
+  ],
+  "refuted_by": "A setting of either byte returning a step that is not six decibels by more than the run's own repeats, or a held state of either type in which the step is smaller than six because the stage in front of it has taken some of it. Either would say the byte is not four fixed steps, or is not where this claim puts it.",
+  "what_this_does_not_settle": [
+    "Whether the step is exactly six decibels or a stored number that rounds there. The nine steps average 5.999 and spread 0.09, which is six to the hundredth on the mean and not on any single step.",
+    "Why the third step is short. On all three sets the step from the second state to the third is about six hundredths of a decibel smaller than the two before it, and the repeats do not cover that. Three sets agreeing on the same small departure is not noise, and nothing here says what it is.",
+    "Whether the byte is after the whole chain or only after the stage it is printed beside. The types measured here carry one stage each in front of it, so `after the compressor` and `after everything before the output level byte` are the same position on both of them."
+  ],
+  "what_it_would_change": "Two parameters on two types stop being unknown, and a renderer given either type has the whole of what this byte does. It also fixes where in the chain a make-up gain sits on the only two types this unit prints one for, which is what decides whether a patch written at a high post gain clips before the output level byte or after it."
+}
