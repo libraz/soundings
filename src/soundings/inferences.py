@@ -443,6 +443,197 @@ def closed(root: str | Path) -> list[dict]:
     return out
 
 
+WHY_THE_DENOMINATOR = (
+    "Every parameter row the unit's own document prints against an insertion effect "
+    "type, counted as a pair of the type and the address. That is the set the archive's "
+    "own aiming rule names first, so it is what a fraction here is a fraction of. It is "
+    "evidence about a page and not about the unit, which is the whole reason this is a "
+    "query rather than a figure kept anywhere: nothing in `data/` and nothing in a claim "
+    "is joined to it."
+)
+
+WHY_TWO_FIGURES = (
+    "They are two questions and the gap between them is the answer to neither. `named` "
+    "is every pair a claim says it is about, which for a claim running across types is "
+    "the whole cross-product of its types and its addresses -- so it counts a column "
+    "that was swept on one type and asserted over six. `touched` counts only pairs a "
+    "record the claim cites names as its own subject, in that record's own `type` and "
+    "`address`. One is a ceiling and the other a floor, and a single number quoted for "
+    "coverage has always been one of the two with the other not mentioned. Both are "
+    "here, and `named_and_not_touched` is what sits between them."
+)
+
+WHY_SOME_RECORDS_NAME_NO_ADDRESS = (
+    "A record whose subject is a whole block rather than one address -- what every "
+    "parameter of a type powers up holding, for instance -- carries no `address`, so it "
+    "moves nothing in `touched` however much it read. The count of those is published "
+    "beside the figure rather than being folded into it: a floor that quietly counted "
+    "them would stop being a floor, and one that hides how many there are cannot be "
+    "argued with."
+)
+
+
+def _printed_cells(root: Path, unit: str) -> tuple[dict, str]:
+    """Every (type, address) an insertion effect list prints, and which document.
+
+    The address is assembled from the block the effect parameters sit in and the low
+    byte the list prints, because the list prints the low byte alone.
+    """
+    meta = json.loads((root / "data" / "units" / unit / "meta.json").read_text())
+    named = (meta.get("documents") or [None])[0]
+    if named is None:
+        raise ValueError(f"{unit} names no document, so there is nothing to count against")
+    listing = json.loads((root / "documents" / named / "effect-list.json").read_text())
+    cells: dict[tuple[str, str], str] = {}
+    for row in listing["rows"]:
+        if "address_lsb" not in row:
+            continue
+        cells[(f"{row['msb']} {row['lsb']}", f"{EFFECT_BLOCK} {row['address_lsb']}")] = (
+            row.get("effect", "")
+        )
+    return cells, named
+
+
+EFFECT_BLOCK = "40 03"
+"""The block an insertion effect's parameters sit in on this family.
+
+The printed list gives each parameter's low byte and leaves the rest of the address to
+the block figure at the front of the document, so the two are joined here rather than
+in either file.
+"""
+
+
+def _touched_by(root: Path, claim: dict) -> set[tuple[str, str]]:
+    """Every (type, address) a record this claim cites names as its own subject."""
+    out = set()
+    for cited in claim["rests_on"]["measurements"]:
+        path = root / cited["file"]
+        if not path.exists():
+            continue
+        record = json.loads(path.read_text())
+        kind, where = record.get("type"), record.get("address")
+        if not kind or not where:
+            continue
+        for one in str(where).split(","):
+            out.add((str(kind).strip(), one.strip()))
+    return out
+
+
+def coverage(root: str | Path, unit: str) -> dict:
+    """How much of what a document prints the claims are about, two ways round.
+
+    Neither figure is the coverage. One counts what a claim asserts over and the other
+    what its records name, and a reader who is given one of them alone cannot tell which
+    they have -- which is how a figure half again too large stood in this project for
+    months. Both are returned, with the pairs that sit between them.
+    """
+    root = Path(root)
+    cells, document = _printed_cells(root, unit)
+    named_by: dict[tuple[str, str], list[str]] = {}
+    touched_by: dict[tuple[str, str], list[str]] = {}
+    per_claim, no_address = [], 0
+    for path in sorted((root / "inferences" / unit).glob("*.json")):
+        if path.name == "index.json":
+            continue
+        claim = load(path)
+        about = claim["inference"]["about"]
+        named = {
+            (kind, where)
+            for kind in about.get("types", [])
+            for where in about.get("addresses", [])
+            if (kind, where) in cells
+        }
+        touched = {pair for pair in _touched_by(root, claim) if pair in cells}
+        no_address += sum(
+            1
+            for cited in claim["rests_on"]["measurements"]
+            if (root / cited["file"]).exists()
+            and not json.loads((root / cited["file"]).read_text()).get("address")
+        )
+        for pair in named:
+            named_by.setdefault(pair, []).append(path.name)
+        for pair in touched:
+            touched_by.setdefault(pair, []).append(path.name)
+        per_claim.append(
+            {
+                "file": path.name,
+                "state": claim["inference"]["state"],
+                "types": len(about.get("types", [])),
+                "addresses": len(about.get("addresses", [])),
+                "named": len(named),
+                "touched": len(touched),
+                "named_and_not_touched": len(named - touched),
+            }
+        )
+
+    per_type: dict[str, dict] = {}
+    for (kind, where), effect in cells.items():
+        row = per_type.setdefault(
+            kind, {"type": kind, "effect": effect, "printed": 0, "named": 0, "touched": 0}
+        )
+        row["printed"] += 1
+        row["named"] += (kind, where) in named_by
+        row["touched"] += (kind, where) in touched_by
+
+    def share(count: int) -> float | None:
+        return round(count / len(cells), 4) if cells else None
+
+    return {
+        "question": (
+            "How many of the parameters this unit's document prints against an insertion "
+            "effect type the claims in this directory are about, counted two ways."
+        ),
+        "unit_id": unit,
+        "document_id": document,
+        "why_the_denominator": WHY_THE_DENOMINATOR,
+        "why_two_figures": WHY_TWO_FIGURES,
+        "printed": {"pairs": len(cells), "types": len({k for k, _ in cells})},
+        "named": {"pairs": len(named_by), "of_the_printed": share(len(named_by))},
+        "touched": {"pairs": len(touched_by), "of_the_printed": share(len(touched_by))},
+        "named_and_not_touched": {
+            "pairs": len(set(named_by) - set(touched_by)),
+            "why": WHY_TWO_FIGURES,
+        },
+        "touched_and_not_named": {
+            "pairs": len(set(touched_by) - set(named_by)),
+            "why": (
+                "The two are not nested, so neither figure is inside the other. A claim "
+                "about one byte cites records of the bytes beside it as controls -- what "
+                "the sweep was held against, what the same reading returns on a byte "
+                "that should not move -- and those are pairs a record names and the "
+                "claim is not about. Counting them into the second figure would make it "
+                "a count of records looked at rather than of parameters read."
+            ),
+        },
+        "records_naming_no_address": {
+            "count": no_address,
+            "why": WHY_SOME_RECORDS_NAME_NO_ADDRESS,
+        },
+        "types_with_nothing_named": sorted(
+            row["type"] for row in per_type.values() if not row["named"]
+        ),
+        "types_with_nothing_touched": sorted(
+            row["type"] for row in per_type.values() if not row["touched"]
+        ),
+        "why_two_lists_of_types": (
+            "The first is types no claim says it is about; the second is types no record "
+            "a claim cites names. The second is always the longer, and the difference is "
+            "types a claim runs across and has no reading of on that type -- which is the "
+            "same gap `named_and_not_touched` counts, read by type instead of by pair. A "
+            "queue built from the first books time on a type the archive has already "
+            "asserted over."
+        ),
+        "nothing_is_left_out": (
+            "Every claim in the directory is counted, including the two that run across "
+            "the whole of it. A figure that quietly dropped them is a different question "
+            "answered under the same name, so `per_claim` carries each one's own "
+            "contribution and a reader who wants them out can take them out."
+        ),
+        "per_type": sorted(per_type.values(), key=lambda row: row["type"]),
+        "per_claim": per_claim,
+    }
+
+
 def index(root: str | Path, unit: str) -> dict:
     """One listing of a unit's inferences, derived from the files themselves.
 
@@ -469,6 +660,36 @@ def index(root: str | Path, unit: str) -> dict:
                 "rests_on_records": [c["file"] for c in claim["rests_on"]["measurements"]],
             }
         )
+    # Generated with the listing rather than kept beside it, so that a figure for how
+    # much of a document the claims are about cannot be quoted from a paragraph that
+    # stopped being true. It is dropped rather than raised where the unit names no
+    # document or the document holds no effect list: a listing of the claims is still
+    # a listing of the claims, and a round script that failed on it would be a claim
+    # blocked by a file in another directory.
+    try:
+        counted = coverage(root, unit)
+    except (FileNotFoundError, KeyError, ValueError) as why:
+        counted = {"not_counted": str(why)}
+    else:
+        counted = {
+            key: counted[key]
+            for key in (
+                "document_id",
+                "why_the_denominator",
+                "why_two_figures",
+                "printed",
+                "named",
+                "touched",
+                "named_and_not_touched",
+                "touched_and_not_named",
+                "records_naming_no_address",
+                "types_with_nothing_named",
+                "types_with_nothing_touched",
+                "why_two_lists_of_types",
+                "nothing_is_left_out",
+            )
+        }
+
     return {
         "index": {"schema_version": SCHEMA_VERSION, "unit_id": unit},
         "note": (
@@ -477,5 +698,6 @@ def index(root: str | Path, unit: str) -> dict:
             "a claim rests on is listed so that a reader can go the other way, from a record to "
             "the readings made of it, without any record having to name one."
         ),
+        "coverage": counted,
         "inferences": entries,
     }

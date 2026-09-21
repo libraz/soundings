@@ -537,3 +537,49 @@ def test_a_run_that_does_not_say_what_it_is_about_cannot_be_looked_up(tmp_path: 
     root = _listing(tmp_path, "a-unit", "efx-rate", BOTH_SIDES)
     vague = {"stage": "efx-rate", "minutes": 20}
     assert inferences.already_recorded(root, "a-unit", vague, {"cites": []}) is None
+
+
+def test_coverage_counts_a_page_and_not_itself():
+    """Both figures come out of the document, and neither stands in for the other.
+
+    The defect this guards against is the one that stood here for months: a single
+    percentage quoted for coverage, which was the cross-product of what claims say
+    they are about and so counted columns swept on one type and asserted over six.
+    A reader given one number cannot tell which of the two they have, so the query
+    returns both, and the two are not nested -- a claim cites the bytes beside the
+    one it is about as controls. The identity below is what says the three counts
+    describe one pair of sets rather than three separate tallies.
+    """
+    for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
+        found = inferences.coverage(ROOT, unit)
+        printed = found["printed"]["pairs"]
+        assert printed > 0, f"{unit} counts against a document that prints no parameters"
+        for name in ("named", "touched"):
+            assert 0 <= found[name]["pairs"] <= printed, (
+                f"{unit} has more {name} pairs than the document prints"
+            )
+            assert found[name]["of_the_printed"] == pytest.approx(
+                found[name]["pairs"] / printed, abs=1e-4
+            ), f"{unit} reports a share of {name} that is not its own count over the printed"
+        both = found["named"]["pairs"] - found["named_and_not_touched"]["pairs"]
+        assert both == found["touched"]["pairs"] - found["touched_and_not_named"]["pairs"], (
+            f"{unit} reports two different sizes for the pairs that are named and touched, "
+            "so at least one of the three counts is of some other pair of sets"
+        )
+        assert 0 <= both <= min(found["named"]["pairs"], found["touched"]["pairs"]), (
+            f"{unit} reports more pairs in both than are in either"
+        )
+
+
+def test_the_listing_carries_the_count_it_was_generated_with():
+    """The figure is generated beside the listing so it cannot be quoted from prose."""
+    for unit in sorted(p.name for p in HERE.glob("*/") if (p / "index.json").is_file()):
+        listing = json.loads((HERE / unit / "index.json").read_text())
+        counted = listing.get("coverage")
+        assert counted, f"inferences/{unit}/index.json carries no coverage block"
+        assert "not_counted" not in counted, (
+            f"inferences/{unit}/index.json could not count itself: {counted['not_counted']}"
+        )
+        assert counted["named"]["pairs"] >= counted["touched"]["pairs"], (
+            f"inferences/{unit}/index.json has its two figures the wrong way round"
+        )

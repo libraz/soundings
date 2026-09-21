@@ -42,10 +42,27 @@ def register(sub) -> None:
     listing.add_argument("--root", default=".", type=Path)
     listing.add_argument("--write", action="store_true")
 
+    counted = inner.add_parser(
+        "coverage",
+        help="how much of what a unit's document prints the claims are about, counted "
+        "as what they say they cover and as what their records name",
+    )
+    counted.add_argument("unit_id")
+    counted.add_argument("--root", default=".", type=Path)
+    counted.add_argument(
+        "--per-type",
+        action="store_true",
+        help="print a row per printed type rather than the totals alone",
+    )
+
 
 def _dispatch(args) -> int:
     return {
-        "open": _open, "closed": _closed, "stale": _stale, "index": _index,
+        "open": _open,
+        "closed": _closed,
+        "stale": _stale,
+        "index": _index,
+        "coverage": _coverage,
     }[args.action](args)
 
 
@@ -116,6 +133,46 @@ def _stale(args) -> int:
     if not found:
         print("every claim rests on figures the records still hold")
     return 1 if found else 0
+
+
+def _coverage(args) -> int:
+    """Both figures and the gap between them, because one of them alone is misread."""
+    found = inferences.coverage(args.root, args.unit_id)
+    printed = found["printed"]
+    print(
+        f"{printed['pairs']} parameters printed against {printed['types']} types in "
+        f"{found['document_id']}"
+    )
+    for name in ("named", "touched"):
+        block = found[name]
+        print(
+            f"  {name:>8}  {block['pairs']:>4} of {printed['pairs']}  "
+            f"{block['of_the_printed'] * 100:5.1f}%"
+        )
+    print(
+        f"  between   {found['named_and_not_touched']['pairs']:>4}  pairs a claim is "
+        "about and no record it cites names"
+    )
+    print(
+        f"  the other way {found['touched_and_not_named']['pairs']:>4}  pairs a record "
+        "names and no claim citing it is about, which is what a control is"
+    )
+    print(
+        f"  {found['records_naming_no_address']['count']} cited records name a type and "
+        "no address, so they move the second figure not at all"
+    )
+    for name in ("types_with_nothing_named", "types_with_nothing_touched"):
+        types = found[name]
+        print(f"  {len(types)} {name.replace('_', ' ')}: {', '.join(types)}")
+    if args.per_type:
+        print()
+        for row in found["per_type"]:
+            print(
+                f"  {row['type']}  {row['effect'][:28]:<28} "
+                f"{row['named']:>3} named {row['touched']:>3} touched "
+                f"of {row['printed']:>2} printed"
+            )
+    return 0
 
 
 def _index(args) -> int:
