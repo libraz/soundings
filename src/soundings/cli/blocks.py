@@ -697,6 +697,92 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_excursion)
 
     p = sub.add_parser(
+        "efx-pair",
+        help="read what one insertion effect does between the unit's two outputs, "
+        "setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, required=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. Two takes matching one value is how this stage gets "
+        "the floor a difference between settings has to clear",
+    )
+    p.add_argument(
+        "--bypassed",
+        default=None,
+        metavar="REGEX",
+        help="a pattern naming the takes made with the part routed past the effect. Two "
+        "of them are read against each other to give the null; one alone gives none, "
+        "because a take read against itself returns nought by construction",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. What "
+        "stands between the two outputs is the whole chain, so a pan byte away from "
+        "centre and a balance away from the point carrying both paths each change what "
+        "a lag is a lag of",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held",
+    )
+    p.add_argument(
+        "--outputs-from",
+        default=None,
+        metavar="PATH",
+        help="an output-map record for this rig, which says which capture channels each "
+        "socket pair on the back of the unit arrived on. It does not say which channel "
+        "of a pair is the left, and neither does this stage: what is read here is the "
+        "lag between the two channels of one pair, in whichever order they were patched",
+    )
+    p.add_argument(
+        "--settled",
+        type=float,
+        help="seconds the run waited after writing the setting before recording",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--trim",
+        type=float,
+        default=0.2,
+        help="seconds cut from each end of the held note, because an attack and a "
+        "release are not the steady tone this reads",
+    )
+    p.add_argument("--hold", type=float, default=8.0, help="seconds the note was held for")
+    p.add_argument(
+        "--block",
+        type=int,
+        default=None,
+        help="samples each lag is read over. Short enough that a modulator moves between "
+        "blocks rather than being averaged flat, which is what lets the control fire",
+    )
+    p.add_argument(
+        "--band-set",
+        choices=BAND_SET_NAMES,
+        default="third-octave",
+        help="how fine the phase between the two outputs is read. The same two sets the "
+        "band stages offer, so a phase and a level profile of one effect are read on one "
+        "set of bands and can be put beside each other",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_pair)
+
+    p = sub.add_parser(
         "efx-params",
         help="read a directory of per-address records into one verdict per parameter of "
         "one insertion effect type, with no machine attached",
@@ -1433,6 +1519,94 @@ def cmd_efx_excursion(args) -> int:
             f"  ({len(astray)} takes are loudest on another channel; read from "
             f"{picked['read']} anyway, and named in the record)"
         )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_pair(args) -> int:
+    """What one effect did between the unit's two outputs, from takes already saved."""
+    from .. import efxbands, efxpair
+
+    def said(reading) -> None:
+        lag = (
+            f"{reading['lag_us']:+9.2f} us"
+            if reading["lag_us"] is not None and reading["one_signal"]
+            else f"{'two signals' if not reading['one_signal'] else 'no lag':>12s}"
+        )
+        moved = reading["within_take_us"]
+        print(
+            f"  {reading['value']:5d} -> {lag}"
+            + (f"   within the take {moved:8.2f} us" if moved is not None else "")
+            + f"   apart {reading['apart_db']:+6.1f} dB"
+            + f"   {reading['blocks_correlating']}/{reading['blocks']} blocks"
+        )
+
+    outputs = None
+    if args.outputs_from:
+        outputs = json.loads(Path(args.outputs_from).read_text()).get("output_pairs")
+
+    found = efxpair.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        bypassed=args.bypassed,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        held_not_spelled_out=args.held_not_spelled_out,
+        settled_s=args.settled,
+        lead_s=args.lead,
+        trim_s=args.trim,
+        hold_s=args.hold,
+        block=args.block or efxpair.BLOCK,
+        bands=efxbands.BAND_SETS[args.band_set][0],
+        width_octaves=efxbands.BAND_SETS[args.band_set][1],
+        outputs=outputs,
+        progress=said,
+    )
+    picked = found["channel"]
+    print(
+        f"\n  read across channels {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+        + ("" if picked["named_by"] else "   (no output map given: the pair is not named)")
+    )
+    check = found["recovers_an_injected_delay"]
+    if check:
+        print(
+            f"  a {check['injected_us']:.0f} us delay put in and read back as "
+            f"{check['recovered_us']:+.3f} us at {check['correlates']:.3f}"
+        )
+    refused = found["settings_refused_as_two_signals"]
+    print(
+        f"  {len(found['settings_with_a_lag'])} of {len(found['settings_asked'])} "
+        "settings gave a lag"
+        + (f"; {len(refused)} refused as two signals: {refused}" if refused else "")
+    )
+    floor = found["floor"]
+    if floor["across_takes_us"] is None:
+        print("  (no setting was taken twice, so this run measured no floor across takes)")
+    else:
+        print(
+            f"  one setting's own takes spread {floor['across_takes_us']:.2f} us, over "
+            f"settings {floor['settings_taken_twice']}"
+        )
+    if floor["widest_within_a_take_us"] is not None:
+        print(
+            f"  the widest a take disagreed with itself is "
+            f"{floor['widest_within_a_take_us']:.2f} us  <- the control"
+        )
+    if found["with_nothing_in_its_path"] is None:
+        print("  (fewer than two takes routed past the effect: this run measured no null)")
+    else:
+        null = found["with_nothing_in_its_path"]
+        print(
+            "  with the part routed past the effect, one such take against another, "
+            + (f"the lag reads {null['lag_us']:+.2f} us" if null["lag_us"] is not None
+               else "no lag is read")
+        )
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)
     return 0
 

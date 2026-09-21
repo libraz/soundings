@@ -93,6 +93,7 @@
     "efx-orders",
     "efx-time",
     "efx-excursion",
+    "efx-pair",
     "efx-params",
     "efx-motion",
     "efx-partials",
@@ -305,7 +306,7 @@
       ]
     },
     "output-map": {
-      "help": "say which capture channel carries which of the unit's outputs, read from takes already saved, with no machine attached",
+      "help": "say which capture channels each socket pair on the back of the unit arrived on, read from takes already saved, with no machine attached",
       "handler": "cmd_output_map",
       "takes_model_id": false,
       "needs_unit": false,
@@ -343,7 +344,7 @@
           "nargs": null,
           "default": "None",
           "required": true,
-          "help": "a pattern over each take's setting with a group named `output`, which is the output the part was put on for that take",
+          "help": "a pattern over each take's setting with a group named `output`, which is the socket pair the part was put on for that take",
           "metavar": "REGEX",
           "choices": null,
           "class": "_StoreAction"
@@ -5257,6 +5258,224 @@
           "help": "the interface channel to read every take from. Defaults to whichever reached highest across the takes read, chosen once for the run: the unit's two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other",
           "metavar": "N",
           "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-pair": {
+      "help": "read what one insertion effect does between the unit's two outputs, setting by setting, from takes already saved, with no machine attached",
+      "handler": "cmd_efx_pair",
+      "takes_model_id": false,
+      "needs_unit": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the insertion effect type the takes were made under. Without it the record says what a parameter did without saying whose parameter it was, and a directory of them is identified by its filenames -- which is an index kept by hand beside records that could carry it themselves",
+          "metavar": "'MSB LSB'",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the address that was swept, for the same reason",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--setting"
+          ],
+          "dest": "setting",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at. Two takes matching one value is how this stage gets the floor a difference between settings has to clear",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--bypassed"
+          ],
+          "dest": "bypassed",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "a pattern naming the takes made with the part routed past the effect. Two of them are read against each other to give the null; one alone gives none, because a take read against itself returns nought by construction",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held"
+          ],
+          "dest": "held",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address the run had written while it read, and what it held. What stands between the two outputs is the whole chain, so a pan byte away from centre and a balance away from the point carrying both paths each change what a lag is a lag of",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--held-not-spelled-out"
+          ],
+          "dest": "held_not_spelled_out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "something the run held that has no address to give --held",
+          "metavar": "TEXT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--outputs-from"
+          ],
+          "dest": "outputs_from",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "an output-map record for this rig, which says which capture channels each socket pair on the back of the unit arrived on. It does not say which channel of a pair is the left, and neither does this stage: what is read here is the lag between the two channels of one pair, in whichever order they were patched",
+          "metavar": "PATH",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settled"
+          ],
+          "dest": "settled",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "seconds the run waited after writing the setting before recording",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--trim"
+          ],
+          "dest": "trim",
+          "nargs": null,
+          "default": "0.2",
+          "required": false,
+          "help": "seconds cut from each end of the held note, because an attack and a release are not the steady tone this reads",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--hold"
+          ],
+          "dest": "hold",
+          "nargs": null,
+          "default": "8.0",
+          "required": false,
+          "help": "seconds the note was held for",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--block"
+          ],
+          "dest": "block",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "samples each lag is read over. Short enough that a modulator moves between blocks rather than being averaged flat, which is what lets the control fire",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--band-set"
+          ],
+          "dest": "band_set",
+          "nargs": null,
+          "default": "'third-octave'",
+          "required": false,
+          "help": "how fine the phase between the two outputs is read. The same two sets the band stages offer, so a phase and a level profile of one effect are read on one set of bands and can be put beside each other",
+          "metavar": null,
+          "choices": [
+            "third-octave",
+            "twelfth-octave"
+          ],
           "class": "_StoreAction"
         },
         {

@@ -1,10 +1,16 @@
-"""Which capture channel carries which of a unit's outputs.
+"""Which capture channels carry which socket pair on the back of a unit.
 
-Every stage that reads one channel of a take answers a question about one of the
-unit's outputs, and until this is measured, which output is a structural guess.
+**Two senses of the word, and this reads the coarser one.** A unit with more than one
+stereo output has a socket pair per output, and elsewhere in this archive the phrase
+`the unit's two outputs` means the left and the right of whichever pair was captured --
+the sense a pan byte moves signal between. This reads which capture channels each
+socket pair arrived on, and says nothing about which channel of a pair is the left.
+Both are needed and neither answers the other; the record names its key `output_pairs`
+so that a reader cannot take one for the other.
+
 `takes.channel_pair_reaching` picks the loudest channel and its structural partner,
 which is the right rule for finding the pair the unit arrived on -- and it says
-nothing about which half of that pair is the unit's first output.
+nothing about which socket pair that is.
 
 The reading is a routing, not a level. The part is put on one output and struck, then
 on the other and struck again, and a channel carrying that output rises when the note
@@ -51,6 +57,17 @@ WHY_THE_NOTE_AND_NOT_THE_LEVEL = (
     "take, so a reading by level alone would have turned on 1.4 dB of gain trim. The "
     "note's arrival separates the same takes by 24 dB, because an idle input does not "
     "know when the unit was struck."
+)
+
+WHAT_OUTPUT_MEANS = (
+    "An output here is a socket pair on the back of the unit, and the key is named "
+    "`output_pairs` for that reason. Everywhere else in this archive the phrase `the "
+    "unit\'s two outputs` means the two channels of one such pair -- the left and the "
+    "right -- which is the sense a pan byte moves signal between and the sense "
+    "`takes.other_of_the_pair` returns. The two senses are not the same question and a "
+    "record that used one word for both would be read as answering whichever the reader "
+    "had in mind. This one answers only which pair is which; which channel of a pair is "
+    "the left is in `limits`, unread."
 )
 
 WHY_IT_IS_ABOUT_THE_RIG = (
@@ -202,9 +219,10 @@ def read_directory(
             "channels": width,
             "takes": len(rows),
         },
-        "outputs": {
+        "output_pairs": {
             name: found["channels"] for name, found in carried.items()
         },
+        "what_output_means_here": WHAT_OUTPUT_MEANS,
         "how_it_separated": {
             "worst_apart_db": round(min(separations), 2) if separations else None,
             "best_apart_db": round(max(separations), 2) if separations else None,

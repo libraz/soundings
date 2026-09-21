@@ -50,8 +50,8 @@ def register(sub) -> None:
 
     p = sub.add_parser(
         "output-map",
-        help="say which capture channel carries which of the unit's outputs, read from "
-        "takes already saved, with no machine attached",
+        help="say which capture channels each socket pair on the back of the unit "
+        "arrived on, read from takes already saved, with no machine attached",
     )
     p.add_argument(
         "takes",
@@ -63,7 +63,7 @@ def register(sub) -> None:
         required=True,
         metavar="REGEX",
         help="a pattern over each take's setting with a group named `output`, which is "
-        "the output the part was put on for that take",
+        "the socket pair the part was put on for that take",
     )
     p.add_argument(
         "--window",
@@ -183,9 +183,9 @@ def cmd_output_map(args: argparse.Namespace) -> int:
             + "  dB over the second before the note"
         )
     print()
-    for name, channels in found["outputs"].items():
+    for name, channels in found["output_pairs"].items():
         print(
-            f"  output {name} -> "
+            f"  output pair {name} -> "
             + ("channels " + ", ".join(str(c) for c in channels) if channels else "NOT AGREED")
         )
     apart = found["how_it_separated"]
