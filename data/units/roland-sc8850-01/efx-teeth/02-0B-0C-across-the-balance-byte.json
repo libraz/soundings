@@ -1,0 +1,621 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-teeth",
+    "invocation": [
+      "efx-teeth",
+      ".cache/takes/what-the-balance-byte-does-to-the-comb/020B",
+      "--type",
+      "02 0B",
+      "--slot",
+      "40 03 0C",
+      "--setting",
+      "^(?P<value>\\d+)$",
+      "--carrier-hz",
+      "440",
+      "--bypassed",
+      "bypassed",
+      "--held",
+      "40 42 22=01",
+      "--held",
+      "40 12 31=00",
+      "--held",
+      "40 03 03=00",
+      "--held",
+      "40 03 04=00",
+      "--held",
+      "40 03 05=00",
+      "--held",
+      "40 03 07=00",
+      "--held",
+      "40 03 08=30",
+      "--held",
+      "40 03 09=13",
+      "--held",
+      "40 03 0B=40",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=7F",
+      "--held",
+      "40 03 0A=40",
+      "--out",
+      "data/units/roland-sc8850-01/efx-teeth/02-0B-0C-across-the-balance-byte.json"
+    ],
+    "measured_at": "2026-09-21T11:47:58+00:00",
+    "elapsed_s": 4.2,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "How deep the notching one insertion effect puts on a held tone, at each setting of one byte, in decibels of level swing on a single order.",
+  "type": "02 0B",
+  "address": "40 03 0C",
+  "method": "One take per setting of a held tone. Each order of the tone that cleared the threshold on the take with the part routed past the effect was demodulated by its own frequency, leaving that order's level over the take; the orders come from that take and never from the take being read, so an effect that raises its own quiet orders cannot bring a different set of them into its own answer. Over the frames the order was present in, its swing is the distance between the tenth and the ninetieth percentile of that level. The order standing furthest over its own swing on the routed-past take is the figure for the setting, and the same reading was made on the unit's other output beside it. Every take is read on one channel named for the whole run, and a setting taken more than once gives the run its floor.",
+  "limits": "A swing is decibels on one order and not a mixture: how much of the output each path of a mixture is, and where the two are equal, are not read here and do not follow from a depth. It is read while the notching moves, so it is not a profile of one standing still: a notch narrower than an order's own demodulator is read shallower here than a band profile of the same effect parked would return it, and a notch that never reaches an order is read as nothing here whatever a profile says. The level series is thinned to the rate `read_at_hz` reports, so a notch passing faster than that is read through a smoothed copy of itself and comes back shallower. What bounds that is the run's own repeats rather than an assumption: a modulator fast enough for the thinning to matter does not repeat to the figure in `floor`. `swing_db` is the swing of the order standing furthest over its own null and `at_order_hz` says which order that was; `largest_db` is the largest swing over the orders whatever its null did, and `per_order_db` is all of them, because an effect that notches one order and not another has done something a single figure cannot show. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous. `swing_elsewhere_db` is the same reading on the unit's other output. It is here because a pan byte decides which output a notched path arrives on, and a run that read one channel can lose the whole of an effect to a pan without losing any level -- which has happened in this archive and was found only when the other output was read.",
+  "not_in_this_record": "No curve, no table and no verdict. Which shape these depths lie on as the byte rises, what structure puts a notch where, and what fraction of the output each path of a mixture is are fits across settings and types and are not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "carrier_hz": 440.0,
+  "between_percentiles": [
+    10.0,
+    90.0
+  ],
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -47.7,
+      -47.8,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "Which channel of the interface every take was read on, and the highest each channel reached across them. One channel for the run rather than the loudest of each take, because on this stage the input decides the answer twice over. An interface carries inputs the unit is not on which are not silent, and an idle input carries no modulation -- which is what a type without one also returns. And the unit's own two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other, and two types read on different ones are not comparable however loud both were. `loudest_elsewhere` names every take whose own loudest channel was not the one read."
+  },
+  "other_channel": {
+    "read": 3,
+    "over_the_swept_takes": {
+      "takes": 8,
+      "apart_db": -0.1,
+      "widest_apart_db": 0.0,
+      "the_read_side_moves_db": 7.2,
+      "the_other_side_moves_db": 7.2,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
+  },
+  "routed_past_the_effect": {
+    "takes": [
+      "held-16-bypassed-00.wav"
+    ],
+    "read_against": "held-16-bypassed-00.wav",
+    "why": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
+    "with_nothing_in_its_path": {
+      "largest_db": 2.26,
+      "per_order_db": [
+        0.35,
+        0.34,
+        0.31,
+        0.74,
+        2.26,
+        0.39,
+        0.37,
+        1.72
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0
+    },
+    "on_the_other_output": {
+      "largest_db": 2.29,
+      "per_order_db": [
+        0.35,
+        0.34,
+        0.31,
+        0.74,
+        2.29,
+        0.39,
+        0.37,
+        1.7
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0
+    },
+    "why_nothing_in_its_path": "The take routed past the effect, read as though it were a setting. This is the reading's null, and a number is a depth only against it: the demodulation returns a level series for a steady tone too, and what that series does on its own is the size of every figure here that is not the effect. It is read on the same channel over the same stretch as the settings are."
+  },
+  "why_admitted": "A swing is admitted where it stands over what the same reading returns with nothing in the effect's path by more than the run's own repeats of one setting disagree. Both numbers are the run's: the null is the take routed past the effect, read through this reading rather than asserted, and the floor is two takes of one setting. Neither is a threshold chosen here, and a run that made neither take is reported as having no bar rather than given one. The bar is therefore the run's own, and two runs of the same state can land either side of it: a run that repeated its setting to a hundredth of a decibel admits a tenth of a decibel over the null, and one that repeated to a decibel does not. Each row carries the margin it was judged on, so a reader can apply a bar of their own.",
+  "floor": {
+    "db": 0.07,
+    "widest_at": 64,
+    "settings_taken_twice": [
+      64
+    ],
+    "takes_per_setting": {
+      "64": 2
+    }
+  },
+  "why_floor": "How far apart this reading put one state of the unit twice, on the quantity the record publishes. It is the only figure a difference between two settings has to clear, and only admitted rows can give one -- two settings that both sat at the null are two nulls, and how far apart they landed says nothing. Where no setting was taken twice the record says so and offers nothing in its place.",
+  "deepest": {
+    "value": 96,
+    "db": 15.09,
+    "over_takes": 1,
+    "next_is": 112,
+    "over_the_next_db": 1.25,
+    "stands_clear": true,
+    "why": "Which setting of the byte notched deepest, and whether it stands clear of the setting next to it by more than the run repeats to. A deepest that does not stand clear is a reading of where the sweep happened to land rather than of the byte, and it is published saying so instead of being withheld: the rows are beside it and a reader who wants the curve rather than its peak has it."
+  },
+  "held": [
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    },
+    {
+      "address": "40 12 31",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 03",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 08",
+      "bytes": "30"
+    },
+    {
+      "address": "40 03 09",
+      "bytes": "13"
+    },
+    {
+      "address": "40 03 0B",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "7F"
+    },
+    {
+      "address": "40 03 0A",
+      "bytes": "40"
+    }
+  ],
+  "why_held": "Every address written before the takes were made, beside the one that was swept. A depth is read through the whole chain, so what else was in the chain decides what the reading is of: a modulator parked at no depth leaves nothing sweeping to notch with, a feedback path deepens a notch without moving it, and a second stage left in the path smears a notch into a shelf.",
+  "takes_from": ".cache/takes/what-the-balance-byte-does-to-the-comb/020B",
+  "manifest": {
+    "lists": 9,
+    "files_present": 9,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    0,
+    16,
+    32,
+    64,
+    96,
+    112,
+    127
+  ],
+  "settings_admitted": [
+    0,
+    16,
+    32,
+    64,
+    96,
+    112,
+    127
+  ],
+  "readings": [
+    {
+      "value": 0,
+      "take": "held-16-000-00.wav",
+      "named_by": "manifest",
+      "heard_db": -48.3,
+      "also_heard_db": -48.4,
+      "settled_s": null,
+      "largest_db": 2.3,
+      "per_order_db": [
+        0.34,
+        0.37,
+        0.28,
+        0.72,
+        2.3,
+        0.41,
+        0.39,
+        1.85
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 1.85,
+      "at_order_hz": 5280.0,
+      "over_the_null_db": 0.13,
+      "over_the_null_per_order_db": [
+        -0.01,
+        0.03,
+        -0.03,
+        -0.02,
+        0.04,
+        0.02,
+        0.02,
+        0.13
+      ],
+      "swing_elsewhere_db": 2.65,
+      "over_the_null_elsewhere_db": 0.36,
+      "admitted": true
+    },
+    {
+      "value": 16,
+      "take": "held-16-016-00.wav",
+      "named_by": "manifest",
+      "heard_db": -48.4,
+      "also_heard_db": -48.4,
+      "settled_s": null,
+      "largest_db": 2.41,
+      "per_order_db": [
+        0.45,
+        0.49,
+        0.42,
+        0.79,
+        2.41,
+        0.54,
+        0.51,
+        1.75
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 0.49,
+      "at_order_hz": 880.0,
+      "over_the_null_db": 0.15,
+      "over_the_null_per_order_db": [
+        0.1,
+        0.15,
+        0.11,
+        0.05,
+        0.15,
+        0.15,
+        0.14,
+        0.03
+      ],
+      "swing_elsewhere_db": 2.83,
+      "over_the_null_elsewhere_db": 0.54,
+      "admitted": true
+    },
+    {
+      "value": 32,
+      "take": "held-16-032-00.wav",
+      "named_by": "manifest",
+      "heard_db": -48.3,
+      "also_heard_db": -48.4,
+      "settled_s": null,
+      "largest_db": 5.78,
+      "per_order_db": [
+        2.73,
+        3.09,
+        2.6,
+        3.24,
+        5.78,
+        2.94,
+        2.58,
+        3.43
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 5.78,
+      "at_order_hz": 2200.0,
+      "over_the_null_db": 3.52,
+      "over_the_null_per_order_db": [
+        2.38,
+        2.75,
+        2.29,
+        2.5,
+        3.52,
+        2.55,
+        2.21,
+        1.71
+      ],
+      "swing_elsewhere_db": 6.52,
+      "over_the_null_elsewhere_db": 4.23,
+      "admitted": true
+    },
+    {
+      "value": 64,
+      "take": "held-16-064-00.wav",
+      "named_by": "manifest",
+      "heard_db": -47.7,
+      "also_heard_db": -47.8,
+      "settled_s": null,
+      "largest_db": 11.92,
+      "per_order_db": [
+        7.84,
+        9.24,
+        7.54,
+        9.17,
+        11.92,
+        8.0,
+        7.36,
+        8.08
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 11.92,
+      "at_order_hz": 2200.0,
+      "over_the_null_db": 9.66,
+      "over_the_null_per_order_db": [
+        7.49,
+        8.9,
+        7.23,
+        8.43,
+        9.66,
+        7.61,
+        6.99,
+        6.36
+      ],
+      "swing_elsewhere_db": 13.66,
+      "over_the_null_elsewhere_db": 11.37,
+      "admitted": true
+    },
+    {
+      "value": 64,
+      "take": "held-16-064-01.wav",
+      "named_by": "manifest",
+      "heard_db": -47.7,
+      "also_heard_db": -47.8,
+      "settled_s": null,
+      "largest_db": 11.99,
+      "per_order_db": [
+        7.74,
+        9.19,
+        7.61,
+        8.91,
+        11.99,
+        8.12,
+        7.26,
+        8.24
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 11.99,
+      "at_order_hz": 2200.0,
+      "over_the_null_db": 9.73,
+      "over_the_null_per_order_db": [
+        7.39,
+        8.85,
+        7.3,
+        8.17,
+        9.73,
+        7.73,
+        6.89,
+        6.52
+      ],
+      "swing_elsewhere_db": 12.9,
+      "over_the_null_elsewhere_db": 10.61,
+      "admitted": true
+    },
+    {
+      "value": 96,
+      "take": "held-16-096-00.wav",
+      "named_by": "manifest",
+      "heard_db": -53.3,
+      "also_heard_db": -53.3,
+      "settled_s": null,
+      "largest_db": 15.68,
+      "per_order_db": [
+        11.06,
+        10.29,
+        13.7,
+        15.09,
+        15.68,
+        11.02,
+        12.91,
+        12.94
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 15.09,
+      "at_order_hz": 1760.0,
+      "over_the_null_db": 14.35,
+      "over_the_null_per_order_db": [
+        10.71,
+        9.95,
+        13.39,
+        14.35,
+        13.42,
+        10.63,
+        12.54,
+        11.22
+      ],
+      "swing_elsewhere_db": 15.76,
+      "over_the_null_elsewhere_db": 13.47,
+      "admitted": true
+    },
+    {
+      "value": 112,
+      "take": "held-16-112-00.wav",
+      "named_by": "manifest",
+      "heard_db": -54.9,
+      "also_heard_db": -55.0,
+      "settled_s": null,
+      "largest_db": 13.84,
+      "per_order_db": [
+        3.21,
+        3.94,
+        2.5,
+        10.93,
+        13.84,
+        3.41,
+        2.93,
+        6.55
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 13.84,
+      "at_order_hz": 2200.0,
+      "over_the_null_db": 11.58,
+      "over_the_null_per_order_db": [
+        2.86,
+        3.6,
+        2.19,
+        10.19,
+        11.58,
+        3.02,
+        2.56,
+        4.83
+      ],
+      "swing_elsewhere_db": 13.06,
+      "over_the_null_elsewhere_db": 10.77,
+      "admitted": true
+    },
+    {
+      "value": 127,
+      "take": "held-16-127-00.wav",
+      "named_by": "manifest",
+      "heard_db": -54.9,
+      "also_heard_db": -55.0,
+      "settled_s": null,
+      "largest_db": 13.41,
+      "per_order_db": [
+        3.07,
+        3.63,
+        2.29,
+        10.6,
+        13.41,
+        3.3,
+        2.77,
+        6.36
+      ],
+      "orders_hz": [
+        440.0,
+        880.0,
+        1320.0,
+        1760.0,
+        2200.0,
+        2640.0,
+        3520.0,
+        5280.0
+      ],
+      "read_at_hz": 200.0,
+      "swing_db": 13.41,
+      "at_order_hz": 2200.0,
+      "over_the_null_db": 11.15,
+      "over_the_null_per_order_db": [
+        2.72,
+        3.29,
+        1.98,
+        9.86,
+        11.15,
+        2.91,
+        2.4,
+        4.64
+      ],
+      "swing_elsewhere_db": 13.28,
+      "over_the_null_elsewhere_db": 10.99,
+      "admitted": true
+    }
+  ],
+  "takes_not_matching": {
+    "count": 0,
+    "settings": [],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}
