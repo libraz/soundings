@@ -4,13 +4,14 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-17T03:26:49.804069+00:00",
-    "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py, backup/fold-in-the-high-rotor.py, backup/whether-a-multis-rotary-is-the-same-rotor.py, backup/publish-the-multis-rotary.py, backup/add-round-two-to-the-renumbered-rotary-inference.py",
+    "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py, backup/fold-in-the-high-rotor.py, backup/whether-a-multis-rotary-is-the-same-rotor.py, backup/publish-the-multis-rotary.py, backup/add-round-two-to-the-renumbered-rotary-inference.py, backup/whether-a-drive-in-front-changes-the-rotary.py, backup/publish-the-drive-rotary.py, backup/add-the-fourth-type-to-the-renumbered-rotary-inference.py",
     "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
         "01 22",
         "03 00",
+        "11 04",
         "11 07"
       ],
       "addresses": [
@@ -211,6 +212,77 @@
           6.0415,
           9.9449
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-04-0C-the-high-rotor-from-sixteen-beside-a-drive.json",
+        "keys": [
+          "readings[value=17].rate_hz",
+          "readings[value=18].rate_hz",
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.8373,
+          0.8888,
+          0.988,
+          1.1882,
+          1.5887
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-04-0C-the-high-rotor-alone-beside-a-drive.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.5888,
+          6.0417,
+          9.9447
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-04-08-the-low-rotor-from-nothing-beside-a-drive.json",
+        "keys": [
+          "readings[value=16].rate_hz",
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.6046,
+          0.805,
+          1.0052,
+          1.4059
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-04-08-the-low-rotor-alone-beside-a-drive.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.4069,
+          5.8559,
+          9.7546
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-04-08-the-low-rotor-with-three-bytes-written.json",
+        "keys": [
+          "readings[value=4].rate_hz",
+          "readings[value=8].rate_hz",
+          "readings[value=12].rate_hz"
+        ],
+        "values": [
+          0.2501,
+          0.448,
+          0.5511
+        ]
       }
     ],
     "document_rows": [
@@ -357,7 +429,7 @@
         }
       }
     },
-    "why_it_is_not_the_two_types": "The multi returns the same rate at three writes and at nineteen, to a ten-thousandth of a hertz at every value asked. The single type does not. So this is a difference inside one type and not between the two -- and it is a control neither of the two records being compared states, which is why the bottom is left unattributed.",
+    "why_it_is_not_the_two_types": "The multi returns the same rate at three writes and at nineteen, to a ten-thousandth of a hertz at every value asked. The single type does not. So this is a difference inside one type and not between the two -- and it is a control neither of the two records being compared states, which is why the bottom is left unattributed. A fourth type has since been asked the same way and its bottom does move, so the control is real and reaches two types of three -- see `the_round_that_read_a_fourth_type`.",
     "whose_error_it_was": "This project's. The run that made the multi's record wrote nineteen bytes because writing every byte of the block explicitly is the careful thing to do, and the record it was to be compared against wrote two. The type's own closed claim already says where the rotor was when the write arrived changes where it ends up, so the control was named in this archive before the run that needed it was designed."
   },
   "the_address_no_page_prints": {
@@ -433,7 +505,7 @@
     "Any of the block's other eight parameters on the multi. The acceleration byte among them was written at the value the single type rests at and not swept, and it is the byte the bottom's behaviour is a behaviour of.",
     "What `40 03 0C` on `01 22` is for. It was shown not to reach this rotor and nothing more.",
     "Whether the bottom of an accelerating type's rate byte can be read at all. It can, if when the write arrived is recorded; no record here does, and that is a change to how a run is recorded rather than a measurement.",
-    "What either rotor does in transit -- below value 16 on the low one and below 17 on the high. It was asked at 32, 110 and 127 and nowhere lower, and the low rotor's bottom turned out to be governed by when the write arrived rather than by the byte -- which no record states, so the high rotor's bottom is open for the same reason and not for a new one.",
+    "What either rotor does in transit -- below value 16 on the low one and below 17 on the high. It was asked at 32, 110 and 127 and nowhere lower, and the low rotor's bottom turned out to be governed by when the write arrived rather than by the byte. A record now states that control for a fourth type and it moves that type's bottom, so the high rotor's bottom is open because it has not been asked the same way, and not because nothing states the control.",
     "Whether the remaining eight rotary parameters agree. One rate byte per rotor has now been laid over, and the block prints ten."
   ],
   "what_the_high_rotor_returned": {
@@ -801,5 +873,178 @@
     "what_it_closes": "The scope, and one number in the claim's own text. The model is unchanged: a third implementation of one block would have had to reproduce two distances the printed table does not contain, and it reproduces both.",
     "what_it_does_not_close": "The bottom, which stays where the claim left it. The third type at twenty writes returns what the single type returns at thirteen -- 0.2502, 0.3491 and 0.4042 at values 4, 8 and 12, the same numbers to four decimal places -- while the second type returns a third set at three writes and at nineteen. So the count of writes does not carry the bottom on its own, and what does is a quantity no record here states.",
     "why_the_rounds_moved_this_time": "The claim's own text changes. Round one's note says the ceiling counts revisions of the model and that a competing reading falling is not one. This is not that: the boundary the claim publishes is wrong for one of the two rotors, and correcting a published number is a revision whatever widened the scope alongside it."
+  },
+  "the_round_that_read_a_fourth_type": {
+    "what_was_asked": "The same two rate bytes on type 11 04, which prints this block at the addresses `11 07` prints it at and puts an overdrive branch beside it where `11 07` puts a phaser. Both rotors, both take lengths, every byte the page prints written explicitly.",
+    "why_this_type_is_a_weak_test_of_the_block_and_a_strong_one_of_the_boundary": "Weak on the block: the addresses are the same ten, with the same printed ranges and the same printed defaults, and this unit powers both types up holding them identically. A claim about where a block sits predicts that almost trivially, so agreeing carries little. It is recorded as a cheap confirmation and not as a discriminating test.\n\nStrong on the boundary: round two moved the high rotor's boundary from 16 to 17 by re-reading a record the claim already held, and no type outside the claim had been asked at 17 or 18. This type was, which makes the corrected number a prediction here rather than a re-reading.",
+    "what_stood_in_front_and_why_it_matters": "An overdrive branch, taken out at its own level byte and at its drive byte so that neither removal rests on the other. The third type put a drive in series with the rotary but also renumbered the block, so it tested `a drive in front does not matter` and `a renumbering does not matter` together. This type holds the addresses fixed and changes only what stands beside the rotary, which separates the two.",
+    "laid_over": [
+      {
+        "rotor": "low",
+        "take_length": "long",
+        "value": 16,
+        "the_fourth_type_hz": 0.6046,
+        "the_single_type_hz": 0.6047,
+        "apart_cents": -0.29
+      },
+      {
+        "rotor": "low",
+        "take_length": "long",
+        "value": 20,
+        "the_fourth_type_hz": 0.805,
+        "the_single_type_hz": 0.8051,
+        "apart_cents": -0.22
+      },
+      {
+        "rotor": "low",
+        "take_length": "long",
+        "value": 24,
+        "the_fourth_type_hz": 1.0052,
+        "the_single_type_hz": 1.0053,
+        "apart_cents": -0.17
+      },
+      {
+        "rotor": "low",
+        "take_length": "long",
+        "value": 32,
+        "the_fourth_type_hz": 1.4059,
+        "the_single_type_hz": 1.4059,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "low",
+        "take_length": "short",
+        "value": 32,
+        "the_fourth_type_hz": 1.4069,
+        "the_single_type_hz": 1.4068,
+        "apart_cents": 0.12
+      },
+      {
+        "rotor": "low",
+        "take_length": "short",
+        "value": 110,
+        "the_fourth_type_hz": 5.8559,
+        "the_single_type_hz": 5.8566,
+        "apart_cents": -0.21
+      },
+      {
+        "rotor": "low",
+        "take_length": "short",
+        "value": 127,
+        "the_fourth_type_hz": 9.7546,
+        "the_single_type_hz": 9.7548,
+        "apart_cents": -0.04
+      },
+      {
+        "rotor": "high",
+        "take_length": "long",
+        "value": 17,
+        "the_fourth_type_hz": 0.8373,
+        "the_single_type_hz": 0.8373,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "high",
+        "take_length": "long",
+        "value": 18,
+        "the_fourth_type_hz": 0.8888,
+        "the_single_type_hz": 0.8888,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "high",
+        "take_length": "long",
+        "value": 20,
+        "the_fourth_type_hz": 0.988,
+        "the_single_type_hz": 0.988,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "high",
+        "take_length": "long",
+        "value": 24,
+        "the_fourth_type_hz": 1.1882,
+        "the_single_type_hz": 1.1882,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "high",
+        "take_length": "long",
+        "value": 32,
+        "the_fourth_type_hz": 1.5887,
+        "the_single_type_hz": 1.5887,
+        "apart_cents": 0.0
+      },
+      {
+        "rotor": "high",
+        "take_length": "short",
+        "value": 32,
+        "the_fourth_type_hz": 1.5888,
+        "the_single_type_hz": 1.5887,
+        "apart_cents": 0.11
+      },
+      {
+        "rotor": "high",
+        "take_length": "short",
+        "value": 110,
+        "the_fourth_type_hz": 6.0417,
+        "the_single_type_hz": 6.0415,
+        "apart_cents": 0.06
+      },
+      {
+        "rotor": "high",
+        "take_length": "short",
+        "value": 127,
+        "the_fourth_type_hz": 9.9447,
+        "the_single_type_hz": 9.9442,
+        "apart_cents": 0.09
+      }
+    ],
+    "out_of_transit": {
+      "settings": 15,
+      "worst_cents": 0.29,
+      "identical_to_four_decimals": 6,
+      "boundary_used": {
+        "low": 16,
+        "high": 17
+      },
+      "what_the_high_rotor_did_at_sixteen": "Returned 0.8373, which is what it returns at 17 and what the third type returned at 16. The single type moves partway to 0.8125 there. Seventeen is where this type's high rotor rests, so asking for 16 asks it to slow by one printed entry and it does not move. That is why 16 is excluded: the number is a fact about arrival, not a reading of the byte."
+    },
+    "the_write_count_arm": {
+      "what": "The same low rotor on the fourth type, read once with three bytes written before the swept one and once with nineteen. The other three arms in the table above were taken the same way.",
+      "at_each_setting": [
+        {
+          "value": 4,
+          "three_writes_hz": 0.2501,
+          "nineteen_writes_hz": 0.2503,
+          "moved_cents": -1.38,
+          "the_single_type_at_two_writes_hz": 0.2503,
+          "from_it_cents": -1.38
+        },
+        {
+          "value": 8,
+          "three_writes_hz": 0.448,
+          "nineteen_writes_hz": 0.3488,
+          "moved_cents": 433.32,
+          "the_single_type_at_two_writes_hz": 0.4481,
+          "from_it_cents": -0.39
+        },
+        {
+          "value": 12,
+          "three_writes_hz": 0.5511,
+          "nineteen_writes_hz": 0.4043,
+          "moved_cents": 536.27,
+          "the_single_type_at_two_writes_hz": 0.5934,
+          "from_it_cents": -128.03
+        }
+      ],
+      "what_it_says": "The bottom of this type moves with the count, in the direction the single type's does and by the same order. At value 8 the sparse arm lands within four tenths of a cent of the single type's own sparse arm, and the full arm lands within a cent and a half of its full one.",
+      "which_type_it_leaves_alone": "`11 07`. Of the three types this control has now been asked of, it is the only one whose bottom does not move: three writes and nineteen return the same rate to a ten-thousandth of a hertz at every value asked. So the bottom disagreement between `11 07` and `01 22` is not this control failing to be stated -- the control is real and moves two types of three. What is unattributed is why it does not reach the one.",
+      "what_it_is_not": "A reading of the two types as one curve. At value 12 the sparse arm returns 0.5511 against the single type's 0.5934, which is 128 cents. Value 8 is the close point and value 12 is not, so what is shared is the direction and the order, not the shape.",
+      "why_it_is_still_outside_what_the_claim_states": "Every setting in it is below value 16, which the claim excludes on the low rotor. It corrects the reason a key gives, not a number the claim publishes."
+    },
+    "what_it_closes": "Nothing that was open. It confirms the boundary round two corrected, on a type that was not in the claim when the correction was made, and it separates the drive in front from the renumbering.",
+    "what_it_does_not_close": "The eight rotary parameters neither rotor's rate byte covers, on any type. And what makes `11 07`'s bottom insensitive to a control that moves the other two types' bottoms.",
+    "why_the_rounds_did_not_move_this_time": "The ceiling counts revisions of the model, which is round one's note. Nothing about the model moved here: the boundary stands where round two put it, the distance constant stands, and a fourth type returning the same numbers is the opposite of a revision. The one thing that changed is the reason a control key gives for leaving the bottom unattributed, which is a correction to that key and not to what the claim states."
   }
 }
