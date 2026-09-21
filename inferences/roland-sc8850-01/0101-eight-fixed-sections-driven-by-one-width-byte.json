@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-21T17:23:56.850441+00:00",
-    "made_by": "backup/what-eight-fixed-bands-sit-on.py, backup/publish-the-spectrum-bands.py, backup/write-the-spectrum-inference.py",
-    "rounds": 1,
+    "made_by": "backup/what-eight-fixed-bands-sit-on.py, backup/publish-the-spectrum-bands.py, backup/write-the-spectrum-inference.py, backup/does-this-reading-return-a-known-centre.py, backup/add-the-known-centre-round-to-the-spectrum-inference.py",
+    "rounds": 2,
     "about": {
       "scope": "unit",
       "types": [
@@ -25,7 +25,7 @@
       ]
     }
   },
-  "claim": "This type is eight peaking sections parked at fixed centres, one output pan and one level, with a single width byte driving all eight instead of one each. The centres are the named third octaves at 250, 500, 1k, 1.25k, 2k, 3.15k, 4k and 8k: a band raised to the top of its byte and cut to the bottom returns the same centre to within 0.02 octaves, and the eight sit 0.030 octaves under the named series with a scatter of 0.018 -- which is the offset this unit's other equaliser's table was measured to carry, so the two are consistent with one table and this test does not separate that from two readings of one named series. The width byte indexes five entries and four of them are the equaliser's Q byte's entries exactly: 2.583, 1.417, 0.750 and 0.417 octaves between the half-gain points, on a reading whose step is a twelfth. Past the fifth printed step the two types disagree. This one returns the fifth entry and the equaliser returns the first, so what is shared is the table and not the handling of a byte outside it. Each band gain answers over the twenty-five values from 52 to 76 and returns the nearest end for everything outside, and the power-on state is the eight defaults its own page prints, read through a width byte the page prints no default for and which powers up at its third entry.",
+  "claim": "This type is eight peaking sections parked at fixed centres, one output pan and one level, with a single width byte driving all eight instead of one each. The centres are the named third octaves at 250, 500, 1k, 1.25k, 2k, 3.15k, 4k and 8k: a band raised to the top of its byte and cut to the bottom returns the same centre to within 0.02 octaves, and the eight sit 0.030 octaves under the named series with a scatter of 0.018 -- which is the offset this unit's other equaliser's table was measured to carry. That offset has since been measured to be the unit's rather than the reading's, by putting a section of known centre through the same band set, window and fit at the width both types were read at, where it comes back on the name to two thousandths of an octave -- so the eight really do sit below the series they are named by. With each type's own mean taken out the seven centres the two types share still run the same way, over a pattern 0.046 octaves wide that they disagree about by 0.012 at worst and 0.006 in the median. Whether that is one table or two tables computed the same way is not separated here. The width byte indexes five entries and four of them are the equaliser's Q byte's entries exactly: 2.583, 1.417, 0.750 and 0.417 octaves between the half-gain points, on a reading whose step is a twelfth. Past the fifth printed step the two types disagree. This one returns the fifth entry and the equaliser returns the first, so what is shared is the table and not the handling of a byte outside it. Each band gain answers over the twenty-five values from 52 to 76 and returns the nearest end for everything outside, and the power-on state is the eight defaults its own page prints, read through a width byte the page prints no default for and which powers up at its third entry.",
   "named": "The eight band gains at 40 03 03 through 40 03 0A, the width byte at 40 03 0B and the pan at 40 03 15, on type 01 01.",
   "adds": "Three standing claims reach this type for the first time and one of them is cut back. The gain class claim and the width claim did not name 01 01 at all; the pan class claim named it and had never been held against a record on it. What is new beyond that reach is the structure: eight sections at fixed centres is not a shorter equaliser, it is the same sections with the frequency byte removed and replaced by a position in the table, and one width byte serving all eight rather than one per section is the arrangement that makes eight sections cost what four did. The cut is to the width claim, whose rule for a byte past the printed steps holds on the type it was fitted on and not on this one.",
   "rests_on": {
@@ -997,6 +997,80 @@
             127
           ]
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/01-00-07-the-table-read-narrow-in-twelfths.json",
+        "keys": [
+          "readings[value=8].fitted_at_hz",
+          "readings[value=32].fitted_at_hz",
+          "readings[value=56].fitted_at_hz",
+          "readings[value=64].fitted_at_hz",
+          "readings[value=80].fitted_at_hz",
+          "readings[value=96].fitted_at_hz",
+          "readings[value=104].fitted_at_hz",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          240.5,
+          481.4,
+          977.3,
+          1224.4,
+          1952.3,
+          3105.0,
+          3948.8,
+          [
+            0,
+            4,
+            8,
+            12,
+            16,
+            24,
+            32,
+            40,
+            48,
+            56,
+            64,
+            72,
+            80,
+            88,
+            96,
+            104,
+            112,
+            120,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "04"
+            }
+          ]
+        ]
       }
     ],
     "document_rows": [
@@ -1030,27 +1104,9 @@
   "alternatives": [
     {
       "reading": "The eight centres are the named third octaves themselves, and the 0.030 octaves both this type and the equaliser's table sit under them is carried by the reading rather than by the unit.",
-      "standing": true,
-      "separated_by": {
-        "observable": "Where a peaking section of known centre lands when it is rendered and then measured through this stage, on the same band set and the same fit, at each of the eight named third octaves.",
-        "predicts": {
-          "the offset is the reading's": "a section rendered at exactly 250 Hz comes back near 241, and the eight rendered centres reproduce the same mean offset of 0.0298 octaves and a scatter near 0.017",
-          "the offset is the unit's": "a section rendered at exactly 250 Hz comes back at 250 to within the fit's own spread, so the unit's entries really are below the named series and the two types share a table rather than a name"
-        },
-        "divergence": "0.0298 octaves, which is the mean offset itself: the two readings put a rendered section either side of it.",
-        "sensitivity_here": "The quantity compared is a mean over the eight bands, so what bounds it is the error on that mean and not the spread of one band. The eight offsets scatter by 0.0165 octaves, which is 0.0058 on their mean. Quoted beside it because they answer different questions: how far one band's raised take disagrees with its own cut take runs from 0.0005 to 0.0286 octaves with a median of 0.0027, so a test resting on a single band would have a margin of one and must not be queued. The fitted position is not quantised to the band set, so it is these spreads and not the twelfth-octave step that bound the reading.",
-        "margin": 5,
-        "run": {
-          "stage": "efx-bands",
-          "type": "01 01",
-          "address": "40 03 03",
-          "settings": "eight peaking sections rendered one at a time at exactly 250, 500, 1k, 1.25k, 2k, 3.15k, 4k and 8k, at the width this run read the eight through, then measured on the same band set and the same fit the unit's takes were measured on",
-          "stimulus": "the same stimulus, so the comparison carries no correction",
-          "takes": 0,
-          "minutes": 0
-        }
-      },
-      "why_it_matters": "Only for what the agreement is evidence of. The eight centres are where they are either way, and so is everything the width byte does."
+      "standing": false,
+      "why_it_matters": "Only for what the agreement is evidence of. The eight centres are where they are either way, and so is everything the width byte does.",
+      "ruled_out_by": "The reading was measured to return a known centre at the width both types were read at: a mean of +0.0001 octaves over the eight with a scatter of 0.0019, against a term of 0.030. Nothing is left for the reading to carry."
     },
     {
       "reading": "The width byte is not written above its fifth printed step, so what the high settings return is whatever the type was already holding.",
@@ -1117,7 +1173,8 @@
         "mean": 0.0306,
         "scatter": 0.0182
       },
-      "why_those_two_lines_are_the_whole_point": "They are the same number. A comparison that quotes how much better these eight agree with the equaliser's measured entries than with the named series is quoting a term that sits on both sides of it."
+      "why_those_two_lines_are_the_whole_point": "They are the same number. A comparison that quotes how much better these eight agree with the equaliser's measured entries than with the named series is quoting a term that sits on both sides of it.",
+      "and_whose_term_it_is": "Measured, and it is the unit's. A section of known centre put through this band set, window and fit at the width both types were read at comes back on the name: +0.0001 octaves over the eight with a scatter of 0.0019. The sentence above still holds -- the term does sit on both sides of that comparison and the ratio is still not quotable -- but the eight really are below the series, and what survives taking each type's mean out is under 0.012 octaves band by band."
     },
     "half_gain_span_in_octaves": {
       "this_type_at_1224_hz": {
@@ -1161,6 +1218,288 @@
     "what_the_width_byte_powers_up_at": {
       "value": 2,
       "how_it_was_read": "The two takes with nothing written to any of the eleven bytes return the profile the third printed step returns, band for band, to a tenth of a decibel over twenty-two bands. The page prints this byte as a list of five figures with no middle, so it names no default for it and the value is measured rather than read off."
+    }
+  },
+  "the_round_that_rendered_a_centre_it_already_knew": {
+    "what_was_asked": "Whether the 0.030 octaves these eight centres and the equaliser's sixteen entries both sit under the third octaves the page names them by is a property of the unit or of the way this archive reads where a peak is. No record could answer it: every figure on both sides went through one fit, so the term is on both sides of every comparison that could be made between them.",
+    "how_it_was_run": "The audio cookbook's peaking section, at a centre chosen rather than fitted, rendered onto the same flat takes this run measured its own reference from and read out through the same band energies, the same half-gain window and the same parabola. Eight centres, both signs of the gain, and each of the five widths the printed table holds, at both band sets. The width matters and is not a free choice: both the eight sections and the equaliser's sixteen entries were read with that byte at its fifth entry, which the equaliser's record names in its own held block.",
+    "what_came_back": "At that width the reading returns the centre it was given. Over the eight named positions the mean is +0.0001 octaves with a scatter of 0.0019, and four of the eight land below rather than eight of eight. That is a thirtieth of the term being explained and it does not lean. The term is the unit's.",
+    "why_three_estimators_and_not_one": "Because the rendered section is the audio cookbook's peaking biquad and the unit's need not be, and every reading of a centre assumes something about the shape it is reading. So the eight were read three ways, by estimators that assume less each time. The parabola is the published one, fitted over the feature's own half-gain window. The second renders the section at a ladder of centres about each name and matches it against the unit's whole measured profile over every band that cleared the run's floor, one level factor fitted out -- no parabola, but still that section's shape. The third walks out from the largest band to where the deviation falls to half on each side, interpolates both crossings and takes their geometric mean: it assumes only that the feature is symmetric about its centre in log frequency, which is the weakest thing that can be assumed by anything calling a number a centre. The three return -0.0297, -0.0306 and -0.0331 octaves, eight of eight below on all three. The third was put through the rendered known centre too, where it returns between -0.0056 and +0.0037.",
+    "what_the_whole_shape_match_cost_says": "Less than it looks, and the figure is published rather than described. Moving the rendered section from where it matches best to the name it is called by costs between 0.03 and 0.32 dB of the match's own residual, against a residual of 0.36 to 0.60 dB. So no single band's profile chooses strongly between the two, and what carries this estimator is that all eight choose the same way. The residual itself is the more useful number: 0.36 to 0.60 dB against features twelve decibels tall is the floor the run's own flat repeats drew, so the unit's sections are this shape to within what the takes can say.",
+    "what_is_left_of_the_shape_question": "A section that is not symmetric in log frequency. All three estimators return a centre, and a feature with a longer flank on one side has no single centre for them to agree on -- the third would need the two half-gain arms to differ by 0.066 octaves against a span of 0.417, with the lower arm the shorter. Nothing here rules that out by itself. What bounds it is the whole-profile residual: a symmetric section of the cookbook's form already accounts for the measured profile down to the run's floor, so the asymmetry left over to hide in is the floor's size. This is written as what the run did not close rather than as a fourth reading, because it is not a different table -- it is the same entries read through a section whose shape would make where the centre is a different question from the one the page's names answer.",
+    "the_one_term_this_cannot_cancel": "A sample rate that is wrong. Rendering onto a take and then reading that take puts the same assumed rate on both sides, so a rate that is off by a factor moves the model and the unit together and comes back as no bias at all -- which is exactly the shape of what is being explained. It is asked of a take whose frequency is known from outside the reading: the held tone the type survey was taken on, recorded as 440 Hz in that stage's own invocation, reads 439.966. That is -0.00011 octaves, two hundred and seventy times smaller than the term.",
+    "what_the_reading_does_carry": "A bias that grows with the width of the feature and with where it sits, and at the broad end it is large. The same rendering read at the first of the five printed widths returns a centre 0.26 octaves low at 8k and 0.02 low at 250, and at the third width 0.04 low at 8k. This is the bias the band record's own `why_fitted` describes and it is now measured rather than described: it is under a hundredth of an octave everywhere at the two narrowest widths, and it is not something a reader may carry across to a figure read at a broad one. The claims here are unaffected because both types' centres were read at the narrowest.",
+    "what_it_does_not_close": "Whether the eight centres and the equaliser's entries are one table or two tables computed the same way. What the term being the unit's changes is which comparison is admissible: the ratio of how well these eight agree with the equaliser's measured entries against how well they agree with the named series is still not quotable, because a term shared by two things inflates their agreement whatever put it there. What is quotable is the part that survives taking each type's own mean out, and that is now evidence where before it was unreadable. It does not choose between one table and two tables written from one derivation, which no reading of an output can.",
+    "the_figures": {
+      "where_a_known_centre_comes_back_in_octaves": {
+        "third-octave": {
+          "250": [
+            null,
+            null,
+            -0.0142,
+            -0.0183,
+            null
+          ],
+          "500": [
+            -0.018,
+            -0.0465,
+            -0.0085,
+            -0.0022,
+            null
+          ],
+          "1000": [
+            -0.0278,
+            -0.0111,
+            -0.0026,
+            -0.007,
+            null
+          ],
+          "1250": [
+            -0.0413,
+            -0.0088,
+            -0.0063,
+            0.001,
+            null
+          ],
+          "2000": [
+            -0.073,
+            -0.014,
+            -0.0072,
+            -0.0034,
+            null
+          ],
+          "3150": [
+            -0.1135,
+            -0.0316,
+            -0.0258,
+            -0.0028,
+            null
+          ],
+          "4000": [
+            -0.1624,
+            -0.0465,
+            -0.0276,
+            -0.0065,
+            null
+          ],
+          "8000": [
+            null,
+            null,
+            -0.0177,
+            null,
+            null
+          ]
+        },
+        "twelfth-octave": {
+          "250": [
+            -0.0058,
+            -0.0023,
+            -0.0006,
+            -0.0009,
+            0.0003
+          ],
+          "500": [
+            -0.0101,
+            -0.0014,
+            0.0,
+            -0.0006,
+            0.0004
+          ],
+          "1000": [
+            -0.0203,
+            -0.0048,
+            -0.0014,
+            -0.0011,
+            -0.0013
+          ],
+          "1250": [
+            -0.0246,
+            -0.0115,
+            -0.0002,
+            0.0012,
+            0.0036
+          ],
+          "2000": [
+            -0.0592,
+            -0.0218,
+            -0.0043,
+            -0.0035,
+            -0.0017
+          ],
+          "3150": [
+            -0.1205,
+            -0.0451,
+            -0.0153,
+            -0.0007,
+            0.002
+          ],
+          "4000": [
+            -0.1646,
+            -0.0591,
+            -0.0228,
+            -0.012,
+            -0.0011
+          ],
+          "8000": [
+            -0.2551,
+            -0.1252,
+            -0.0414,
+            -0.0157,
+            -0.0014
+          ]
+        }
+      },
+      "the_widths_those_columns_are": [
+        0.2499,
+        0.4903,
+        0.9786,
+        1.9022,
+        3.451
+      ],
+      "at_the_width_both_types_were_read_at": {
+        "q": 3.451,
+        "mean": 0.0001,
+        "scatter": 0.0019,
+        "how_many_below": 4,
+        "of": 8
+      },
+      "where_the_units_own_centres_sit": {
+        "named_hz": [
+          250.0,
+          500.0,
+          1000.0,
+          1250.0,
+          2000.0,
+          3150.0,
+          4000.0,
+          8000.0
+        ],
+        "by_the_parabola": [
+          -0.0538,
+          -0.0512,
+          -0.0173,
+          -0.0304,
+          -0.0368,
+          -0.0226,
+          -0.0083,
+          -0.0176
+        ],
+        "by_matching_the_whole_shape": [
+          -0.06,
+          -0.055,
+          -0.015,
+          -0.03,
+          -0.03,
+          -0.02,
+          -0.01,
+          -0.025
+        ],
+        "by_the_half_gain_midpoint": [
+          -0.0639,
+          -0.0601,
+          -0.018,
+          -0.0282,
+          -0.0366,
+          -0.0192,
+          -0.0103,
+          -0.0282
+        ],
+        "rms_db_of_that_match": [
+          0.5,
+          0.52,
+          0.46,
+          0.6,
+          0.51,
+          0.55,
+          0.42,
+          0.36
+        ],
+        "rms_db_if_it_sat_on_the_name": [
+          0.82,
+          0.8,
+          0.49,
+          0.69,
+          0.63,
+          0.59,
+          0.45,
+          0.52
+        ],
+        "parabola_mean": -0.0297,
+        "whole_shape_mean": -0.0306,
+        "how_many_below": 8,
+        "furthest_the_two_estimators_are_apart": 0.0074,
+        "half_gain_midpoint_mean": -0.0331,
+        "how_many_below_by_the_midpoint": 8
+      },
+      "what_the_midpoint_returns_for_a_known_centre": {
+        "third-octave": {
+          "250": -0.0264,
+          "500": -0.004,
+          "1000": -0.0094,
+          "1250": -0.0056,
+          "2000": -0.004,
+          "3150": -0.0041,
+          "4000": -0.0031,
+          "8000": -0.0085
+        },
+        "twelfth-octave": {
+          "250": 0.0037,
+          "500": -0.0021,
+          "1000": -0.0013,
+          "1250": -0.0006,
+          "2000": -0.0039,
+          "3150": -0.0024,
+          "4000": -0.0037,
+          "8000": -0.0056
+        }
+      },
+      "the_frequency_scale": {
+        "take": ".cache/takes/survey-types/held-16-00-00-00.wav",
+        "nominal_hz": 440.0,
+        "read_hz": 439.966,
+        "octaves": -0.00011
+      },
+      "what_survives_taking_each_types_mean_out": {
+        "the_seven_they_share_hz": [
+          250,
+          500,
+          1000,
+          1250,
+          2000,
+          3150,
+          4000
+        ],
+        "this_types_octaves_about_its_own_mean": [
+          -0.0226,
+          -0.0196,
+          0.0142,
+          0.0011,
+          -0.0052,
+          0.0089,
+          0.0232
+        ],
+        "the_equalisers_octaves_about_its_own_mean": [
+          -0.0205,
+          -0.0193,
+          0.0023,
+          0.0055,
+          0.0006,
+          0.0146,
+          0.0168
+        ],
+        "how_far_apart_band_by_band": [
+          0.0021,
+          0.0003,
+          0.012,
+          0.0045,
+          0.0058,
+          0.0057,
+          0.0064
+        ],
+        "the_worst_band": 0.012,
+        "the_median_band": 0.0057,
+        "what_that_is_against": "The size of the pattern itself and the spread of this reading's own repeats. About their means the seven run over 0.046 octaves, so a disagreement of 0.012 at worst is a quarter of what is being agreed about; and the claim records one band's two takes as disagreeing by 0.0005 to 0.0286 octaves, so the disagreement between the types sits inside what one type's own repeats show. It does not choose between one table and two tables written from one derivation, which predict the same pattern."
+      }
     }
   }
 }
