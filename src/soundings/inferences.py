@@ -378,6 +378,32 @@ def open_items(root: str | Path) -> list[dict]:
                     "minutes": None,
                 }
             )
+            # A second item and not a field on the first. What a state holds open is
+            # the whole of what the claim gave up, which is prose and carries no run;
+            # what would reopen it is one booking with a margin, and the queue orders
+            # by minutes. Folded into one item the booking would sort with the null
+            # and print under the heading for things no run can answer, which is the
+            # opposite of what it is.
+            reopen = claim["inference"].get("what_would_reopen") or {}
+            if reopen:
+                run = reopen.get("run")
+                out.append(
+                    {
+                        "inference": name,
+                        "why_open": f"{state}, and a measurement would take it off the shelf",
+                        "reading": reopen.get("observable"),
+                        "observable": reopen.get("observable"),
+                        "margin": reopen.get("margin"),
+                        "why_there_is_no_run": reopen.get("why_not_separable"),
+                        "run": run,
+                        "minutes": (run or {}).get("minutes"),
+                        "already_recorded": (
+                            already_recorded(root, path.parent.name, run, claim)
+                            if run
+                            else None
+                        ),
+                    }
+                )
         for alternative in claim["alternatives"]:
             if not alternative.get("standing"):
                 continue

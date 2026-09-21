@@ -583,3 +583,100 @@ def test_the_listing_carries_the_count_it_was_generated_with():
         assert counted["named"]["pairs"] >= counted["touched"]["pairs"], (
             f"inferences/{unit}/index.json has its two figures the wrong way round"
         )
+
+
+def _claim(tmp_path: Path, unit: str, head: dict) -> Path:
+    where = tmp_path / "inferences" / unit
+    where.mkdir(parents=True)
+    (where / "a-claim.json").write_text(
+        json.dumps(
+            {
+                "inference": {
+                    "schema_version": 1,
+                    "unit_id": unit,
+                    "state": "parked",
+                    "made_at": "2026-01-01T00:00:00+00:00",
+                    "made_by": "by hand",
+                    "rounds": 3,
+                    "why_parked": "three rounds",
+                    "about": {"types": ["01 60"], "addresses": ["40 03 03"]},
+                    **head,
+                },
+                "claim": "something",
+                "adds": "something",
+                "rests_on": {"measurements": [], "document_rows": []},
+                "alternatives": [],
+                "refuted_by": "something",
+            }
+        )
+    )
+    return tmp_path
+
+
+REOPEN = {
+    "observable": "the stored distance at a second state of the mode byte",
+    "predicts": {"follows the mode byte": "it moves", "a constant": "it does not"},
+    "sensitivity_here": "a figure this archive has measured",
+    "margin": 6,
+    "run": {"stage": "efx-time", "type": "01 60", "address": "40 03 03", "minutes": 15},
+}
+
+
+def test_a_parked_claims_booking_is_a_queue_item_of_its_own(tmp_path: Path):
+    """A parked claim's one booking is named in prose the queue cannot read.
+
+    Its alternatives are settled or equivalent, so `separated_by` has nowhere to
+    carry it, and the item the state itself produces has no run and sorts with the
+    things no run can answer. Written under `what_would_reopen` it is a booking like
+    any other, with its minutes and its margin, and the queue orders it by them.
+    """
+    root = _claim(tmp_path, "a-unit", {"what_would_reopen": REOPEN})
+    items = [i for i in inferences.open_items(root) if i["inference"].endswith("a-claim.json")]
+    assert len(items) == 2, "the state's own item and the booking are not one item"
+    booked = [i for i in items if i["run"]]
+    assert len(booked) == 1
+    assert booked[0]["minutes"] == 15
+    assert booked[0]["margin"] == 6
+    assert booked[0]["observable"] == REOPEN["observable"]
+
+
+def test_a_parked_claim_without_one_is_unchanged(tmp_path: Path):
+    """The field is optional, and a claim that ends with no booking says so by not
+    carrying one rather than by carrying an empty one."""
+    root = _claim(tmp_path, "a-unit", {})
+    items = [i for i in inferences.open_items(root) if i["inference"].endswith("a-claim.json")]
+    assert len(items) == 1
+    assert items[0]["run"] is None
+
+
+def test_the_booking_is_checked_against_records_the_unit_already_holds(tmp_path: Path):
+    """The same check every other queued run gets. A booking that is already on disk
+    and uncited needs the records read, not the time booked, and the queue prints the
+    two under different headings."""
+    root = _claim(tmp_path, "a-unit", {"what_would_reopen": REOPEN})
+    where = root / "data" / "units" / "a-unit"
+    where.mkdir(parents=True)
+    (where / "index.json").write_text(
+        json.dumps(
+            {
+                "unit_id": "a-unit",
+                "records": 1,
+                "stages": {
+                    "efx-time": [
+                        {
+                            "file": "efx-time/01-60-03-the-window.json",
+                            "about": {"type": "01 60", "address": "40 03 03"},
+                        }
+                    ]
+                },
+            }
+        )
+    )
+    booked = [
+        i
+        for i in inferences.open_items(root)
+        if i["inference"].endswith("a-claim.json") and i["run"]
+    ]
+    assert booked[0]["already_recorded"] is not None, (
+        "a booking on a parked claim is not getting the check the other bookings get"
+    )
