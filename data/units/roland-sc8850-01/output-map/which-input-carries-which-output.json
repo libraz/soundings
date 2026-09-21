@@ -1,0 +1,285 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "output-map",
+    "invocation": [
+      "output-map",
+      ".cache/takes/two-outputs",
+      "--output",
+      "out(?P<output>\\d)",
+      "--device",
+      "Scarlett 4i4 4th Gen",
+      "--out",
+      "data/units/roland-sc8850-01/output-map/which-input-carries-which-output.json"
+    ],
+    "measured_at": "2026-09-21T10:57:30+00:00",
+    "elapsed_s": 0.1,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "which channel of the capture device carries which of the unit's outputs, read from the arrival of a struck note rather than from a level",
+  "method": {
+    "what_is_read": "A channel is taken to carry an output because the struck note appears on it, not because it is loud. An interface has inputs the unit is not plugged into and they are not silent: on the takes this reading was written against two of them sat at -70 and -75 dBFS while the pair carrying the unit reached -68.8 on the quietest take, so a reading by level alone would have turned on 1.4 dB of gain trim. The note's arrival separates the same takes by 24 dB, because an idle input does not know when the unit was struck.",
+    "what_this_is_about": "This says which socket of the interface each of the unit's outputs was patched into when these takes were made. Re-cabling changes it and no take would show that, so every record read on a channel is interpretable only against an output map made on the same wiring. The capture device is named for that reason.",
+    "window_s": 1.0,
+    "margin_db": 6.0,
+    "capture_device": "Scarlett 4i4 4th Gen",
+    "channels": 6,
+    "takes": 6
+  },
+  "outputs": {
+    "1": [
+      2,
+      3
+    ],
+    "2": [
+      0,
+      1
+    ]
+  },
+  "how_it_separated": {
+    "worst_apart_db": 24.24,
+    "best_apart_db": 47.77,
+    "why": "The quietest channel taken to carry an output, against the loudest taken not to, on the same take. This is the evidence the mapping rests on, and a run where it narrows toward the margin has stopped separating the two groups."
+  },
+  "each_output": {
+    "1": {
+      "channels": [
+        2,
+        3
+      ],
+      "every_take_agreed": true,
+      "per_take": [
+        {
+          "take": "struck_kit-out1-nothing-raised-00.wav",
+          "channels": [
+            2,
+            3
+          ],
+          "apart_db": 40.48
+        },
+        {
+          "take": "struck_kit-out1-reverb-up-00.wav",
+          "channels": [
+            2,
+            3
+          ],
+          "apart_db": 24.24
+        },
+        {
+          "take": "struck_kit-out1-efx-on-00.wav",
+          "channels": [
+            2,
+            3
+          ],
+          "apart_db": 47.769999999999996
+        }
+      ]
+    },
+    "2": {
+      "channels": [
+        0,
+        1
+      ],
+      "every_take_agreed": true,
+      "per_take": [
+        {
+          "take": "struck_kit-out2-nothing-raised-00.wav",
+          "channels": [
+            0,
+            1
+          ],
+          "apart_db": 42.89
+        },
+        {
+          "take": "struck_kit-out2-reverb-up-00.wav",
+          "channels": [
+            0,
+            1
+          ],
+          "apart_db": 42.92
+        },
+        {
+          "take": "struck_kit-out2-efx-on-00.wav",
+          "channels": [
+            0,
+            1
+          ],
+          "apart_db": 42.72
+        }
+      ]
+    }
+  },
+  "control": {
+    "what": "Each output struck in every state of the chain the run captured, and which channels rose in each. A routing gives one answer in every state; a reading of the state rather than of the socket does not.",
+    "takes": [
+      "struck_kit-out1-nothing-raised-00.wav",
+      "struck_kit-out1-reverb-up-00.wav",
+      "struck_kit-out1-efx-on-00.wav",
+      "struck_kit-out2-nothing-raised-00.wav",
+      "struck_kit-out2-reverb-up-00.wav",
+      "struck_kit-out2-efx-on-00.wav"
+    ],
+    "per_output": {
+      "1": {
+        "states": 3,
+        "channels_each_state_gave": [
+          [
+            2,
+            3
+          ]
+        ],
+        "agreed": true,
+        "narrowest_state_apart_db": 24.24
+      },
+      "2": {
+        "states": 3,
+        "channels_each_state_gave": [
+          [
+            0,
+            1
+          ]
+        ],
+        "agreed": true,
+        "narrowest_state_apart_db": 42.72
+      }
+    },
+    "every_state_agreed": true,
+    "margin_db": 6.0
+  },
+  "readings": [
+    {
+      "setting": "out1-nothing-raised",
+      "output": "1",
+      "take": "struck_kit-out1-nothing-raised-00.wav",
+      "rise_db": [
+        1.89,
+        1.81,
+        42.37,
+        47.9,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -70.2,
+        -75.5,
+        -74.3,
+        -68.8,
+        -240.0,
+        -240.0
+      ]
+    },
+    {
+      "setting": "out1-reverb-up",
+      "output": "1",
+      "take": "struck_kit-out1-reverb-up-00.wav",
+      "rise_db": [
+        1.7,
+        1.8,
+        29.05,
+        26.04,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -70.2,
+        -75.4,
+        -69.2,
+        -66.8,
+        -240.0,
+        -240.0
+      ]
+    },
+    {
+      "setting": "out1-efx-on",
+      "output": "1",
+      "take": "struck_kit-out1-efx-on-00.wav",
+      "rise_db": [
+        1.85,
+        2.02,
+        49.79,
+        49.79,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -70.2,
+        -75.5,
+        -55.1,
+        -55.3,
+        -240.0,
+        -240.0
+      ]
+    },
+    {
+      "setting": "out2-nothing-raised",
+      "output": "2",
+      "take": "struck_kit-out2-nothing-raised-00.wav",
+      "rise_db": [
+        44.09,
+        49.68,
+        1.17,
+        1.2,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -33.8,
+        -33.3,
+        -109.7,
+        -109.7,
+        -240.0,
+        -240.0
+      ]
+    },
+    {
+      "setting": "out2-reverb-up",
+      "output": "2",
+      "take": "struck_kit-out2-reverb-up-00.wav",
+      "rise_db": [
+        44.17,
+        49.8,
+        1.24,
+        1.25,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -33.7,
+        -33.3,
+        -109.6,
+        -109.7,
+        -240.0,
+        -240.0
+      ]
+    },
+    {
+      "setting": "out2-efx-on",
+      "output": "2",
+      "take": "struck_kit-out2-efx-on-00.wav",
+      "rise_db": [
+        44.01,
+        49.73,
+        1.16,
+        1.29,
+        0.0,
+        0.0
+      ],
+      "reached_db": [
+        -33.7,
+        -33.3,
+        -109.6,
+        -109.7,
+        -240.0,
+        -240.0
+      ]
+    }
+  ],
+  "limits": "Which half of a pair is the left channel and which the right is not read here. The part was struck at one pan position, so both channels of the output it was on rose together; the same takes remade with a pan byte at its two ends would say, and that is a booking rather than a reading. Nor does this say that any other run was cabled this way: a record read on a channel is interpretable against an output map made on the same wiring, and nothing in a take carries the wiring, which is why the capture device is named. What the reading does say is a routing and not a level, and it stops being evidence if the two groups stop separating -- `control` is where that is reported and `how_it_separated` is the margin it is against.",
+  "takes_from": ".cache/takes/two-outputs",
+  "takes_not_matching": {
+    "count": 0,
+    "settings": []
+  }
+}
