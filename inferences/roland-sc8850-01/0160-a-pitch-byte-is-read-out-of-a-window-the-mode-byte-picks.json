@@ -4,26 +4,18 @@
     "unit_id": "roland-sc8850-01",
     "state": "parked",
     "made_at": "2026-09-20T07:28:42+00:00",
-    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py, backup/add-round-two-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds.py, backup/add-round-three-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds-at-unison.py, backup/add-round-four-and-park-the-pitch-shifters-window-inference.py",
-    "rounds": 4,
+    "made_by": "backup/what-a-pitch-shifters-mode-byte-is-the-length-of.py, backup/read-the-pitch-shifters-splice.py, backup/write-the-pitch-shifter-inference.py, backup/add-round-two-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds.py, backup/add-round-three-to-the-pitch-shifters-window-inference.py, backup/publish-the-copy-the-pitch-shifters-output-holds-at-unison.py, backup/add-round-four-and-park-the-pitch-shifters-window-inference.py, backup/answer-the-pitch-shifters-one-booking.py",
+    "rounds": 5,
     "what_would_reopen": {
-      "observable": "How far apart the two read-outs are stored, read at a second state of the mode byte with the pitch bytes swept through unison.",
+      "observable": "The stored distance at the second and fourth states of the mode byte, read the way the first, third and fifth were read here.",
       "predicts": {
-        "the stored distance follows the mode byte": "it moves by the ratio the five windows do, so the smallest move between two neighbouring states is 10.66 ms",
-        "the stored distance is a constant": "it does not move between the two states at all"
+        "the table is three powers of two and two entries that are not whole": "the second state reads 42.6667 ms, which is 4096/3 steps of the clock",
+        "the table holds whole counts and the ratio is near 3 : 4 : 6 : 8 : 12": "the second state reads 42.6458 or 42.6875 ms, which are 1365 and 1366"
       },
-      "sensitivity_here": "The reading places a stored distance on a grid whose step is 0.0208 ms, and the run's own two takes of one state agreed on a window length to three parts in ten thousand, which is 0.02 ms on the 64 ms window. The second is the figure used, because a grid step is what a reading can print rather than what it can repeat.",
-      "margin": 533,
-      "why_not_separable": null,
-      "run": {
-        "stage": "efx-time",
-        "type": "01 60",
-        "address": "40 03 03",
-        "settings": "the coarse byte through unison, as the published sweep asked it",
-        "stimulus": "the broadband program the delay readings are taken on",
-        "takes": 12,
-        "minutes": 15
-      }
+      "sensitivity_here": "The run measured no floor at all -- two takes of one setting landed 0.000 ms apart at every one of the three states -- so what bounds this is the grid the cepstrum is read on and not the takes. That grid is 0.0208 ms and the two readings are 0.0104 apart.",
+      "margin": 0.5,
+      "why_not_separable": "The two readings differ by a third of a step of the unit's own clock and the reading's grid is one and a half of them. If the ratio is exactly 3 : 4 : 6 : 8 : 12 the second window is 4096/3 steps, which is 42.6667 ms; if the table instead holds whole counts the nearest are 1365 and 1366 steps, which are 42.6563 and 42.6875 ms. The cepstrum is read on the 48000 Hz grid the takes were captured at, whose step is 0.0208 ms, and 42.6667 is a point on that grid while 42.6563 is not -- so a table holding 1365 comes back at 42.6458 or at 42.6667, and half the time it returns the figure the other reading predicts. The separation is 0.0104 ms against a step of 0.0208, which is a margin of a half, and the fourth state gives the same half. Nothing about the unit stops this being asked; the reading's own grid does. Capturing at four times the rate would put the margin at two, which is a change to how every record of this stage was read rather than a booking, and it is named here as the condition rather than queued as a run.",
+      "run": null
     },
     "about": {
       "scope": "unit",
@@ -38,7 +30,7 @@
         "40 03 0C"
       ]
     },
-    "why_parked": "Four rounds, which is this claim's last and was said to be in advance. What it found is kept: the pitch bytes are read out of a window rather than clocked, the mode byte selects the window from five lengths, two read-outs are present at once, and the pair is stored one whole window apart. What it gave up is whether that stored distance follows the mode byte or is a constant, which wants the pitch bytes swept through unison at a second state of that byte -- a booking, and the only one this claim ends with. The rest of the type is untouched and is listed where it always was."
+    "why_parked": "Four rounds, which is this claim's last and was said to be in advance. What it found is kept: the pitch bytes are read out of a window rather than clocked, the mode byte selects the window from five lengths, two read-outs are present at once, and the pair is stored one whole window apart. What it gave up is whether that stored distance follows the mode byte or is a constant, which wants the pitch bytes swept through unison at a second state of that byte -- a booking, and the only one this claim ends with. The rest of the type is untouched and is listed where it always was. Since parking, the one booking it ended with was made: the coarse byte was swept through unison again at the shortest and the longest of the five windows, and the stored distance followed the mode byte. What came back is under `the_round_that_asked_at_two_more_windows`, and the field that carried the booking now carries what took its place -- a question this archive can state and cannot resolve."
   },
   "claim": "Type `01 60`'s pitch bytes are not read by anything that runs at a rate of its own. They are read out of a window, and the output repeats every time the read-out has drifted that window's length -- so the rate a take carries is `|r - 1| / T`, where `r` is the ratio the two pitch bytes ask for and `T` is the window. Across the coarse byte the ratio was moved from a quarter to double, which is `|r - 1|` from 0.056 to 1.000, and the rate moved with it from 0.90 to 15.63 Hz: over that factor of eighteen `T` stays between 62.1 and 64.7 ms. At unison the line is not slow, it is gone -- byte 64 returns 4.81 Hz, which is this voice's own amplitude wobble and the same figure the fine byte returns at its own unison. On the fine byte, which reaches ratios three orders closer to one than the coarse byte's smallest step does, the four settings whose implied rate clears the run's own floor of 0.3033 Hz come back at 0.4504 to 0.9384 Hz and give `T` of 63.21 to 63.74 ms, while every setting between them returns the voice's wobble instead -- which is what a window rate under the floor looks like and is not something a clock of the stage's own could do. The byte the page prints `Shift Mode` against, over five states and with no unit beside them, moves `T` and moves nothing else. Its five states return 32.00, 42.68, 63.78, 85.27 and 128.0 ms, which is the ratio 3 : 4 : 6 : 8 : 12, read at two shifts an octave apart. The shortest is 1024 steps of the 32000 Hz clock this archive already reads this unit's delay ladder as cut to; the third is 2048 of them and the fifth is 4096, so three of the five are successive powers of two and the two between them sit a fourth and a fifth along -- two octaves reached in four steps. Read at the octave, where the two shortest windows put the rate past the 20 Hz ceiling this reading searches to, those two and only those two come back at exactly half: 15.6261 where 31.25 is asked for, and 11.7221 where 23.44 is.",
   "named": "a time-domain splicer: one window read out at the pitch ratio and re-entered every time the read-out has drifted the window's length, with a mode byte that picks which of five windows is used",
@@ -926,6 +918,172 @@
             }
           ]
         ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-60-03-the-same-sweep-with-the-shortest-window.json",
+        "keys": [
+          "readings[value=64].ms",
+          "readings[value=76].ms",
+          "readings[value=52].ms",
+          "floor_ms",
+          "settings_admitted",
+          "held"
+        ],
+        "values": [
+          32.0,
+          16.0,
+          4.5,
+          0.0,
+          [
+            40,
+            52,
+            62,
+            63,
+            64,
+            65,
+            66,
+            68,
+            71,
+            76
+          ],
+          [
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-time/01-60-03-the-same-sweep-with-the-longest-window.json",
+        "keys": [
+          "readings[value=64].ms",
+          "readings[value=76].ms",
+          "readings[value=52].ms",
+          "floor_ms",
+          "settings_admitted",
+          "held"
+        ],
+        "values": [
+          0.1042,
+          64.0,
+          18.0,
+          0.0,
+          [
+            40,
+            52,
+            62,
+            63,
+            64,
+            65,
+            66,
+            68,
+            71,
+            76
+          ],
+          [
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "04"
+            },
+            {
+              "address": "40 03 0C",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            }
+          ]
+        ]
       }
     ],
     "document_rows": [
@@ -1529,6 +1687,82 @@
         },
         "agree": true
       }
+    }
+  },
+  "the_round_that_asked_at_two_more_windows": {
+    "the_booking_this_answers": {
+      "observable": "How far apart the two read-outs are stored, read at a second state of the mode byte with the pitch bytes swept through unison.",
+      "predicts": {
+        "the stored distance follows the mode byte": "it moves by the ratio the five windows do, so the smallest move between two neighbouring states is 10.66 ms",
+        "the stored distance is a constant": "it does not move between the two states at all"
+      },
+      "sensitivity_here": "The reading places a stored distance on a grid whose step is 0.0208 ms, and the run's own two takes of one state agreed on a window length to three parts in ten thousand, which is 0.02 ms on the 64 ms window. The second is the figure used, because a grid step is what a reading can print rather than what it can repeat.",
+      "margin": 533,
+      "why_not_separable": null,
+      "run": {
+        "stage": "efx-time",
+        "type": "01 60",
+        "address": "40 03 03",
+        "settings": "the coarse byte through unison, as the published sweep asked it",
+        "stimulus": "the broadband program the delay readings are taken on",
+        "takes": 12,
+        "minutes": 15
+      }
+    },
+    "what_came_back": "The distance follows. At the shortest window the two read-outs are stored 32.000 ms apart against the 64.0 the middle state returned, which is exactly half and exactly that state's own window; a constant would have returned 64.0 at both. The run's two takes of one setting landed 0.000 ms apart at every state, so the separation is thirty-two milliseconds against a floor the reading could not measure.",
+    "the_state_whose_unison_take_did_not_read": "The longest window, and it is reported as a reading that was not made rather than as a distance. Its strongest peak at unison stands 9.67 times the roughness at 0.104 ms, which is five steps off the bottom of the search and where this chain's own peak lives -- the takes with the effect out stand 37.8 times the roughness at 0.062 ms before anything is subtracted, and only one such take was made, so what the subtraction leaves there is not nothing. The next peak stands 9.00 at 128.000 ms, which is the figure a distance that follows predicts exactly. That is corroboration and the answer does not rest on it: a second peak seven per cent under the first is not a reading, and this claim has already had to separate a peak that was read from a peak that was strongest.",
+    "the_setting_that_says_it_again_and_more_strongly": "An octave up says the same thing three times as loudly. A read-out at a ratio scales the time axis with the pitch, so a pair stored D apart arrives D divided by the ratio apart -- which at the octave is half. That setting returns 16.000, 32.000 and 64.000 ms at the three states, standing 20.6, 23.0 and 27.8 times the roughness and strongest in every take, so the storage it implies is 32, 64 and 128 ms: the same three numbers, read where the peak is not marginal. An octave down returns 4.500, 9.000 and 18.000, which is the same factor of two per state at a share of the window this run does not account for.",
+    "what_the_distances_are_in_steps_of_the_clock": "Whole ones. At the 32000 Hz clock this archive reads this unit's delay ladder as cut to, the three stored distances are 1024, 2048 and 4096 steps, which are the three windows this claim already reads as successive powers of two. The octave settings are whole there as well -- 512, 1024 and 2048 up, 144, 288 and 576 down -- and every one of them is an even number, which is why they land on the 48000 Hz grid the takes were captured on exactly rather than near.",
+    "what_did_not_follow": "Five of the ten settings. A semitone either side of unison returns the same figure at all three states -- 14.44 to 14.46 ms down, 25.73 to 25.75 up -- and two semitones down, four semitones up and two octaves down return no pattern across the states at all. What those readings are of is not established: away from a simple ratio the output holds more than the stored pair, and this run was designed to read the pair rather than to sort out what else is there. They are published because a sweep that only printed the rows that agreed would be a sweep chosen after the fact.",
+    "what_the_neighbouring_type_bears_on_it": "The feedback variant beside this type was read again on the same evening, and its five lengths came back in the ratio 3 : 4 : 6 : 8 : 12 to within the reading's own grid step, at whole step counts of the same clock at all five states -- 304 times 3, 4, 6, 8 and 12. That is the shape this claim's third open item asks about, and it does not settle it: the two tables are the same table only under a constant multiple this archive has measured and not explained, so a ratio exact in one of them is not a ratio exact in the other. It is named here because a reader who found the two figures apart would otherwise have to notice the connection alone.",
+    "what_it_does_not_close": "Whether the two intermediate windows are whole step counts, which is why the field that carried this booking now carries that question instead. It did not become answerable by being measured here; it became statable in a quantity that reads to a step, where before it was inferred from a rate agreeing to three parts in ten thousand. The arithmetic that keeps it out of the queue is in the new entry.",
+    "the_figures": {
+      "what_the_three_states_returned_ms": {
+        "52": {
+          "0": 4.5,
+          "2": 9.0,
+          "4": 18.0
+        },
+        "64": {
+          "0": 32.0,
+          "2": 64.0,
+          "4": 0.1042
+        },
+        "76": {
+          "0": 16.0,
+          "2": 32.0,
+          "4": 64.0
+        }
+      },
+      "the_window_at_each_state_in_steps_of_32000_hz": {
+        "0": 1024,
+        "2": 2048,
+        "4": 4096
+      },
+      "the_stored_distance_in_those_steps": {
+        "0": 1024.0,
+        "2": 2048.0,
+        "4": null
+      },
+      "what_the_longest_states_unison_take_returned_instead": {
+        "strongest_ms": 0.1042,
+        "and_what_stood_next_under_it_ms": [
+          128.0,
+          110.3542
+        ],
+        "what_a_distance_that_follows_would_have_been_ms": 128.0
+      },
+      "at_an_octave_up_in_those_steps": {
+        "0": 512.0,
+        "2": 1024.0,
+        "4": 2048.0
+      },
+      "how_far_apart_two_takes_of_one_setting_landed_ms": {
+        "0": 0.0,
+        "2": 0.0,
+        "4": 0.0
+      },
+      "why_the_longest_state_is_not_in_the_first_row_as_a_distance": "Its strongest peak at unison is 0.104 ms and the 128.000 above is the next one under it. Both are printed by the record; this reads the first as the reading and the second as what stood beside it."
     }
   }
 }
