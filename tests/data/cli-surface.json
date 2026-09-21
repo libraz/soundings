@@ -59,6 +59,7 @@
     "selftest",
     "read",
     "identity",
+    "output-map",
     "sweep",
     "boundary",
     "offsets",
@@ -300,6 +301,104 @@
           "metavar": null,
           "choices": null,
           "class": "_HelpAction"
+        }
+      ]
+    },
+    "output-map": {
+      "help": "say which capture channel carries which of the unit's outputs, read from takes already saved, with no machine attached",
+      "handler": "cmd_output_map",
+      "takes_model_id": false,
+      "needs_unit": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote, holding the same note struck with the part on each output in turn",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--output"
+          ],
+          "dest": "output",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting with a group named `output`, which is the output the part was put on for that take",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--window"
+          ],
+          "dest": "window",
+          "nargs": null,
+          "default": "1.0",
+          "required": false,
+          "help": "seconds either side of the note's arrival that the rise is read over",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--margin"
+          ],
+          "dest": "margin",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "decibels a carrying channel's rise must stand over a non-carrying one's. A floor on the evidence rather than a threshold on the rise: what decides the mapping is that the two groups separate",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--device"
+          ],
+          "dest": "device",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the capture device the takes were made on, named because re-cabling changes the answer and nothing in a take would show that",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
         }
       ]
     },

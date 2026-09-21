@@ -13,7 +13,7 @@ from .. import capture as cap
 from .. import roland
 from ..midi import MidiLink, list_ports
 from ..selftest import midi_selftest, timeline_selftest
-from . import options
+from . import options, report
 
 
 def register(sub) -> None:
@@ -47,6 +47,46 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_read, takes_model_id=True)
 
     sub.add_parser("identity", help="send an Identity Request").set_defaults(func=cmd_identity)
+
+    p = sub.add_parser(
+        "output-map",
+        help="say which capture channel carries which of the unit's outputs, read from "
+        "takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote, "
+        "holding the same note struck with the part on each output in turn",
+    )
+    p.add_argument(
+        "--output",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `output`, which is "
+        "the output the part was put on for that take",
+    )
+    p.add_argument(
+        "--window",
+        type=float,
+        default=1.0,
+        help="seconds either side of the note's arrival that the rise is read over",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=None,
+        help="decibels a carrying channel's rise must stand over a non-carrying one's. "
+        "A floor on the evidence rather than a threshold on the rise: what decides the "
+        "mapping is that the two groups separate",
+    )
+    p.add_argument(
+        "--device",
+        default=None,
+        help="the capture device the takes were made on, named because re-cabling "
+        "changes the answer and nothing in a take would show that",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_output_map)
 
 
 def cmd_devices(args: argparse.Namespace) -> int:
@@ -120,4 +160,45 @@ def cmd_identity(args: argparse.Namespace) -> int:
             print("no reply")
             return 1
         print(" ".join(f"{b:02X}" for b in raw))
+    return 0
+
+
+def cmd_output_map(args: argparse.Namespace) -> int:
+    """Which capture channel carries which output, read from takes already saved."""
+    from .. import outputmap
+
+    found = outputmap.read_directory(
+        args.takes,
+        output=args.output,
+        window_s=args.window,
+        margin_db=args.margin if args.margin is not None else outputmap.MARGIN_DB,
+        device=args.device,
+    )
+    width = found["method"]["channels"]
+    print(f"{found['method']['takes']} takes, {width} channels")
+    for row in found["readings"]:
+        print(
+            f"  {row['setting']:<24} output {row['output']:<6}"
+            + "".join(f"{v:+8.1f}" for v in row["rise_db"])
+            + "  dB over the second before the note"
+        )
+    print()
+    for name, channels in found["outputs"].items():
+        print(
+            f"  output {name} -> "
+            + ("channels " + ", ".join(str(c) for c in channels) if channels else "NOT AGREED")
+        )
+    apart = found["how_it_separated"]
+    if apart["worst_apart_db"] is not None:
+        print(
+            f"  the groups stood {apart['worst_apart_db']:.1f} to "
+            f"{apart['best_apart_db']:.1f} dB apart, against a margin of "
+            f"{found['method']['margin_db']:.1f}"
+        )
+    if refused := outputmap.verdicts(found):
+        for line in refused:
+            print(f"  REFUSED: {line}")
+        report.write_json(args.out, found)
+        return 1
+    report.write_json(args.out, found)
     return 0
