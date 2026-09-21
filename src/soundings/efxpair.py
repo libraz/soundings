@@ -119,8 +119,26 @@ def _lag_of_block(a: np.ndarray, b: np.ndarray) -> tuple[float, float]:
     return peak, (float(whole[at] / norm) if norm else 0.0)
 
 
-def _recovers_an_injected_delay(a: np.ndarray, rate: int, *, by_us: float) -> dict:
-    """Read a delay this module put in itself, so the sign and scale are not assumed.
+def _over_blocks(a: np.ndarray, b: np.ndarray, rate: int, block: int) -> tuple[list, list]:
+    """One lag and one correlation per block, in microseconds."""
+    lags, fits = [], []
+    for start in range(0, max(0, len(a) - block), block // 2):
+        lag, fit = _lag_of_block(a[start : start + block], b[start : start + block])
+        lags.append(lag * 1e6 / rate)
+        fits.append(fit)
+    return lags, fits
+
+
+def _recovers_an_injected_delay(a: np.ndarray, rate: int, block: int, *, by_us: float) -> dict:
+    """Run the reading itself against a delay this module put in, and see what returns.
+
+    **The check is the reading and not a simpler version of it.** A held note is
+    periodic, so a cross-correlation taken over a whole take has a peak every period
+    and picks whichever is largest -- read that way, a 50 us delay came back as -6769
+    us at a correlation of 0.999, which is one period out and looks like a clean
+    answer. The reading itself is taken block by block and summarised by a median, so
+    the check is taken block by block and summarised by a median. What it measures is
+    then what the record publishes, including the periodic ambiguity if there is one.
 
     A fractional delay is made in the frequency domain, which is the only way to shift
     by less than a sample without choosing an interpolator whose own error would be
@@ -130,16 +148,27 @@ def _recovers_an_injected_delay(a: np.ndarray, rate: int, *, by_us: float) -> di
     spectrum = np.fft.rfft(a)
     turned = spectrum * np.exp(-2j * np.pi * np.arange(len(spectrum)) * shift / len(a))
     later = np.fft.irfft(turned, len(a))
-    got, fit = _lag_of_block(a, later)
+    lags, fits = _over_blocks(a, later, rate, block)
+    holding = [lag for lag, fit in zip(lags, fits, strict=True) if fit >= CORRELATES_ABOVE]
+    got = float(np.median(holding)) if holding else None
     return {
         "injected_us": round(by_us, 3),
-        "recovered_us": round(got * 1e6 / rate, 3),
-        "correlates": round(fit, 3),
+        "recovered_us": None if got is None else round(got, 3),
+        "off_by_us": None if got is None else round(got - by_us, 3),
+        "blocks": len(lags),
+        "blocks_correlating": len(holding),
+        "spread_us": (
+            round(float(max(holding) - min(holding)), 3) if len(holding) > 1 else None
+        ),
+        "correlates": [round(min(fits), 3), round(max(fits), 3)] if fits else None,
         "why": (
             "A delay put into one channel by this module and read back by the same "
-            "reading. It fixes the sign as measured rather than as derived, and it is "
-            "the check that fails first if the block length or the interpolation stops "
-            "resolving under a sample."
+            "reading, block by block, exactly as a setting is read. It fixes the sign "
+            "as measured rather than as derived, and it is what fails first if the "
+            "block length or the interpolation stops resolving under a sample. Where "
+            "`off_by_us` is large the take is periodic enough that the correlation has "
+            "more than one peak to choose from, and every lag in the record is open to "
+            "the same ambiguity by the same amount."
         ),
     }
 
@@ -157,11 +186,7 @@ def _read_take(
 ) -> dict:
     """One take's lag, its spread within the take, and the phase band by band."""
     body = frames[first:last, list(pair)]
-    lags, fits = [], []
-    for start in range(0, max(0, len(body) - block), block // 2):
-        lag, fit = _lag_of_block(body[start : start + block, 0], body[start : start + block, 1])
-        lags.append(lag * 1e6 / rate)
-        fits.append(fit)
+    lags, fits = _over_blocks(body[:, 0], body[:, 1], rate, block)
     holding = [lag for lag, fit in zip(lags, fits, strict=True) if fit >= CORRELATES_ABOVE]
     levels = takes.channel_levels(body)
     banded = ph.measure(
@@ -245,7 +270,7 @@ def read_directory(
         )
         if checked is None:
             checked = _recovers_an_injected_delay(
-                frames[first:last, pair[0]], rate, by_us=50.0
+                frames[first:last, pair[0]], rate, block, by_us=50.0
             )
         readings.append({"value": value, "take": entry["file"], **got})
         if progress:
@@ -302,14 +327,26 @@ def read_directory(
         "why_held": held_not_spelled_out,
         "readings": readings,
         "settings_asked": sorted({row["value"] for row in readings}),
-        "settings_with_a_lag": sorted(
+        "settings_admitted": sorted(
             {row["value"] for row in readings if row["lag_us"] is not None and row["one_signal"]}
         ),
-        "settings_refused_as_two_signals": sorted(
-            {row["value"] for row in readings if not row["one_signal"]}
+        "settings_refused": sorted(
+            {row["value"] for row in readings if row["lag_us"] is None or not row["one_signal"]}
+        ),
+        "why_refused": (
+            "A setting is refused where the two channels are further apart in level than "
+            "the run reads as one signal, or where fewer than most of a take's blocks "
+            "carried a lag. Each refused reading keeps its own numbers -- the level "
+            "difference, how many blocks correlated, and the median of those that did "
+            "under `median_of_the_minority_us` -- so the refusal can be disagreed with."
         ),
         "floor": _floor(readings),
-        "with_nothing_in_its_path": null,
+        "routed_past_the_effect": {
+            "takes": [entry["file"] for entry in aside],
+            "read_against": aside[1]["file"] if len(aside) > 1 else None,
+            "why": WHY_A_BYPASS_IS_READ_AGAINST_ANOTHER,
+            "with_nothing_in_its_path": null,
+        },
         "limits": (
             "A lag is published only where the two outputs are one signal and the blocks "
             "correlate. Where they do not, the setting is named as refused rather than "

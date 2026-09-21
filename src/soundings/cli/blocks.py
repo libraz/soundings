@@ -1573,15 +1573,18 @@ def cmd_efx_pair(args) -> int:
     )
     check = found["recovers_an_injected_delay"]
     if check:
+        got = check["recovered_us"]
         print(
             f"  a {check['injected_us']:.0f} us delay put in and read back as "
-            f"{check['recovered_us']:+.3f} us at {check['correlates']:.3f}"
+            + (f"{got:+.3f} us (off by {check['off_by_us']:+.3f})" if got is not None
+               else "nothing")
+            + f"   {check['blocks_correlating']}/{check['blocks']} blocks"
         )
-    refused = found["settings_refused_as_two_signals"]
+    refused = found["settings_refused"]
     print(
-        f"  {len(found['settings_with_a_lag'])} of {len(found['settings_asked'])} "
+        f"  {len(found['settings_admitted'])} of {len(found['settings_asked'])} "
         "settings gave a lag"
-        + (f"; {len(refused)} refused as two signals: {refused}" if refused else "")
+        + (f"; {len(refused)} refused: {refused}" if refused else "")
     )
     floor = found["floor"]
     if floor["across_takes_us"] is None:
@@ -1596,10 +1599,10 @@ def cmd_efx_pair(args) -> int:
             f"  the widest a take disagreed with itself is "
             f"{floor['widest_within_a_take_us']:.2f} us  <- the control"
         )
-    if found["with_nothing_in_its_path"] is None:
+    if found["routed_past_the_effect"]["with_nothing_in_its_path"] is None:
         print("  (fewer than two takes routed past the effect: this run measured no null)")
     else:
-        null = found["with_nothing_in_its_path"]
+        null = found["routed_past_the_effect"]["with_nothing_in_its_path"]
         print(
             "  with the part routed past the effect, one such take against another, "
             + (f"the lag reads {null['lag_us']:+.2f} us" if null["lag_us"] is not None
