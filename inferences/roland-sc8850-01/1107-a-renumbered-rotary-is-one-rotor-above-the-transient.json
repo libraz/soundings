@@ -1,441 +1,805 @@
 {
- "inference": {
-  "schema_version": 1,
-  "unit_id": "roland-sc8850-01",
-  "state": "standing",
-  "made_at": "2026-09-17T03:26:49.804069+00:00",
-  "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py, backup/fold-in-the-high-rotor.py",
-  "rounds": 1,
-  "about": {
-   "scope": "unit",
-   "types": [
-    "01 22",
-    "11 07"
-   ],
-   "addresses": [
-    "40 03 03",
-    "40 03 07",
-    "40 03 08",
-    "40 03 0C"
-   ]
+  "inference": {
+    "schema_version": 1,
+    "unit_id": "roland-sc8850-01",
+    "state": "standing",
+    "made_at": "2026-09-17T03:26:49.804069+00:00",
+    "made_by": "backup/whether-a-renumbered-rotary-is-the-same-rotor.py, backup/which-of-the-two-explains-the-bottom.py, backup/write-the-rotary-pair-inference.py, backup/fold-in-the-high-rotor.py, backup/whether-a-multis-rotary-is-the-same-rotor.py, backup/publish-the-multis-rotary.py, backup/add-round-two-to-the-renumbered-rotary-inference.py",
+    "rounds": 2,
+    "about": {
+      "scope": "unit",
+      "types": [
+        "01 22",
+        "03 00",
+        "11 07"
+      ],
+      "addresses": [
+        "40 03 03",
+        "40 03 07",
+        "40 03 08",
+        "40 03 0A",
+        "40 03 0C",
+        "40 03 0E"
+      ]
+    },
+    "why_the_rounds_did_not_move": "The ceiling counts revisions of the model. Nothing about the model moved: a competing reading fell and a second one was recorded as one this test cannot separate, which is the opposite of a revision."
   },
-  "why_the_rounds_did_not_move": "The ceiling counts revisions of the model. Nothing about the model moved: a competing reading fell and a second one was recorded as one this test cannot separate, which is the opposite of a revision."
- },
- "claim": "The rotary on `11 07` is the rotary of `01 22`, above the settings where either rotor is still on its way. `01 22` prints ten rotary parameters at `03` through `0B` and then, after an address no page names at `0C`, at `0D`; `11 07` prints the same ten at `08` through `10` and then `11`, with nothing between, so nine of them move five addresses and the tenth moves four. Swept on both and laid over each other, from value 16 to the top of the byte the two are 0.6 cents apart at worst -- across both places the shared table folds, at both take lengths the single type was read at, and at value 32 which was taken at both lengths as the tie. This is the third pair of a multi and its single-effect sibling to be asked and the first read by a stage that recovers a frequency rather than a level, so the agreement is not something a band reading could have manufactured.\n\nBelow value 16 the two disagree by as much as 1507.2 cents, and this says nothing about either block. The same byte at the same value on the same type returns three different rates depending on how many bytes the run wrote before it -- 0.5934 Hz at value 12 after two writes, 0.5472 after three, 0.4042 after thirteen, which is what the multi returns after three and after nineteen. Down there a reading is of the byte and to when the write arrived, and neither record states it.\n\nThe high rotor answers the same way and the distance is not one number. The pair's other rotor was read on both types in one run, at one settle, with each type's other rotor silenced, and at the three settings both were asked it returns the same rate to between a tenth and a third of a cent. Its distance short of the printed entry is 0.056 to 0.061 Hz on both, agreeing to between a ten-thousandth and thirteen ten-thousandths of a hertz -- a second quantity the table does not contain, at a second address pair. And it is not an unrelated second quantity: the low rotor's distance over this one is 4.00 at the setting where the shared rate table steps by a twentieth of a hertz, and 4.19 and 4.39 at the two where it steps by a tenth and a half, against the 4.00 the two entries of this unit's own acceleration table give for the two bytes both types rest those rotors at. The drift is ordered the way the table's coarseness is, and the distance is read against that table.",
- "named": "one rotary, reached through a renumbering that is not a shift",
- "rests_on": {
-  "measurements": [
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json",
-    "keys": [
-     "readings[value=16].rate_hz",
-     "readings[value=20].rate_hz",
-     "readings[value=24].rate_hz",
-     "readings[value=32].rate_hz"
+  "claim": "The rotary on `11 07` and the rotary on `03 00` are the rotary of `01 22`, above the settings where the rotor being read is still on its way -- which is value 16 on the low rotor and 17 on the high, and not one boundary for both. `01 22` prints ten rotary parameters at `03` through `0B` and then, after an address no page names at `0C`, at `0D`; `11 07` prints the same ten at `08` through `10` and then `11`, with nothing between, so nine of them move five addresses and the tenth moves four. Swept on both and laid over each other, from value 16 to the top of the byte the two are 0.6 cents apart at worst -- across both places the shared table folds, at both take lengths the single type was read at, and at value 32 which was taken at both lengths as the tie. This is the third pair of a multi and its single-effect sibling to be asked and the first read by a stage that recovers a frequency rather than a level, so the agreement is not something a band reading could have manufactured. A third type carries the same ten at `0A` through `12` and then `13` -- nine move seven addresses and the tenth six, a third renumbering and the first read with a drive standing in front of the block rather than a branch beside it. Both of its rotors were swept and laid over the single type's own records: out of transit it stands within 0.74 cents of the single type, and at five of the thirteen settings asked out of transit the two return the same number to four decimal places. The widest any two of the three stand apart is 1.35 cents, between the two multis at value 32 -- the one setting taken at both take lengths, where each type disagrees with itself by as much (1.11 cents on the single type and 1.35 on this one). That is the floor two take lengths put under the comparison and not a distance between the types.\n\nBelow value 16 the two disagree by as much as 1507.2 cents, and this says nothing about either block. The same byte at the same value on the same type returns three different rates depending on how many bytes the run wrote before it -- 0.5934 Hz at value 12 after two writes, 0.5472 after three, 0.4042 after thirteen, which is what the multi returns after three and after nineteen. Down there a reading is of the byte and to when the write arrived, and neither record states it.\n\nThe high rotor answers the same way and the distance is not one number. The pair's other rotor was read on both types in one run, at one settle, with each type's other rotor silenced, and at the three settings both were asked it returns the same rate to between a tenth and a third of a cent. Its distance short of the printed entry is 0.056 to 0.061 Hz on both, agreeing to between a ten-thousandth and thirteen ten-thousandths of a hertz -- a second quantity the table does not contain, at a second address pair. And it is not an unrelated second quantity: the low rotor's distance over this one is 4.00 at the setting where the shared rate table steps by a twentieth of a hertz, and 4.19 and 4.39 at the two where it steps by a tenth and a half, against the 4.00 the two entries of this unit's own acceleration table give for the two bytes both types rest those rotors at. The drift is ordered the way the table's coarseness is, and the distance is read against that table.",
+  "named": "one rotary, reached through a renumbering that is not a shift",
+  "rests_on": {
+    "measurements": [
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json",
+        "keys": [
+          "readings[value=16].rate_hz",
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.6047,
+          0.8051,
+          1.0053,
+          1.4059
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json",
+        "keys": [
+          "readings[value=16].rate_hz",
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.6046,
+          0.805,
+          1.005,
+          1.4059
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.4068,
+          5.8566,
+          9.7548
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.4063,
+          5.8573,
+          9.7549
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-low-rotor-with-thirteen-bytes-written.json",
+        "keys": [
+          "readings[value=4].rate_hz",
+          "readings[value=8].rate_hz",
+          "readings[value=12].rate_hz"
+        ],
+        "values": [
+          0.2502,
+          0.3491,
+          0.4042
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-with-three-bytes-written.json",
+        "keys": [
+          "readings[value=4].rate_hz",
+          "readings[value=8].rate_hz",
+          "readings[value=12].rate_hz"
+        ],
+        "values": [
+          0.1048,
+          0.2041,
+          0.4043
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-unprinted-byte-at-64.json",
+        "keys": [
+          "readings[value=8].rate_hz",
+          "readings[value=12].rate_hz"
+        ],
+        "values": [
+          0.448,
+          0.5472
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-unprinted-byte-at-127.json",
+        "keys": [
+          "readings[value=8].rate_hz",
+          "readings[value=12].rate_hz"
+        ],
+        "values": [
+          0.448,
+          0.5472
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.5887,
+          6.0415,
+          9.9442
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.5886,
+          6.0426,
+          9.9429
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json",
+        "keys": [
+          "readings[value=16].rate_hz",
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.6046,
+          0.8051,
+          1.0051,
+          1.4063
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/03-00-0A-the-low-rotor-alone-on-a-rotary-multi.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.4074,
+          5.8563,
+          9.7552
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-above-the-transient-on-a-rotary-multi.json",
+        "keys": [
+          "readings[value=20].rate_hz",
+          "readings[value=24].rate_hz",
+          "readings[value=32].rate_hz"
+        ],
+        "values": [
+          0.988,
+          1.1882,
+          1.5887
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-alone-on-a-rotary-multi.json",
+        "keys": [
+          "readings[value=32].rate_hz",
+          "readings[value=110].rate_hz",
+          "readings[value=127].rate_hz"
+        ],
+        "values": [
+          1.5888,
+          6.0415,
+          9.9449
+        ]
+      }
     ],
-    "values": [
-     0.6047,
-     0.8051,
-     1.0053,
-     1.4059
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json",
-    "keys": [
-     "readings[value=16].rate_hz",
-     "readings[value=20].rate_hz",
-     "readings[value=24].rate_hz",
-     "readings[value=32].rate_hz"
+    "document_rows": [
+      {
+        "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
+        "rows": [
+          "Rotary, parameter 1, Low Slow, 0.05 - 0.35 - 10.0",
+          "Rotary, parameter 3, Low Accl, 0 - 3 - 15",
+          "Rotary, parameter 5, Hi Slow, 0.05 - 0.90 - 10.0",
+          "Rotary, parameter 11, Speed, Slow/Fast",
+          "PH / Rotary, parameter 6, RT L Slow, 0.05 - 0.35 - 10.0",
+          "PH / Rotary, parameter 8, RT Lo Accl, 0 - 3 - 15",
+          "PH / Rotary, parameter 10, RT H Slow, 0.05 - 0.90 - 10.0",
+          "PH / Rotary, parameter 15, RT Speed, Slow/Fast"
+        ],
+        "why": "That the two types print the same ten rotary parameters and that the multi does not print them a fixed distance along. The single type's first is its parameter 1 and the multi's is its parameter 6, five along; the single type's last is its parameter 11 and the multi's is its parameter 15, four along. Four of the ten are cited, which are the two ends of the shift and the acceleration byte the bottom's behaviour is a behaviour of. That a page prints two tables alike is a fact about the page and not evidence that one block answers both."
+      }
     ],
-    "values": [
-     0.6046,
-     0.805,
-     1.005,
-     1.4059
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
-    "keys": [
-     "readings[value=32].rate_hz",
-     "readings[value=110].rate_hz",
-     "readings[value=127].rate_hz"
-    ],
-    "values": [
-     1.4068,
-     5.8566,
-     9.7548
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json",
-    "keys": [
-     "readings[value=32].rate_hz",
-     "readings[value=110].rate_hz",
-     "readings[value=127].rate_hz"
-    ],
-    "values": [
-     1.4063,
-     5.8573,
-     9.7549
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-low-rotor-with-thirteen-bytes-written.json",
-    "keys": [
-     "readings[value=4].rate_hz",
-     "readings[value=8].rate_hz",
-     "readings[value=12].rate_hz"
-    ],
-    "values": [
-     0.2502,
-     0.3491,
-     0.4042
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-with-three-bytes-written.json",
-    "keys": [
-     "readings[value=4].rate_hz",
-     "readings[value=8].rate_hz",
-     "readings[value=12].rate_hz"
-    ],
-    "values": [
-     0.1048,
-     0.2041,
-     0.4043
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-unprinted-byte-at-64.json",
-    "keys": [
-     "readings[value=8].rate_hz",
-     "readings[value=12].rate_hz"
-    ],
-    "values": [
-     0.448,
-     0.5472
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-03-the-unprinted-byte-at-127.json",
-    "keys": [
-     "readings[value=8].rate_hz",
-     "readings[value=12].rate_hz"
-    ],
-    "values": [
-     0.448,
-     0.5472
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
-    "keys": [
-     "readings[value=32].rate_hz",
-     "readings[value=110].rate_hz",
-     "readings[value=127].rate_hz"
-    ],
-    "values": [
-     1.5887,
-     6.0415,
-     9.9442
-    ]
-   },
-   {
-    "file": "data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json",
-    "keys": [
-     "readings[value=32].rate_hz",
-     "readings[value=110].rate_hz",
-     "readings[value=127].rate_hz"
-    ],
-    "values": [
-     1.5886,
-     6.0426,
-     9.9429
-    ]
-   }
-  ],
-  "document_rows": [
-   {
-    "file": "documents/roland-sc-8850-owners-manual-en/effect-list.json",
-    "rows": [
-     "Rotary, parameter 1, Low Slow, 0.05 - 0.35 - 10.0",
-     "Rotary, parameter 3, Low Accl, 0 - 3 - 15",
-     "Rotary, parameter 5, Hi Slow, 0.05 - 0.90 - 10.0",
-     "Rotary, parameter 11, Speed, Slow/Fast",
-     "PH / Rotary, parameter 6, RT L Slow, 0.05 - 0.35 - 10.0",
-     "PH / Rotary, parameter 8, RT Lo Accl, 0 - 3 - 15",
-     "PH / Rotary, parameter 10, RT H Slow, 0.05 - 0.90 - 10.0",
-     "PH / Rotary, parameter 15, RT Speed, Slow/Fast"
-    ],
-    "why": "That the two types print the same ten rotary parameters and that the multi does not print them a fixed distance along. The single type's first is its parameter 1 and the multi's is its parameter 6, five along; the single type's last is its parameter 11 and the multi's is its parameter 15, four along. Four of the ten are cited, which are the two ends of the shift and the acceleration byte the bottom's behaviour is a behaviour of. That a page prints two tables alike is a fact about the page and not evidence that one block answers both."
-   }
-  ],
-  "era_priors": [],
-  "community": []
- },
- "adds": "The records say what each setting of one rate byte modulated at, on two types, at two take lengths, and under five different counts of how many bytes the run wrote first. What is added here is the comparison: which settings the two types agree at, how far apart they are where they do not, and which of two named causes survives being asked.",
- "how_far_apart_they_are": {
-  "measured_in": "cents",
-  "where_nothing_is_in_transit": {
-   "from_value": 16,
-   "worst_cents": 0.6,
-   "rows": [
-    {
-     "value": 16,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.6047,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.6046,
-     "apart_cents": 0.3
-    },
-    {
-     "value": 20,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.8051,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.805,
-     "apart_cents": 0.2
-    },
-    {
-     "value": 24,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.0053,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.005,
-     "apart_cents": 0.5
-    },
-    {
-     "value": 32,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.4059,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.4059,
-     "apart_cents": 0.0
-    },
-    {
-     "value": 32,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 1.4068,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 1.4063,
-     "apart_cents": 0.6
-    },
-    {
-     "value": 110,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 5.8566,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 5.8573,
-     "apart_cents": 0.2
-    },
-    {
-     "value": 127,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 9.7548,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 9.7549,
-     "apart_cents": 0.0
-    }
-   ]
+    "era_priors": [],
+    "community": []
   },
-  "below_that": {
-   "worst_cents": 1507.2,
-   "rows": [
-    {
-     "value": 0,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.0497,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.0498,
-     "apart_cents": 3.5
+  "adds": "The records say what each setting of one rate byte modulated at, on two types, at two take lengths, and under five different counts of how many bytes the run wrote first. What is added here is the comparison: which settings the two types agree at, how far apart they are where they do not, and which of two named causes survives being asked.",
+  "how_far_apart_they_are": {
+    "measured_in": "cents",
+    "where_nothing_is_in_transit": {
+      "from_value": 16,
+      "worst_cents": 0.6,
+      "rows": [
+        {
+          "value": 16,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.6047,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.6046,
+          "apart_cents": 0.3
+        },
+        {
+          "value": 20,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.8051,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.805,
+          "apart_cents": 0.2
+        },
+        {
+          "value": 24,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.0053,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.005,
+          "apart_cents": 0.5
+        },
+        {
+          "value": 32,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.4059,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.4059,
+          "apart_cents": 0.0
+        },
+        {
+          "value": 32,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 1.4068,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 1.4063,
+          "apart_cents": 0.6
+        },
+        {
+          "value": 110,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 5.8566,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 5.8573,
+          "apart_cents": 0.2
+        },
+        {
+          "value": 127,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 9.7548,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 9.7549,
+          "apart_cents": 0.0
+        }
+      ]
     },
-    {
-     "value": 4,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.2503,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.1048,
-     "apart_cents": 1507.2
-    },
-    {
-     "value": 8,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.4481,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.2041,
-     "apart_cents": 1361.5
-    },
-    {
-     "value": 10,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5494,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.3049,
-     "apart_cents": 1019.4
-    },
-    {
-     "value": 12,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5934,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.4042,
-     "apart_cents": 664.7
-    },
-    {
-     "value": 14,
-     "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5953,
-     "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.5055,
-     "apart_cents": 283.1
+    "below_that": {
+      "worst_cents": 1507.2,
+      "rows": [
+        {
+          "value": 0,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.0497,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.0498,
+          "apart_cents": 3.5
+        },
+        {
+          "value": 4,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.2503,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.1048,
+          "apart_cents": 1507.2
+        },
+        {
+          "value": 8,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.4481,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.2041,
+          "apart_cents": 1361.5
+        },
+        {
+          "value": 10,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5494,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.3049,
+          "apart_cents": 1019.4
+        },
+        {
+          "value": 12,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5934,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.4042,
+          "apart_cents": 664.7
+        },
+        {
+          "value": 14,
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5953,
+          "data/units/roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.5055,
+          "apart_cents": 283.1
+        }
+      ]
     }
-   ]
+  },
+  "what_moves_the_bottom": {
+    "what": "How many bytes the run wrote between loading the type and writing the swept one. This run varied it and did not separate elapsed time from the count of writes, which are the same thing on one bus.",
+    "rate_hz_by_how_many_bytes_were_written_first": {
+      "01 22": {
+        "2": {
+          "4": 0.2503,
+          "8": 0.4481,
+          "12": 0.5934
+        },
+        "3": {
+          "8": 0.448,
+          "12": 0.5472
+        },
+        "13": {
+          "4": 0.2502,
+          "8": 0.3491,
+          "12": 0.4042
+        }
+      },
+      "11 07": {
+        "3": {
+          "4": 0.1048,
+          "8": 0.2041,
+          "12": 0.4043
+        },
+        "19": {
+          "4": 0.1048,
+          "8": 0.2041,
+          "12": 0.4042
+        }
+      }
+    },
+    "why_it_is_not_the_two_types": "The multi returns the same rate at three writes and at nineteen, to a ten-thousandth of a hertz at every value asked. The single type does not. So this is a difference inside one type and not between the two -- and it is a control neither of the two records being compared states, which is why the bottom is left unattributed.",
+    "whose_error_it_was": "This project's. The run that made the multi's record wrote nineteen bytes because writing every byte of the block explicitly is the careful thing to do, and the record it was to be compared against wrote two. The type's own closed claim already says where the rotor was when the write arrived changes where it ends up, so the control was named in this archive before the run that needed it was designed."
+  },
+  "the_address_no_page_prints": {
+    "what": "`40 03 0C` on `01 22`. The unit answers there and its `efx-params` record has it resting at nought; the pages print the rotary's tenth parameter at `0D` and nothing at `0C`. `11 07` packs its ten with nothing between, so whatever it is has no counterpart on the multi -- which would be a byte inside the block that only one of the pair carries, the same shape of defect that stopped the flanger pair.",
+    "asked_by": "moving it from nought to 64 and to 127",
+    "rate_hz": {
+      "8": {
+        "at_64_hz": 0.448,
+        "at_127_hz": 0.448,
+        "apart_cents": 0.0
+      },
+      "12": {
+        "at_64_hz": 0.5472,
+        "at_127_hz": 0.5472,
+        "apart_cents": 0.0
+      }
+    },
+    "verdict": "It does not reach this rotor. Both settings return the same rate at both values asked, to a hundredth of a cent, and the same rate the record that left it at nought returned.",
+    "what_it_does_not_say": "What the address is for. A byte that does not reach one rotor's slow rate may reach something else, and nothing here asked."
+  },
+  "alternatives": [
+    {
+      "reading": "Two rotaries built to one description, agreeing because they index one printed table, rather than one block reached twice.",
+      "candidate": null,
+      "standing": false,
+      "separated_by": {
+        "observable": "A quantity the printed table does not contain. The table is public and two implementations reading it would agree on it; what they would not agree on is the distance the rotor stops short by, which is this unit's own and is printed nowhere. It holds at 0.244 to 0.246 Hz on both types from value 16 to 127, which is already a quantity outside the table -- but it is one number, and one number is a coincidence a second implementation could reach.",
+        "predicts": {
+          "one block reached twice": "The high rotor's own constant, which is a different number on the same type (0.0582 Hz against 0.2425), agrees across the pair as well.",
+          "two implementations of one table": "Either constant differing between the types by more than the few thousandths of a hertz each holds to within."
+        },
+        "sensitivity_here": "A few thousandths of a hertz, which is what each constant holds to across its own type's sweep. The high rotor's constant is a twentieth of the low one's, so it is the harder of the two to reach by accident.",
+        "margin": 20,
+        "run": {
+          "stage": "efx-rate",
+          "types": [
+            "11 07",
+            "01 22"
+          ],
+          "addresses": [
+            "40 03 0C",
+            "40 03 07"
+          ],
+          "minutes": 12,
+          "why": "The high rotor's slow rate on the multi, against the record of the single type's that this archive already holds. It is the same block, so nothing new has to be held; what is new is that the constant it carries is a different number, and two numbers outside the printed table agreeing is what one number cannot be.\n\nAbove value 16 only, and with the low rotor silenced at its level byte the way this pair's low reading silenced the high one. The bottom is not asked: it is not a reading of the byte alone until the write timing is a stated part of the record, which is a change to how a run is recorded and not a run."
+        }
+      },
+      "ruled_out_by": "The high rotor of the same pair. This reading says the two agree because they index one printed table, and they agree on two quantities the table does not contain: the low rotor's distance short, 0.244 to 0.246 Hz on both, and the high rotor's, 0.056 to 0.061 on both. What refutes the reading is the agreement, which is a difference of two measurements and needs no table: two implementations reading one printed table would agree on the table and there is no reason they would agree on a distance the table does not contain, at two address pairs, to a thousandth of a hertz. Read in data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json and data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json."
+    },
+    {
+      "reading": "The bottom of the byte is where the two blocks differ, rather than where neither record is a reading of the byte alone.",
+      "candidate": null,
+      "standing": false,
+      "ruled_out_by": "The single type returning three different rates at one value of one byte, under three counts of how many bytes were written first, with the type never changing. A difference that one type produces against itself cannot be evidence about two."
+    },
+    {
+      "reading": "One rotor routine written once and instantiated twice, rather than one block reached from two types.",
+      "standing": true,
+      "equivalent_under_this_test": true,
+      "separated_by": {
+        "why_not_separable": "Nothing this archive can measure. Two instances of one routine and one routine reached twice return the same rate, the same distance short and the same ratio between the rotors, and what leaves the sockets is the only thing that can be asked here. This is the residue of the reading above once the coincidence in it is refuted, and it is carried the way the same alternative is carried on the claim about `11 08`'s two halves rather than queued behind a run that could not answer it."
+      }
+    }
+  ],
+  "refuted_by": "Either rotor's rate differing between the two types by more than a cent at any setting out of transit -- from value 16 upward on a low rotor and 17 on a high one, under any state both types can be put in.",
+  "could_have_been_refuted_by": "The run that made it. Ten settings on the multi were laid over the single type's own records at the same settings, at both take lengths those records were read at, with value 32 taken at both as the tie -- and six of the sixteen comparisons came back over a hundred cents apart. That the six are the six where one type disagrees with itself is a second measurement and not a reading of the first.",
+  "what_it_would_change": [
+    "A renderer holding one rotary and reaching it from both types, rather than one per type. The renumbering is a table of addresses and not a shift, so it has to be read off the pages per type either way.",
+    "What a rate byte's reading means near the bottom of its range on any accelerating type. The quantity that moved it here is how long the run took before writing, which no record in this archive states."
+  ],
+  "what_this_does_not_settle": [
+    "Whether the remaining rotary parameters agree on the third type. Both of its rate bytes have now been laid over and the block prints ten; the other eight were written at the value the single type rests at and not swept.",
+    "Any of the block's other eight parameters on the multi. The acceleration byte among them was written at the value the single type rests at and not swept, and it is the byte the bottom's behaviour is a behaviour of.",
+    "What `40 03 0C` on `01 22` is for. It was shown not to reach this rotor and nothing more.",
+    "Whether the bottom of an accelerating type's rate byte can be read at all. It can, if when the write arrived is recorded; no record here does, and that is a change to how a run is recorded rather than a measurement.",
+    "What either rotor does in transit -- below value 16 on the low one and below 17 on the high. It was asked at 32, 110 and 127 and nowhere lower, and the low rotor's bottom turned out to be governed by when the write arrived rather than by the byte -- which no record states, so the high rotor's bottom is open for the same reason and not for a new one.",
+    "Whether the remaining eight rotary parameters agree. One rate byte per rotor has now been laid over, and the block prints ten."
+  ],
+  "what_the_high_rotor_returned": {
+    "what": "The other rotor of the same pair, at the address each type prints its high slow rate at -- `40 03 07` on the single type and `40 03 0C` on the multi, five up as the rest of the block is. Both sides were already in the archive: one run, one takes directory, one settle of ten seconds, each type's other rotor silenced at its own level byte, four partials agreeing out of four on every reading used here.",
+    "measured_in": "cents for the rates, Hz for the distances",
+    "at_each_setting": [
+      {
+        "value": 32,
+        "the_printed_entry_hz": 1.65,
+        "the_single_type_hz": 1.5887,
+        "the_multi_hz": 1.5886,
+        "apart_cents": 0.08,
+        "short_on_the_single_hz": 0.0613,
+        "short_on_the_multi_hz": 0.0614,
+        "the_two_distances_apart_hz": 0.0001,
+        "the_low_rotors_distance_over_this_one": 3.997,
+        "the_step_of_the_run_this_setting_is_in_hz": 0.05
+      },
+      {
+        "value": 110,
+        "the_printed_entry_hz": 6.1,
+        "the_single_type_hz": 6.0415,
+        "the_multi_hz": 6.0426,
+        "apart_cents": 0.22,
+        "short_on_the_single_hz": 0.0585,
+        "short_on_the_multi_hz": 0.0574,
+        "the_two_distances_apart_hz": 0.0011,
+        "the_low_rotors_distance_over_this_one": 4.188,
+        "the_step_of_the_run_this_setting_is_in_hz": 0.1
+      },
+      {
+        "value": 127,
+        "the_printed_entry_hz": 10.0,
+        "the_single_type_hz": 9.9442,
+        "the_multi_hz": 9.9429,
+        "apart_cents": 0.16,
+        "short_on_the_single_hz": 0.0558,
+        "short_on_the_multi_hz": 0.0571,
+        "the_two_distances_apart_hz": 0.0013,
+        "the_low_rotors_distance_over_this_one": 4.391,
+        "the_step_of_the_run_this_setting_is_in_hz": 0.5
+      }
+    ],
+    "the_distance_is_the_low_rotors_over_four": {
+      "what": "The low rotor stops short by 0.244 to 0.246 Hz and the high rotor by 0.056 to 0.061, and the two rotors rest at acceleration bytes of 24 and 88 on both types -- the same two values, which is why the two distances are comparable at all. This archive's closed acceleration claim reads that byte through its top four bits into a table, and the entry the high rotor's byte lands on is four times the entry the low rotor's lands on.",
+      "what_the_closed_model_returns_hz": {
+        "low": 0.2335,
+        "high": 0.0584
+      },
+      "the_ratio_it_gives": 3.998,
+      "the_ratio_the_measurement_gives": {
+        "32": 3.997,
+        "110": 4.188,
+        "127": 4.391
+      },
+      "why_it_is_not_four_at_every_setting": "Because the distance is read against a table entry and the entry is coarser than the distance is large at the top of the byte. The three settings sit in runs of the shared table stepping by 0.05, 0.1 and 0.5 Hz, and the ratio they return is 4.00, 4.19 and 4.39 -- ordered the way the coarseness is, and landing on the table's own four exactly where the table is finest. That is a reading of the drift and it is not measured here: what would measure it is a rate entry read rather than reconstructed. The agreement between the two types does not depend on any of it.",
+      "why_that_matters": "The queue's own reason for wanting a second number was that one number is a coincidence a second implementation could reach. This is not an unrelated second number: at the setting where the table can carry it, it is the first divided by an entry of a table that is this unit's own and printed nowhere. An implementation that agreed on both would have to hold the same rate table, the same acceleration table and the same constant."
+    },
+    "what_rests_on_the_table_and_what_does_not": "The two types agreeing is a difference of two measurements and needs no table at all. The size of the distance does need one, and at the top of the byte the table is coarse where the distance is small -- the entries at 110 and 127 are a tenth and half a hertz apart from their neighbours, against a distance of six hundredths. So the distance's value there stands on the reconstructed entry being exact, and the agreement does not.",
+    "what_was_not_held_the_same": "The multi's run wrote four bytes before the swept one and the single type's wrote two. On the low rotor that mattered below value 16 and nowhere else, and the three settings here are 32, 110 and 127."
+  },
+  "the_round_that_read_a_third_type": {
+    "what_was_asked": "Whether the ten rotary parameters a third type prints, at a third set of addresses, are the same rotary -- and whether the boundary this claim states holds on both rotors.",
+    "why_this_type": "`03 00` prints the whole rotary and carried no structural reading of any kind: eighteen printed parameters and none of them in a claim, which made it the largest such type on this unit. It also renumbers differently from both types already read, and puts a drive and a three-band equaliser in front of the block where the second type put a phaser beside it.",
+    "how_the_chain_in_front_was_taken_out": "The drive twice over -- its own switch off and its drive byte at nothing, so that neither reason rests on the other -- and the equaliser's three gains at the centre with the band its mid section would shape written down rather than left where a reset leaves it. The unit powers this type up with the switch on and the drive at 13, so neither is a value that arrived by not being written.",
+    "where_the_high_rotor_leaves_transit": {
+      "what": "Where the high rotor's distance short of the printed entry becomes the constant the claim rests on, read off the single type's own published sweep. Through value 15 the rotor reaches the entry and the distance is under two thousandths of a hertz; at 16 it is 0.0375, which is neither; from 17 it is 0.061 to 0.063 and stays there. So 16 is one setting of transit on this rotor, and the claim's `from value 16 upward` is the low rotor's boundary carried onto a rotor that does not share it.",
+      "rows": [
+        {
+          "value": 0,
+          "the_printed_entry_hz": 0.05,
+          "read_hz": 0.0496,
+          "short_by_hz": 0.0004
+        },
+        {
+          "value": 4,
+          "the_printed_entry_hz": 0.25,
+          "read_hz": 0.2499,
+          "short_by_hz": 0.0001
+        },
+        {
+          "value": 8,
+          "the_printed_entry_hz": 0.45,
+          "read_hz": 0.4482,
+          "short_by_hz": 0.0018
+        },
+        {
+          "value": 10,
+          "the_printed_entry_hz": 0.55,
+          "read_hz": 0.5493,
+          "short_by_hz": 0.0007
+        },
+        {
+          "value": 11,
+          "the_printed_entry_hz": 0.6,
+          "read_hz": 0.5989,
+          "short_by_hz": 0.0011
+        },
+        {
+          "value": 12,
+          "the_printed_entry_hz": 0.65,
+          "read_hz": 0.6485,
+          "short_by_hz": 0.0015
+        },
+        {
+          "value": 13,
+          "the_printed_entry_hz": 0.7,
+          "read_hz": 0.7,
+          "short_by_hz": 0.0
+        },
+        {
+          "value": 14,
+          "the_printed_entry_hz": 0.75,
+          "read_hz": 0.7496,
+          "short_by_hz": 0.0004
+        },
+        {
+          "value": 15,
+          "the_printed_entry_hz": 0.8,
+          "read_hz": 0.7992,
+          "short_by_hz": 0.0008
+        },
+        {
+          "value": 16,
+          "the_printed_entry_hz": 0.85,
+          "read_hz": 0.8125,
+          "short_by_hz": 0.0375
+        },
+        {
+          "value": 17,
+          "the_printed_entry_hz": 0.9,
+          "read_hz": 0.8373,
+          "short_by_hz": 0.0627
+        },
+        {
+          "value": 18,
+          "the_printed_entry_hz": 0.95,
+          "read_hz": 0.8888,
+          "short_by_hz": 0.0612
+        },
+        {
+          "value": 19,
+          "the_printed_entry_hz": 1.0,
+          "read_hz": 0.9384,
+          "short_by_hz": 0.0616
+        },
+        {
+          "value": 20,
+          "the_printed_entry_hz": 1.05,
+          "read_hz": 0.988,
+          "short_by_hz": 0.062
+        },
+        {
+          "value": 21,
+          "the_printed_entry_hz": 1.1,
+          "read_hz": 1.0376,
+          "short_by_hz": 0.0624
+        },
+        {
+          "value": 24,
+          "the_printed_entry_hz": 1.25,
+          "read_hz": 1.1882,
+          "short_by_hz": 0.0618
+        },
+        {
+          "value": 28,
+          "the_printed_entry_hz": 1.45,
+          "read_hz": 1.3886,
+          "short_by_hz": 0.0614
+        },
+        {
+          "value": 32,
+          "the_printed_entry_hz": 1.65,
+          "read_hz": 1.5887,
+          "short_by_hz": 0.0613
+        }
+      ],
+      "why_it_was_not_seen_before": "The high rotor was asked at 32, 110 and 127 on both types and nowhere lower, so no comparison in this claim ever stood at 16. The sweep that shows it is the single type's and was already published; what was missing is a second type asked at that setting."
+    },
+    "laid_over": {
+      "rows": {
+        "low_long": [
+          {
+            "value": 0,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.0497,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.0509,
+            "apart_cents": 41.3,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.0498,
+            "apart_from_the_other_multi_cents": 37.82
+          },
+          {
+            "value": 4,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.2503,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.2502,
+            "apart_cents": -0.69,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.1048,
+            "apart_from_the_other_multi_cents": 1506.53
+          },
+          {
+            "value": 8,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.4481,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.3491,
+            "apart_cents": -432.22,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.2041,
+            "apart_from_the_other_multi_cents": 929.24
+          },
+          {
+            "value": 10,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5494,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.3491,
+            "apart_cents": -785.06,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.3049,
+            "apart_from_the_other_multi_cents": 234.37
+          },
+          {
+            "value": 12,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5934,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.4042,
+            "apart_cents": -664.72,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.4042,
+            "apart_from_the_other_multi_cents": 0.0
+          },
+          {
+            "value": 14,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.5953,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.5055,
+            "apart_cents": -283.09,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.5055,
+            "apart_from_the_other_multi_cents": 0.0
+          },
+          {
+            "value": 16,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.6047,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.6046,
+            "apart_cents": -0.29,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.6046,
+            "apart_from_the_other_multi_cents": 0.0
+          },
+          {
+            "value": 20,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 0.8051,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 0.8051,
+            "apart_cents": 0.0,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 0.805,
+            "apart_from_the_other_multi_cents": 0.22
+          },
+          {
+            "value": 24,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.0053,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 1.0051,
+            "apart_cents": -0.34,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.005,
+            "apart_from_the_other_multi_cents": 0.17
+          },
+          {
+            "value": 32,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-the-bottom-of-the-constant-low.json": 1.4059,
+            "roland-sc8850-01/efx-rate/03-00-0A-where-the-low-rotor-gives-up-on-a-rotary-multi.json": 1.4063,
+            "apart_cents": 0.49,
+            "roland-sc8850-01/efx-rate/11-07-08-where-the-low-rotor-gives-up-on-a-multi.json": 1.4059,
+            "apart_from_the_other_multi_cents": 0.49
+          }
+        ],
+        "low_short": [
+          {
+            "value": 32,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 1.4068,
+            "roland-sc8850-01/efx-rate/03-00-0A-the-low-rotor-alone-on-a-rotary-multi.json": 1.4074,
+            "apart_cents": 0.74,
+            "roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 1.4063,
+            "apart_from_the_other_multi_cents": 1.35
+          },
+          {
+            "value": 110,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 5.8566,
+            "roland-sc8850-01/efx-rate/03-00-0A-the-low-rotor-alone-on-a-rotary-multi.json": 5.8563,
+            "apart_cents": -0.09,
+            "roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 5.8573,
+            "apart_from_the_other_multi_cents": -0.3
+          },
+          {
+            "value": 127,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json": 9.7548,
+            "roland-sc8850-01/efx-rate/03-00-0A-the-low-rotor-alone-on-a-rotary-multi.json": 9.7552,
+            "apart_cents": 0.07,
+            "roland-sc8850-01/efx-rate/11-07-08-the-low-rotor-alone-on-a-multi.json": 9.7549,
+            "apart_from_the_other_multi_cents": 0.05
+          }
+        ],
+        "high_long": [
+          {
+            "value": 16,
+            "in_transit": true,
+            "roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json": 0.8125,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-above-the-transient-on-a-rotary-multi.json": 0.8373,
+            "apart_cents": 52.05
+          },
+          {
+            "value": 20,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json": 0.988,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-above-the-transient-on-a-rotary-multi.json": 0.988,
+            "apart_cents": 0.0
+          },
+          {
+            "value": 24,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json": 1.1882,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-above-the-transient-on-a-rotary-multi.json": 1.1882,
+            "apart_cents": 0.0
+          },
+          {
+            "value": 32,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-the-bottom-of-the-constant-high.json": 1.5887,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-above-the-transient-on-a-rotary-multi.json": 1.5887,
+            "apart_cents": 0.0
+          }
+        ],
+        "high_short": [
+          {
+            "value": 32,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json": 1.5887,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-alone-on-a-rotary-multi.json": 1.5888,
+            "apart_cents": 0.11,
+            "roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json": 1.5886,
+            "apart_from_the_other_multi_cents": 0.22
+          },
+          {
+            "value": 110,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json": 6.0415,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-alone-on-a-rotary-multi.json": 6.0415,
+            "apart_cents": 0.0,
+            "roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json": 6.0426,
+            "apart_from_the_other_multi_cents": -0.32
+          },
+          {
+            "value": 127,
+            "in_transit": false,
+            "roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json": 9.9442,
+            "roland-sc8850-01/efx-rate/03-00-0E-the-high-rotor-alone-on-a-rotary-multi.json": 9.9449,
+            "apart_cents": 0.12,
+            "roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json": 9.9429,
+            "apart_from_the_other_multi_cents": 0.35
+          }
+        ]
+      },
+      "worst_cents_out_of_transit": 1.35
+    },
+    "what_it_closes": "The scope, and one number in the claim's own text. The model is unchanged: a third implementation of one block would have had to reproduce two distances the printed table does not contain, and it reproduces both.",
+    "what_it_does_not_close": "The bottom, which stays where the claim left it. The third type at twenty writes returns what the single type returns at thirteen -- 0.2502, 0.3491 and 0.4042 at values 4, 8 and 12, the same numbers to four decimal places -- while the second type returns a third set at three writes and at nineteen. So the count of writes does not carry the bottom on its own, and what does is a quantity no record here states.",
+    "why_the_rounds_moved_this_time": "The claim's own text changes. Round one's note says the ceiling counts revisions of the model and that a competing reading falling is not one. This is not that: the boundary the claim publishes is wrong for one of the two rotors, and correcting a published number is a revision whatever widened the scope alongside it."
   }
- },
- "what_moves_the_bottom": {
-  "what": "How many bytes the run wrote between loading the type and writing the swept one. This run varied it and did not separate elapsed time from the count of writes, which are the same thing on one bus.",
-  "rate_hz_by_how_many_bytes_were_written_first": {
-   "01 22": {
-    "2": {
-     "4": 0.2503,
-     "8": 0.4481,
-     "12": 0.5934
-    },
-    "3": {
-     "8": 0.448,
-     "12": 0.5472
-    },
-    "13": {
-     "4": 0.2502,
-     "8": 0.3491,
-     "12": 0.4042
-    }
-   },
-   "11 07": {
-    "3": {
-     "4": 0.1048,
-     "8": 0.2041,
-     "12": 0.4043
-    },
-    "19": {
-     "4": 0.1048,
-     "8": 0.2041,
-     "12": 0.4042
-    }
-   }
-  },
-  "why_it_is_not_the_two_types": "The multi returns the same rate at three writes and at nineteen, to a ten-thousandth of a hertz at every value asked. The single type does not. So this is a difference inside one type and not between the two -- and it is a control neither of the two records being compared states, which is why the bottom is left unattributed.",
-  "whose_error_it_was": "This project's. The run that made the multi's record wrote nineteen bytes because writing every byte of the block explicitly is the careful thing to do, and the record it was to be compared against wrote two. The type's own closed claim already says where the rotor was when the write arrived changes where it ends up, so the control was named in this archive before the run that needed it was designed."
- },
- "the_address_no_page_prints": {
-  "what": "`40 03 0C` on `01 22`. The unit answers there and its `efx-params` record has it resting at nought; the pages print the rotary's tenth parameter at `0D` and nothing at `0C`. `11 07` packs its ten with nothing between, so whatever it is has no counterpart on the multi -- which would be a byte inside the block that only one of the pair carries, the same shape of defect that stopped the flanger pair.",
-  "asked_by": "moving it from nought to 64 and to 127",
-  "rate_hz": {
-   "8": {
-    "at_64_hz": 0.448,
-    "at_127_hz": 0.448,
-    "apart_cents": 0.0
-   },
-   "12": {
-    "at_64_hz": 0.5472,
-    "at_127_hz": 0.5472,
-    "apart_cents": 0.0
-   }
-  },
-  "verdict": "It does not reach this rotor. Both settings return the same rate at both values asked, to a hundredth of a cent, and the same rate the record that left it at nought returned.",
-  "what_it_does_not_say": "What the address is for. A byte that does not reach one rotor's slow rate may reach something else, and nothing here asked."
- },
- "alternatives": [
-  {
-   "reading": "Two rotaries built to one description, agreeing because they index one printed table, rather than one block reached twice.",
-   "candidate": null,
-   "standing": false,
-   "separated_by": {
-    "observable": "A quantity the printed table does not contain. The table is public and two implementations reading it would agree on it; what they would not agree on is the distance the rotor stops short by, which is this unit's own and is printed nowhere. It holds at 0.244 to 0.246 Hz on both types from value 16 to 127, which is already a quantity outside the table -- but it is one number, and one number is a coincidence a second implementation could reach.",
-    "predicts": {
-     "one block reached twice": "The high rotor's own constant, which is a different number on the same type (0.0582 Hz against 0.2425), agrees across the pair as well.",
-     "two implementations of one table": "Either constant differing between the types by more than the few thousandths of a hertz each holds to within."
-    },
-    "sensitivity_here": "A few thousandths of a hertz, which is what each constant holds to across its own type's sweep. The high rotor's constant is a twentieth of the low one's, so it is the harder of the two to reach by accident.",
-    "margin": 20,
-    "run": {
-     "stage": "efx-rate",
-     "types": [
-      "11 07",
-      "01 22"
-     ],
-     "addresses": [
-      "40 03 0C",
-      "40 03 07"
-     ],
-     "minutes": 12,
-     "why": "The high rotor's slow rate on the multi, against the record of the single type's that this archive already holds. It is the same block, so nothing new has to be held; what is new is that the constant it carries is a different number, and two numbers outside the printed table agreeing is what one number cannot be.\n\nAbove value 16 only, and with the low rotor silenced at its level byte the way this pair's low reading silenced the high one. The bottom is not asked: it is not a reading of the byte alone until the write timing is a stated part of the record, which is a change to how a run is recorded and not a run."
-    }
-   },
-   "ruled_out_by": "The high rotor of the same pair. This reading says the two agree because they index one printed table, and they agree on two quantities the table does not contain: the low rotor's distance short, 0.244 to 0.246 Hz on both, and the high rotor's, 0.056 to 0.061 on both. What refutes the reading is the agreement, which is a difference of two measurements and needs no table: two implementations reading one printed table would agree on the table and there is no reason they would agree on a distance the table does not contain, at two address pairs, to a thousandth of a hertz. Read in data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json and data/units/roland-sc8850-01/efx-rate/11-07-0C-silence-the-other-stage-RTHalone.json."
-  },
-  {
-   "reading": "The bottom of the byte is where the two blocks differ, rather than where neither record is a reading of the byte alone.",
-   "candidate": null,
-   "standing": false,
-   "ruled_out_by": "The single type returning three different rates at one value of one byte, under three counts of how many bytes were written first, with the type never changing. A difference that one type produces against itself cannot be evidence about two."
-  },
-  {
-   "reading": "One rotor routine written once and instantiated twice, rather than one block reached from two types.",
-   "standing": true,
-   "equivalent_under_this_test": true,
-   "separated_by": {
-    "why_not_separable": "Nothing this archive can measure. Two instances of one routine and one routine reached twice return the same rate, the same distance short and the same ratio between the rotors, and what leaves the sockets is the only thing that can be asked here. This is the residue of the reading above once the coincidence in it is refuted, and it is carried the way the same alternative is carried on the claim about `11 08`'s two halves rather than queued behind a run that could not answer it."
-   }
-  }
- ],
- "refuted_by": "Either rotor's rate differing between the two types by more than a cent at any setting from value 16 upward, under any state both types can be put in.",
- "could_have_been_refuted_by": "The run that made it. Ten settings on the multi were laid over the single type's own records at the same settings, at both take lengths those records were read at, with value 32 taken at both as the tie -- and six of the sixteen comparisons came back over a hundred cents apart. That the six are the six where one type disagrees with itself is a second measurement and not a reading of the first.",
- "what_it_would_change": [
-  "A renderer holding one rotary and reaching it from both types, rather than one per type. The renumbering is a table of addresses and not a shift, so it has to be read off the pages per type either way.",
-  "What a rate byte's reading means near the bottom of its range on any accelerating type. The quantity that moved it here is how long the run took before writing, which no record in this archive states."
- ],
- "what_this_does_not_settle": [
-  "The high rotor. One of the pair's two rotors was swept; the other shares the block and carries a constant of its own, which is the run this claim queues.",
-  "Any of the block's other eight parameters on the multi. The acceleration byte among them was written at the value the single type rests at and not swept, and it is the byte the bottom's behaviour is a behaviour of.",
-  "What `40 03 0C` on `01 22` is for. It was shown not to reach this rotor and nothing more.",
-  "Whether the bottom of an accelerating type's rate byte can be read at all. It can, if when the write arrived is recorded; no record here does, and that is a change to how a run is recorded rather than a measurement.",
-  "What the high rotor does below value 16. It was asked at 32, 110 and 127 and nowhere lower, and the low rotor's bottom turned out to be governed by when the write arrived rather than by the byte -- which no record states, so the high rotor's bottom is open for the same reason and not for a new one.",
-  "Whether the remaining eight rotary parameters agree. One rate byte per rotor has now been laid over, and the block prints ten."
- ],
- "what_the_high_rotor_returned": {
-  "what": "The other rotor of the same pair, at the address each type prints its high slow rate at -- `40 03 07` on the single type and `40 03 0C` on the multi, five up as the rest of the block is. Both sides were already in the archive: one run, one takes directory, one settle of ten seconds, each type's other rotor silenced at its own level byte, four partials agreeing out of four on every reading used here.",
-  "measured_in": "cents for the rates, Hz for the distances",
-  "at_each_setting": [
-   {
-    "value": 32,
-    "the_printed_entry_hz": 1.65,
-    "the_single_type_hz": 1.5887,
-    "the_multi_hz": 1.5886,
-    "apart_cents": 0.08,
-    "short_on_the_single_hz": 0.0613,
-    "short_on_the_multi_hz": 0.0614,
-    "the_two_distances_apart_hz": 0.0001,
-    "the_low_rotors_distance_over_this_one": 3.997,
-    "the_step_of_the_run_this_setting_is_in_hz": 0.05
-   },
-   {
-    "value": 110,
-    "the_printed_entry_hz": 6.1,
-    "the_single_type_hz": 6.0415,
-    "the_multi_hz": 6.0426,
-    "apart_cents": 0.22,
-    "short_on_the_single_hz": 0.0585,
-    "short_on_the_multi_hz": 0.0574,
-    "the_two_distances_apart_hz": 0.0011,
-    "the_low_rotors_distance_over_this_one": 4.188,
-    "the_step_of_the_run_this_setting_is_in_hz": 0.1
-   },
-   {
-    "value": 127,
-    "the_printed_entry_hz": 10.0,
-    "the_single_type_hz": 9.9442,
-    "the_multi_hz": 9.9429,
-    "apart_cents": 0.16,
-    "short_on_the_single_hz": 0.0558,
-    "short_on_the_multi_hz": 0.0571,
-    "the_two_distances_apart_hz": 0.0013,
-    "the_low_rotors_distance_over_this_one": 4.391,
-    "the_step_of_the_run_this_setting_is_in_hz": 0.5
-   }
-  ],
-  "the_distance_is_the_low_rotors_over_four": {
-   "what": "The low rotor stops short by 0.244 to 0.246 Hz and the high rotor by 0.056 to 0.061, and the two rotors rest at acceleration bytes of 24 and 88 on both types -- the same two values, which is why the two distances are comparable at all. This archive's closed acceleration claim reads that byte through its top four bits into a table, and the entry the high rotor's byte lands on is four times the entry the low rotor's lands on.",
-   "what_the_closed_model_returns_hz": {
-    "low": 0.2335,
-    "high": 0.0584
-   },
-   "the_ratio_it_gives": 3.998,
-   "the_ratio_the_measurement_gives": {
-    "32": 3.997,
-    "110": 4.188,
-    "127": 4.391
-   },
-   "why_it_is_not_four_at_every_setting": "Because the distance is read against a table entry and the entry is coarser than the distance is large at the top of the byte. The three settings sit in runs of the shared table stepping by 0.05, 0.1 and 0.5 Hz, and the ratio they return is 4.00, 4.19 and 4.39 -- ordered the way the coarseness is, and landing on the table's own four exactly where the table is finest. That is a reading of the drift and it is not measured here: what would measure it is a rate entry read rather than reconstructed. The agreement between the two types does not depend on any of it.",
-   "why_that_matters": "The queue's own reason for wanting a second number was that one number is a coincidence a second implementation could reach. This is not an unrelated second number: at the setting where the table can carry it, it is the first divided by an entry of a table that is this unit's own and printed nowhere. An implementation that agreed on both would have to hold the same rate table, the same acceleration table and the same constant."
-  },
-  "what_rests_on_the_table_and_what_does_not": "The two types agreeing is a difference of two measurements and needs no table at all. The size of the distance does need one, and at the top of the byte the table is coarse where the distance is small -- the entries at 110 and 127 are a tenth and half a hertz apart from their neighbours, against a distance of six hundredths. So the distance's value there stands on the reconstructed entry being exact, and the agreement does not.",
-  "what_was_not_held_the_same": "The multi's run wrote four bytes before the swept one and the single type's wrote two. On the low rotor that mattered below value 16 and nowhere else, and the three settings here are 32, 110 and 127."
- }
 }
