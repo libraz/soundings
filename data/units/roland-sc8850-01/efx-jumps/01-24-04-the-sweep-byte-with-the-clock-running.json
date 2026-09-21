@@ -1,0 +1,348 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-jumps",
+    "invocation": [
+      "efx-jumps",
+      ".cache/takes/what-a-step-flangers-two-rate-bytes-do/together",
+      "--type",
+      "01 24",
+      "--slot",
+      "40 03 04",
+      "--setting",
+      "^under-steps-(?P<value>\\d+)$",
+      "--carrier-hz",
+      "440",
+      "--bypassed",
+      "bypassed",
+      "--also-at",
+      "4.0",
+      "--held",
+      "40 42 22=01",
+      "--held",
+      "40 12 31=00",
+      "--held",
+      "40 03 08=27",
+      "--held",
+      "40 03 03=0A",
+      "--held",
+      "40 03 05=40",
+      "--held",
+      "40 03 06=4F",
+      "--held",
+      "40 03 07=5A",
+      "--held",
+      "40 03 12=50",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=60",
+      "--out",
+      "data/units/roland-sc8850-01/efx-jumps/01-24-04-the-sweep-byte-with-the-clock-running.json"
+    ],
+    "measured_at": "2026-09-21T11:59:29+00:00",
+    "elapsed_s": 2.1,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "At what rate one insertion effect type makes the phase of a held tone's orders jump, at each setting of one byte.",
+  "type": "01 24",
+  "address": "40 03 04",
+  "method": "One take per setting of a held tone. Each order of the tone that cleared the threshold on the take with the part routed past the effect was demodulated by its own frequency, leaving that order's phase over the take; the orders come from that take and never from the take being read. The size of each step of that phase, with its direction dropped, is the series projected across a grid of rates, and the rate reported is where the take stands furthest over the same projection of the routed-past take. The signed phase is projected across the same grid beside it. Every take is read on one channel named for the whole run, and a setting taken more than once gives the run its floor.",
+  "limits": "`line_hz` is where the rectified series stood furthest over the routed-past take. Rectifying a series puts energy at twice its fundamental, so the line is the jump train's own rate or twice it, and nothing here decides which: no factor is applied and none is implied. `signed_hz` is the same projection of the phase itself, which is pulled onto the waveform under the train wherever that waveform is larger. `stands_over_bypassed` is the comparison every figure rests on, and a reading near one is the routed-past take's own behaviour whatever the rate beside it says. `slowest_measurable_hz` is the rate two cycles of which fill the part of the take that sounded, and a line at or under it is the take's length rather than the unit. A line at an end of the grid is the search's own limit and says so per reading. The projection of a train is largest at whichever of its harmonics the material favours, and which one that is moves between takes of one state, so a peak that lands a whole factor from another take's is the same train and not a different rate. `also_at` is the height at rates the run named, which is how a reading is asked what it holds at a rate rather than where it is largest. `heard_db` is the level over the take of the one channel named in `channel`: a reading taken from a take near the noise floor is a reading of the floor, and it is stable, which is what makes it dangerous.",
+  "not_in_this_record": "No structure, no count and no verdict. Whether the jumps are a sample and hold, where such a hold sits in a chain, how many fall in one cycle of anything else, and which curve these rates lie on as the byte rises are fits across settings and types and are not made here. The printed range for this address is in documents/, under the same address, and is evidence about a page rather than about this unit; the two are not joined.",
+  "carrier_hz": 440.0,
+  "grid_hz": [
+    0.3,
+    30.0
+  ],
+  "grid_step_hz": 0.01,
+  "also_at_hz": [
+    4.0
+  ],
+  "channel": {
+    "read": 2,
+    "chosen_by": "highest across the takes read",
+    "reached_db": [
+      -69.7,
+      -74.9,
+      -47.3,
+      -47.5,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [],
+    "why": "Which channel of the interface every take was read on, and the highest each channel reached across them. One channel for the run rather than the loudest of each take, because on this stage the input decides the answer twice over. An interface carries inputs the unit is not on which are not silent, and an idle input carries no modulation -- which is what a type without one also returns. And the unit's own two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other, and two types read on different ones are not comparable however loud both were. `loudest_elsewhere` names every take whose own loudest channel was not the one read."
+  },
+  "other_channel": {
+    "read": 3,
+    "over_the_swept_takes": {
+      "takes": 7,
+      "apart_db": -0.2,
+      "widest_apart_db": 0.1,
+      "the_read_side_moves_db": 5.9,
+      "the_other_side_moves_db": 6.0,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
+  },
+  "routed_past_the_effect": {
+    "takes": [
+      "held-16-bypassed-00.wav"
+    ],
+    "read_against": "held-16-bypassed-00.wav",
+    "why": "Which orders are read is decided by the take with nothing in the path and never by the take being read. An effect that adds sidebands raises its own take's quiet orders over the threshold and brings a different set of partials into the answer, so two takes compared against each other stop being comparable. The same confusion picked the wrong carrier once already.",
+    "with_nothing_in_its_path": null
+  },
+  "why_rectified": "A train of jumps whose sizes follow a waveform is two things at once, and a projection of the phase returns whichever is larger. Dropping the direction of each step leaves the train's own periodicity and takes the waveform's out, which is what makes this a reading of the clock rather than a second reading of the modulator. The cost is that rectifying is not linear: a series with a fundamental has energy at twice it afterwards, so what this returns is the train's rate or twice it. Both projections are published and neither is corrected by the other.",
+  "floor": {
+    "hz": 0.0,
+    "widest_at": 19,
+    "settings_taken_twice": [
+      19
+    ],
+    "takes_per_setting": {
+      "19": 2
+    }
+  },
+  "why_floor": "How far apart this reading put one state of the unit twice, on the quantity the record publishes. It is the only figure a difference between two settings has to clear. Where no setting was taken twice the record says so and offers nothing in its place.",
+  "held": [
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    },
+    {
+      "address": "40 12 31",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 08",
+      "bytes": "27"
+    },
+    {
+      "address": "40 03 03",
+      "bytes": "0A"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "4F"
+    },
+    {
+      "address": "40 03 07",
+      "bytes": "5A"
+    },
+    {
+      "address": "40 03 12",
+      "bytes": "50"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "60"
+    }
+  ],
+  "why_held": "Every address written before the takes were made, beside the one that was swept. A type with two modulators returns whichever dominates a given reading, so what the other one was doing decides what this is a reading of -- and a modulator parked at the bottom of its own table is running slowly rather than switched off.",
+  "takes_from": ".cache/takes/what-a-step-flangers-two-rate-bytes-do/together",
+  "manifest": {
+    "lists": 14,
+    "files_present": 14,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    9,
+    19,
+    39,
+    54,
+    99,
+    125
+  ],
+  "readings": [
+    {
+      "value": 9,
+      "take": "held-16-under-steps-009-00.wav",
+      "named_by": "manifest",
+      "heard_db": -48.9,
+      "also_heard_db": -48.8,
+      "settled_s": null,
+      "line_hz": 4.0,
+      "stands_over_bypassed": 2347.139,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2347.139,
+          "size": 1.359391
+        }
+      ],
+      "signed_hz": 0.5,
+      "the_signed_series_stands": 7190.534,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 19,
+      "take": "held-16-under-steps-019-00.wav",
+      "named_by": "manifest",
+      "heard_db": -53.2,
+      "also_heard_db": -53.5,
+      "settled_s": null,
+      "line_hz": 4.0,
+      "stands_over_bypassed": 2957.78,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2957.78,
+          "size": 1.713056
+        }
+      ],
+      "signed_hz": 1.0,
+      "the_signed_series_stands": 16430.655,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 19,
+      "take": "held-16-under-steps-019-01.wav",
+      "named_by": "manifest",
+      "heard_db": -47.3,
+      "also_heard_db": -47.5,
+      "settled_s": null,
+      "line_hz": 4.0,
+      "stands_over_bypassed": 2848.686,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2848.686,
+          "size": 1.649872
+        }
+      ],
+      "signed_hz": 1.01,
+      "the_signed_series_stands": 29443.264,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 39,
+      "take": "held-16-under-steps-039-00.wav",
+      "named_by": "manifest",
+      "heard_db": -49.3,
+      "also_heard_db": -49.6,
+      "settled_s": null,
+      "line_hz": 7.99,
+      "stands_over_bypassed": 2256.319,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2453.611,
+          "size": 1.421056
+        }
+      ],
+      "signed_hz": 4.0,
+      "the_signed_series_stands": 21520.913,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 54,
+      "take": "held-16-under-steps-054-00.wav",
+      "named_by": "manifest",
+      "heard_db": -49.8,
+      "also_heard_db": -50.2,
+      "settled_s": null,
+      "line_hz": 4.0,
+      "stands_over_bypassed": 2722.07,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2722.07,
+          "size": 1.57654
+        }
+      ],
+      "signed_hz": 0.3,
+      "the_signed_series_stands": 11839.759,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 99,
+      "take": "held-16-under-steps-099-00.wav",
+      "named_by": "manifest",
+      "heard_db": -47.4,
+      "also_heard_db": -47.6,
+      "settled_s": null,
+      "line_hz": 7.99,
+      "stands_over_bypassed": 2405.839,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2361.362,
+          "size": 1.367629
+        }
+      ],
+      "signed_hz": 0.36,
+      "the_signed_series_stands": 44631.342,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    },
+    {
+      "value": 125,
+      "take": "held-16-under-steps-125-00.wav",
+      "named_by": "manifest",
+      "heard_db": -50.8,
+      "also_heard_db": -51.0,
+      "settled_s": null,
+      "line_hz": 15.99,
+      "stands_over_bypassed": 2877.498,
+      "also_at": [
+        {
+          "hz": 4.0,
+          "stands_over_bypassed": 2083.415,
+          "size": 1.20665
+        }
+      ],
+      "signed_hz": 0.3,
+      "the_signed_series_stands": 32381.396,
+      "orders": 8,
+      "slowest_measurable_hz": 0.2943,
+      "rates_are_separated_by": 0.1472,
+      "stands_on_the_edge_of_the_search": null
+    }
+  ],
+  "takes_not_matching": {
+    "count": 6,
+    "settings": [
+      "under-sweep-009",
+      "under-sweep-019",
+      "under-sweep-039",
+      "under-sweep-054",
+      "under-sweep-099",
+      "under-sweep-125"
+    ],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  }
+}
