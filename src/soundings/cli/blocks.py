@@ -697,6 +697,86 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_excursion)
 
     p = sub.add_parser(
+        "efx-teeth",
+        help="read how deep one insertion effect notches a held tone, setting by "
+        "setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, required=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. Two takes matching one value is how this stage gets "
+        "its floor, so a run that repeated a setting needs no separate pattern for it",
+    )
+    p.add_argument(
+        "--carrier-hz",
+        type=float,
+        required=True,
+        help="the fundamental of the note the takes hold. Its orders are what the "
+        "reading is taken on, and the demodulator's window is one period of it, which "
+        "is what puts the neighbouring orders on a null",
+    )
+    p.add_argument(
+        "--bypassed",
+        default="bypassed",
+        help="a pattern naming the takes made with the part routed past the effect. "
+        "Both the orders every reading is taken on and the null every depth is admitted "
+        "against are read there, so a run without one has no bar and says so",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. A depth "
+        "is read through the whole chain, so a modulator parked at no depth leaves "
+        "nothing sweeping to notch with and a second stage left in the path smears a "
+        "notch into a shelf",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held. Said in words "
+        "rather than guessed at, because a record stating an address that was never "
+        "written is wrong in a way a reader cannot see",
+    )
+    p.add_argument(
+        "--settled",
+        type=float,
+        help="seconds the run waited after writing the setting before recording, for any "
+        "type that takes time to reach the state it was asked for",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        default=8.0,
+        help="seconds the note was held for. Half a second is cut from each end of it, "
+        "because an attack and a release are not the steady tone this reads",
+    )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever "
+        "reached highest across the takes read, chosen once for the run: a pan byte "
+        "decides which output a notched path arrives on, so a depth read on one channel "
+        "is not the depth read on the other",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_teeth)
+
+    p = sub.add_parser(
         "efx-pair",
         help="read what one insertion effect does between the unit's two outputs, "
         "setting by setting, from takes already saved, with no machine attached",
@@ -1433,6 +1513,80 @@ def cmd_efx_time(args) -> int:
         )
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if astray := picked["loudest_elsewhere"]:
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_teeth(args) -> int:
+    """How deep an effect notches a held tone, read from takes already saved."""
+    from .. import efxteeth
+
+    found = efxteeth.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        carrier_hz=args.carrier_hz,
+        bypassed=args.bypassed,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        held_not_spelled_out=args.held_not_spelled_out,
+        settled_s=args.settled,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        channel=args.channel,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
+    for row in found["readings"]:
+        if row.get("swing_db") is None:
+            print(f"  {row['value']:5d} -> {row.get('why', 'nothing read')}")
+            continue
+        aside = row["swing_elsewhere_db"]
+        print(
+            f"  {row['value']:5d} -> {row['swing_db']:6.2f} dB at "
+            f"{row['at_order_hz'] or 0:7.1f} Hz of {len(row['per_order_db'])}"
+            f" orders,  over that order's null {row['over_the_null_db']:6.2f}"
+            + (f"   other output {aside:6.2f}" if aside is not None else "")
+            + ("" if row["admitted"] else "   [not admitted]")
+        )
+    null = found["routed_past_the_effect"]["with_nothing_in_its_path"]
+    print(
+        "  with the part routed past the effect the same reading returns "
+        + (f"{null['largest_db']:.2f} dB largest of its orders" if null else "nothing")
+    )
+    floor = found["floor"]
+    print(
+        "  the run's own repeats put one state twice at "
+        + (
+            f"{floor['db']:.2f} dB apart (setting {floor['widest_at']})"
+            if floor["db"] is not None
+            else "no setting taken twice: this run measured no floor"
+        )
+    )
+    deepest = found["deepest"]
+    if deepest["value"] is None:
+        print("  no setting was admitted, so none is named the deepest")
+    else:
+        stands = (
+            "stands clear of" if deepest["stands_clear"]
+            else "does not stand clear of" if deepest["stands_clear"] is False
+            else "has no floor to be read against for"
+        )
+        print(
+            f"  deepest at {deepest['value']} with {deepest['db']:.2f} dB, which "
+            f"{stands} {deepest['next_is']}"
+            + (f" by {deepest['over_the_next_db']:.2f} dB" if deepest["over_the_next_db"] else "")
+        )
     if astray := picked["loudest_elsewhere"]:
         print(
             f"  ({len(astray)} takes are loudest on another channel; read from "

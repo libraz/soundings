@@ -93,6 +93,7 @@
     "efx-orders",
     "efx-time",
     "efx-excursion",
+    "efx-teeth",
     "efx-pair",
     "efx-params",
     "efx-motion",
@@ -5256,6 +5257,195 @@
           "default": "None",
           "required": false,
           "help": "the interface channel to read every take from. Defaults to whichever reached highest across the takes read, chosen once for the run: the unit's two outputs carry a stereo modulator in antiphase, so a level series read on one is not the level series read on the other",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "efx-teeth": {
+      "help": "read how deep one insertion effect notches a held tone, setting by setting, from takes already saved, with no machine attached",
+      "handler": "cmd_efx_teeth",
+      "takes_model_id": false,
+      "needs_unit": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the insertion effect type the takes were made under. Without it the record says what a parameter did without saying whose parameter it was, and a directory of them is identified by its filenames -- which is an index kept by hand beside records that could carry it themselves",
+          "metavar": "'MSB LSB'",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the address that was swept, for the same reason",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--setting"
+          ],
+          "dest": "setting",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting with a group named `value`, which is the byte it was taken at. Two takes matching one value is how this stage gets its floor, so a run that repeated a setting needs no separate pattern for it",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--carrier-hz"
+          ],
+          "dest": "carrier_hz",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the fundamental of the note the takes hold. Its orders are what the reading is taken on, and the demodulator's window is one period of it, which is what puts the neighbouring orders on a null",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--bypassed"
+          ],
+          "dest": "bypassed",
+          "nargs": null,
+          "default": "'bypassed'",
+          "required": false,
+          "help": "a pattern naming the takes made with the part routed past the effect. Both the orders every reading is taken on and the null every depth is admitted against are read there, so a run without one has no bar and says so",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held"
+          ],
+          "dest": "held",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address the run had written while it read, and what it held. A depth is read through the whole chain, so a modulator parked at no depth leaves nothing sweeping to notch with and a second stage left in the path smears a notch into a shelf",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--held-not-spelled-out"
+          ],
+          "dest": "held_not_spelled_out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "something the run held that has no address to give --held. Said in words rather than guessed at, because a record stating an address that was never written is wrong in a way a reader cannot see",
+          "metavar": "TEXT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settled"
+          ],
+          "dest": "settled",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "seconds the run waited after writing the setting before recording, for any type that takes time to reach the state it was asked for",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--hold"
+          ],
+          "dest": "hold",
+          "nargs": null,
+          "default": "8.0",
+          "required": false,
+          "help": "seconds the note was held for. Half a second is cut from each end of it, because an attack and a release are not the steady tone this reads",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the interface channel to read every take from. Defaults to whichever reached highest across the takes read, chosen once for the run: a pan byte decides which output a notched path arrives on, so a depth read on one channel is not the depth read on the other",
           "metavar": "N",
           "choices": null,
           "class": "_StoreAction"
