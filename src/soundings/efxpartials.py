@@ -405,7 +405,7 @@ WHY_THE_EDGE_IS_NOT_A_RATE = (
 )
 
 
-def _on_the_edge(at_hz: float | None, grid: np.ndarray, slowest: float) -> list[str] | None:
+def on_the_edge(at_hz: float | None, grid: np.ndarray, slowest: float) -> list[str] | None:
     """Whether this rate is the search's own limit, and by which of the two counts."""
     if at_hz is None:
         return None
@@ -450,7 +450,7 @@ def measure_one(
         "rates_are_separated_by": round(held.rates_are_separated_by, 4),
         "slowest_measurable_hz": slowest,
         "read_at_hz": at_hz,
-        "stands_on_the_edge_of_the_search": _on_the_edge(at_hz, grid, slowest),
+        "stands_on_the_edge_of_the_search": on_the_edge(at_hz, grid, slowest),
         "the_two_peaks_are_separated": bool(
             phase_moves and level_moves and apart > held.rates_are_separated_by
         ),

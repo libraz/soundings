@@ -697,6 +697,105 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_excursion)
 
     p = sub.add_parser(
+        "efx-jumps",
+        help="read at what rate one insertion effect makes a held tone's phase jump, "
+        "setting by setting, from takes already saved, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, required=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. Two takes matching one value is how this stage gets "
+        "its floor, so a run that repeated a setting needs no separate pattern for it",
+    )
+    p.add_argument(
+        "--carrier-hz",
+        type=float,
+        required=True,
+        help="the fundamental of the note the takes hold. Its orders are what the "
+        "reading is taken on, and the demodulator's window is one period of it, which "
+        "is what puts the neighbouring orders on a null",
+    )
+    p.add_argument(
+        "--bypassed",
+        default="bypassed",
+        help="a pattern naming the takes made with the part routed past the effect. "
+        "Both the orders every reading is taken on and the projection every peak is "
+        "read against come from there, so a run without one cannot be read at all",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. A type "
+        "with two modulators returns whichever dominates, so what the other one was "
+        "doing decides what this is a reading of",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held. Said in words "
+        "rather than guessed at, because a record stating an address that was never "
+        "written is wrong in a way a reader cannot see",
+    )
+    p.add_argument(
+        "--settled",
+        type=float,
+        help="seconds the run waited after writing the setting before recording, for any "
+        "type that takes time to reach the state it was asked for",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        default=8.0,
+        help="seconds the note was held for. Half a second is cut from each end of it, "
+        "because an attack and a release are not the steady tone this reads",
+    )
+    p.add_argument("--min-rate", type=float, default=0.30, help="slowest rate the grid reaches, Hz")
+    p.add_argument("--max-rate", type=float, default=30.0, help="fastest rate the grid reaches, Hz")
+    p.add_argument(
+        "--also-at",
+        type=float,
+        action="append",
+        default=[],
+        metavar="HZ",
+        help="a rate to report the projection's height at beside the peak. A peak says "
+        "where a take was largest; this says what it held at a rate the run knows it "
+        "set something to, which is the comparison a peak cannot be asked for",
+    )
+    p.add_argument(
+        "--step-hz",
+        type=float,
+        default=0.01,
+        help="how finely the grid is walked. This is not the resolution -- two rates "
+        "closer than one over the length read are one peak however fine the grid is -- "
+        "it is only how precisely that peak can be placed",
+    )
+    p.add_argument(
+        "--channel",
+        type=int,
+        metavar="N",
+        help="the interface channel to read every take from. Defaults to whichever "
+        "reached highest across the takes read, chosen once for the run: the unit's two "
+        "outputs carry a stereo modulator in antiphase, so a series read on one is not "
+        "the series read on the other",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_jumps)
+
+    p = sub.add_parser(
         "efx-teeth",
         help="read how deep one insertion effect notches a held tone, setting by "
         "setting, from takes already saved, with no machine attached",
@@ -1513,6 +1612,76 @@ def cmd_efx_time(args) -> int:
         )
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
+    if astray := picked["loudest_elsewhere"]:
+        print(
+            f"  ({len(astray)} takes are loudest on another channel; read from "
+            f"{picked['read']} anyway, and named in the record)"
+        )
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_jumps(args) -> int:
+    """At what rate an effect makes a tone's phase jump, read from takes already saved."""
+    from .. import efxjumps
+
+    found = efxjumps.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        setting=args.setting,
+        carrier_hz=args.carrier_hz,
+        bypassed=args.bypassed,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        held_not_spelled_out=args.held_not_spelled_out,
+        settled_s=args.settled,
+        lead_s=args.lead,
+        hold_s=args.hold,
+        grid_hz=(args.min_rate, args.max_rate),
+        step_hz=args.step_hz,
+        also_at=tuple(args.also_at),
+        channel=args.channel,
+    )
+    picked = found["channel"]
+    print(
+        f"  read from channel {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
+    for row in found["readings"]:
+        if row.get("line_hz") is None:
+            print(f"  {row['value']:5d} -> {row.get('why', 'nothing read')}")
+            continue
+        print(
+            f"  {row['value']:5d} -> peak {row['line_hz']:7.3f} Hz at "
+            f"{row['stands_over_bypassed']:8.1f}x"
+            + "".join(
+                f"   {a['hz']:.3f} Hz at {a['stands_over_bypassed']:.1f}x"
+                for a in row["also_at"]
+            )
+            + f"   the signed series {row['signed_hz']:7.3f} Hz at "
+            f"{row['the_signed_series_stands']:8.1f}x"
+            + ("   [" + "; ".join(row["stands_on_the_edge_of_the_search"]) + "]"
+               if row["stands_on_the_edge_of_the_search"] else "")
+        )
+    if (aside := found["routed_past_the_effect"]["with_nothing_in_its_path"]) is None:
+        print("  (only one take with the part routed past: this run measured no null)")
+    else:
+        print(
+            f"  with the part routed past the effect, read against another such take, "
+            f"the same reading returns {aside['line_hz']:.3f} Hz at "
+            f"{aside['stands_over_bypassed']:.1f}x"
+        )
+    floor = found["floor"]
+    print(
+        "  the run's own repeats put one state twice at "
+        + (
+            f"{floor['hz']:.4f} Hz apart (setting {floor['widest_at']})"
+            if floor["hz"] is not None
+            else "no setting taken twice: this run measured no floor"
+        )
+    )
     if astray := picked["loudest_elsewhere"]:
         print(
             f"  ({len(astray)} takes are loudest on another channel; read from "

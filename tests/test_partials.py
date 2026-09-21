@@ -162,10 +162,10 @@ def test_the_lowest_rate_searched_is_named_as_the_lowest_rate_searched() -> None
     point, which is where a maximum outside the search lands.
     """
     grid = grid_of(lo=0.2, hi=8.0)
-    assert efxpartials._on_the_edge(0.2, grid, slowest=0.1) == ["the lowest rate searched"]
-    assert efxpartials._on_the_edge(8.0, grid, slowest=0.1) == ["the highest rate searched"]
-    assert efxpartials._on_the_edge(1.3, grid, slowest=0.1) is None
-    assert efxpartials._on_the_edge(None, grid, slowest=0.1) is None
+    assert efxpartials.on_the_edge(0.2, grid, slowest=0.1) == ["the lowest rate searched"]
+    assert efxpartials.on_the_edge(8.0, grid, slowest=0.1) == ["the highest rate searched"]
+    assert efxpartials.on_the_edge(1.3, grid, slowest=0.1) is None
+    assert efxpartials.on_the_edge(None, grid, slowest=0.1) is None
 
 
 def test_a_rate_the_take_can_carry_is_not_called_an_edge() -> None:
