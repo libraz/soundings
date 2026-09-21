@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "parked",
     "made_at": "2026-09-19T16:27:56+00:00",
-    "made_by": "backup/does-a-combinations-flanger-loop-around-its-own-delay.py, backup/read-the-combinations-flanger-comb.py, backup/write-the-combinations-flanger-inference.py, backup/what-rate-a-series-combinations-flanger-runs-at.py, backup/which-held-byte-doubles-the-parallel-flangers-rate.py, backup/which-held-byte-the-doubling-needs.py, backup/what-the-flangers-loop-does-to-its-own-rate.py, backup/add-round-two-to-the-combinations-flanger-inference.py, backup/correct-the-counts-the-modulator-round-reported.py, backup/the-flangers-loop-in-the-combinations-that-carry-no-reading.py, backup/read-the-loop-in-the-combinations-that-carry-no-reading.py, backup/add-round-four-and-park-the-combinations-flanger-inference.py",
-    "rounds": 4,
+    "made_by": "backup/does-a-combinations-flanger-loop-around-its-own-delay.py, backup/read-the-combinations-flanger-comb.py, backup/write-the-combinations-flanger-inference.py, backup/what-rate-a-series-combinations-flanger-runs-at.py, backup/which-held-byte-doubles-the-parallel-flangers-rate.py, backup/which-held-byte-the-doubling-needs.py, backup/what-the-flangers-loop-does-to-its-own-rate.py, backup/add-round-two-to-the-combinations-flanger-inference.py, backup/correct-the-counts-the-modulator-round-reported.py, backup/the-flangers-loop-in-the-combinations-that-carry-no-reading.py, backup/read-the-loop-in-the-combinations-that-carry-no-reading.py, backup/add-round-four-and-park-the-combinations-flanger-inference.py, backup/publish-the-balance-teeth.py, backup/publish-the-pair-readings.py, backup/add-the-two-branches-round-to-the-combinations-flanger-inference.py",
+    "rounds": 5,
     "about": {
       "scope": "unit",
       "types": [
@@ -24,7 +24,7 @@
         "40 03 0B"
       ]
     },
-    "why_parked": "Four rounds, which is this claim's last and was said to be in advance. What it found is kept: the delay a combination prints `FL Dly` against and the loop it prints `FL Fb` against are the stereo flanger's, on all six types that print the pair, whatever stands in front of the flanger and whichever half of the chain it is; and the modulator behind that delay is the single type's too, by a margin measured against what a different modulator was shown to cost. What it gave up is the three combination types that print a chorus and no feedback byte, which this reading cannot be pointed at, and the two branches the standing alternative still carries -- where a balance byte puts the two paths equal, and the lag between the unit's two outputs. Both of those want a stage this archive does not have rather than a booking; the takes they would be read out of are recorded. The rest of each type is untouched and is listed where it always was."
+    "why_parked": "Four rounds, which is this claim's last and was said to be in advance. What it found is kept: the delay a combination prints `FL Dly` against and the loop it prints `FL Fb` against are the stereo flanger's, on all six types that print the pair, whatever stands in front of the flanger and whichever half of the chain it is; and the modulator behind that delay is the single type's too, by a margin measured against what a different modulator was shown to cost. What it gave up is the three combination types that print a chorus and no feedback byte, which this reading cannot be pointed at, and the two branches the standing alternative still carries -- where a balance byte puts the two paths equal, and the lag between the unit's two outputs. Both of those want a stage this archive does not have rather than a booking; the takes they would be read out of are recorded. The rest of each type is untouched and is listed where it always was. Since parking, one round was taken on it: the two branches it ends with were read, both off takes already on disk and both through stages built for them. What came back is under `the_round_that_read_the_two_branches`, and the standing alternative is no longer standing."
   },
   "claim": "The delay a type prints `FL Dly` against and the loop it prints `FL Fb` against are, in all six types that print them inside a larger chain, the delay and the loop of the stereo flanger that stands alone. Read as a comb at two settings of the delay byte and on both signs of the loop, 23 of the 24 readings return the single type's figures exactly and the remaining one is refused by its own record's admission rule rather than disagreeing: 0.618 ms at a delay byte of 6 and 1.318 ms at 13 with the loop in phase, 0.624 and 1.296 with it inverted. That holds where the chorus runs into the flanger, where it sits beside it, where an overdrive or a distortion runs into it with no way out of the path, where an enhancer does, and where the flanger itself runs into a delay -- so no arrangement carries a delay line of its own, and on the last of them the pair of bytes is not even at the same address. The teeth are 21.91 dB deep at the shallowest admitted, and each is judged against its own record's bar rather than a shared one -- 10.20 to 22.89 dB across the six, cleared by 1.10 times at the nearest. Each profile scores as a comb of that spacing by at least 1.51 times what the same profile scores read on the other sign -- which is the control a filter sitting somewhere cannot imitate, since a peak scores the same either way. The modulator behind that delay is the single type's too, on the type the chorus runs into it. Its rate byte returns a table over ten settings whose four published ones are the single flanger's to four figures -- 1.6499 against 1.65, 4.9994 against 4.9993, 6.1007 against 6.0974, 9.9991 against 9.9986 Hz -- and the settings between them fall on the same line. Its depth byte buys the single flanger's excursion at every setting either run reads, to within 1.71 per cent against the 0.42 per cent one setting taken twice repeats to. On the type the chorus sits beside, the modulator is not read here: the reading that returns a rate picks a period out of an autocorrelation, and on that type the frequency series of a partial stands taller at twice the rate than at it at most settings of the flanger's feedback byte and carries nothing at the rate at all at the centre of it, which is where every run that is not asking about the loop parks that byte.",
   "named": null,
@@ -3291,6 +3291,512 @@
           ]
         ],
         "why": "FL -> Delay, the flanger's feedback byte at the short of the two delay settings, with whatever shares the chain with it held where it passes its input on."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-teeth/01-23-12-across-the-balance-byte.json",
+        "keys": [
+          "deepest.value",
+          "deepest.db",
+          "deepest.next_is",
+          "deepest.over_the_next_db",
+          "deepest.stands_clear",
+          "floor.db",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          64,
+          16.46,
+          96,
+          2.22,
+          true,
+          1.3,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-pair/01-23-12-across-the-balance-byte.json",
+        "keys": [
+          "readings[value=0].lag_us",
+          "readings[value=16].lag_us",
+          "readings[value=127].lag_us",
+          "floor.across_takes_us",
+          "floor.widest_within_a_take_us",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          -21.306,
+          -21.257,
+          0.981,
+          0.128,
+          13.951,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 06",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "40"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-teeth/02-0B-0C-across-the-balance-byte.json",
+        "keys": [
+          "deepest.value",
+          "deepest.db",
+          "deepest.next_is",
+          "deepest.over_the_next_db",
+          "deepest.stands_clear",
+          "floor.db",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          96,
+          15.09,
+          112,
+          1.25,
+          true,
+          0.07,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-pair/02-0B-0C-across-the-balance-byte.json",
+        "keys": [
+          "readings[value=0].lag_us",
+          "readings[value=16].lag_us",
+          "readings[value=127].lag_us",
+          "floor.across_takes_us",
+          "floor.widest_within_a_take_us",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          -21.306,
+          -21.279,
+          0.831,
+          0.004,
+          13.655,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-teeth/11-02-0C-across-the-balance-byte.json",
+        "keys": [
+          "deepest.value",
+          "deepest.db",
+          "deepest.next_is",
+          "deepest.over_the_next_db",
+          "deepest.stands_clear",
+          "floor.db",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          127,
+          15.87,
+          112,
+          0.09,
+          false,
+          0.49,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 15",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            }
+          ]
+        ]
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-pair/11-02-0C-across-the-balance-byte.json",
+        "keys": [
+          "readings[value=0].lag_us",
+          "readings[value=16].lag_us",
+          "readings[value=127].lag_us",
+          "floor.across_takes_us",
+          "floor.widest_within_a_take_us",
+          "settings_asked",
+          "held"
+        ],
+        "values": [
+          -21.31,
+          -21.279,
+          -1.872,
+          0.046,
+          11.869,
+          [
+            0,
+            16,
+            32,
+            64,
+            96,
+            112,
+            127
+          ],
+          [
+            {
+              "address": "40 42 22",
+              "bytes": "01"
+            },
+            {
+              "address": "40 12 31",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 03",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 04",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 05",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 07",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 08",
+              "bytes": "30"
+            },
+            {
+              "address": "40 03 09",
+              "bytes": "13"
+            },
+            {
+              "address": "40 03 0B",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 12",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 13",
+              "bytes": "00"
+            },
+            {
+              "address": "40 03 14",
+              "bytes": "40"
+            },
+            {
+              "address": "40 03 15",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 16",
+              "bytes": "7F"
+            },
+            {
+              "address": "40 03 0A",
+              "bytes": "40"
+            }
+          ]
+        ]
       }
     ],
     "document_rows": [
@@ -3339,7 +3845,7 @@
     },
     {
       "reading": "The half named inside `11 02` agrees on where the comb sits and differs somewhere -- in the balance or in the output stage. The modulator is answered on both combinations, though not by the three coming out identical: read at the feedback byte all three types power up holding, the excursion the depth byte buys differs between them by a fraction of what a different modulator was measured to cost on this machine, so a second modulator is refused and a trimmed one is not.",
-      "standing": true,
+      "standing": false,
       "equivalent_under_this_test": false,
       "ruled_out_by": null,
       "separated_by": {
@@ -3351,7 +3857,8 @@
         "sensitivity_here": "The single types' depth runs repeat to 2.74 per cent and the flanger and the chorus differ there by a ratio from 1.316 to 1.501, so the reading separates two modulators by two orders of magnitude more than it repeats to. The rate the two sides are read at has to be established from the height of the frequency series at a named frequency rather than from the period a picker returns: the two differ by an octave on this type.",
         "margin": 48,
         "why_not_separable": "The two branches left are not the modulator's, and neither is reachable by a reading this archive publishes. Where a balance byte puts the two paths equal is a property of the mixture and no stage here publishes one, so a difference found between the three types by sweeping that byte cannot be cited however many times it is taken. The lag between the unit's two outputs is in the same position: it is a quantity the takes carry and nothing publishes. What is missing on both is a stage rather than a booking, and the takes both questions need are recorded."
-      }
+      },
+      "taken_up_by": "The balance branch, measured. The three types carry both paths at 64, 96 and 127 of their own balance bytes and notch to between 15.1 and 16.5 decibels there, so the half named inside a larger type does differ from the single flanger in the balance -- and every reading published on the three was taken at 127, which is a different point of each type's mixture. The output branch was read as well and does not separate: the three are 0.004 microseconds apart at the byte's nought and up to 7.60 apart in its middle, which is under half of how far one take of it disagrees with itself. Not `ruled_out_by`: the first of the two is the reading that turned out to be right."
     }
   ],
   "refuted_by": "A comb in any of the six that sits at a spacing the single type does not return, at either delay setting or on either sign of the loop. One reading off the single type's two figures by more than the width the fit reports would say the stage is named after something it is not.",
@@ -4966,5 +5473,15 @@
         "every_printed_middle_lands_on_the_line": true
       }
     }
+  },
+  "the_round_that_read_the_two_branches": {
+    "what_was_asked": "The two branches the standing alternative had left: whether the half named inside a larger type differs from the single flanger in the balance, or in the output stage. Round four recorded both as needing a stage rather than a booking, and named the reason in the alternative's own words -- where a balance byte puts the two paths equal is a property of the mixture and no stage here published one, and the lag between the unit's two outputs was a quantity the takes carried and nothing published.",
+    "why_two_stages_and_not_a_column": "Both were built and neither is a column added to a stage already here. A depth is not a length, so the stage that reads how far a modulator swings a delay cannot return it; and the stage that reads a level over a take reads the sum over the orders, which is the one quantity notching conserves. The lag between two channels is a third quantity and had no reading at all. Both read takes already on disk, so the branches cost no time with the unit sounding.",
+    "what_the_balance_returned": "Each type's balance byte carries both paths at a different setting of itself. Read as how far a single order of a held tone swings while the effect runs, `01 23` is deepest at 64 with 16.46 dB, `02 0B` at 96 with 15.09, and `11 02` at 127 with 15.87 -- and all three reach between 15.1 and 16.5 decibels at their own deepest. The first two stand clear of the setting next to them by more than their own runs repeat to, 2.22 dB against a floor of 1.30 and 1.25 against 0.07; the third does not, 0.09 against 0.49, so its top two settings are one place and the record says so rather than naming one of them.",
+    "what_it_means_for_the_published_readings": "Every reading this archive published on these three types was taken with the balance byte at 127, which the page prints as the effect alone. That is the delayed path with nothing beside it to be notched against, and it is a different point of each type's own mixture -- which is what the three were differing by at that setting. The difference is therefore in where the byte balances and not in the flanger behind it.",
+    "what_the_two_outputs_returned": "Between the two channels of one output the three are identical at both ends of the balance byte: 0.004 microseconds apart at nought, 0.02 at 16, and 2.85 at 127. In the middle they differ by up to 7.60. Against how far one setting's own takes disagree -- 0.004 to 0.128 microseconds -- that is sixty to nineteen hundred times; against how far one take disagrees with itself, 11.9 to 14.0 microseconds, it is under half. So what the middle of the byte shows is a difference between medians of a swinging quantity and not between two constants, and this branch is not found for.",
+    "which_branch_the_measurement_found_for": "The balance, and not the output stage. The alternative named two places the halves could differ and a reading was built for each; one of them differs and the other does not separate. Recorded as `taken_up_by` rather than as `ruled_out_by` because the first is the reading that turned out to be right, and a key saying it was refuted would tell a reader who skimmed the key names the opposite of what was measured.",
+    "what_it_does_not_close": "That the three mixtures are otherwise alike. Where a byte balances is one number and the curve either side of it is not read here beyond the seven settings the run asked. Nor does the second branch close: a lag under half the swing of the take it was read in is not a null, it is a reading the quantity's own movement covers, and what would separate it is a take whose two channels are steadier rather than a different reading of these.",
+    "why_the_round_was_taken_past_the_ceiling": "The fifth round on a claim parked at four. The ceiling exists so that one type cannot absorb the project's attention, and what was spent here is not this type's: round four recorded the obstruction as a missing stage, two stages were built, and both now read every type in the archive. Taking the round is what keeps that cost counted against this claim rather than hidden as tooling."
   }
 }
