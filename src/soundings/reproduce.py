@@ -1,8 +1,9 @@
 """Rendering a model and reading it through the pipeline the unit was read through.
 
-This is the only place in the repository that derives. What it produces goes
-under `inferences/`, never under `data/`, and it exists because a structure that
-cannot be checked against the unit is a structure nobody should publish.
+This module and the `render` package it calls are the only places in the
+repository that derive. What they produce goes under `inferences/`, never under
+`data/`, and they exist because a structure that cannot be checked against the unit
+is a structure nobody should publish.
 
 **A band profile is the reading, and a waveform is the reading it cannot make.**
 Every figure the gates below are computed on is band energy: the model is rendered
@@ -50,11 +51,14 @@ than at a tenth of one. The gates do not know which they are looking at: every
 one of them is a residual against the span the effect commands, and the unit that
 span is measured in travels with the record.
 
-**What this renderer cannot do yet.** A model that claims a structure whose
-*waveform* has to be produced -- the network a reverb is, the curve a saturating
-stage bends by -- needs a time-domain renderer, and the honest state of that is
-that it is not written. A model whose `kind` is neither `lti` nor `table` is
-refused rather than approximated.
+**What the time-domain renderer can and cannot do.** A model that claims a
+structure whose *waveform* has to be produced -- a modulated delay, a loop, a
+network of them -- is a `graph`, drawn by the `render` package on a bypassed take
+and read back through the same stages. It draws linear nodes only: a saturating
+stage, a detector and a pitch shifter are named in the schema and not yet drawn,
+and a loop with no delay in it has no order to be drawn in, so it is held here as a
+response and refused as a graph. A model whose `kind` is none of `lti`, `table`,
+`pan` or `graph` is refused rather than approximated.
 
 **That is a narrower gap than it sounds, and reading it as a wide one held work
 up.** What a byte selects is a quantity, and a quantity is answered by a table
@@ -2719,14 +2723,13 @@ def verdict(result: dict, *, candidates_in_class: int) -> str:
     return "reproduces"
 
 
-RENDERED = ("lti", "table", "pan")
+RENDERED = ("lti", "table", "pan", "graph")
 """The kinds of model this module can hold against the archive.
 
 Named rather than open so that a class nobody has written a renderer for cannot
 be scored by accident. A model that claims a *structure* -- the network a reverb
-is, the curve a saturating stage bends by, the shape a modulator sweeps in --
-would need its output produced sample by sample, and that is not written; one
-claiming to be either is refused at the door instead of being fitted with the
+is, the shape a modulator sweeps in -- has its output produced sample by sample as
+a `graph`; anything else is refused at the door instead of being fitted with the
 wrong instrument.
 
 **What that refusal does not cover is a byte.** A class that asks what quantity a
@@ -2746,12 +2749,22 @@ and what a candidate says is the level of each channel.
 
 
 def load(path: str | Path) -> dict:
-    model = json.loads(Path(path).read_text())
+    """A model file, refused unless its kind is one this module can hold against the archive.
+
+    A `graph` is handed to `render.load_graph`, which reads the models its nodes name
+    from the same directory and the printed rows from the tree `inferences/` sits in.
+    """
+    path = Path(path)
+    model = json.loads(path.read_text())
     kind = model["model"].get("kind")
     if kind not in RENDERED:
         raise ValueError(
-            f"{path} is a {kind!r} model and this renderer holds only time-invariant linear "
-            "ones and tables. A modulated or saturating type needs a time-domain renderer, "
-            "and that is not written."
+            f"{path} is a {kind!r} model and this renderer holds time-invariant linear "
+            "ones, tables, pans and graphs of the nodes the `render` package draws."
         )
+    if kind == "graph":
+        from .render import load_graph
+
+        resolved = path.resolve()
+        return load_graph(model, models_dir=resolved.parent, root=resolved.parents[2])
     return model
