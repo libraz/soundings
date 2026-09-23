@@ -67,6 +67,34 @@ def test_a_claim_carries_its_envelope(path: Path):
 
 
 @pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
+def test_a_claim_names_its_quantities_or_says_why_not(path: Path):
+    """The progress meter's population, read off `about` instead of a hand list.
+
+    `quantities` draws from the closed vocabulary every printed row is classified into,
+    and an empty list is a claim about something wider than one row's kind of
+    quantity -- a whole type, a class of types, a power-on default. That is a
+    real state and not an omission, so it owes `why_no_quantity` in its place.
+    """
+    claim = inferences.load(path)
+    about = claim["inference"]["about"]
+    quantities = about.get("quantities")
+    assert isinstance(quantities, list), f"{path.name} has no `about.quantities` list"
+    allowed = set(
+        SCHEMA["properties"]["inference"]["properties"]["about"]["properties"]["quantities"][
+            "items"
+        ]["enum"]
+    )
+    for quantity in quantities:
+        assert quantity in allowed, (
+            f"{path.name} names a quantity {quantity!r} outside the closed vocabulary"
+        )
+    if not quantities:
+        assert (about.get("why_no_quantity") or "").strip(), (
+            f"{path.name} names no quantity and does not say why"
+        )
+
+
+@pytest.mark.parametrize("path", CLAIMS, ids=lambda p: p.name)
 def test_a_claim_says_what_it_adds(path: Path):
     """Required and never empty.
 

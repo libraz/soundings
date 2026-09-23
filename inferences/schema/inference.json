@@ -36,6 +36,22 @@
           "type": "object",
           "required": ["types", "addresses"],
           "properties": {
+            "quantities": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "accel", "azimuth", "cents", "corner_hz", "depth", "drive",
+                  "feedback", "gain_db", "level", "mix", "pan", "phase_deg",
+                  "q", "rate_hz", "ratio", "resonance", "steps", "switch",
+                  "threshold", "time_ms", "waveform", "width"
+                ]
+              },
+              "description": "The kinds of quantity the claim's law is about, from the closed vocabulary every addressed row of a unit's effect list is classified into. Required, like `types` and `addresses`. Empty where the claim is about a whole type or names no single kind of row -- required with `why_no_quantity` in that case, since a claim silent on both would read as one nobody has counted yet."
+            },
+            "why_no_quantity": {
+              "type": ["string", "null"],
+              "description": "Required and non-empty where `quantities` is empty. What the claim is about instead of one row's kind of quantity."
+            },
             "scope": {"enum": ["unit", "model", "family"], "default": "unit"},
             "types": {"type": "array", "items": {"type": "string"}},
             "addresses": {"type": "array", "items": {"type": "string"}},
