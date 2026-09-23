@@ -77,6 +77,7 @@
     "repeat",
     "contrast",
     "transfer",
+    "walk",
     "motion",
     "decay",
     "phase",
@@ -2828,6 +2829,197 @@
           "default": "None",
           "required": false,
           "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "walk": {
+      "help": "walk one address through a list of settings, writing and reading each one back before recording it",
+      "handler": "cmd_walk",
+      "takes_model_id": false,
+      "needs_unit": true,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the insertion effect type the takes were made under. Without it the record says what a parameter did without saying whose parameter it was, and a directory of them is identified by its filenames -- which is an index kept by hand beside records that could carry it themselves",
+          "metavar": "'MSB LSB'",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the address that was swept, for the same reason",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channel"
+          ],
+          "dest": "channel",
+          "nargs": null,
+          "default": "0",
+          "required": false,
+          "help": "zero based MIDI channel",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settings"
+          ],
+          "dest": "settings",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the bytes to walk, e.g. '0,32,64,96,127'. Spread across what the address accepts rather than its two ends, since a byte answering two settings tells the shape of nothing and this is the command that walks more than that",
+          "metavar": "B,B,...",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--stimulus"
+          ],
+          "dest": "stimulus",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "the note this address is walked under, one of: struck, released, sustained, soft, loud, unpitched, wash, deep, struck_kit, struck_kit_map2, struck_kit_36, struck_moved, struck_retuned, struck_vibrato, struck_pedalled, struck_softened, struck_damped, struck_caught, struck_pressed, struck_pair, struck_again, low, high",
+          "metavar": "NAME",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--prepare"
+          ],
+          "dest": "prepare",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "further state --slot needs before it can be heard at all, written after the type and the routing and read back to prove it took: an address behind a second gate answers inaudible until that gate is open too, and that reads as a verdict on the address wearing the gate's name. Recorded with the result, since the verdict only holds in the state it was taken in",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--takes"
+          ],
+          "dest": "takes",
+          "nargs": null,
+          "default": "3",
+          "required": false,
+          "help": "takes per setting",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--bypass"
+          ],
+          "dest": "bypass",
+          "nargs": null,
+          "default": "3",
+          "required": false,
+          "help": "takes with the effect routed out",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--silences"
+          ],
+          "dest": "silences",
+          "nargs": null,
+          "default": "2",
+          "required": false,
+          "help": "takes with the effect routed in and nothing played",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--settle"
+          ],
+          "dest": "settle",
+          "nargs": null,
+          "default": "0.4",
+          "required": false,
+          "help": "seconds after each write",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--audio"
+          ],
+          "dest": "audio",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "substring of the audio input device name",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--verify-reads"
+          ],
+          "dest": "verify_reads",
+          "nargs": null,
+          "default": "20",
+          "required": false,
+          "help": null,
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--save"
+          ],
+          "dest": "save",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "directory to keep every take in, as float WAV with a manifest. Device time is the scarce thing here and a verdict thrown away with its audio has to be re-recorded to be asked anything else; kept takes can be measured again with the machine unplugged",
           "metavar": null,
           "choices": null,
           "class": "_StoreAction"

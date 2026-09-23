@@ -23,6 +23,7 @@ from . import (
     sound,
     standing,
     state,
+    walk,
     wire,
 )
 from .session import Refused
@@ -37,6 +38,7 @@ COMMANDS = (
     ports,
     sound,
     inject,
+    walk,
     pairs,
     runs,
     holdings,
@@ -53,11 +55,12 @@ the code that reads it stay in one file. Grouped by the question a command asks
 rather than by what it asks with: the cable, which addresses are there, what they
 hold, the state a reset puts back, what the unit's catalogues list, a scan that
 writes, a pair of runs with the cable moved between them, an audio interface, an
-audio interface alone, what an effect did between two takes, what the ledger over
-every directory of takes says and who has read each one, what one saved run
-shows, what a block's records come to, how the effect types sort, where a unit
-stands, and -- last, because it is the only one that is not a measurement at all
--- what a published document states about a unit somebody else made.
+audio interface alone, walking an address through a list of settings, what an
+effect did between two takes, what the ledger over every directory of takes says
+and who has read each one, what one saved run shows, what a block's records come
+to, how the effect types sort, where a unit stands, and -- last, because it is
+the only one that is not a measurement at all -- what a published document
+states about a unit somebody else made.
 """
 
 
