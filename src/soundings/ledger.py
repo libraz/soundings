@@ -276,7 +276,14 @@ def _resolve_token(
             continue
         for nt in next_tokens:
             sub_found, sub_reason = _resolve_token(
-                root, takes_root, nt, hops + 1, next_visited, [*trail, display], next_intermediates, cited
+                root,
+                takes_root,
+                nt,
+                hops + 1,
+                next_visited,
+                [*trail, display],
+                next_intermediates,
+                cited,
             )
             found.extend(sub_found)
             if sub_reason:
@@ -329,7 +336,9 @@ def _scan_records(
         found: dict[Path, tuple[list[str], list[Intermediate]]] = {}
         reasons: list[str] = []
         for token in tokens:
-            token_hits, reason = _resolve_token(root, takes_root, token, 0, frozenset(), [], [], cited)
+            token_hits, reason = _resolve_token(
+                root, takes_root, token, 0, frozenset(), [], [], cited
+            )
             for directory, trail, intermeds in token_hits:
                 found.setdefault(directory, (trail, intermeds))
             if reason:
@@ -593,9 +602,7 @@ def _entry(relpath: Path, dirpath: Path, consumed: list[Hit], started: float) ->
             manifest = {}
 
     wavs = sorted(p.name for p in dirpath.glob("*.wav"))
-    listed = {
-        entry.get("file") for entry in manifest.get("takes", ()) if isinstance(entry, dict)
-    }
+    listed = {entry.get("file") for entry in manifest.get("takes", ()) if isinstance(entry, dict)}
 
     dir_type, type_from, type_conflict = _resolve_type(manifest, relpath, consumed)
     address = _resolve_address(manifest, dirpath, consumed)

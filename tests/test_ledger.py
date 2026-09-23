@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -131,9 +130,7 @@ def _expected_held(type_source: str, held_source: str) -> tuple[dict | None, str
     return None, None
 
 
-@pytest.mark.parametrize(
-    "manifest_state,type_source,held_source,consumed,mtime", PAIRWISE_CASES
-)
+@pytest.mark.parametrize("manifest_state,type_source,held_source,consumed,mtime", PAIRWISE_CASES)
 def test_ledger_pairwise(tmp_path, manifest_state, type_source, held_source, consumed, mtime):
     root = tmp_path
     name = "efx-params-01-50-case" if type_source == "dirname" else "case-dir"
@@ -171,7 +168,9 @@ def test_ledger_pairwise(tmp_path, manifest_state, type_source, held_source, con
         )
     elif consumed == "via_cache_record":
         inter_id = _intermediate(
-            root, root / ".cache" / "inter-case" / "routing.json", ["contrast", f".cache/takes/{name}"]
+            root,
+            root / ".cache" / "inter-case" / "routing.json",
+            ["contrast", f".cache/takes/{name}"],
         )
         record_id = _publish(
             root, "case.json", [STAGE, ".cache/inter-case", *argv_tail], measured_at=MEASURED_AT
@@ -274,9 +273,7 @@ def test_depth_exceeded_on_a_four_hop_chain(tmp_path):
     _intermediate(root, root / ".cache" / "chain2" / "step.json", ["contrast", ".cache/chain3"])
     (root / ".cache" / "chain3").mkdir(parents=True)
 
-    record_id = _publish(
-        root, "chained.json", [STAGE, ".cache/chain0"], measured_at=MEASURED_AT
-    )
+    record_id = _publish(root, "chained.json", [STAGE, ".cache/chain0"], measured_at=MEASURED_AT)
 
     found = ledger.build(UNIT, root=root)
     unbound = {u["record"]: u["reason"] for u in found["unbound_records"]}
@@ -288,9 +285,7 @@ def test_unchecked_when_measured_at_is_null(tmp_path):
     take_dir = root / ".cache" / "takes" / "no-timestamp"
     take_dir.mkdir(parents=True)
     _wav(take_dir, "struck_kit-0-00")
-    record_id = _publish(
-        root, "old.json", [STAGE, ".cache/takes/no-timestamp"], measured_at=None
-    )
+    record_id = _publish(root, "old.json", [STAGE, ".cache/takes/no-timestamp"], measured_at=None)
 
     found = ledger.build(UNIT, root=root)
     entry = found["directories"]["no-timestamp"]
