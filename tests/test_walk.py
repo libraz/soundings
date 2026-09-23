@@ -117,6 +117,8 @@ def _args(save, **overrides):
         "1",
         "--silences",
         "1",
+        "--audio",
+        "fake",
         "--save",
         str(save),
     ]
@@ -234,3 +236,10 @@ def test_the_stimulus_volume_is_sent_and_the_system_sends_are_zero(
     assert (7, 100) in controllers
     assert (91, 0) in controllers
     assert (93, 0) in controllers
+
+
+def test_walk_refuses_to_run_without_an_audio_device(tmp_path):
+    argv = ["walk", "--type", "01 50", "--slot", "40 03 04", "--settings", "0"]
+    argv += ["--stimulus", "struck", "--save", str(tmp_path)]
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(argv)

@@ -226,8 +226,10 @@ def subject_of(args: argparse.Namespace, manifest: dict | None = None) -> dict[s
     return {key: value for key, value in found.items() if value not in (None, "")}
 
 
-def add_audio(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--audio", help="substring of the audio input device name")
+def add_audio(parser: argparse.ArgumentParser, *, required: bool = False) -> None:
+    parser.add_argument(
+        "--audio", required=required, help="substring of the audio input device name"
+    )
 
 
 def add_channel(parser: argparse.ArgumentParser) -> None:

@@ -79,7 +79,9 @@ def register(sub) -> None:
     p.add_argument(
         "--settle", type=float, default=options.SETTLE_S, help="seconds after each write"
     )
-    options.add_audio(p)
+    # Required: left out, the system's default input records -- a laptop's own
+    # microphone -- and nothing downstream fails until a reading does.
+    options.add_audio(p, required=True)
     options.add_verify_reads(p)
     p.add_argument("--save", required=True, help=options.SAVE_HELP)
     p.set_defaults(func=cmd_walk)
