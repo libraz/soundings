@@ -54,10 +54,8 @@ span is measured in travels with the record.
 **What the time-domain renderer can and cannot do.** A model that claims a
 structure whose *waveform* has to be produced -- a modulated delay, a loop, a
 network of them -- is a `graph`, drawn by the `render` package on a bypassed take
-and read back through the same stages. It draws linear nodes only: a saturating
-stage, a detector and a pitch shifter are named in the schema and not yet drawn,
-and a loop with no delay in it has no order to be drawn in, so it is held here as a
-response and refused as a graph. A model whose `kind` is none of `lti`, `table`,
+and read back through the same stages. A loop with no delay in it has no order to
+be drawn in, so it is held here as a response and refused as a graph. A model whose `kind` is none of `lti`, `table`,
 `pan` or `graph` is refused rather than approximated.
 
 **That is a narrower gap than it sounds, and reading it as a wide one held work
