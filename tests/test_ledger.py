@@ -364,6 +364,68 @@ def test_held_not_taken_from_a_record_that_states_no_type(tmp_path):
 
 
 # --------------------------------------------------------------------------
+# A manifest's own `held`: the run's statement of what it held, read first.
+# --------------------------------------------------------------------------
+
+
+def _held_run(root: Path, name: str, held: dict, cited: list[str] | None) -> str | None:
+    take_dir = root / ".cache" / "takes" / name
+    take_dir.mkdir(parents=True)
+    _wav(take_dir, "held-16-000-00")
+    (take_dir / "takes-manifest.json").write_text(json.dumps({"type": TYPE_VALUE, "held": held}))
+    if cited is None:
+        return None
+    argv = [STAGE, f".cache/takes/{name}", "--type", TYPE_VALUE]
+    for pair in cited:
+        argv += ["--held", pair]
+    return _publish(root, f"{name}.json", argv, measured_at=MEASURED_AT)
+
+
+def test_held_is_the_manifests_own_statement_where_the_run_made_one(tmp_path):
+    _held_run(tmp_path, "stated", {"40 03 03": 0, "40 03 13": 127}, None)
+    entry = ledger.build(UNIT, root=tmp_path)["directories"]["stated"]
+    assert entry["held"] == {"40 03 03": "00", "40 03 13": "7F"}
+    assert entry["held_from"] == "manifest"
+    assert entry["held_conflict"] is None
+
+
+def test_the_manifests_held_stands_before_a_reader_that_agrees_with_it(tmp_path):
+    _held_run(tmp_path, "agreed", {"40 03 03": 0, "40 03 04": 1},
+              ["40 42 22=01", "40 03 03=00 01"])
+    entry = ledger.build(UNIT, root=tmp_path)["directories"]["agreed"]
+    assert entry["held"] == {"40 03 03": "00", "40 03 04": "01"}
+    assert entry["held_from"] == "manifest"
+    # An address only one side names is not a disagreement: the reader adds routing.
+    assert entry["held_conflict"] is None
+
+
+def test_a_reader_disagreeing_with_the_manifests_held_is_kept_beside_it(tmp_path):
+    record_id = _held_run(tmp_path, "disputed", {"40 03 03": 0, "40 03 04": 1},
+                          ["40 03 04=7F", "40 42 22=01"])
+    entry = ledger.build(UNIT, root=tmp_path)["directories"]["disputed"]
+    assert entry["held"] == {"40 03 03": "00", "40 03 04": "01"}
+    assert entry["held_from"] == "manifest"
+    assert entry["held_conflict"] == [
+        {"source": "manifest", "value": {"40 03 03": "00", "40 03 04": "01"}},
+        {"source": "citing_invocation", "record": record_id,
+         "value": {"40 03 04": "7F", "40 42 22": "01"}},
+    ]
+
+
+def test_the_manifests_held_stands_before_its_prepared_list(tmp_path):
+    take_dir = tmp_path / ".cache" / "takes" / "both"
+    take_dir.mkdir(parents=True)
+    _wav(take_dir, "held-16-000-00")
+    (take_dir / "takes-manifest.json").write_text(json.dumps({
+        "type": TYPE_VALUE, "held": {"40 03 05": 16},
+        "prepared": [{"address": HELD_ADDR, "bytes": HELD_BYTES}]}))
+    entry = ledger.build(UNIT, root=tmp_path)["directories"]["both"]
+    assert entry["held"] == {"40 03 05": "10"}
+    assert entry["held_from"] == "manifest"
+    assert ledger.HELD_SOURCES[0] == "manifest"
+
+
+# --------------------------------------------------------------------------
 # Smoke tests: what success criteria 1 and 2 ask of `build` directly.
 # --------------------------------------------------------------------------
 

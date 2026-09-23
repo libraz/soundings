@@ -638,29 +638,80 @@ def _scored_waves(made: Directory, unit: dict, drawn: Path, channel: int, lost: 
     }
 
 
-def bypass_check(dirs: list[Directory], unit: dict[str, dict]) -> dict:
-    """Whether the bypass take stands in for the input where the effect does least.
+def _band_records(root: Path, unit: str, type_: str) -> list[tuple[str, dict]]:
+    """The unit's published `efx-bands` records of one type."""
+    out = []
+    for path in sorted((root / "data" / "units" / unit / "efx-bands").rglob("*.json")):
+        data = json.loads(path.read_text())
+        argv = (data.get("record") or {}).get("invocation") or []
+        said = data.get("type") or next(
+            (argv[i + 1] for i, a in enumerate(argv[:-1]) if a == "--type"), None)
+        if said is not None and ledger.norm_bytes(said) == type_:
+            out.append((path.relative_to(root).as_posix(), data))
+    return out
 
-    Asked only where some compared setting's doing-nothing residual comes within
-    `WITHIN_THE_FLOOR_DB` of its floor. Where none does there is no setting at which
-    the effect is known to be doing nothing, so the question is `not_asked` rather
-    than failed.
+
+def inert_settings(records: list[tuple[str, dict]], address: str, state: dict,
+                   on: dict[str, int]) -> dict[int, str]:
+    """Settings a band record at `address` reads inside its own floor, and which record did.
+
+    Only a record made in `state` -- the same bytes at every other parameter address --
+    speaks for it: a setting inert with one stage switched off is not inert with it on.
     """
-    weakest = None
+    reading = READINGS["efx-bands:largest_db"]
+    found: dict[int, str] = {}
+    for rel, data in records:
+        argv = data["record"]["invocation"]
+        said = data.get("address") or next(
+            (argv[i + 1] for i, a in enumerate(argv[:-1]) if a == "--slot"), None)
+        if ledger.norm_addr(said) != address:
+            continue
+        theirs = bytes_now(on, writes_of(ledger.record_held(argv)), None, None)
+        if any(theirs[a] != state[a] for a in on if a != address):
+            continue
+        floor = floor_of(data, reading)
+        if floor is None:
+            continue
+        for row in data.get("readings") or []:
+            value, largest = row.get("value"), row.get("largest_db")
+            if isinstance(value, int) and isinstance(largest, (int, float)) and (
+                    abs(largest) <= floor):
+                found.setdefault(value, rel)
+    return found
+
+
+def bypass_check(root: Path, unit: str, type_: str, dirs: list[Directory],
+                 waves: dict[str, dict]) -> dict:
+    """Whether the bypass take stands in for the input at settings known to do nothing.
+
+    Asked only at a compared setting a published band record of the type, at the same
+    address and in the same held state, reads inside its own floor; there the unit's
+    take less the bypass take has to land within `WITHIN_THE_FLOOR_DB` of the setting's
+    floor. Which settings do nothing comes from that record, never from this subtraction.
+    """
+    records = _band_records(root, unit, type_)
+    on = power_on(root, unit, type_)
+    asked = []
     for made in dirs:
-        for value, side in unit[made.rel].items():
+        state = bytes_now(on, writes_of(made.entry.get("held")), None, None)
+        inert = inert_settings(records, made.address, state, on)
+        for value, side in waves[made.rel].items():
+            if value not in inert:
+                continue
             floor = float(np.mean(side["floor_pairs"]))
             lifted = side["doing_nothing"] - floor
-            if weakest is None or lifted < weakest[0]:
-                weakest = (lifted, made.rel, value, side["doing_nothing"], floor)
-    if weakest is None:
-        return {"result": "not_asked", "why": "no setting was taken twice, so no floor was read"}
-    lifted, rel, value, nothing, floor = weakest
-    return {
-        "dir": rel, "setting": value, "doing_nothing_db": round(nothing, 2),
-        "floor_db": round(floor, 2), "within_db": WITHIN_THE_FLOOR_DB,
-        "result": "passed" if lifted <= WITHIN_THE_FLOOR_DB else "not_asked",
-    }
+            asked.append({
+                "dir": made.rel, "setting": value, "record": inert[value],
+                "doing_nothing_db": round(side["doing_nothing"], 2),
+                "floor_db": round(floor, 2), "lifted_db": round(lifted, 2),
+                "result": "passed" if lifted <= WITHIN_THE_FLOOR_DB else "failed",
+            })
+    if not asked:
+        return {"result": "not_asked", "why": "no compared setting is one a published band "
+                "record of this type, address and held state reads inside its own floor"}
+    failed = any(a["result"] == "failed" for a in asked)
+    return {"result": "failed" if failed else "passed", "within_db": WITHIN_THE_FLOOR_DB,
+            "asked": asked}
 
 
 def _gates(scored: list[dict], ranking: list[dict]) -> dict:
@@ -986,6 +1037,12 @@ def _published(root: Path, found: dict, type_: str) -> dict[str, tuple[str, list
 TAKE_PATTERNS = ("--bypassed", "--control", "--still", "--reference", "--silence")
 """The flags a reading stage names takes other than its settings by."""
 
+LENGTH_FLAGS = {"--hold": "hold_s", "--lead": "lead_s"}
+"""A stage's flags tied to how long its stimulus was, and the stimulus field each is read from.
+
+`--window` is a stretch the question chose and `--settled` a wait, so neither is here.
+"""
+
 
 def _role_pattern(pattern: str, source: list[dict], made: Directory) -> str | None:
     """The takes of `made` holding the role `pattern`'s own takes held where it was written."""
@@ -1004,10 +1061,17 @@ def templated(root: Path, found: dict, argv: list[str], source_rel: str,
     """A stage's published invocation, aimed at a directory no record of that stage read.
 
     The takes directory becomes `made`'s, `--slot` its address, `--setting` its byte
-    behind its one prefix, and each other take pattern the takes of `made` holding the
-    role the pattern's own takes held. `--held` is left for `read_with`. None where a
-    role has no takes in `made`, or the invocation names single takes.
+    behind its one prefix, each other take pattern the takes of `made` holding the
+    role the pattern's own takes held, and each of `LENGTH_FLAGS` the stage takes the
+    length `made`'s swept stimulus states. `--held` is left for `read_with`. None where
+    a role has no takes in `made`, the swept stimuli do not state one length, or the
+    invocation names single takes.
     """
+    from .cli import build_parser
+
+    lengths = _lengths(argv[0], made, build_parser())
+    if lengths is None:
+        return None
     base = ledger.TAKES_ROOT.as_posix() + "/"
     source_dir = f"{base}{source_rel}"
     if source_dir not in argv or made.prefix is None:
@@ -1030,11 +1094,31 @@ def templated(root: Path, found: dict, argv: list[str], source_rel: str,
             if rebuilt is None:
                 return None
             out += [token, rebuilt]
+        elif token in LENGTH_FLAGS and value is not None:
+            pass
         else:
             out.append(token)
             i += 1
             continue
         i += 1 if token == source_dir else 2
+    for flag, seconds in lengths.items():
+        out += [flag, str(seconds)]
+    return out
+
+
+def _lengths(command: str, made: Directory, parser) -> dict[str, float] | None:
+    """Each length flag the stage takes, as the stimulus of `made`'s swept takes states it."""
+    takes_flags = {s for a in _subparser(parser, command)._actions for s in a.option_strings}
+    names = {str(e["stimulus"]) for items in made.by_setting.values() for e in items}
+    stimuli = [s for s in made.entry.get("stimuli") or [] if s.get("name") in names]
+    out = {}
+    for flag, key in LENGTH_FLAGS.items():
+        if flag not in takes_flags:
+            continue
+        stated = {s.get(key) for s in stimuli}
+        if len(stated) != 1 or None in stated:
+            return None
+        out[flag] = stated.pop()
     return out
 
 
@@ -1048,11 +1132,13 @@ class _Class:
     floor_db: float | None
     used: str
     chosen_by: str
+    standing: int | None = None
 
     def shown(self, dirs: list[Directory]) -> dict:
         return {"class": self.name, "used": self.used, "chosen_by": self.chosen_by,
                 "floor_db": None if self.floor_db is None else round(self.floor_db, 2),
-                "settings": self.settings, "dirs": [m.rel for m in dirs]}
+                "settings": self.settings, "standing": self.standing,
+                "dirs": [m.rel for m in dirs]}
 
 
 def _classes(made: list[Directory], waves: dict, static: bool) -> list[_Class]:
@@ -1087,6 +1173,29 @@ def _classes(made: list[Directory], waves: dict, static: bool) -> list[_Class]:
         return (1, -c.settings, floor, str(c.name))
 
     return sorted(found, key=order)
+
+
+def p1_class(classes: list[_Class], standing: dict) -> tuple[_Class, list[_Class]]:
+    """Stage 8's class, and the rest in their order.
+
+    The class with the most settings where the unit's own side shows the effect
+    standing; a tie goes to `waves`, then to the lower floor.
+    """
+
+    def order(c: _Class):
+        floor = math.inf if c.floor_db is None else c.floor_db
+        return (-standing.get(c.name, 0), c.used != "waves", floor, -c.settings, str(c.name))
+
+    first = min(classes, key=order)
+    return first, [c for c in classes if c is not first]
+
+
+def _waves_standing(dirs: list[Directory], waves: dict) -> int:
+    """Settings where the unit less its bypass take lands more than the floor margin over it."""
+    return sum(
+        1 for m in dirs for side in waves[m.rel][1].values()
+        if side["doing_nothing"] - float(np.mean(side["floor_pairs"])) > WITHIN_THE_FLOOR_DB
+    )
 
 
 class _Phase:
@@ -1169,6 +1278,13 @@ class _Phase:
         wet = Path(argv[2]).name
         return next((v for v, items in made.by_setting.items()
                      if any(e["file"] == wet for e in items)), None)
+
+    def standing(self) -> int:
+        """Settings at which some stage admitted a reading of the unit's own takes."""
+        return len({
+            key for stage in self.stages.values() for key, vectors in stage["unit"].items()
+            if any(x is not None for vector in vectors for x in vector)
+        })
 
     def compared(self) -> list[tuple[str, int]]:
         keys = {(rel, v) for rel, per in self.unit.items() for v in per}
@@ -1398,8 +1514,9 @@ def _delay_rows(model: dict) -> list[str]:
 def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = None) -> dict:
     """Stages 7-9 for one type, or the identity control alone when no class is named.
 
-    Stage 8 takes the stimulus class `_classes` puts first; stage 9 up to two
-    directories of the classes after it, each compared the way its own class is.
+    Stage 8 takes the stimulus class `p1_class` picks from the unit's side alone; a
+    waves class whose bypass check fails is compared by readings instead. Stage 9 takes
+    up to two directories of the classes after it, each compared the way its class is.
     """
     root = Path(root)
     type_ = type_of(type_)
@@ -1427,12 +1544,24 @@ def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = N
             channel = loudest(m)
             waves[m.rel] = (channel, _unit_waves(m, channel))
     classes = _classes(made, waves, static)
-    first, rest = classes[0], classes[1:]
     published = _published(root, found, type_)
+    phases: dict = {}
+    for cls in classes:
+        if cls.used == "waves":
+            cls.standing = _waves_standing(cls.dirs, waves)
+        else:
+            phases[cls.name] = _Phase(root, found, type_, [(cls, cls.dirs)], waves, published)
+            cls.standing = phases[cls.name].standing()
+    first, rest = p1_class(classes, {c.name: c.standing for c in classes})
     check = None
     if first.used == "waves":
-        check = bypass_check(first.dirs, {m.rel: waves[m.rel][1] for m in first.dirs})
-    phase = _Phase(root, found, type_, [(first, first.dirs)], waves, published)
+        check = bypass_check(root, unit, type_, first.dirs,
+                             {m.rel: waves[m.rel][1] for m in first.dirs})
+        if check["result"] == "failed":
+            first.used, first.chosen_by = "readings", "bypass_check_failed"
+    phase = phases.get(first.name) if first.name in phases else None
+    if phase is None:
+        phase = _Phase(root, found, type_, [(first, first.dirs)], waves, published)
     comparison = {"used": first.used, "chosen_by": first.chosen_by}
     block, shown, gate, drawn_on, needs = _run(
         phase, candidates, comparison, [first.shown(first.dirs)], check)
@@ -1440,7 +1569,7 @@ def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = N
     block.pop("_scored", None)
     if not candidates:
         return {**result, "control": block["control"], "compared": block["compared"],
-                "comparison": comparison, **tail}
+                "comparison": comparison, "classes": block["classes"], **tail}
 
     shown = shown or candidates[0]
     result["p0"] = {"model": shown.shown_as, "model_sha256": shown.sha256,
@@ -1486,6 +1615,8 @@ __all__ = [
     "bytes_now",
     "candidate",
     "fitted_on",
+    "inert_settings",
+    "p1_class",
     "power_on",
     "render_directory",
     "scored_readings",

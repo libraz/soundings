@@ -38,7 +38,7 @@ TONE = {
     "name": "tone", "program": 16, "note": 81, "velocity": 100, "channel": 1,
     "writes": [], "volume": 100, "hold_s": 1.6, "lead_s": 0.2,
 }
-# Stage 8 takes the commonest stimulus class, a tie going to the name first in order,
+# Stage 8 takes the class the effect stands in most often, a tie going to the lower floor,
 # so with one directory each `tone` is stage 8 and `voice` stage 9.
 VOICE = {**TONE, "name": "voice", "program": 17, "note": 76}
 PARTIALS = {"tone": ((440, 0.1), (880, 0.05), (1320, 0.03), (1760, 0.02)),
@@ -519,19 +519,102 @@ def test_a_take_is_a_setting_when_its_name_is_a_byte_behind_one_prefix():
 # ---------------------------------------------------------------- the bypass check
 
 
-def _weakest(lifted: dict[int, float]) -> dict:
-    made = [type("Made", (), {"rel": "d"})()]
-    unit = {"d": {v: {"floor_pairs": [-40.0], "doing_nothing": -40.0 + x}
-                  for v, x in lifted.items()}}
-    return stages.bypass_check(made, unit)
+INERT_RECORD = "data/units/fixture-unit/efx-bands/inert.json"
 
 
-def test_the_bypass_check_is_asked_only_where_a_setting_reaches_the_floor():
-    asked = _weakest({0: 1.0, 64: 20.0})
-    assert asked["result"] == "passed" and asked["setting"] == 0
-    unasked = _weakest({64: 20.0, 127: 30.0})
-    assert unasked["result"] == "not_asked" and unasked["setting"] == 64
-    assert "passed" not in unasked or unasked["passed"] is not False
+def _inert_record(root: Path, *, inert_at: int, address: str = "40 03 05",
+                  held: tuple[str, ...] = ("40 42 22=01",)) -> None:
+    """A band record of the type reading one setting inside its own floor and one far out."""
+    argv = ["efx-bands", ".cache/takes/elsewhere", "--type", TYPE, "--slot", address]
+    for pair in held:
+        argv += ["--held", pair]
+    loud = 127 if inert_at != 127 else 0
+    _write(root / INERT_RECORD, {
+        "record": {"invocation": [*argv, "--out", INERT_RECORD]},
+        "type": TYPE, "address": address, "reference": {"floor_db": [0.1, 0.3]},
+        "readings": [{"value": inert_at, "largest_db": -0.2}, {"value": loud, "largest_db": 6.0}],
+    })
+
+
+@pytest.fixture(scope="module")
+def bypass_root(tmp_path_factory) -> Path:
+    return _waves_tree(tmp_path_factory.mktemp("bypass"))
+
+
+def test_the_bypass_check_passes_at_a_setting_a_band_record_reads_as_inert(bypass_root):
+    # At 0 the comb crossfades to the dry path alone, so the unit is doing nothing there.
+    _inert_record(bypass_root, inert_at=0)
+    found = stages.stage(bypass_root, UNIT, TYPE)
+    check = found["control"]["bypass_check"]
+    assert check["result"] == "passed"
+    assert [(a["dir"], a["setting"], a["record"]) for a in check["asked"]] == [
+        (WAVES_DIR, 0, INERT_RECORD)]
+    assert found["comparison"] == {"used": "waves", "chosen_by": "by_repeatability_class"}
+
+
+def test_the_bypass_check_fails_where_the_unit_is_not_doing_nothing(bypass_root):
+    # A record calling 127 inert is contradicted by the unit's own takes there.
+    _inert_record(bypass_root, inert_at=127)
+    found = stages.stage(bypass_root, UNIT, TYPE)
+    check = found["control"]["bypass_check"]
+    assert check["result"] == "failed"
+    assert [(a["dir"], a["setting"]) for a in check["asked"]] == [(WAVES_DIR, 127)]
+    assert check["asked"][0]["lifted_db"] > stages.WITHIN_THE_FLOOR_DB
+    assert found["comparison"] == {"used": "readings", "chosen_by": "bypass_check_failed"}
+
+
+@pytest.mark.parametrize("record", [
+    {"inert_at": 50},
+    {"inert_at": 0, "address": "40 03 03"},
+    {"inert_at": 0, "held": ("40 42 22=01", "40 03 03=7F")},
+], ids=["a-setting-not-compared", "another-address", "another-held-state"])
+def test_the_bypass_check_is_not_asked_without_an_inert_setting_of_this_state(bypass_root,
+                                                                               record):
+    _inert_record(bypass_root, **record)
+    found = stages.stage(bypass_root, UNIT, TYPE)
+    assert found["control"]["bypass_check"]["result"] == "not_asked"
+    assert found["comparison"]["used"] == "waves"
+
+
+# ---------------------------------------------------------------- which class is stage 8's
+
+
+def _cls(name, used, floor, settings=5):
+    return stages._Class(name, [], settings, floor, used, "by_repeatability_class")
+
+
+def test_stage_8_takes_the_class_the_effect_stands_in_most_often():
+    quiet = _cls("struck", "waves", -50.0)
+    walked = _cls("held", "readings", None, settings=136)
+    first, rest = stages.p1_class([quiet, walked], {"struck": 0, "held": 40})
+    assert first is walked and rest == [quiet]
+
+
+def test_a_tie_on_standing_settings_goes_to_waves_then_to_the_lower_floor():
+    waves_high = _cls("a", "waves", -30.0)
+    waves_low = _cls("b", "waves", -45.0)
+    readings = _cls("c", "readings", -60.0)
+    first, rest = stages.p1_class([readings, waves_high, waves_low],
+                                  {"a": 3, "b": 3, "c": 3})
+    assert first is waves_low
+    # The rest keep the order they were given in, which is the order stage 9 takes them.
+    assert [c.name for c in rest] == ["c", "a"]
+
+
+def test_stage_8_is_not_the_quietest_class_when_the_effect_does_nothing_there(tmp_path):
+    root = _tree(tmp_path, static=True)
+    a = _comb("whole-0124-linear", "linear")
+    _put_model(root, a)
+    _directory(root, WAVES_DIR, stimulus=TONE, address="40 03 05", seconds=2.0,
+               draw=_drawn_by(root, None, "40 03 05"), seed=0)
+    _directory(root, WAVES_P2, stimulus=VOICE, address="40 03 05", seconds=2.0,
+               draw=_drawn_by(root, a, "40 03 05"), seed=1)
+    _ledger(root, {WAVES_DIR: {"address": "40 03 05", "stimulus": TONE},
+                   WAVES_P2: {"address": "40 03 05", "stimulus": VOICE}})
+    found = stages.stage(root, UNIT, TYPE)
+    assert {row["dir"] for row in found["compared"]} == {WAVES_P2}
+    assert [c["class"] for c in found["classes"]] == ["voice"]
+    assert found["classes"][0]["standing"] == len(SETTINGS) - 1
 
 
 # ---------------------------------------------------------------- one comparison per class
@@ -652,6 +735,37 @@ def test_a_directory_no_record_read_is_read_from_the_types_own_invocation(tmp_pa
     assert {(r["dir"], r["setting"]) for r in p2["compared"]} == {
         (RATE_P2, v) for v in SETTINGS}
     assert p2["control"]["separated"] is True
+
+
+def test_a_template_reads_the_length_of_the_stimulus_it_is_aimed_at(tmp_path):
+    root = _tree(tmp_path, static=False)
+    short = {**RATE_VOICE, "hold_s": 2.5, "lead_s": 0.3}
+    unstated = {**RATE_VOICE, "hold_s": None}
+    for rel, stim in ((RATE_DIR, RATE_TONE), (RATE_P2, short), ("syn/unstated", unstated)):
+        _directory(root, rel, stimulus={**stim, "hold_s": stim["hold_s"] or 1.0},
+                   address="40 03 03", seconds=3.0, draw=_drawn_by(root, None, "40 03 03"),
+                   seed=3)
+    _ledger(root, {RATE_DIR: {"address": "40 03 03", "stimulus": RATE_TONE},
+                   RATE_P2: {"address": "40 03 03", "stimulus": short},
+                   "syn/unstated": {"address": "40 03 03", "stimulus": unstated}})
+    found = json.loads((root / ".cache/takes-ledger.json").read_text())
+    base = ["efx-rate", f".cache/takes/{RATE_DIR}", "--type", TYPE, "--slot", "40 03 03",
+            "--setting", r"tone-v(?P<value>\d{3})-\d+"]
+
+    def aimed(argv, rel=RATE_P2):
+        return stages.templated(root, found, argv, RATE_DIR, stages.directory(root, found, rel))
+
+    def flag(argv, name):
+        return [argv[i + 1] for i, a in enumerate(argv) if a == name]
+
+    held_long = aimed([*base, "--hold", "4.0", "--lead", "0.6"])
+    assert flag(held_long, "--hold") == ["2.5"] and flag(held_long, "--lead") == ["0.3"]
+    # A flag the template left to the stage's default is still the target's own length.
+    defaulted = aimed(base)
+    assert flag(defaulted, "--hold") == ["2.5"] and flag(defaulted, "--lead") == ["0.3"]
+    # A length the target does not state is not borrowed from the template's directory.
+    assert aimed([*base, "--hold", "4.0"], rel="syn/unstated") is None
+    assert stages.LENGTH_FLAGS == {"--hold": "hold_s", "--lead": "lead_s"}
 
 
 def test_records_in_two_units_are_gated_once_per_unit():

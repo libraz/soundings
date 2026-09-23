@@ -49,7 +49,7 @@ type, and a summary line built from it could not be checked from the outside
 """
 
 TYPE_SOURCES = ("manifest_type", "manifest_prepared", "citing_record", "dirname")
-HELD_SOURCES = ("manifest_prepared", "citing_invocation", "citing_intermediate")
+HELD_SOURCES = ("manifest", "manifest_prepared", "citing_invocation", "citing_intermediate")
 
 
 # --------------------------------------------------------------------------
@@ -157,7 +157,7 @@ def _record_type(argv: list[str], payload: dict) -> str | None:
     return None
 
 
-def _record_held(argv: list[str]) -> dict[str, str]:
+def record_held(argv: list[str]) -> dict[str, str]:
     """The address=bytes pairs a record's own `--held` and `--prepare` flags carry."""
     held: dict[str, str] = {}
     for flag in ("--held", "--prepare"):
@@ -327,7 +327,7 @@ def _scan_records(
             continue
         record_id = _display_path(path, root)
         record_type = _record_type(argv, data)
-        record_held = _record_held(argv)
+        said_held = record_held(argv)
         setting_pattern = (_flag_values(argv, "--setting") or [None])[-1]
         slot_flag = (_flag_values(argv, "--slot") or [None])[-1]
         stimulus_flag = (_flag_values(argv, "--stimulus") or [None])[-1]
@@ -352,7 +352,7 @@ def _scan_records(
                         via="direct" if not trail else trail,
                         measured_at=measured_at,
                         record_type=record_type,
-                        record_held=record_held,
+                        record_held=said_held,
                         setting_pattern=setting_pattern,
                         slot_flag=slot_flag,
                         stimulus_flag=stimulus_flag,
@@ -555,10 +555,53 @@ def _with_class(entry: dict) -> dict:
     return {**entry, "class": cls}
 
 
+def _per_byte(held: dict[str, str]) -> dict[str, str]:
+    """A held block one byte per address, a multi-byte value spread over the addresses after it."""
+    out: dict[str, str] = {}
+    for address, values in held.items():
+        *head, last = address.split()
+        for i, byte in enumerate((values or "").split()):
+            out[" ".join([*head, f"{int(last, 16) + i:02X}"])] = byte
+    return out
+
+
+def _disagree(one: dict[str, str], other: dict[str, str]) -> bool:
+    """Whether two held blocks write different bytes to an address both name."""
+    a, b = _per_byte(one), _per_byte(other)
+    return any(a[k] != b[k] for k in a.keys() & b.keys())
+
+
+def _manifest_held(manifest: dict) -> dict[str, str] | None:
+    """The run's own `held`, `{address: byte}`, in the shape the ledger keeps held in."""
+    stated = manifest.get("held")
+    if not isinstance(stated, dict):
+        return None
+    return {
+        norm_addr(address): f"{value:02X}" if isinstance(value, int) else norm_bytes(str(value))
+        for address, value in stated.items()
+    }
+
+
 def _resolve_held(
     manifest: dict, dir_type: str | None, consumed: list[Hit]
 ) -> tuple[dict[str, str] | None, str | None, list[dict] | None]:
     conflicts: list[dict] = []
+
+    stated = _manifest_held(manifest)
+    if stated is not None:
+        disputed: list[dict] = []
+        for hit in consumed:
+            if not hit.record_held:
+                continue
+            if hit.record_type is None or hit.record_type != dir_type:
+                conflicts.append({"record": hit.record_id, "source": "citing_invocation",
+                                  "record_type": hit.record_type, "dir_type": dir_type})
+            elif _disagree(stated, hit.record_held):
+                disputed.append({"source": "citing_invocation", "record": hit.record_id,
+                                 "value": hit.record_held})
+        if disputed:
+            conflicts = [{"source": "manifest", "value": stated}, *disputed, *conflicts]
+        return stated, "manifest", (conflicts or None)
 
     manifest_prepared = _payload_prepared(manifest)
     if manifest_prepared:
@@ -781,6 +824,7 @@ __all__ = [
     "load",
     "norm_addr",
     "norm_bytes",
+    "record_held",
     "row",
     "rewritten",
     "take_settings",
