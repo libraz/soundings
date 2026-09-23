@@ -960,7 +960,6 @@ def _graph_model_errors(model: dict, root: Path) -> list[str]:
                 "outside the closed vocabulary"
             )
 
-    bound_addresses: set[str] = set()
     sources_by_address: dict[str, set] = {}
     for path, spec in _dicts_with_paths(model["nodes"], "nodes"):
         has_byte_map = "byte" in spec and "map" in spec
@@ -979,7 +978,6 @@ def _graph_model_errors(model: dict, root: Path) -> list[str]:
         if "fitted_on" not in spec:
             errors.append(f"{path} has no `fitted_on`")
         if has_byte_map:
-            bound_addresses.add(spec["byte"])
             sources_by_address.setdefault(spec["byte"], set()).add(spec.get("source"))
 
     for address, sources in sources_by_address.items():
@@ -989,6 +987,9 @@ def _graph_model_errors(model: dict, root: Path) -> list[str]:
                 "measured-sourced value"
             )
 
+    from soundings.render import graph
+
+    bound_addresses = graph.addresses_read(model, models_dir=root / "inferences" / "models")
     rows = model["rows"]
     for address, state in rows.items():
         if state not in ROW_STATES:
@@ -1071,3 +1072,26 @@ def test_the_six_bad_fixtures_are_rejected_for_six_different_reasons():
         reasons.extend(_graph_model_errors(json.loads((FIXTURES / name).read_text()), FIXTURE_ROOT))
     assert len(reasons) == 6
     assert len(set(reasons)) == 6
+
+
+def test_a_row_bound_through_an_lti_nodes_chain_is_read_by_both_checks(tmp_path):
+    """The renderer and this check answer "which addresses does the graph read" alike."""
+    import shutil
+
+    from soundings.render import graph
+
+    root = tmp_path / "root"
+    shutil.copytree(FIXTURE_ROOT, root)
+    models = root / "inferences" / "models"
+    models.mkdir(parents=True)
+    chain = "0100-first-order-shelves-peaking-tables.json"
+    shutil.copy(ROOT / "inferences" / "models" / chain, models / chain)
+    model = json.loads((FIXTURES / "good-graph.json").read_text())
+    model["nodes"] = [{"id": "eq", "kind": "lti", "input": "in_l", "model": chain}]
+    model["inputs"], model["outputs"] = ["in_l"], {"out_l": "eq"}
+    read = graph.addresses_read(model, models_dir=models)
+    printed = _printed_addresses(root, "fixture-unit", "01 24")
+    model["rows"] = {**dict.fromkeys(printed, "fixed_at_power_on"), **dict.fromkeys(read, "bound")}
+    assert read and all(a.startswith("40 03 ") for a in read)
+    assert _graph_model_errors(model, root) == []
+    graph.load_graph(model, models_dir=models, root=root)

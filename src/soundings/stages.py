@@ -2,10 +2,12 @@
 
 A candidate `graph` model is drawn on the unit's own bypass takes -- the effect's
 input -- and what it drew is compared with the unit's takes in one of two ways,
-chosen mechanically. `waves` subtracts takes, for a type the repeatability sort
-calls static; `readings` reads both sides with the stages that published the type's
-records, for one that moves. Either comparison is put into the shape
-`reproduce.gates` scores, and the gates are not changed.
+chosen mechanically per stimulus class. `waves` subtracts takes, for a type the
+repeatability sort calls static under a stimulus whose takes repeat; `readings`
+reads both sides with the stages that published the type's records, and a directory
+none of them read is read by the type's own invocation of that stage re-aimed at it.
+Either comparison is put into the shape `reproduce.gates` scores, once per unit a
+record is measured in, and the gates are not changed.
 
 Every comparison is run twice: for the candidate, and for `IDENTITY`, which draws
 the bypass take back unchanged. A comparison the identity passes could not have
@@ -40,13 +42,24 @@ from .render import graph
 
 RENDERED_ROOT = Path(".cache/rendered")
 
-SETTING = re.compile(r"^v(\d{3})$")
-"""A take of one setting, as `walk` names it: the byte, zero-padded."""
+SWEPT = re.compile(r"^(?P<prefix>(?:.*\D)?)(?P<value>\d{1,3})$")
+"""A take of one setting: the byte, behind whatever prefix the run named its sweep with."""
 
 BYPASS = re.compile(r"^(out|bypassed|bypassed-\d+)$")
 """A take with the effect routed out of the path, which is the effect's input."""
 
-SILENCE = "silence"
+SILENCE = re.compile(r"^silence(-\d+)?$")
+REFERENCE = re.compile(r"^flat(-\d+)?$")
+"""The repeats of the setting a run held flat, which a band reading is taken against."""
+
+ONE_ADDRESS = re.compile(rf"^{EFFECT_BLOCK} [0-9A-F]{{2}}$")
+"""A directory a drawing can be made for sweeps one address of the effect's own block."""
+
+REPEATS_BELOW_DB = -20.0
+"""A stimulus class whose same-setting subtraction lands above this is compared by readings.
+
+Measured: struck notes subtract to -28 to -55 dB, applause and noise to -0.3 and -0.1.
+"""
 
 STIMULUS_FIELDS = ("name", "program", "note", "velocity", "channel", "writes", "volume", "hold_s")
 """What two directories' stimuli must share for one's bypass take to feed the other."""
@@ -188,9 +201,34 @@ def bytes_now(on: dict[str, int], writes, address: str | None, value: int | None
     return now
 
 
-def setting_value(name) -> int | None:
-    found = SETTING.match(str(name))
-    return int(found.group(1)) if found else None
+def role(setting) -> str | None:
+    """What a take is to a comparison: `bypass`, `silence`, `reference`, `swept` or nothing."""
+    text = str(setting)
+    for name, pattern in (("bypass", BYPASS), ("silence", SILENCE), ("reference", REFERENCE)):
+        if pattern.match(text):
+            return name
+    found = SWEPT.match(text)
+    return "swept" if found and int(found.group("value")) <= 127 else None
+
+
+def swept_bytes(settings: dict) -> dict:
+    """Each swept take's byte, or nothing where the takes sweep under more than one prefix.
+
+    Two prefixes are two things swept in one directory, and which address a take's
+    byte was written to is then not said by the take.
+    """
+    found, prefixes = {}, set()
+    for key, setting in settings.items():
+        if role(setting) == "swept":
+            match = SWEPT.match(str(setting))
+            prefixes.add(match.group("prefix"))
+            found[key] = int(match.group("value"))
+    return found if len(prefixes) == 1 else {}
+
+
+def _prefix(settings: dict) -> str | None:
+    kept = {SWEPT.match(str(s)).group("prefix") for s in settings.values() if role(s) == "swept"}
+    return kept.pop() if len(kept) == 1 else None
 
 
 # ---------------------------------------------------------------- the ledger
@@ -222,11 +260,12 @@ def _ledger(root: Path, type_: str) -> dict:
 
 
 def directories(found: dict, type_: str) -> list[str]:
-    """The ledger's directories of a type holding at least one setting take."""
+    """The ledger's directories of a type sweeping one address of the effect's block."""
     return sorted(
         rel for rel, entry in found["directories"].items()
         if entry.get("type") == type_
-        and any(setting_value(s) is not None for s in (entry.get("settings") or {}))
+        and ONE_ADDRESS.match(entry.get("address") or "")
+        and swept_bytes({s: s for s in entry.get("settings") or {}})
     )
 
 
@@ -245,20 +284,46 @@ class Directory:
     address: str | None
     entry: dict
     by_setting: dict[int, list[dict]]
+    items: list[dict] = field(default_factory=list)
     bypass: dict[str, list[Path]] = field(default_factory=dict)
     input_from: dict[str, str] = field(default_factory=dict)
+
+    def of_role(self, name: str) -> list[dict]:
+        return [e for e in self.items if role(e["setting"]) == name]
+
+    @property
+    def prefix(self) -> str | None:
+        return _prefix({e["file"]: e["setting"] for e in self.items})
 
     @property
     def classes(self) -> set[str]:
         return {s.get("class") for s in self.entry.get("stimuli") or [] if s.get("class")}
 
 
-def _bypasses(where: Path) -> dict[str, list[Path]]:
+def _takes(root: Path, found: dict, rel: str) -> list[dict]:
+    """A directory's takes on disk, each with the setting the ledger's resolution gives it.
+
+    The stimulus is the manifest's, or the directory's one stimulus where it names one.
+    """
+    where = root / ledger.TAKES_ROOT / rel
+    entry = found["directories"][rel]
+    settings = ledger.take_settings(root, rel, entry)
     listed, _ = takes.listing(where)
+    named = [s.get("name") for s in entry.get("stimuli") or []]
+    only = named[0] if len(named) == 1 else None
+    out = [
+        {**listed.get(name, {}), "file": name, "setting": setting,
+         "stimulus": listed.get(name, {}).get("stimulus", only)}
+        for name, setting in settings.items() if (where / name).is_file()
+    ]
+    return sorted(out, key=lambda e: (e.get("take", 0), e["file"]))
+
+
+def _bypasses(items: list[dict], where: Path) -> dict[str, list[Path]]:
     found: dict[str, list[Path]] = {}
-    for name, entry in sorted(listed.items(), key=lambda kv: (kv[1].get("take", 0), kv[0])):
-        if BYPASS.match(str(entry.get("setting"))):
-            found.setdefault(str(entry.get("stimulus")), []).append(where / name)
+    for item in items:
+        if role(item["setting"]) == "bypass":
+            found.setdefault(str(item["stimulus"]), []).append(where / item["file"])
     return found
 
 
@@ -266,14 +331,17 @@ def directory(root: Path, found: dict, rel: str) -> Directory:
     """One ledger directory, its setting takes grouped, its input found or not."""
     where = root / ledger.TAKES_ROOT / rel
     entry = found["directories"][rel]
-    listed, _ = takes.listing(where)
+    items = _takes(root, found, rel)
+    bytes_ = swept_bytes({e["file"]: e["setting"] for e in items})
+    if not ONE_ADDRESS.match(entry.get("address") or ""):
+        bytes_ = {}
     by_setting: dict[int, list[dict]] = {}
-    for name, item in sorted(listed.items(), key=lambda kv: (kv[1].get("take", 0), kv[0])):
-        value = setting_value(item.get("setting"))
-        if value is not None and (where / name).is_file():
-            by_setting.setdefault(value, []).append({**item, "file": name})
-    made = Directory(rel, where, entry.get("address"), entry, dict(sorted(by_setting.items())))
-    own = _bypasses(where)
+    for item in items:
+        if item["file"] in bytes_:
+            by_setting.setdefault(bytes_[item["file"]], []).append(item)
+    made = Directory(rel, where, entry.get("address"), entry, dict(sorted(by_setting.items())),
+                     items)
+    own = _bypasses(items, where)
     stimuli = {str(e["stimulus"]) for items in by_setting.values() for e in items}
     for name in sorted(stimuli):
         if own.get(name):
@@ -288,7 +356,8 @@ def directory(root: Path, found: dict, rel: str) -> Directory:
                 (s for s in theirs.get("stimuli") or [] if _stimulus_key(s) == key), None)
             if other == rel or match is None:
                 continue
-            there = _bypasses(root / ledger.TAKES_ROOT / other).get(match["name"])
+            there = _bypasses(_takes(root, found, other),
+                              root / ledger.TAKES_ROOT / other).get(match["name"])
             if there:
                 made.bypass[name], made.input_from[name] = there, other
                 break
@@ -357,11 +426,7 @@ def _values(item):
 def _setting(value):
     if isinstance(value, int):
         return value
-    text = str(value)
-    if text.isdigit():
-        return int(text)
-    found = setting_value(text)
-    return text if found is None else found
+    return swept_bytes({0: value}).get(0, str(value))
 
 
 def _rel(text: str) -> str:
@@ -450,12 +515,10 @@ def render_directory(
     entry = made.entry
     on = power_on(root, found["unit"], entry["type"])
     writes = writes_of(entry.get("held"))
-    listed, _ = takes.listing(made.where)
     kept_entries, unrenderable = [], []
-    for name, item in sorted(listed.items()):
-        setting = str(item.get("setting"))
-        if BYPASS.match(setting) or setting == SILENCE:
-            shutil.copy2(made.where / name, out / name)
+    for item in made.items:
+        if role(item["setting"]) in ("bypass", "silence", "reference"):
+            shutil.copy2(made.where / item["file"], out / item["file"])
             kept_entries.append(item)
     for value, items in made.by_setting.items():
         now = bytes_now(on, writes, made.address, value)
@@ -520,8 +583,9 @@ def _unit_waves(made: Directory, channel: int) -> dict:
     return {v: s for v, s in per.items() if s["floor_pairs"]}
 
 
-def _scored_waves(rel: str, unit: dict, drawn: Path, channel: int, lost: set) -> dict:
+def _scored_waves(made: Directory, unit: dict, drawn: Path, channel: int, lost: set) -> dict:
     """One directory in the shape `reproduce.gates` scores, per the `waves` table."""
+    rel = made.rel
     all_pairs = [f for s in unit.values() for f in s["floor_pairs"]]
     floor = float(np.std(all_pairs)) if len(all_pairs) > 1 else 0.0
     levels = [x for s in unit.values() for x in s["level_pairs"]]
@@ -534,7 +598,8 @@ def _scored_waves(rel: str, unit: dict, drawn: Path, channel: int, lost: set) ->
     for value, side in unit.items():
         if (rel, value) in lost:
             continue
-        names = [drawn / p for p in _setting_files(drawn, value)]
+        names = [drawn / e["file"] for e in made.by_setting[value]
+                 if (drawn / e["file"]).is_file()]
         subtractions = [reproduce.subtracted(u, _wave(n, channel))
                         for u, n in zip(side["waves"], names, strict=False)]
         model[value] = float(np.mean([s["residual_db"] for s in subtractions]))
@@ -573,15 +638,14 @@ def _scored_waves(rel: str, unit: dict, drawn: Path, channel: int, lost: set) ->
     }
 
 
-def _setting_files(drawn: Path, value: int) -> list[str]:
-    listed, _ = takes.listing(drawn)
-    items = [(e.get("take", 0), n) for n, e in listed.items()
-             if setting_value(e.get("setting")) == value and (drawn / n).is_file()]
-    return [n for _, n in sorted(items)]
-
-
 def bypass_check(dirs: list[Directory], unit: dict[str, dict]) -> dict:
-    """Whether the bypass take stands in for the input where the effect does least."""
+    """Whether the bypass take stands in for the input where the effect does least.
+
+    Asked only where some compared setting's doing-nothing residual comes within
+    `WITHIN_THE_FLOOR_DB` of its floor. Where none does there is no setting at which
+    the effect is known to be doing nothing, so the question is `not_asked` rather
+    than failed.
+    """
     weakest = None
     for made in dirs:
         for value, side in unit[made.rel].items():
@@ -590,13 +654,33 @@ def bypass_check(dirs: list[Directory], unit: dict[str, dict]) -> dict:
             if weakest is None or lifted < weakest[0]:
                 weakest = (lifted, made.rel, value, side["doing_nothing"], floor)
     if weakest is None:
-        return {"passed": False, "why": "no setting was taken twice, so no floor was read"}
+        return {"result": "not_asked", "why": "no setting was taken twice, so no floor was read"}
     lifted, rel, value, nothing, floor = weakest
     return {
         "dir": rel, "setting": value, "doing_nothing_db": round(nothing, 2),
         "floor_db": round(floor, 2), "within_db": WITHIN_THE_FLOOR_DB,
-        "passed": lifted <= WITHIN_THE_FLOOR_DB,
+        "result": "passed" if lifted <= WITHIN_THE_FLOOR_DB else "not_asked",
     }
+
+
+def _gates(scored: list[dict], ranking: list[dict]) -> dict:
+    """`reproduce.gates` once per unit a record is measured in; a gate passes where all do."""
+    by: dict[str, list[dict]] = {}
+    for item in scored:
+        by.setdefault(item.get("measured_in", "dB"), []).append(item)
+    if len(by) <= 1:
+        return reproduce.gates(scored, ranking=ranking)
+    per = {unit: reproduce.gates(items, ranking=ranking) for unit, items in sorted(by.items())}
+    combined = {g: {"passed": all(p[g]["passed"] for p in per.values())} for g in GATES}
+    # A share of a span has no unit, so the worst of them is one number; a span is not.
+    combined["gross"]["residual_over_span"] = max(
+        p["gross"]["residual_over_span"] for p in per.values())
+    combined["gross"]["span"] = None
+    return {"measured_in": sorted(per), "by_measured_in": per, **combined}
+
+
+def _each_unit(gates: dict) -> list[dict]:
+    return list(gates["by_measured_in"].values()) if "by_measured_in" in gates else [gates]
 
 
 # ---------------------------------------------------------------- readings
@@ -863,14 +947,14 @@ def separated(scored: list[dict]) -> bool:
     carrying = [s for s in scored if not s["is_null_record"] and s["span"] > 0]
     if not carrying:
         return False
-    found = reproduce.gates(scored, ranking=[])
+    found = _gates(scored, [])
     return not found["gross"]["passed"] or not found["breakdown"]["passed"]
 
 
-def _consumers(root: Path, found: dict, made: Directory, type_: str) -> list[tuple[str, dict]]:
+def _consumers(root: Path, entry: dict, type_: str) -> list[tuple[str, dict]]:
     """The published records of this type in `READINGS` stages that read a directory."""
     out = []
-    for hit in made.entry.get("consumed_by") or []:
+    for hit in entry.get("consumed_by") or []:
         path = root / hit["record"]
         if not path.is_file():
             continue
@@ -885,33 +969,187 @@ def _consumers(root: Path, found: dict, made: Directory, type_: str) -> list[tup
     return sorted(out, key=lambda item: item[0])
 
 
-class _Phase:
-    """One comparison over a set of directories, shared by every model it is run on."""
+def _published(root: Path, found: dict, type_: str) -> dict[str, tuple[str, list[str]]]:
+    """Each reading stage with a published record of this type: its first record's directory
+    and invocation, which a directory no record of that stage read is read from."""
+    firsts: dict[str, tuple[str, str, list[str]]] = {}
+    for rel, entry in sorted(found["directories"].items()):
+        if entry.get("type") != type_:
+            continue
+        for record, data in _consumers(root, entry, type_):
+            argv = data["record"]["invocation"]
+            if argv[0] not in firsts or record < firsts[argv[0]][0]:
+                firsts[argv[0]] = (record, rel, argv)
+    return {command: (rel, argv) for command, (_, rel, argv) in sorted(firsts.items())}
 
-    def __init__(self, root, found, type_, dirs, mode, inherited=None):
-        self.root, self.found, self.type, self.dirs, self.mode = root, found, type_, dirs, mode
+
+TAKE_PATTERNS = ("--bypassed", "--control", "--still", "--reference", "--silence")
+"""The flags a reading stage names takes other than its settings by."""
+
+
+def _role_pattern(pattern: str, source: list[dict], made: Directory) -> str | None:
+    """The takes of `made` holding the role `pattern`'s own takes held where it was written."""
+    compiled = re.compile(pattern)
+    roles = {role(e["setting"]) for e in source if takes.named_by(compiled, e, e["file"])[1]}
+    if len(roles) != 1 or None in roles:
+        return None
+    mine = sorted({e["setting"] for e in made.of_role(roles.pop())})
+    if not mine:
+        return None
+    return "^(?:" + "|".join(re.escape(s) for s in mine) + ")$"
+
+
+def templated(root: Path, found: dict, argv: list[str], source_rel: str,
+              made: Directory) -> list[str] | None:
+    """A stage's published invocation, aimed at a directory no record of that stage read.
+
+    The takes directory becomes `made`'s, `--slot` its address, `--setting` its byte
+    behind its one prefix, and each other take pattern the takes of `made` holding the
+    role the pattern's own takes held. `--held` is left for `read_with`. None where a
+    role has no takes in `made`, or the invocation names single takes.
+    """
+    base = ledger.TAKES_ROOT.as_posix() + "/"
+    source_dir = f"{base}{source_rel}"
+    if source_dir not in argv or made.prefix is None:
+        return None
+    source = _takes(root, found, source_rel)
+    out, i = [], 0
+    while i < len(argv):
+        token = argv[i]
+        value = argv[i + 1] if i + 1 < len(argv) else None
+        if token == source_dir:
+            out.append(f"{base}{made.rel}")
+        elif token.startswith(base):
+            return None
+        elif token == "--setting" and value is not None:
+            out += [token, rf"^{re.escape(made.prefix)}(?P<value>\d{{1,3}})$"]
+        elif token == "--slot" and value is not None:
+            out += [token, made.address]
+        elif token in TAKE_PATTERNS and value is not None:
+            rebuilt = _role_pattern(value, source, made)
+            if rebuilt is None:
+                return None
+            out += [token, rebuilt]
+        else:
+            out.append(token)
+            i += 1
+            continue
+        i += 1 if token == source_dir else 2
+    return out
+
+
+@dataclass
+class _Class:
+    """One stimulus class of a type's directories, and how it is compared."""
+
+    name: str | None
+    dirs: list[Directory]
+    settings: int
+    floor_db: float | None
+    used: str
+    chosen_by: str
+
+    def shown(self, dirs: list[Directory]) -> dict:
+        return {"class": self.name, "used": self.used, "chosen_by": self.chosen_by,
+                "floor_db": None if self.floor_db is None else round(self.floor_db, 2),
+                "settings": self.settings, "dirs": [m.rel for m in dirs]}
+
+
+def _classes(made: list[Directory], waves: dict, static: bool) -> list[_Class]:
+    """The type's stimulus classes, the one stage 8 takes first.
+
+    A static type's class compares waves where its takes repeat -- the median
+    same-setting subtraction under `REPEATS_BELOW_DB` -- and readings elsewhere. Waves
+    classes come first, lowest floor first; then the rest, most settings first.
+    """
+    groups: dict[str | None, list[Directory]] = {}
+    for m in made:
+        for name in sorted(m.classes) or [None]:
+            groups.setdefault(name, []).append(m)
+    found = []
+    for name, dirs in groups.items():
+        pairs = [f for m in dirs if m.rel in waves for s in waves[m.rel][1].values()
+                 for f in s["floor_pairs"]]
+        floor = float(np.median(pairs)) if pairs else None
+        if not static:
+            used, chosen = "readings", "by_repeatability_class"
+        elif floor is None or floor > REPEATS_BELOW_DB:
+            used, chosen = "readings", "by_stimulus_floor"
+        else:
+            used, chosen = "waves", "by_repeatability_class"
+        found.append(_Class(name, dirs, sum(len(m.by_setting) for m in dirs), floor, used,
+                            chosen))
+
+    def order(c: _Class):
+        floor = math.inf if c.floor_db is None else c.floor_db
+        if c.used == "waves":
+            return (0, floor, -c.settings, str(c.name))
+        return (1, -c.settings, floor, str(c.name))
+
+    return sorted(found, key=order)
+
+
+class _Phase:
+    """One comparison over a set of directories, shared by every model it is run on.
+
+    Each directory is compared the way its stimulus class is: `waves` or `readings`.
+    """
+
+    def __init__(self, root, found, type_, parts, waves, published, inherited=None):
+        self.root, self.found, self.type = root, found, type_
+        self.dirs = [m for _, dirs in parts for m in dirs]
+        self.used = {m.rel: cls.used for cls, dirs in parts for m in dirs}
+        self.published = published
         self.inherited = inherited or {}
         self.channel: dict[str, int] = {}
         self.unit: dict = {}
         self.stages: dict[str, dict] = {}
         self.runs: dict[str, list] = {}
-        if mode == "waves":
-            for made in dirs:
-                self.channel[made.rel] = loudest(made)
-                self.unit[made.rel] = _unit_waves(made, self.channel[made.rel])
-        else:
-            self._read_units()
-
-    def _read_units(self) -> None:
-        self.runs: dict[str, list] = {}
+        self.unread: list[tuple[str, str]] = []
         for made in self.dirs:
+            if self.used[made.rel] == "waves":
+                channel, unit = waves.get(made.rel) or (loudest(made), None)
+                self.channel[made.rel] = channel
+                self.unit[made.rel] = unit if unit is not None else _unit_waves(made, channel)
+        self._read_units([m for m in self.dirs if self.used[m.rel] == "readings"])
+
+    @property
+    def modes(self) -> set[str]:
+        return set(self.used.values())
+
+    def quantities(self) -> list[str]:
+        names = ["waves:residual_db"] if "waves" in self.modes else []
+        if "readings" in self.modes:
+            names += sorted(n for n, r in READINGS.items() if r.command in self.published) or [
+                "a reading of any stage in READINGS, none of which has a published record "
+                f"of {self.type}"]
+        return names
+
+    def _read_units(self, dirs: list[Directory]) -> None:
+        for made in dirs:
             writes = writes_of(made.entry.get("held"))
-            for _, data in _consumers(self.root, self.found, made, self.type):
-                argv = data["record"]["invocation"]
+            runs = [(data["record"]["invocation"], False)
+                    for _, data in _consumers(self.root, made.entry, self.type)]
+            have = {argv[0] for argv, _ in runs}
+            for command, (source_rel, argv) in self.published.items():
+                if command in have:
+                    continue
+                aimed = templated(self.root, self.found, argv, source_rel, made)
+                if aimed is None:
+                    self.unread.append((made.rel, command))
+                    continue
+                runs.append((aimed, True))
+            for argv, from_template in runs:
                 command = argv[0]
-                read = read_with(argv, root=self.root, unit_dir=made.where, drawn_dir=None,
-                                 channel=self.channel.get(made.rel), writes=writes,
-                                 cache=self.root / STAGE_READINGS)
+                try:
+                    read = read_with(argv, root=self.root, unit_dir=made.where, drawn_dir=None,
+                                     channel=self.channel.get(made.rel), writes=writes,
+                                     cache=self.root / STAGE_READINGS)
+                except (ValueError, FileNotFoundError, SystemExit):
+                    if not from_template:
+                        raise
+                    self.unread.append((made.rel, command))
+                    continue
                 if not read:
                     continue
                 self.channel.setdefault(made.rel, _channel_read(read))
@@ -928,14 +1166,13 @@ class _Phase:
                 self.runs.setdefault(command, []).append((made, argv, setting))
 
     def _decay_setting(self, made: Directory, argv: list[str]) -> int | None:
-        listed, _ = takes.listing(made.where)
         wet = Path(argv[2]).name
-        return setting_value(listed.get(wet, {}).get("setting"))
+        return next((v for v, items in made.by_setting.items()
+                     if any(e["file"] == wet for e in items)), None)
 
     def compared(self) -> list[tuple[str, int]]:
-        if self.mode == "waves":
-            return [(rel, v) for rel, per in self.unit.items() for v in per]
-        keys = {k for stage in self.stages.values() for k in stage["unit"]}
+        keys = {(rel, v) for rel, per in self.unit.items() for v in per}
+        keys |= {k for stage in self.stages.values() for k in stage["unit"]}
         return sorted(keys)
 
     def rows(self) -> list[dict]:
@@ -952,28 +1189,29 @@ class _Phase:
         """The model's scored records, and the directories it was drawn into."""
         drawn = {}
         for made in self.dirs:
-            if made.rel not in self.channel or self.channel[made.rel] is None:
+            if self.channel.get(made.rel) is None:
                 continue
             drawn[made.rel] = render_directory(
                 cand, self.root, made.rel, channels=_pair(self.channel[made.rel]),
                 found=self.found, made=made)
         lost = set().union(*[_unrenderable(p, rel) for rel, p in drawn.items()])
         shown = [p.relative_to(self.root).as_posix() for p in drawn.values()]
-        if self.mode == "waves":
-            return [
-                _scored_waves(rel, self.unit[rel], drawn[rel], self.channel[rel], lost)
-                for rel in self.unit
-            ], shown
+        by_rel = {m.rel: m for m in self.dirs}
+        out = [
+            _scored_waves(by_rel[rel], self.unit[rel], drawn[rel], self.channel[rel], lost)
+            for rel in self.unit
+        ]
         mine: dict[str, dict] = {}
         for command, runs in self.runs.items():
             for made, argv, setting in runs:
+                if made.rel not in drawn:
+                    continue
                 read = read_with(argv, root=self.root, unit_dir=made.where,
                                  drawn_dir=drawn[made.rel], channel=self.channel[made.rel],
                                  writes=writes_of(made.entry.get("held")))
                 for name, part in collected(command, read, made.rel, setting=setting).items():
                     for key, vectors in part["takes"].items():
                         mine.setdefault(name, {}).setdefault(key, []).extend(vectors)
-        out = []
         for name, stage in sorted(self.stages.items()):
             ours = {k: v for k, v in mine.get(name, {}).items() if k in stage["unit"]}
             floor = max(stage["floors"]) if stage["floors"] else repeat_floor(stage["unit"])
@@ -1000,88 +1238,149 @@ def _ranked(cand: Candidate, scored: list[dict]) -> dict:
     }
 
 
-def _needs(gate: str, type_: str, detail: str) -> str:
-    said = {
-        "no_input_take": f"takes of {type_} with a bypass take of the same stimulus, "
-        "beside them or in a directory the ledger matches on every stimulus field",
-        "no_held_out_setting": f"a setting of {type_} that no value of any candidate "
-        "was fitted on, declared or through a claim's records",
-        "control_could_not_fail": f"a comparison of {type_} the identity model can fail: "
-        "a setting that lifts the effect clear of the takes' own floor, read by a stage "
-        "that publishes a quantity for this type from these directories",
-        "unrenderable": f"a candidate for {type_} whose loops keep a sample of delay at "
-        "every compared setting",
-    }.get(gate, f"a candidate for {type_} that clears the {gate} gate, or a measurement "
-                "that separates the ones standing")
-    return f"{said}. {detail}".strip()
+_MEASUREMENT = {
+    "no_input_take": "takes of {type} with a bypass take of the same stimulus, beside them or "
+    "in a directory the ledger matches on every stimulus field, swept at one address of the "
+    "effect's block and read by a stage that publishes a quantity for this type",
+    "no_held_out_setting": "a setting of {type} that no value of any candidate was fitted on, "
+    "declared or through a claim's records",
+    "control_could_not_fail": "a comparison of {type} the identity model can fail: a setting "
+    "that lifts the effect clear of the takes' own floor, read by a stage that publishes a "
+    "quantity for this type from these directories",
+    "unrenderable": "a candidate for {type} whose loops keep a sample of delay at every "
+    "compared setting",
+    "power": "a setting of {type} where the runner-up's reading departs from the winner's by "
+    "more than the floor, or a runner-up that leans where the winner does not",
+}
 
 
-def _run(phase: _Phase, candidates: list[Candidate], comparison: dict, check=None):
-    """The block a phase writes, the winner if there was one, and the gate it stopped at."""
+def _quantity_of(record: str) -> str:
+    return record if record in READINGS else "waves:residual_db"
+
+
+def _undecided(gate: str, phase: _Phase, block: dict, scored: list[dict],
+               control: list[dict]) -> tuple[list[str], list[tuple[str, object]]]:
+    """The quantities a gate stopped on, and the `(directory, setting)` it stopped at."""
+    compared = [tuple(k) for k in phase.compared()]
+    if gate == "no_input_take":
+        pairs = [(m.rel, v) for m in phase.dirs for v in m.by_setting]
+        return phase.quantities(), pairs
+    if gate == "control_could_not_fail":
+        return sorted({_quantity_of(s["record"]) for s in control}), compared
+    if gate == "no_held_out_setting":
+        return phase.quantities(), compared
+    if gate == "unrenderable":
+        lost = sorted({tuple(x) for s in scored for x in s.get("lost", [])})
+        return sorted({_quantity_of(s["record"]) for s in scored if s.get("lost")}), lost
+    quantities, pairs = set(), []
+    for gates in _each_unit(block["gates"]):
+        if gate == "gross":
+            for s in scored:
+                if s["span"] > 0 and not s["is_null_record"] and (
+                        s["median_abs"] / s["span"] > reproduce.GROSS_CEILING):
+                    quantities.add(_quantity_of(s["record"]))
+                    pairs += [(r["dir"], r["value"]) for r in s["rows"]
+                              if max(abs(x) for x in r["residual"])
+                              > reproduce.GROSS_CEILING * s["span"]]
+        elif gate == "breakdown":
+            for broke in gates.get("breakdown", {}).get("broke", []):
+                quantities.add(_quantity_of(broke["record"]))
+                if broke.get("at"):
+                    pairs.append(tuple(broke["at"]))
+            for record in gates.get("breakdown", {}).get("leaning", []):
+                quantities.add(_quantity_of(record))
+        elif gate == "qualitative":
+            for item in gates.get("qualitative", {}).get("checked", []):
+                if item["same"]:
+                    continue
+                quantities.add(_quantity_of(item["record"]))
+                value = item.get("value")
+                if isinstance(value, list) and len(value) == 3:
+                    pairs += [(value[0], value[1]), (value[0], value[2])]
+                elif value is not None:
+                    pairs.append((item["record"], value))
+        else:
+            quantities |= {_quantity_of(s["record"]) for s in scored}
+            pairs = compared
+    return sorted(quantities) or phase.quantities(), sorted(set(pairs), key=str) or compared
+
+
+def _where(pairs) -> str:
+    by: dict[str, list] = {}
+    for rel, value in pairs:
+        by.setdefault(str(rel), []).append(value)
+    return "; ".join(f"{rel} at {', '.join(str(v) for v in sorted(set(vs), key=str))}"
+                     for rel, vs in sorted(by.items())) or "no directory"
+
+
+def _needs(gate: str, type_: str, quantities: list[str], pairs) -> str:
+    """What a stop needs: the gate, the quantity, where it went undecided, and the measurement."""
+    measurement = _MEASUREMENT.get(
+        gate, "a candidate for {type} that clears the " + gate + " gate, or a measurement that "
+        "separates the ones standing").format(type=type_)
+    return (f"{gate} on {', '.join(quantities)}, undecided at {_where(pairs)}. "
+            f"Needs {measurement}.")
+
+
+def _run(phase: _Phase, candidates: list[Candidate], comparison: dict, classes: list[dict],
+         check=None):
+    """The block a phase writes, the model p0 shows, the gate it stopped at, and its `needs`."""
     compared = phase.compared()
     control_scored, _ = phase.scored(identity())
     control = {"model": "identity", "separated": separated(control_scored),
-               "gates": reproduce.gates(control_scored, ranking=[])}
+               "gates": _gates(control_scored, [])}
     if check is not None:
         control["bypass_check"] = check
     block = {"verdict": "stopped", "gates": {}, "control": control,
              "compared": phase.rows(), "held_out_settings": [],
-             "excluded_from_ranking": [], "comparison": comparison}
-    per, drawn_on, ranking, winner = {}, [], [], None
+             "excluded_from_ranking": [], "comparison": comparison, "classes": classes}
+
+    def stop(gate, scored=()):
+        quantities, pairs = _undecided(gate, phase, block, list(scored), control_scored)
+        return _needs(gate, phase.type, quantities, pairs)
+
+    if not candidates:
+        return block, None, None, [], None
+    if not compared:
+        return block, None, "no_input_take", [], stop("no_input_take")
+    held_by = {}
     for cand in candidates:
         fitted = fitted_on(cand.raw, root=phase.root, ledger=phase.found)
-        held = [[rel, v] for rel, v in compared if (rel, v) not in fitted]
-        if not held:
-            block["excluded_from_ranking"].append(cand.id)
-            continue
-        per[cand.id] = (cand, held, *phase.scored(cand))
-        drawn_on += per[cand.id][3]
-        ranking.append(_ranked(cand, per[cand.id][2]))
+        held_by[cand.id] = [[rel, v] for rel, v in compared if (rel, v) not in fitted]
+    block["excluded_from_ranking"] = [c.id for c in candidates if not held_by[c.id]]
+    ranked = [c for c in candidates if held_by[c.id]] or candidates
+    per, drawn_on, ranking = {}, [], []
+    for cand in ranked:
+        scored, shown = phase.scored(cand)
+        per[cand.id] = (cand, held_by[cand.id], scored)
+        drawn_on += shown
+        ranking.append(_ranked(cand, scored))
+    if block["excluded_from_ranking"] == [c.id for c in candidates]:
+        nearest = min(ranking, key=lambda r: r["worst_share_of_span"])["candidate"]
+        return block, per[nearest][0], "no_held_out_setting", drawn_on, stop(
+            "no_held_out_setting")
     ranking.sort(key=lambda r: r["mean_share_of_span"])
-    if not candidates:
-        return block, None, None, drawn_on
-    if not compared:
-        return block, None, "no_input_take", drawn_on
-    if not ranking:
-        return block, None, "no_held_out_setting", drawn_on
-    winner, held, scored, _ = per[ranking[0]["candidate"]]
+    winner, held, scored = per[ranking[0]["candidate"]]
     block["_scored"] = scored
     block["held_out_settings"] = held
-    block["gates"] = reproduce.gates(scored, ranking=ranking)
+    block["gates"] = _gates(scored, ranking)
     lost = [s for s in scored if s.get("lost")]
     if lost and all(len(s["lost"]) == len(s["rows"]) for s in lost):
-        return block, winner, "unrenderable", drawn_on
+        return block, winner, "unrenderable", drawn_on, stop("unrenderable", scored)
     if not control["separated"]:
-        return block, winner, "control_could_not_fail", drawn_on
+        return block, winner, "control_could_not_fail", drawn_on, stop(
+            "control_could_not_fail", scored)
     failed = next((g for g in GATES if not block["gates"][g]["passed"]), None)
     if failed is None:
         block["verdict"] = "passed"
-    return block, winner, failed, drawn_on
+        return block, winner, None, drawn_on, None
+    return block, winner, failed, drawn_on, stop(failed, scored)
 
 
-def _inherited(phase: _Phase, block: dict) -> dict:
-    """What a later phase of one setting takes from this one: each stage's span and properties."""
-    if phase.mode != "readings":
-        return {}
+def _inherited(block: dict) -> dict:
+    """What a later phase takes from this one: each reading's span and properties."""
     return {s["record"]: {"span": s["span"], "properties": s["properties"]}
-            for s in block.get("_scored", [])}
-
-
-def _split(dirs: list[Directory]) -> tuple[list[Directory], list[Directory]]:
-    """The stimulus class holding the most settings, and up to two directories of any other.
-
-    Counted in settings rather than directories: stage 9 takes one setting of a type,
-    and a class holding only that is not the one the type was swept under.
-    """
-    counts: dict[str, int] = {}
-    for made in dirs:
-        for cls in made.classes:
-            counts[cls] = counts.get(cls, 0) + len(made.by_setting)
-    if not counts:
-        return dirs, []
-    first = min(counts, key=lambda c: (-counts[c], c))
-    return ([m for m in dirs if first in m.classes],
-            [m for m in dirs if first not in m.classes][:2])
+            for s in block.get("_scored", []) if s["record"] in READINGS}
 
 
 def _static(root: Path, unit: str) -> set[str]:
@@ -1097,7 +1396,11 @@ def _delay_rows(model: dict) -> list[str]:
 
 
 def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = None) -> dict:
-    """Stages 7-9 for one type, or the identity control alone when no class is named."""
+    """Stages 7-9 for one type, or the identity control alone when no class is named.
+
+    Stage 8 takes the stimulus class `_classes` puts first; stage 9 up to two
+    directories of the classes after it, each compared the way its own class is.
+    """
     root = Path(root)
     type_ = type_of(type_)
     found = _ledger(root, type_)
@@ -1110,49 +1413,68 @@ def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = N
         "rendered_with": {"numpy": np.__version__, "scipy": scipy.__version__},
     }
     if not made:
-        result["stopped"] = {"at": 7, "gate": "no_input_take",
-                             "needs": _needs("no_input_take", type_, "")}
+        needs = _needs("no_input_take", type_, ["any quantity"],
+                       [(rel, "no swept setting with an input")
+                        for rel in sorted(r for r, e in found["directories"].items()
+                                          if e.get("type") == type_)])
+        result["stopped"] = {"at": 7, "gate": "no_input_take", "needs": needs}
         return {**result, "equivalent_under_this_test": [], **tail}
 
-    first, rest = _split(made)
-    mode, chosen_by, check = "readings", "by_repeatability_class", None
-    if type_ in _static(root, unit):
-        mode = "waves"
-        phase = _Phase(root, found, type_, first, mode)
-        check = bypass_check(first, phase.unit)
-        if not check["passed"]:
-            mode, chosen_by = "readings", "bypass_check_failed"
-    if mode == "readings":
-        phase = _Phase(root, found, type_, first, mode)
-    comparison = {"used": mode, "chosen_by": chosen_by}
-    block, winner, gate, drawn_on = _run(phase, candidates, comparison, check)
-    inherited = _inherited(phase, block)
+    static = type_ in _static(root, unit)
+    waves = {}
+    if static:
+        for m in made:
+            channel = loudest(m)
+            waves[m.rel] = (channel, _unit_waves(m, channel))
+    classes = _classes(made, waves, static)
+    first, rest = classes[0], classes[1:]
+    published = _published(root, found, type_)
+    check = None
+    if first.used == "waves":
+        check = bypass_check(first.dirs, {m.rel: waves[m.rel][1] for m in first.dirs})
+    phase = _Phase(root, found, type_, [(first, first.dirs)], waves, published)
+    comparison = {"used": first.used, "chosen_by": first.chosen_by}
+    block, shown, gate, drawn_on, needs = _run(
+        phase, candidates, comparison, [first.shown(first.dirs)], check)
+    inherited = _inherited(block)
     block.pop("_scored", None)
     if not candidates:
         return {**result, "control": block["control"], "compared": block["compared"],
                 "comparison": comparison, **tail}
 
-    shown = winner or candidates[0]
+    shown = shown or candidates[0]
     result["p0"] = {"model": shown.shown_as, "model_sha256": shown.sha256,
                     "rendered_on": sorted({p for p in drawn_on if f"/{shown.id}/" in f"/{p}"})}
     result["p1"] = block
+    used = {m.rel for m in first.dirs}
+    later: list[tuple[_Class, list[Directory]]] = []
+    for cls in rest:
+        room = 2 - sum(len(dirs) for _, dirs in later)
+        mine = [m for m in cls.dirs if m.rel not in used][:max(room, 0)]
+        used |= {m.rel for m in mine}
+        if mine:
+            later.append((cls, mine))
+    modes = {first.used}
     if gate is not None:
-        result["stopped"] = {"at": 8, "gate": gate, "needs": _needs(gate, type_, "")}
-    elif not rest:
-        used = sorted(first[0].classes)
+        result["stopped"] = {"at": 8, "gate": gate, "needs": needs}
+    elif not later:
         result["stopped"] = {"at": 9, "gate": "no_input_take", "needs": _needs(
-            "no_input_take", type_,
-            f"Stage 9 needs directories under a stimulus class other than {used}.")}
+            "no_input_take", type_, phase.quantities(),
+            [(f"a directory under a stimulus class other than {first.name!r}", "any setting")])}
     else:
-        later = _Phase(root, found, type_, rest, mode, inherited)
-        p2, _, gate2, drawn2 = _run(later, candidates, comparison)
+        p2_phase = _Phase(root, found, type_, later, waves, published, inherited)
+        head = later[0][0]
+        p2, _, gate2, drawn2, needs2 = _run(
+            p2_phase, candidates, {"used": head.used, "chosen_by": head.chosen_by},
+            [cls.shown(dirs) for cls, dirs in later])
         p2.pop("_scored", None)
         result["p2"] = p2
+        modes |= p2_phase.modes
         result["p0"]["rendered_on"] = sorted(set(result["p0"]["rendered_on"]) | {
             p for p in drawn2 if f"/{shown.id}/" in f"/{p}"})
         if gate2 is not None:
-            result["stopped"] = {"at": 9, "gate": gate2, "needs": _needs(gate2, type_, "")}
-    equivalent = _delay_rows(shown.raw) if mode == "waves" else []
+            result["stopped"] = {"at": 9, "gate": gate2, "needs": needs2}
+    equivalent = _delay_rows(shown.raw) if "waves" in modes else []
     return {**result, "equivalent_under_this_test": equivalent, **tail}
 
 
@@ -1169,5 +1491,7 @@ __all__ = [
     "scored_readings",
     "separated",
     "stage",
+    "swept_bytes",
+    "templated",
     "writes_of",
 ]

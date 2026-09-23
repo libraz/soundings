@@ -473,33 +473,70 @@ def _resolve_address(manifest: dict, dirpath: Path, consumed: list[Hit]) -> str 
     return _address_from_dirname(dirpath.name)
 
 
-def _resolve_settings(
-    manifest: dict, wavs: list[str], consumed: list[Hit]
-) -> tuple[dict[str, int] | None, str]:
+def _settings_by_take(
+    manifest: dict, wavs: list[str], patterns: list[tuple[str, str | None]]
+) -> tuple[list[tuple[str | None, str]] | None, str]:
+    """Each take and its setting: the manifest's, else the first citing `--setting` that names any.
+
+    `patterns` is `(record, --setting)` per citing record, in the order they cite.
+    """
     if manifest.get("takes"):
-        counts: dict[str, int] = {}
-        for entry in manifest["takes"]:
-            setting = str(entry.get("setting"))
-            counts[setting] = counts.get(setting, 0) + 1
-        return counts, "manifest"
-    for hit in consumed:
-        if not hit.setting_pattern:
+        return [(e.get("file"), str(e.get("setting"))) for e in manifest["takes"]], "manifest"
+    for record_id, pattern in patterns:
+        if not pattern:
             continue
         try:
-            compiled = re.compile(hit.setting_pattern)
+            compiled = re.compile(pattern)
             if "value" not in (compiled.groupindex or {}):
                 continue
         except re.error:
             continue
-        counts = {}
-        for name in wavs:
-            found = compiled.search(Path(name).stem)
-            if found:
-                value = found.group("value")
-                counts[value] = counts.get(value, 0) + 1
-        if counts:
-            return counts, f"citing_regex:{hit.record_id}"
+        found = [(name, m.group("value")) for name in wavs
+                 if (m := compiled.search(Path(name).stem))]
+        if found:
+            return found, f"citing_regex:{record_id}"
     return None, "absent"
+
+
+def _resolve_settings(
+    manifest: dict, wavs: list[str], consumed: list[Hit]
+) -> tuple[dict[str, int] | None, str]:
+    by_take, source = _settings_by_take(
+        manifest, wavs, [(hit.record_id, hit.setting_pattern) for hit in consumed])
+    if by_take is None:
+        return None, source
+    counts: dict[str, int] = {}
+    for _, setting in by_take:
+        counts[setting] = counts.get(setting, 0) + 1
+    return counts, source
+
+
+def take_settings(root: str | Path, rel: str, entry: dict) -> dict[str, str]:
+    """Each take in a directory with the setting it holds, resolved as `build` resolves them.
+
+    `entry` is the directory's ledger entry: the citing records' `--setting` patterns
+    are read from the records its `consumed_by` names, in that order. A take the
+    manifest lists with no file, or one no pattern names, is absent.
+    """
+    root = Path(root)
+    where = root / TAKES_ROOT / rel
+    manifest_path = where / "takes-manifest.json"
+    manifest: dict = {}
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except (OSError, ValueError):
+            manifest = {}
+    patterns: list[tuple[str, str | None]] = []
+    for hit in entry.get("consumed_by") or []:
+        try:
+            argv = json.loads((root / hit["record"]).read_text())["record"]["invocation"] or []
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        patterns.append((hit["record"], (_flag_values(argv, "--setting") or [None])[-1]))
+    wavs = sorted(p.name for p in where.glob("*.wav"))
+    by_take, _ = _settings_by_take(manifest, wavs, patterns)
+    return {name: setting for name, setting in by_take or [] if name}
 
 
 def _resolve_stimuli(manifest: dict, consumed: list[Hit]) -> list[dict] | None:
@@ -746,5 +783,6 @@ __all__ = [
     "norm_bytes",
     "row",
     "rewritten",
+    "take_settings",
     "unread",
 ]

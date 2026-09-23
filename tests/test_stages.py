@@ -42,7 +42,8 @@ TONE = {
 # so with one directory each `tone` is stage 8 and `voice` stage 9.
 VOICE = {**TONE, "name": "voice", "program": 17, "note": 76}
 PARTIALS = {"tone": ((440, 0.1), (880, 0.05), (1320, 0.03), (1760, 0.02)),
-            "voice": ((330, 0.08), (660, 0.05), (990, 0.04), (1650, 0.02))}
+            "voice": ((330, 0.08), (660, 0.05), (990, 0.04), (1650, 0.02)),
+            "applause": ()}
 WAVES_CLAIM = "inferences/fixture-unit/mix-is-a-crossfade.json"
 WAVES_RECORD = "data/units/fixture-unit/efx-bands/mix.json"
 RATE_CLAIM = "inferences/fixture-unit/rate-is-a-log-table.json"
@@ -153,7 +154,11 @@ def _noisy(take: np.ndarray, rng) -> np.ndarray:
     return out
 
 
-def _directory(root, rel, *, stimulus, address, seconds, draw, seed) -> None:
+def _walked(value: int) -> str:
+    return f"v{value:03d}"
+
+
+def _directory(root, rel, *, stimulus, address, seconds, draw, seed, named=_walked) -> None:
     """A walk-shaped directory: two bypass takes, one silence, two takes per setting."""
     rng = np.random.default_rng(seed)
     where = root / ".cache" / "takes" / rel
@@ -171,7 +176,7 @@ def _directory(root, rel, *, stimulus, address, seconds, draw, seed) -> None:
          _noisy(np.zeros_like(clean), rng))
     for value in SETTINGS:
         for k in range(2):
-            keep(f"{stimulus['name']}-v{value:03d}-{k:02d}.wav", f"v{value:03d}", k,
+            keep(f"{stimulus['name']}-{named(value)}-{k:02d}.wav", named(value), k,
                  _noisy(draw(value, k, 2, clean), rng))
     _write(where / "takes-manifest.json", {
         "type": TYPE, "prepared": [{"address": a, "bytes": b} for a, b in HELD.items()],
@@ -196,7 +201,8 @@ def _ledger(root: Path, directories: dict[str, dict]) -> None:
     _write(root / ".cache" / "takes-ledger.json", {"unit": UNIT, "directories": {
         rel: {
             "type": TYPE, "address": spec["address"],
-            "settings": {**{f"v{v:03d}": 2 for v in SETTINGS}, "out": 2, "silence": 1},
+            "settings": {**{spec.get("named", _walked)(v): 2 for v in SETTINGS}, "out": 2,
+                         "silence": 1},
             "stimuli": [{**spec["stimulus"], "class": spec["stimulus"]["name"]}],
             "held": HELD,
             "consumed_by": [{"record": r, "via": "direct"} for r in spec.get("read_by", [])],
@@ -221,7 +227,9 @@ def _waves_tree(tmp: Path, *, unit_is_identity: bool = False) -> Path:
     for model in (a, _comb("whole-0124-truncated", "none"),
                   _comb("whole-0124-fitted-everywhere", "linear", fitted_on=everywhere),
                   _comb("fitted-a", "linear", cls="fitted-only", fitted_on=everywhere),
-                  _comb("fitted-b", "none", cls="fitted-only", fitted_on=everywhere)):
+                  _comb("fitted-b", "none", cls="fitted-only", fitted_on=everywhere),
+                  _comb("worse-first-a", "none", cls="worse-first", fitted_on=everywhere),
+                  _comb("worse-first-b", "linear", cls="worse-first", fitted_on=everywhere)):
         _put_model(root, model)
     draw = _drawn_by(root, None if unit_is_identity else a, "40 03 05")
     for seed, (rel, stim) in enumerate(((WAVES_DIR, TONE), (WAVES_P2, VOICE))):
@@ -491,3 +499,167 @@ def test_a_type_out_of_scope_is_written_as_excluded_and_nothing_is_compared(tmp_
     assert written["excluded"] == {"reason": "no_effect"}
     assert "p1" not in written
     assert _stage_errors(written) == []
+
+
+# ---------------------------------------------------------------- which takes are settings
+
+
+def test_a_take_is_a_setting_when_its_name_is_a_byte_behind_one_prefix():
+    assert stages.swept_bytes({"a": "v064", "b": "v127", "c": "out", "d": "silence",
+                               "e": "flat-00", "f": "bypassed-01", "g": "silence-00"}) == {
+        "a": 64, "b": 127}
+    assert stages.swept_bytes({"a": "000", "b": "016"}) == {"a": 0, "b": 16}
+    assert stages.swept_bytes({"a": "rate-009", "b": "rate-125", "c": "both-parked"}) == {
+        "a": 9, "b": 125}
+    # Two things swept in one directory: which byte a take was at is not said.
+    assert stages.swept_bytes({"a": "rate-009", "b": "step-009"}) == {}
+    assert stages.swept_bytes({"a": "200"}) == {}
+
+
+# ---------------------------------------------------------------- the bypass check
+
+
+def _weakest(lifted: dict[int, float]) -> dict:
+    made = [type("Made", (), {"rel": "d"})()]
+    unit = {"d": {v: {"floor_pairs": [-40.0], "doing_nothing": -40.0 + x}
+                  for v, x in lifted.items()}}
+    return stages.bypass_check(made, unit)
+
+
+def test_the_bypass_check_is_asked_only_where_a_setting_reaches_the_floor():
+    asked = _weakest({0: 1.0, 64: 20.0})
+    assert asked["result"] == "passed" and asked["setting"] == 0
+    unasked = _weakest({64: 20.0, 127: 30.0})
+    assert unasked["result"] == "not_asked" and unasked["setting"] == 64
+    assert "passed" not in unasked or unasked["passed"] is not False
+
+
+# ---------------------------------------------------------------- one comparison per class
+
+
+MIXED_TONE = "syn/01-24-40-03-05-tone-bare"
+MIXED_APPLAUSE = "syn/01-24-40-03-05-applause"
+APPLAUSE = {**TONE, "name": "applause", "program": 126, "note": 60}
+
+
+def _bare(value: int) -> str:
+    return f"{value:03d}"
+
+
+@pytest.fixture(scope="module")
+def mixed_stage(tmp_path_factory) -> dict:
+    """A static type swept under a repeating tone, named without `v`, and under applause.
+
+    Applause is first by name and holds as many settings; each of its takes is fresh
+    noise, so two takes of one setting subtract to nothing smaller than themselves.
+    """
+    root = _tree(tmp_path_factory.mktemp("mixed"), static=True)
+    a = _comb("whole-0124-linear", "linear")
+    _put_model(root, a)
+    _put_model(root, _comb("whole-0124-truncated", "none"))
+    _directory(root, MIXED_TONE, stimulus=TONE, address="40 03 05", seconds=2.0,
+               draw=_drawn_by(root, a, "40 03 05"), seed=11, named=_bare)
+    rng = np.random.default_rng(12)
+
+    def applause(value, k, n, clean):
+        out = clean.copy()
+        out[:, 2:4] = 0.05 * rng.standard_normal((clean.shape[0], 2))
+        return out
+
+    _directory(root, MIXED_APPLAUSE, stimulus=APPLAUSE, address="40 03 05", seconds=2.0,
+               draw=applause, seed=13)
+    _ledger(root, {MIXED_TONE: {"address": "40 03 05", "stimulus": TONE, "named": _bare},
+                   MIXED_APPLAUSE: {"address": "40 03 05", "stimulus": APPLAUSE}})
+    return stages.stage(root, UNIT, TYPE, class_name="whole-0124")
+
+
+def test_a_setting_named_without_a_v_is_compared(mixed_stage):
+    assert _stage_errors(mixed_stage) == []
+    assert {(r["dir"], r["setting"]) for r in mixed_stage["p1"]["compared"]} == {
+        (MIXED_TONE, v) for v in SETTINGS}
+
+
+def test_each_stimulus_class_is_compared_its_own_way_and_waves_goes_first(mixed_stage):
+    p1, p2 = mixed_stage["p1"], mixed_stage["p2"]
+    assert p1["comparison"] == {"used": "waves", "chosen_by": "by_repeatability_class"}
+    assert [c["class"] for c in p1["classes"]] == ["tone"]
+    assert p1["classes"][0]["floor_db"] < stages.REPEATS_BELOW_DB
+    assert [c["class"] for c in p2["classes"]] == ["applause"]
+    assert p2["classes"][0]["used"] == "readings"
+    assert p2["classes"][0]["chosen_by"] == "by_stimulus_floor"
+    assert p2["classes"][0]["floor_db"] > stages.REPEATS_BELOW_DB
+    assert p2["comparison"]["used"] == "readings"
+
+
+def test_nothing_compared_stops_on_the_input_and_ranks_nobody_out(mixed_stage):
+    p2 = mixed_stage["p2"]
+    assert p2["compared"] == []
+    assert p2["excluded_from_ranking"] == []
+    assert p2["gates"] == {}
+    assert mixed_stage["stopped"]["at"] == 9
+    assert mixed_stage["stopped"]["gate"] == "no_input_take"
+    assert MIXED_APPLAUSE in mixed_stage["stopped"]["needs"]
+
+
+def test_what_a_stop_needs_names_the_quantity_the_directory_and_the_settings(tmp_path):
+    root = _waves_tree(tmp_path, unit_is_identity=True)
+    found = stages.stage(root, UNIT, TYPE, class_name="whole-0124")
+    needs = found["stopped"]["needs"]
+    assert found["stopped"]["gate"] == "control_could_not_fail"
+    assert "waves:residual_db" in needs
+    assert WAVES_DIR in needs
+    assert all(str(v) in needs for v in SETTINGS)
+
+
+def test_with_nobody_ranked_p0_is_the_candidate_nearest_the_unit(waves_root):
+    found = stages.stage(waves_root, UNIT, TYPE, class_name="worse-first")
+    assert sorted(found["p1"]["excluded_from_ranking"]) == ["worse-first-a", "worse-first-b"]
+    assert found["p0"]["model"].endswith("worse-first-b.json")
+
+
+# ---------------------------------------------------------------- a template for an unread walk
+
+
+RATE_P2 = "syn/01-24-40-03-03-voice"
+RATE_VOICE = {**VOICE, "hold_s": 4.0, "lead_s": 0.6}
+
+
+def test_a_directory_no_record_read_is_read_from_the_types_own_invocation(tmp_path):
+    root = _tree(tmp_path, static=False)
+    a = _tremolo("whole-0124-log", log=True)
+    _put_model(root, a)
+    _put_model(root, _tremolo("whole-0124-linear-map", log=False))
+    draw = _drawn_by(root, a, "40 03 03")
+    _directory(root, RATE_DIR, stimulus=RATE_TONE, address="40 03 03", seconds=5.0,
+               draw=draw, seed=7)
+    _directory(root, RATE_P2, stimulus=RATE_VOICE, address="40 03 03", seconds=5.0,
+               draw=draw, seed=8)
+    _write(root / RATE_RECORD, {
+        "record": {"invocation": [
+            "efx-rate", f".cache/takes/{RATE_DIR}", "--type", TYPE, "--slot", "40 03 03",
+            "--setting", r"tone-v(?P<value>\d{3})-\d+", "--channel", "2",
+            "--out", RATE_RECORD]},
+        "type": TYPE, "channel": {"read": 2}, "readings": [],
+    })
+    _ledger(root, {RATE_DIR: {"address": "40 03 03", "stimulus": RATE_TONE,
+                              "read_by": [RATE_RECORD]},
+                   RATE_P2: {"address": "40 03 03", "stimulus": RATE_VOICE}})
+    _claim(root, RATE_CLAIM, RATE_RECORD, (0, 127))
+    found = stages.stage(root, UNIT, TYPE, class_name="whole-0124")
+    assert _stage_errors(found) == []
+    p2 = found["p2"]
+    assert p2["comparison"]["used"] == "readings"
+    assert {(r["dir"], r["setting"]) for r in p2["compared"]} == {
+        (RATE_P2, v) for v in SETTINGS}
+    assert p2["control"]["separated"] is True
+
+
+def test_records_in_two_units_are_gated_once_per_unit():
+    unit = {("d", 0): [[1.0]], ("d", 1): [[2.0]], ("d", 2): [[3.0]]}
+    far = {("d", 0): [[3.0]], ("d", 1): [[1.0]], ("d", 2): [[1.0]]}
+    ms = stages.scored_readings("efx-time:ms", stages.READINGS["efx-time:ms"], unit, unit,
+                                floor=0.1)
+    db = stages.scored_readings("efx-bands:largest_db", stages.READINGS["efx-bands:largest_db"],
+                                unit, far, floor=0.1)
+    assert stages.separated([ms, db]) is True
+    assert stages.separated([ms]) is False

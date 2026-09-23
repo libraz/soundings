@@ -206,12 +206,23 @@ def _referenced(model: dict, models_dir: Path) -> dict[str, dict]:
     return found
 
 
-def _check_rows(model: dict, referenced: dict[str, dict], root: Path) -> None:
+def addresses_read(model: dict, *, models_dir: Path) -> set[str]:
+    """Every address a graph reads through a byte, in its own nodes or a model one names.
+
+    A node that names another model -- an `lti` chain, a `pan` law -- reads whatever
+    that model reads, so the row it binds is read by the graph. Nodes of a kind
+    outside the vocabulary contribute only their own values.
+    """
     read = _read_bytes(model["nodes"])
     for node in model["nodes"]:
-        refers = NODES[node["kind"]].refers
-        if refers is not None:
-            read |= _read_bytes(referenced[node[refers[0]]])
+        kind = NODES.get(node.get("kind"))
+        if kind is not None and kind.refers is not None and node.get(kind.refers[0]):
+            read |= _read_bytes(json.loads((Path(models_dir) / node[kind.refers[0]]).read_text()))
+    return read
+
+
+def _check_rows(model: dict, models_dir: Path, root: Path) -> None:
+    read = addresses_read(model, models_dir=models_dir)
     rows = model["rows"]
     for address, state in rows.items():
         if state not in ROW_STATES:
@@ -278,7 +289,7 @@ def load_graph(model: dict, *, models_dir: Path, root: Path) -> dict:
                 f"{sorted(component)} close a loop with no delay in it, which has no order "
                 "to be drawn in"
             )
-    _check_rows(model, referenced, Path(root))
+    _check_rows(model, Path(models_dir), Path(root))
     return {**model, "referenced": referenced}
 
 

@@ -434,3 +434,36 @@ def test_query_helpers_over_a_built_ledger(tmp_path):
     assert "efx-params-01-50-read" not in unread_rows
 
     assert ledger.rewritten(reloaded) == []
+
+
+def test_take_settings_resolve_each_take_the_way_build_counts_them(tmp_path):
+    root = tmp_path
+    cited = root / ".cache" / "takes" / "held-run"
+    cited.mkdir(parents=True)
+    for stem in ("held-16-lowfreq-012-00", "held-16-lowfreq-013-00", "held-16-flat-00-00"):
+        _wav(cited, stem)
+    _publish(root, "settings.json",
+             [STAGE, ".cache/takes/held-run", "--setting", r"held-16-lowfreq-(?P<value>\d{3})"],
+             measured_at=MEASURED_AT)
+    listed = root / ".cache" / "takes" / "walked"
+    listed.mkdir(parents=True)
+    for stem in ("tone-000-00", "tone-000-01", "tone-rate-009-00", "tone-out-00"):
+        _wav(listed, stem)
+    (listed / "takes-manifest.json").write_text(json.dumps({"takes": [
+        {"file": "tone-000-00.wav", "setting": "000"},
+        {"file": "tone-000-01.wav", "setting": "000"},
+        {"file": "tone-rate-009-00.wav", "setting": "rate-009"},
+        {"file": "tone-out-00.wav", "setting": "out"},
+    ]}))
+
+    found = ledger.build(UNIT, root=root)
+    by_take = ledger.take_settings(root, "held-run", found["directories"]["held-run"])
+    assert by_take == {"held-16-lowfreq-012-00.wav": "012", "held-16-lowfreq-013-00.wav": "013"}
+    walked = ledger.take_settings(root, "walked", found["directories"]["walked"])
+    assert walked == {"tone-000-00.wav": "000", "tone-000-01.wav": "000",
+                      "tone-rate-009-00.wav": "rate-009", "tone-out-00.wav": "out"}
+    for rel, resolved in (("held-run", by_take), ("walked", walked)):
+        counts: dict[str, int] = {}
+        for setting in resolved.values():
+            counts[setting] = counts.get(setting, 0) + 1
+        assert counts == found["directories"][rel]["settings"]
