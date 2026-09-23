@@ -193,6 +193,6 @@ inferences/
 
 The measurement harness is [MIT](LICENSE). Data under `data/` is [CC0 1.0](data/LICENSE), and so is everything under `inferences/` — [its own file](inferences/LICENSE) says the same thing, because the reason for the separation is not a legal one: a consumer harvesting the measurements must not pick up an interpretation along with them. Citation is appreciated but not required.
 
-`documents/` is neither, and sits outside `data/` for that reason: `data/LICENSE` dedicates the measurements in that directory to the public domain, which is a dedication nobody here can make over somebody else's tables. The documents themselves are their publishers' and are not distributed here — see [documents/LICENSE](documents/LICENSE).
+`documents/` sits outside `data/` because a row there is evidence that a page said something, not evidence of what a unit did. The values in its tables are facts and free to use; the extraction is CC0. The documents themselves and their prose are their publishers' and are not distributed here — see [documents/LICENSE](documents/LICENSE).
 
 This project is not affiliated with, endorsed by, or connected to any instrument manufacturer. Product names identify measured equipment.

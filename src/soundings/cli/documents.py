@@ -203,10 +203,10 @@ def _init(args) -> int:
             "copyright": args.copyright,
             "language": args.language,
             "printing": args.printing,
-            "rights": "Copyright in this document is the publisher's. It is not "
-            "distributed here and no licence over it is granted or claimed. What is "
-            "held in this directory is the factual content of its tables, cited by "
-            "printed page.",
+            "rights": "Copyright in this document is the publisher's, and the document "
+            "is not distributed here; nor is its prose. What is held in this directory "
+            "is the factual content of its tables, cited by printed page. Those values "
+            "are facts and are free to use.",
             "source_file": {
                 "name": Path(args.pdf).name,
                 "path_when_read": documents.where_it_was(args.pdf),
