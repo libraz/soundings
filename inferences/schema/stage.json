@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/libraz/soundings/inferences/schema/stage.json",
+  "title": "One effect type carried through stages 7-9",
+  "description": "Where a type's candidate models stand after being rendered and compared to the unit's own takes. `p0` says what was rendered, `p1` and `p2` say how the comparison came out (or what stopped it), and a type that was never in scope carries `excluded` instead of either. Checked by hand, the same way `inference.json` is: this file states the shape and a test in `tests/test_inferences_layout.py` reads it.",
+  "type": "object",
+  "required": ["type"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {"type": "string", "description": "The insertion effect type, e.g. `01 24`."},
+    "p0": {"$ref": "#/$defs/p0"},
+    "p1": {"$ref": "#/$defs/phase"},
+    "p2": {"$ref": "#/$defs/phase"},
+    "stopped": {"$ref": "#/$defs/stopped"},
+    "excluded": {"$ref": "#/$defs/excluded"},
+    "equivalent_under_this_test": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Rows the comparison at this stage could not ask -- a model's delay row under `waves`, where a per-take recording offset already absorbs it (subtracted() takes the offset up before either side is scored)."
+    },
+    "invocation": {
+      "type": ["object", "null"],
+      "description": "The arguments the comparison was run with, so a stage can be reproduced without re-deriving them from the ledger."
+    },
+    "rendered_with": {
+      "type": ["object", "null"],
+      "description": "The numpy and scipy versions the rendering ran under, carried from the rendered directory's manifest."
+    }
+  },
+
+  "$defs": {
+    "p0": {
+      "type": "object",
+      "required": ["model", "model_sha256", "rendered_on"],
+      "properties": {
+        "model": {"type": "string", "description": "The model file under inferences/models/."},
+        "model_sha256": {"type": "string"},
+        "rendered_on": {"type": "array", "items": {"type": "string"}, "description": "The take directories this model was rendered into."}
+      }
+    },
+
+    "phase": {
+      "type": "object",
+      "description": "Stage 8 (`p1`) or 9 (`p2`). The shape is the same for both; `p2` repeats the comparison on directories `p0`/`p1` did not use.",
+      "required": [
+        "verdict", "gates", "control", "compared", "held_out_settings",
+        "excluded_from_ranking", "comparison"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": ["passed", "stopped"],
+          "description": "`passed` requires the identity control to have failed to separate on at least one compared quantity and `held_out_settings` to be non-empty -- both checked here rather than trusted from the writer."
+        },
+        "gates": {"type": "object", "description": "reproduce.gates() output, built into the waves or readings shape a comparison scores."},
+        "control": {"type": "object", "description": "The identity model run through the same comparison, so a candidate is judged against something that could have failed."},
+        "compared": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["dir", "setting", "input_from", "channel"],
+            "properties": {
+              "dir": {"type": "string"},
+              "setting": {},
+              "input_from": {"type": "string", "description": "Where the bypass take used as input came from: the same directory, or another one matched on stimulus."},
+              "channel": {"type": "integer"}
+            }
+          }
+        },
+        "held_out_settings": {
+          "type": "array",
+          "description": "The [directory, setting] pairs compared here that no value in the model's `fitted_on` (declared or derived) names. Empty means every compared setting was used to build the model, so the comparison could not have found the model wrong."
+        },
+        "excluded_from_ranking": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Candidates in this type's class with no held-out settings of their own, kept out of the power gate's ranking."
+        },
+        "comparison": {
+          "type": "object",
+          "required": ["used", "chosen_by"],
+          "properties": {
+            "used": {"enum": ["waves", "readings"]},
+            "chosen_by": {"type": "string", "description": "`by_repeatability_class` or `bypass_check_failed`. Mechanical either way -- no path where a person chooses."}
+          }
+        }
+      }
+    },
+
+    "stopped": {
+      "type": "object",
+      "required": ["at", "gate", "needs"],
+      "properties": {
+        "at": {"enum": [7, 8, 9], "description": "The stage this type did not get past."},
+        "gate": {
+          "enum": [
+            "control_could_not_fail", "no_held_out_setting", "no_input_take",
+            "unrenderable", "gross", "qualitative", "breakdown", "power",
+            "days_exhausted"
+          ],
+          "description": "Closed. A gate outside this list is a stage a closure count cannot read."
+        },
+        "needs": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required and never empty. The measurement that would move this type off `stopped`, in the terms `inferences open` already names, plus the margin it would answer by."
+        }
+      }
+    },
+
+    "excluded": {
+      "type": "object",
+      "required": ["reason"],
+      "properties": {
+        "reason": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

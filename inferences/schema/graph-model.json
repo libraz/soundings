@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/libraz/soundings/inferences/schema/graph-model.json",
+  "title": "A whole-type model written as a graph of named nodes",
+  "description": "A model with `model.kind == \"graph\"` describes an effect type as named nodes wired together, so a coupled structure (feedback, parallel paths) can be written where a single `chain` cannot. Every value a node carries states where it comes from, so a fitted law and a printed default are never confused for a measurement. `rows` accounts for every address the type's own printed page names. Checked by hand, the same way `inference.json` is.",
+  "type": "object",
+  "required": ["model", "sample_rate_hz", "inputs", "outputs", "nodes", "rows"],
+  "properties": {
+    "model": {"$ref": "#/$defs/model_block"},
+    "sample_rate_hz": {"type": "integer", "description": "The rate the graph is drawn at. A candidate value, not a constant: a model at a different rate is a second model, compared like any other."},
+    "why_this_rate": {"type": "string"},
+    "inputs": {"type": "array", "items": {"type": "string"}, "description": "The names a caller feeds audio into, e.g. `in_l`, `in_r`."},
+    "outputs": {"type": "object", "description": "Output name to the node id that produces it."},
+    "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "rows": {
+      "type": "object",
+      "description": "Every address the type's printed effect list names, sorted into `bound` (some node value's `byte` reads it) or `fixed_at_power_on`. A `switch` row is always `fixed_at_power_on`, because a structural choice has no `map`.",
+      "additionalProperties": {"$ref": "#/$defs/row_state"}
+    }
+  },
+
+  "$defs": {
+    "model_block": {
+      "type": "object",
+      "required": ["schema_version", "id", "class", "candidate", "unit_id", "type", "kind", "made_by"],
+      "properties": {
+        "schema_version": {"type": "integer", "minimum": 1},
+        "id": {"type": "string"},
+        "class": {"type": "string"},
+        "candidate": {"type": "string"},
+        "unit_id": {"type": "string"},
+        "type": {"type": "string"},
+        "kind": {"const": "graph"},
+        "made_by": {"type": "string"}
+      }
+    },
+
+    "node": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "description": "A node that consumes audio names it as `input` (one name) or `inputs` (several); a node that only produces a control signal, such as `lfo`, has neither. Every other key on the node is one of its values, and which values a kind requires is that kind's own list rather than this schema's.",
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {
+          "enum": [
+            "gain", "mix", "pan", "delay", "lfo", "section", "lti",
+            "shaper", "envelope", "gain_computer", "vca", "hold",
+            "quantize", "pitch"
+          ],
+          "description": "Closed. Each kind is drawn by exactly one module and carries its own required values; this file only fences the vocabulary, not the per-kind requirements."
+        }
+      }
+    },
+
+    "row_state": {"enum": ["bound", "fixed_at_power_on"]},
+
+    "source": {
+      "enum": ["measured", "law", "document"],
+      "description": "`measured` names the takes a value was read from directly. `law` names the claim a value was fitted under, with `fitted_on` derived from that claim's own citations. `document` names a printed default, never derived."
+    },
+
+    "value_spec": {
+      "type": "object",
+      "description": "A value carried by a node. Exactly one of three shapes: `byte`+`map` (read from a written address every sample the graph is drawn), `value` (a constant), or `control`+`map` (read from another node's output every sample). Whichever shape, `source`, `rests_on` and `fitted_on` are required.",
+      "required": ["source", "rests_on", "fitted_on"],
+      "properties": {
+        "byte": {"type": "string"},
+        "map": {"type": "object"},
+        "value": {},
+        "control": {"type": "string"},
+        "source": {"$ref": "#/$defs/source"},
+        "rests_on": {"type": "array"},
+        "fitted_on": {
+          "type": "array",
+          "description": "The union of what was declared directly ([directory, setting] pairs for a measured value) and what a stage derives from `rests_on` for a law: the citations of the claim it points at, resolved back to take directories through the ledger."
+        }
+      }
+    }
+  }
+}

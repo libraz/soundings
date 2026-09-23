@@ -811,3 +811,263 @@ def test_every_claim_about_a_class_is_reported_on():
             and json.loads(p.read_text())["inference"]["about"].get("scope") == "class"
         }
         assert {item["inference"] for item in found["claims"]} == classes
+
+
+# ---- stages/<MM-LL>.json against inferences/schema/stage.json, and
+# ---- inferences/models/*.json with kind "graph" against inferences/schema/graph-model.json.
+#
+# Both schemas are checked by hand, the way inference.json already is: the closed
+# vocabularies live in the schema file and are read from it here rather than kept
+# a second time in Python, so a gate the schema adds is a gate this file sees too.
+
+STAGE_SCHEMA = json.loads((HERE / "schema" / "stage.json").read_text())
+GRAPH_MODEL_SCHEMA = json.loads((HERE / "schema" / "graph-model.json").read_text())
+
+STOPPED_GATES = set(STAGE_SCHEMA["$defs"]["stopped"]["properties"]["gate"]["enum"])
+STOPPED_AT = set(STAGE_SCHEMA["$defs"]["stopped"]["properties"]["at"]["enum"])
+
+NODE_KINDS = set(GRAPH_MODEL_SCHEMA["$defs"]["node"]["properties"]["kind"]["enum"])
+VALUE_SOURCES = set(GRAPH_MODEL_SCHEMA["$defs"]["source"]["enum"])
+ROW_STATES = set(GRAPH_MODEL_SCHEMA["$defs"]["row_state"]["enum"])
+
+FIXTURES = ROOT / "tests" / "data" / "render-fixtures"
+FIXTURE_ROOT = FIXTURES / "root"
+
+
+def _stages(root: Path) -> list[Path]:
+    return sorted(root.glob("inferences/*/stages/*.json"))
+
+
+def _graph_models(root: Path) -> list[Path]:
+    """Models with `model.kind == "graph"`. The other kinds (`lti`, `table`, `pan`)
+    have their own shape and are not this schema's business."""
+    return sorted(
+        p for p in (root / "inferences" / "models").glob("*.json")
+        if json.loads(p.read_text()).get("model", {}).get("kind") == "graph"
+    )
+
+
+def _stage_errors(stage: dict) -> list[str]:
+    """Every way `stage` disagrees with `inferences/schema/stage.json`.
+
+    Hand-checked rather than run through a schema library (none is a dependency
+    here). Each phase and `stopped` are validated only where present -- a stage
+    that never rendered carries `excluded` and nothing else, and that is a valid
+    shape and not a partial one.
+    """
+    errors = []
+    if "type" not in stage:
+        errors.append("stage has no `type`")
+
+    if "p0" in stage:
+        for key in STAGE_SCHEMA["$defs"]["p0"]["required"]:
+            if key not in stage["p0"]:
+                errors.append(f"p0 has no `{key}`")
+
+    for phase in ("p1", "p2"):
+        if phase not in stage:
+            continue
+        block = stage[phase]
+        for key in STAGE_SCHEMA["$defs"]["phase"]["required"]:
+            if key not in block:
+                errors.append(f"{phase} has no `{key}`")
+        for i, row in enumerate(block.get("compared", [])):
+            for key in ("dir", "setting", "input_from", "channel"):
+                if key not in row:
+                    errors.append(f"{phase}.compared[{i}] has no `{key}`")
+        comparison = block.get("comparison", {})
+        for key in ("used", "chosen_by"):
+            if key not in comparison:
+                errors.append(f"{phase}.comparison has no `{key}`")
+        if block.get("verdict") == "passed" and not block.get("held_out_settings"):
+            errors.append(
+                f"{phase} has verdict `passed` with no `held_out_settings`, so nothing "
+                "compared here was withheld from the model that is passing"
+            )
+
+    if "stopped" in stage:
+        stopped = stage["stopped"]
+        if stopped.get("at") not in STOPPED_AT:
+            errors.append(f"stopped.at is {stopped.get('at')!r}, not one of {sorted(STOPPED_AT)}")
+        if stopped.get("gate") not in STOPPED_GATES:
+            errors.append(f"stopped.gate is {stopped.get('gate')!r}, outside the closed vocabulary")
+        if not (stopped.get("needs") or "").strip():
+            errors.append("stopped has no `needs`, so nothing says what would unblock it")
+
+    if "excluded" in stage and not (stage["excluded"].get("reason") or "").strip():
+        errors.append("excluded has no `reason`")
+
+    return errors
+
+
+def _dicts_with_paths(node, path: str):
+    """Every dict inside `node`, with a dotted/indexed path to where it sits."""
+    if isinstance(node, dict):
+        yield path, node
+        for key, value in node.items():
+            yield from _dicts_with_paths(value, f"{path}.{key}" if path else key)
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from _dicts_with_paths(value, f"{path}[{index}]")
+
+
+def _printed_addresses(root: Path, unit: str, effect_type: str) -> set[str]:
+    """Every address a type's printed effect list names: the parsed rows and the
+    by-hand rows the parser refused, matched on msb/lsb and requiring `address_lsb`."""
+    meta = json.loads((root / "data" / "units" / unit / "meta.json").read_text())
+    named = (meta.get("documents") or [None])[0]
+    msb, lsb = effect_type.split()
+    addresses = set()
+    listing = json.loads((root / "documents" / named / "effect-list.json").read_text())
+    for row in listing["rows"]:
+        if row.get("msb") == msb and row.get("lsb") == lsb and "address_lsb" in row:
+            addresses.add(f"40 03 {row['address_lsb']}")
+    by_hand_path = root / "documents" / named / "by-hand.json"
+    if by_hand_path.is_file():
+        by_hand = json.loads(by_hand_path.read_text())
+        for row in by_hand.get("tables", {}).get("effect-list", []):
+            if row.get("msb") == msb and row.get("lsb") == lsb and "address_lsb" in row:
+                addresses.add(f"40 03 {row['address_lsb']}")
+    return addresses
+
+
+def _graph_model_errors(model: dict, root: Path) -> list[str]:
+    """Every way `model` disagrees with `inferences/schema/graph-model.json`."""
+    errors = []
+    for key in GRAPH_MODEL_SCHEMA["required"]:
+        if key not in model:
+            errors.append(f"graph model has no `{key}`")
+    if errors:
+        return errors  # the rest of the shape cannot be read without these
+
+    for key in GRAPH_MODEL_SCHEMA["$defs"]["model_block"]["required"]:
+        if key not in model["model"]:
+            errors.append(f"model block has no `{key}`")
+    if model["model"].get("kind") != "graph":
+        errors.append("model.kind is not `graph`")
+
+    for i, node in enumerate(model["nodes"]):
+        for key in ("id", "kind"):
+            if key not in node:
+                errors.append(f"nodes[{i}] has no `{key}`")
+        # `input`/`inputs` is not checked here: an `lfo` produces a control signal and
+        # takes neither, which of the two (or none) a kind needs is that kind's own
+        # required-value list and not this schema's to fence.
+        kind = node.get("kind")
+        if kind is not None and kind not in NODE_KINDS:
+            errors.append(
+                f"nodes[{i}] ({node.get('id', '?')}) has kind {kind!r}, "
+                "outside the closed vocabulary"
+            )
+
+    bound_addresses: set[str] = set()
+    sources_by_address: dict[str, set] = {}
+    for path, spec in _dicts_with_paths(model["nodes"], "nodes"):
+        has_byte_map = "byte" in spec and "map" in spec
+        has_value = "value" in spec
+        has_control_map = "control" in spec and "map" in spec
+        if not (has_byte_map or has_value or has_control_map):
+            continue
+        if "source" not in spec:
+            errors.append(f"{path} has no `source`")
+        elif spec["source"] not in VALUE_SOURCES:
+            errors.append(
+                f"{path} has a source of {spec['source']!r}, outside {sorted(VALUE_SOURCES)}"
+            )
+        if "rests_on" not in spec:
+            errors.append(f"{path} has no `rests_on`")
+        if "fitted_on" not in spec:
+            errors.append(f"{path} has no `fitted_on`")
+        if has_byte_map:
+            bound_addresses.add(spec["byte"])
+            sources_by_address.setdefault(spec["byte"], set()).add(spec.get("source"))
+
+    for address, sources in sources_by_address.items():
+        if {"document", "measured"} <= sources:
+            errors.append(
+                f"address {address} is claimed by both a document-sourced value and a "
+                "measured-sourced value"
+            )
+
+    rows = model["rows"]
+    for address, state in rows.items():
+        if state not in ROW_STATES:
+            errors.append(f"rows[{address!r}] has state {state!r}, outside {sorted(ROW_STATES)}")
+        elif state == "bound" and address not in bound_addresses:
+            errors.append(f"rows[{address!r}] is `bound` but no node value's `byte` reaches it")
+
+    unit = model["model"].get("unit_id")
+    effect_type = model["model"].get("type")
+    if unit and effect_type:
+        printed = _printed_addresses(root, unit, effect_type)
+        missing = printed - set(rows)
+        if missing:
+            errors.append(f"rows omits {sorted(missing)}, which {effect_type} prints")
+
+    return errors
+
+
+@pytest.mark.parametrize("path", _stages(ROOT), ids=lambda p: f"{p.parent.parent.name}/{p.name}")
+def test_a_stage_carries_the_shape_the_schema_states(path: Path):
+    stage = json.loads(path.read_text())
+    errors = _stage_errors(stage)
+    assert not errors, f"{path.name}: " + "; ".join(errors)
+
+
+@pytest.mark.parametrize("path", _graph_models(ROOT), ids=lambda p: p.name)
+def test_a_graph_model_carries_the_shape_the_schema_states(path: Path):
+    model = json.loads(path.read_text())
+    errors = _graph_model_errors(model, ROOT)
+    assert not errors, f"{path.name}: " + "; ".join(errors)
+
+
+def test_the_good_stage_fixture_passes():
+    stage = json.loads((FIXTURES / "good-stage.json").read_text())
+    assert _stage_errors(stage) == []
+
+
+def test_the_good_graph_fixture_passes():
+    model = json.loads((FIXTURES / "good-graph.json").read_text())
+    assert _graph_model_errors(model, FIXTURE_ROOT) == []
+
+
+BAD_STAGE_FIXTURES = {
+    "bad-stage-passed-without-held-out.json": "held_out_settings",
+    "bad-stage-gate-outside-vocabulary.json": "outside the closed vocabulary",
+    "bad-stage-stopped-without-needs.json": "no `needs`",
+}
+
+BAD_GRAPH_FIXTURES = {
+    "bad-graph-value-with-no-source.json": "has no `source`",
+    "bad-graph-document-measured-collision.json": (
+        "document-sourced value and a measured-sourced value"
+    ),
+    "bad-graph-missing-printed-row.json": "rows omits",
+}
+
+
+@pytest.mark.parametrize("name,reason", sorted(BAD_STAGE_FIXTURES.items()))
+def test_a_bad_stage_fixture_is_rejected_for_its_own_reason(name: str, reason: str):
+    stage = json.loads((FIXTURES / name).read_text())
+    errors = _stage_errors(stage)
+    assert len(errors) == 1, f"{name}: expected exactly one defect, got {errors}"
+    assert reason in errors[0], f"{name}: {errors[0]!r} does not mention {reason!r}"
+
+
+@pytest.mark.parametrize("name,reason", sorted(BAD_GRAPH_FIXTURES.items()))
+def test_a_bad_graph_fixture_is_rejected_for_its_own_reason(name: str, reason: str):
+    model = json.loads((FIXTURES / name).read_text())
+    errors = _graph_model_errors(model, FIXTURE_ROOT)
+    assert len(errors) == 1, f"{name}: expected exactly one defect, got {errors}"
+    assert reason in errors[0], f"{name}: {errors[0]!r} does not mention {reason!r}"
+
+
+def test_the_six_bad_fixtures_are_rejected_for_six_different_reasons():
+    """The point of the exercise: not just rejected, but each on its own ground."""
+    reasons = []
+    for name in BAD_STAGE_FIXTURES:
+        reasons.extend(_stage_errors(json.loads((FIXTURES / name).read_text())))
+    for name in BAD_GRAPH_FIXTURES:
+        reasons.extend(_graph_model_errors(json.loads((FIXTURES / name).read_text()), FIXTURE_ROOT))
+    assert len(reasons) == 6
+    assert len(set(reasons)) == 6

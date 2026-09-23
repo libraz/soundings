@@ -1,0 +1,118 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "fixture-bad-missing-row",
+    "class": "whole-0124",
+    "candidate": "fixture",
+    "unit_id": "fixture-unit",
+    "type": "01 24",
+    "kind": "graph",
+    "made_by": "by hand"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "fixture, not a claim about any real unit",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "mixer",
+    "out_r": "mixer"
+  },
+  "nodes": [
+    {
+      "id": "lfo",
+      "kind": "lfo",
+      "shape": "triangle",
+      "rate_hz": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "table",
+          "entries": [
+            1.0,
+            2.0
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/fixture-unit/rate-fixture.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "document",
+        "rests_on": [
+          "documents/fixture-doc/effect-list.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "tap",
+      "kind": "delay",
+      "input": "in_l",
+      "interpolation": "linear",
+      "time_ms": {
+        "value": 5.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/fixture-unit/efx-time/01-24-fixture.json"
+        ],
+        "fitted_on": [
+          [
+            "book-fixture/01-24",
+            "held"
+          ]
+        ]
+      },
+      "modulated_by": {
+        "control": "lfo",
+        "depth_ms": {
+          "byte": "40 03 04",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.5,
+              1.0
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/fixture-unit/depth-fixture.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "mixer",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "tap"
+      ],
+      "weights": {
+        "tap": {
+          "byte": "40 03 05",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              1.0
+            ]
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/fixture-doc/effect-list.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound"
+  }
+}
