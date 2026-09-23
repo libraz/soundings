@@ -105,7 +105,7 @@ def register(sub) -> None:
     p.add_argument(
         "--settle",
         type=float,
-        default=0.4,
+        default=options.SETTLE_S,
         help="seconds after each preparing write, before it is read back",
     )
     options.add_verify_reads(p)
@@ -227,6 +227,8 @@ def cmd_transfer(args: argparse.Namespace) -> int:
         for column, channel in enumerate(args.in_channels)
     ]
 
+    state = takes.unit_state(args.prepare, settle_s=args.settle)
+
     if store is not None:
         manifest = store.close(
             sweep=sweep.to_json(),
@@ -234,6 +236,7 @@ def cmd_transfer(args: argparse.Namespace) -> int:
             out_channels=list(args.out_channels),
             in_channels=list(args.in_channels),
             loopback=args.loopback,
+            **state,
         )
         print(f"\nkept the return under {manifest.parent}")
 
@@ -248,9 +251,7 @@ def cmd_transfer(args: argparse.Namespace) -> int:
             "loopback": args.loopback,
             "reference": args.reference,
             **({"reference_channel": reference_channel} if reference_channel else {}),
-            "prepared": [
-                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
-            ],
+            "prepared": state["prepared"],
             **({"prepared_caveat": PREPARED_CAVEAT} if args.prepare else {}),
             "inputs": results,
         },

@@ -15,6 +15,8 @@ import pytest
 
 from soundings.cli import main, report, session
 
+from .fakes import Answering, FakeLink, FakePorts  # noqa: F401 -- FakePorts is part of the shape
+
 
 class FakeReport:
     def __init__(self, passed: bool):
@@ -22,21 +24,6 @@ class FakeReport:
 
     def __str__(self) -> str:
         return f"report: {'pass' if self.passed else 'FAIL'}"
-
-
-class FakePorts:
-    output_name = "Fake MIDI Out"
-
-
-class FakeLink:
-    ports = FakePorts()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        self.closed = True
-        return False
 
 
 @pytest.fixture
@@ -105,30 +92,6 @@ def test_an_announcement_is_printed_before_the_report(wired, capsys):
         pass
     lines = capsys.readouterr().out.splitlines()
     assert lines == ["Verifying the path", "report: pass"]
-
-
-class Answering:
-    """A link whose reads answer with whatever the unit is standing in for holds."""
-
-    def __init__(self, holds: dict[str, list[int]]):
-        self.holds = holds
-        self.sent: list[list[int]] = []
-
-    def send(self, message) -> None:
-        self.sent.append(list(message))
-
-    def exchange(self, message):
-        from soundings import roland
-
-        # An RQ1's address is the three bytes after the command, which is where
-        # the harness puts it; there is no parser for the request side because
-        # nothing but a test ever reads one back.
-        asked = " ".join(f"{b:02X}" for b in message[5:8])
-        got = self.holds.get(asked)
-        # An empty list, as the real link returns when nothing arrived before the
-        # timeout; it never returns None, and a silence is a result rather than an
-        # error there.
-        return roland.dt1(asked, got, device_id=0x10) if got is not None else []
 
 
 def test_a_preparation_the_unit_took_lets_the_run_go_on(monkeypatch):

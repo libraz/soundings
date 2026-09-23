@@ -16,6 +16,9 @@ SAVE_HELP = (
     "be asked anything else; kept takes can be measured again with the machine unplugged"
 )
 
+SETTLE_S = 0.4
+"""Default seconds a run waits after a preparing write, before reading it back."""
+
 LEAD_IN_HELP = (
     "dBFS the lead-in must stay under; above this something was sounding before the note and "
     "the noise floor, which is the yardstick for everything else, is wrong. Absolute rather "

@@ -219,7 +219,9 @@ def register(sub) -> None:
     )
     p.add_argument("--takes", type=int, default=4, help="takes per setting per stimulus")
     p.add_argument("--between", type=float, default=0.8)
-    p.add_argument("--settle", type=float, default=0.4, help="seconds after changing the setting")
+    p.add_argument(
+        "--settle", type=float, default=options.SETTLE_S, help="seconds after changing the setting"
+    )
     p.add_argument(
         "--margin",
         type=float,
@@ -350,6 +352,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     """Play the same note under two settings and say whether the unit sounded different."""
     from .. import audible, stability, stimuli
     from ..resets import Prober, named
+    from ..takes import unit_state
 
     def setting(value: int, channel: int) -> list[list[int]]:
         """The messages that put the parameter at `value`, on the stimulus's channel.
@@ -616,6 +619,12 @@ def cmd_contrast(args: argparse.Namespace) -> int:
     print()
     print(overall.describe())
 
+    state = unit_state(
+        args.prepare,
+        as_held=[None if h is None else f"{h:02X}" for h in as_held] if as_held else None,
+        settle_s=args.settle,
+    )
+
     if store is not None:
         manifest = store.close(
             label=label,
@@ -624,6 +633,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
             values=list(args.values),
             channel=args.channel,
             stimuli=[stim.to_json() for stim in sent],
+            **state,
         )
         print(f"\nkept {len(store.entries)} takes under {manifest.parent}")
 
@@ -642,9 +652,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 if any(h is not None and h != v for h, v in zip(as_held, args.values, strict=False))
                 else {}
             ),
-            "prepared": [
-                {"address": a, "bytes": " ".join(f"{v:02X}" for v in vs)} for a, vs in args.prepare
-            ],
+            "prepared": state["prepared"],
             **({"prepared_caveat": audible.PREPARED_CAVEAT} if args.prepare else {}),
             "reset_before_each_setting": bool(args.reset_between_settings),
             **(

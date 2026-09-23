@@ -456,6 +456,37 @@ def _safe(text: str) -> str:
     return "".join(c if c.isalnum() or c in "-_" else "_" for c in str(text))
 
 
+def _is_type_write(address: str) -> bool:
+    """Whether an address a `--prepare` write named is the type select, `40 03 00`."""
+    try:
+        return tuple(int(b, 16) for b in address.split()) == (0x40, 0x03, 0x00)
+    except ValueError:
+        return False
+
+
+def unit_state(prepare, as_held=None, settle_s: float | None = None) -> dict:
+    """The state a preparing run left the unit in, in the one shape manifest and result share.
+
+    `type` reads out of `prepared` rather than off a separate flag: it is whatever
+    was written to `40 03 00`, or null where nothing was. `values_as_held` is
+    carried only when given.
+    """
+    prepared = [
+        {"address": address, "bytes": " ".join(f"{v:02X}" for v in values)}
+        for address, values in prepare
+    ]
+    type_ = None
+    for address, values in prepare:
+        if _is_type_write(address):
+            type_ = " ".join(f"{v:02X}" for v in values)
+            break
+    state: dict = {"type": type_, "prepared": prepared}
+    if as_held is not None:
+        state["values_as_held"] = as_held
+    state["settle_s"] = settle_s
+    return state
+
+
 def method_of(where: str | Path) -> dict:
     """What the store said when it closed, without the takes themselves.
 
@@ -559,5 +590,6 @@ __all__ = [
     "not_matching",
     "read",
     "read_pair",
+    "unit_state",
     "write",
 ]
