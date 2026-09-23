@@ -169,6 +169,80 @@ def _biquad(b0, b1, b2, a0, a1, a2, w):
     return (b0 + b1 * z1 + b2 * z2) / (a0 + a1 * z1 + a2 * z2)
 
 
+_UNITY = np.array([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]])
+
+
+def _row(b, a) -> np.ndarray:
+    """One section as `[b0, b1, b2, 1, a1, a2]`, padded to second order."""
+    b = np.pad(np.asarray(b, dtype=float), (0, 3 - len(b)))
+    a = np.pad(np.asarray(a, dtype=float), (0, 3 - len(a)))
+    return np.concatenate([b / a[0], a / a[0]])[None, :]
+
+
+def _evaluated(sos: np.ndarray, freq_hz, fs: float) -> np.ndarray:
+    """The transfer of a cascade of sections at the frequencies asked for."""
+    w = 2 * np.pi * np.asarray(freq_hz, dtype=float) / fs
+    out = np.ones_like(w, dtype=complex)
+    for row in sos:
+        out = out * _biquad(*row, w)
+    return out
+
+
+def _first_order_shelf_sos(*, side: str, corner_hz: float, gain_db: float, fs: float):
+    """The coefficients `_first_order_shelf` evaluates."""
+    g = 10.0 ** (gain_db / 20.0)
+    if abs(gain_db) < 1e-9:
+        return _UNITY
+    k = np.tan(np.pi * corner_hz / fs)
+    k = k / np.sqrt(g) if side == "low" else k * np.sqrt(g)
+    inv = 1.0 / k
+    if side == "low":
+        b0, b1 = inv + g, g - inv
+    else:
+        b0, b1 = g * inv + 1.0, 1.0 - g * inv
+    return _row([b0, b1], [inv + 1.0, 1.0 - inv])
+
+
+def _second_order_shelf_sos(*, side: str, corner_hz: float, gain_db: float, fs: float):
+    """The coefficients `_second_order_shelf` evaluates."""
+    if abs(gain_db) < 1e-9:
+        return _UNITY
+    amp = 10.0 ** (gain_db / 40.0)
+    w0 = 2 * np.pi * corner_hz / fs
+    cos0, sin0 = np.cos(w0), np.sin(w0)
+    alpha = sin0 / 2.0 * np.sqrt(2.0)  # the cookbook's alpha at S = 1
+    root = 2.0 * np.sqrt(amp) * alpha
+    if side == "low":
+        b0 = amp * ((amp + 1) - (amp - 1) * cos0 + root)
+        b1 = 2 * amp * ((amp - 1) - (amp + 1) * cos0)
+        b2 = amp * ((amp + 1) - (amp - 1) * cos0 - root)
+        a0 = (amp + 1) + (amp - 1) * cos0 + root
+        a1 = -2 * ((amp - 1) + (amp + 1) * cos0)
+        a2 = (amp + 1) + (amp - 1) * cos0 - root
+    else:
+        b0 = amp * ((amp + 1) + (amp - 1) * cos0 + root)
+        b1 = -2 * amp * ((amp - 1) + (amp + 1) * cos0)
+        b2 = amp * ((amp + 1) + (amp - 1) * cos0 - root)
+        a0 = (amp + 1) - (amp - 1) * cos0 + root
+        a1 = 2 * ((amp - 1) - (amp + 1) * cos0)
+        a2 = (amp + 1) - (amp - 1) * cos0 - root
+    return _row([b0, b1, b2], [a0, a1, a2])
+
+
+def _peaking_sos(*, centre_hz: float, q: float, gain_db: float, fs: float):
+    """The coefficients `_peaking` evaluates."""
+    if abs(gain_db) < 1e-9:
+        return _UNITY
+    amp = 10.0 ** (gain_db / 40.0)
+    w0 = 2 * np.pi * centre_hz / fs
+    alpha = np.sin(w0) / (2.0 * q)
+    cos0 = np.cos(w0)
+    return _row(
+        [1 + alpha * amp, -2 * cos0, 1 - alpha * amp],
+        [1 + alpha / amp, -2 * cos0, 1 - alpha / amp],
+    )
+
+
 def _first_order_shelf(freq_hz, *, side: str, corner_hz: float, gain_db: float, fs: float):
     """A one-pole, one-zero shelf, bilinear transformed with its corner prewarped.
 
@@ -197,20 +271,8 @@ def _first_order_shelf(freq_hz, *, side: str, corner_hz: float, gain_db: float, 
     this way, so the two orders were being compared on unequal terms -- which is
     the comparison the equaliser's standing alternative is about.
     """
-    g = 10.0 ** (gain_db / 20.0)
-    if abs(gain_db) < 1e-9:
-        return np.ones_like(freq_hz, dtype=complex)
-    k = np.tan(np.pi * corner_hz / fs)
-    k = k / np.sqrt(g) if side == "low" else k * np.sqrt(g)
-    inv = 1.0 / k
-    if side == "low":
-        b0, b1 = inv + g, g - inv
-    else:
-        b0, b1 = g * inv + 1.0, 1.0 - g * inv
-    a0, a1 = inv + 1.0, 1.0 - inv
-    w = 2 * np.pi * freq_hz / fs
-    z1 = np.exp(-1j * w)
-    return (b0 + b1 * z1) / (a0 + a1 * z1)
+    sos = _first_order_shelf_sos(side=side, corner_hz=corner_hz, gain_db=gain_db, fs=fs)
+    return _evaluated(sos, freq_hz, fs)
 
 
 def _second_order_shelf(freq_hz, *, side: str, corner_hz: float, gain_db: float, fs: float):
@@ -221,42 +283,13 @@ def _second_order_shelf(freq_hz, *, side: str, corner_hz: float, gain_db: float,
     gain it runs at 7.2 dB per octave against the one-pole section's 3.6, which is
     the difference the two candidates are separated by.
     """
-    if abs(gain_db) < 1e-9:
-        return np.ones_like(freq_hz, dtype=complex)
-    amp = 10.0 ** (gain_db / 40.0)
-    w0 = 2 * np.pi * corner_hz / fs
-    cos0, sin0 = np.cos(w0), np.sin(w0)
-    alpha = sin0 / 2.0 * np.sqrt(2.0)  # the cookbook's alpha at S = 1
-    root = 2.0 * np.sqrt(amp) * alpha
-    if side == "low":
-        b0 = amp * ((amp + 1) - (amp - 1) * cos0 + root)
-        b1 = 2 * amp * ((amp - 1) - (amp + 1) * cos0)
-        b2 = amp * ((amp + 1) - (amp - 1) * cos0 - root)
-        a0 = (amp + 1) + (amp - 1) * cos0 + root
-        a1 = -2 * ((amp - 1) + (amp + 1) * cos0)
-        a2 = (amp + 1) + (amp - 1) * cos0 - root
-    else:
-        b0 = amp * ((amp + 1) + (amp - 1) * cos0 + root)
-        b1 = -2 * amp * ((amp - 1) + (amp + 1) * cos0)
-        b2 = amp * ((amp + 1) + (amp - 1) * cos0 - root)
-        a0 = (amp + 1) - (amp - 1) * cos0 + root
-        a1 = 2 * ((amp - 1) - (amp + 1) * cos0)
-        a2 = (amp + 1) - (amp - 1) * cos0 - root
-    return _biquad(b0, b1, b2, a0, a1, a2, 2 * np.pi * freq_hz / fs)
+    sos = _second_order_shelf_sos(side=side, corner_hz=corner_hz, gain_db=gain_db, fs=fs)
+    return _evaluated(sos, freq_hz, fs)
 
 
 def _peaking(freq_hz, *, centre_hz: float, q: float, gain_db: float, fs: float):
-    if abs(gain_db) < 1e-9:
-        return np.ones_like(freq_hz, dtype=complex)
-    amp = 10.0 ** (gain_db / 40.0)
-    w0 = 2 * np.pi * centre_hz / fs
-    alpha = np.sin(w0) / (2.0 * q)
-    cos0 = np.cos(w0)
-    return _biquad(
-        1 + alpha * amp, -2 * cos0, 1 - alpha * amp,
-        1 + alpha / amp, -2 * cos0, 1 - alpha / amp,
-        2 * np.pi * freq_hz / fs,
-    )
+    sos = _peaking_sos(centre_hz=centre_hz, q=q, gain_db=gain_db, fs=fs)
+    return _evaluated(sos, freq_hz, fs)
 
 
 def _reached_by_a_mix(
@@ -294,17 +327,22 @@ def _reached_by_a_mix(
     of the range they are not the same curve -- so a part can be measured to do one
     rather than the other.
 
-    `at_full` is the section already rendered at `towards_db`, which is the caller's
+    `at_full` is the section already built at `towards_db`, which is the caller's
     to choose for the same reason. The mix is solved against that same section rather
     than against the top of the range, so what comes back stands where the byte asked
-    whichever reading it is.
+    whichever reading it is. It is either the section's one coefficient row, and a
+    row comes back, or its rendered transfer, which is that row over a denominator of
+    one.
     """
+    rows = np.ndim(at_full) == 2
     if abs(gain_db) < 1e-9:
-        return np.ones_like(at_full, dtype=complex)
+        return _UNITY if rows else np.ones_like(at_full, dtype=complex)
     wanted = 10.0 ** ((-gain_db if mirrored else gain_db) / 20.0)
     mix = (wanted - 1.0) / (10.0 ** (towards_db / 20.0) - 1.0)
-    blended = 1.0 + mix * (at_full - 1.0)
-    return 1.0 / blended if mirrored else blended
+    num, den = (at_full[0, :3], at_full[0, 3:]) if rows else (at_full, 1.0)
+    blended = (1.0 - mix) * den + mix * num
+    top, bottom = (den, blended) if mirrored else (blended, den)
+    return _row(top, bottom) if rows else top / bottom
 
 
 def _allpass_chain(
@@ -425,6 +463,48 @@ def _allpass_chain(
     return 1.0 + mix * whole / (1.0 - feedback * late * around)
 
 
+def _allpass_cascade_sos(
+    *, sections: int, corner_hz: float, mix: float, fs: float, q: float | None = None
+):
+    """`1 + mix * A**sections` without a loop, as sections.
+
+    A sum and not a cascade, so its zeros are solved rather than multiplied out: the
+    poles are the all-pass sections' own, and the zeros are where `A` reaches one of
+    the `sections` roots of `-1/mix`, which is one small polynomial per root. Nothing
+    is factored at a repeated pole, where root finding loses most of its digits.
+    """
+    if mix == 0:
+        return _UNITY
+    if q is None:
+        t = np.tan(np.pi * corner_hz / fs)
+        c = (t - 1.0) / (t + 1.0)
+        den = np.array([1.0, c])
+    else:
+        w0 = 2 * np.pi * corner_hz / fs
+        cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
+        den = np.array([1 + alpha, -2 * cos0, 1 - alpha])
+    num, den = den[::-1] / den[0], den / den[0]
+    radius = abs(mix) ** (-1.0 / sections)
+    # The roots of -1/mix sit at pi*m/sections, m odd for a positive mix; m up to
+    # `sections` takes one of each conjugate pair.
+    rows = []
+    for m in range(1 if mix > 0 else 0, sections + 1, 2):
+        real = m in (0, sections)
+        s = (radius if m == 0 else -radius) if real else radius * np.exp(1j * np.pi * m / sections)
+        solved = num - s * den
+        if real:
+            rows.append(_row(solved.real / solved.real[0], den))
+            continue
+        pairs = [[1.0, -2.0 * z.real, abs(z) ** 2] for z in np.roots(solved)]
+        if len(den) == 2:
+            rows.append(_row(pairs[0], np.convolve(den, den)))
+        else:
+            rows.extend(_row(pair, den) for pair in pairs)
+    sos = np.concatenate(rows)
+    sos[0, :3] *= 1.0 + mix * num[0] ** sections
+    return sos
+
+
 def _pole_cascade(
     freq_hz,
     *,
@@ -480,7 +560,24 @@ def _pole_cascade(
     thing they do there, which is about as separable as a reading gets -- and the
     stopband a profile levels off at names the pole outright, with no fit.
     """
-    w = 2 * np.pi * freq_hz / fs
+    sos = _pole_cascade_sos(
+        side=side, corner_hz=corner_hz, sections=sections, q=q, fs=fs, form=form
+    )
+    return _evaluated(sos, freq_hz, fs)
+
+
+def _pole_cascade_sos(
+    *,
+    side: str,
+    corner_hz: float,
+    sections: int,
+    q: float | None,
+    fs: float,
+    form: str = "bilinear",
+):
+    """The coefficients `_pole_cascade` evaluates, one row per stage."""
+    if sections == 0:
+        return _UNITY
     if q is None and form == "one-multiply":
         # `corner_hz` is where the section is three decibels down, the same
         # quantity the bilinear form's corner is, so that a corner table fitted
@@ -494,24 +591,19 @@ def _pole_cascade(
         cos0 = np.cos(2 * np.pi * corner_hz / fs)
         root = 2.0 - cos0
         a = root - np.sqrt(root * root - 1.0)
-        z1 = np.exp(-1j * w)
-        low = (1.0 - a) / (1.0 - a * z1)
-        return (low if side == "low" else 1.0 - low) ** sections
-    if q is None:
+        one = _row([1.0 - a] if side == "low" else [a, -a], [1.0, -a])
+    elif q is None:
         t = np.tan(np.pi * corner_hz / fs)
-        z1 = np.exp(-1j * w)
-        if side == "low":
-            one = (t * (1.0 + z1)) / ((1.0 + t) + (t - 1.0) * z1)
-        else:
-            one = (1.0 - z1) / ((1.0 + t) + (t - 1.0) * z1)
-        return one**sections
-    w0 = 2 * np.pi * corner_hz / fs
-    cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
-    if side == "low":
-        b0, b1, b2 = (1 - cos0) / 2.0, 1 - cos0, (1 - cos0) / 2.0
+        one = _row([t, t] if side == "low" else [1.0, -1.0], [1.0 + t, t - 1.0])
     else:
-        b0, b1, b2 = (1 + cos0) / 2.0, -(1 + cos0), (1 + cos0) / 2.0
-    return _biquad(b0, b1, b2, 1 + alpha, -2 * cos0, 1 - alpha, w) ** sections
+        w0 = 2 * np.pi * corner_hz / fs
+        cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
+        if side == "low":
+            b = [(1 - cos0) / 2.0, 1 - cos0, (1 - cos0) / 2.0]
+        else:
+            b = [(1 + cos0) / 2.0, -(1 + cos0), (1 + cos0) / 2.0]
+        one = _row(b, [1 + alpha, -2 * cos0, 1 - alpha])
+    return np.repeat(one, sections, axis=0)
 
 
 def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
@@ -523,9 +615,10 @@ def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
     blends it against the dry path instead, which is a different curve at every
     setting between the ends and the same curve at both of them.
 
-    `section` is called with a gain and returns that section's transfer. Calling it
-    rather than being handed a rendering is what keeps the two readings comparable:
-    the same shelf or the same peak, built by the same code, reached two ways.
+    `section` is called with a gain and returns that section's transfer or its one
+    coefficient row. Calling it rather than being handed a rendering is what keeps
+    the two readings comparable: the same shelf or the same peak, built by the same
+    code, reached two ways.
 
     `stored_at` is which end of the byte's range the one stored section sits at, and
     a model that does not say takes the boost. It is not a spelling of the same
@@ -550,6 +643,57 @@ def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
     )
 
 
+def section_sos(stage: dict, bytes_now: dict[str, int], fs: float) -> np.ndarray:
+    """One stage of a chain as second-order sections, `(n, 6)`, for one setting.
+
+    Rows are `[b0, b1, b2, 1, a1, a2]` as `scipy.signal.sosfilt` takes them, and
+    they are what `response()` evaluates, so a stage filtered in time and a stage
+    read as a curve are the same coefficients. An all-pass chain with a loop is
+    refused: its denominator would have to be factored, and the roots a factoring
+    finds are not exactly the values the loop's own formula has.
+    """
+    kind = stage["kind"]
+    if kind == "shelf":
+        gain_db = _value(stage["gain_db"], bytes_now)
+        corner = _value(stage["corner_hz"], bytes_now)
+        order = int(stage.get("order", 1))
+        shelf = _first_order_shelf_sos if order == 1 else _second_order_shelf_sos
+        return _how_the_gain_reaches(
+            stage, partial(shelf, side=stage["side"], corner_hz=corner, fs=fs), gain_db
+        )
+    if kind == "peaking":
+        centre = _value(stage["centre_hz"], bytes_now)
+        q = _value(stage["q"], bytes_now)
+        gain_db = _value(stage["gain_db"], bytes_now)
+        return _how_the_gain_reaches(
+            stage, partial(_peaking_sos, centre_hz=centre, q=q, fs=fs), gain_db
+        )
+    if kind == "allpass-chain":
+        if "feedback" in stage:
+            raise ValueError("an all-pass chain with a loop has no sections to return")
+        resonance = stage.get("q")
+        return _allpass_cascade_sos(
+            sections=int(stage["sections"]),
+            corner_hz=_value(stage["corner_hz"], bytes_now),
+            mix=_value(stage["mix"], bytes_now),
+            fs=fs,
+            q=None if resonance is None else _value(resonance, bytes_now),
+        )
+    if kind == "pole":
+        resonance = stage.get("q")
+        return _pole_cascade_sos(
+            side=stage["side"],
+            corner_hz=_value(stage["corner_hz"], bytes_now),
+            sections=int(_value(stage["sections"], bytes_now)),
+            q=None if resonance is None else _value(resonance, bytes_now),
+            fs=fs,
+            form=stage.get("form", "bilinear"),
+        )
+    if kind == "gain":
+        return _row([10.0 ** (_value(stage["gain_db"], bytes_now) / 20.0)], [1.0])
+    raise ValueError(f"{kind!r} is not a section this renderer holds")
+
+
 def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.ndarray:
     """The whole chain's transfer at the frequencies asked for, for one setting.
 
@@ -563,56 +707,23 @@ def response(model: dict, bytes_now: dict[str, int], freq_hz: np.ndarray) -> np.
     inside = freq_hz < fs / 2.0
     safe = np.where(inside, freq_hz, fs / 4.0)
     for stage in model["chain"]:
-        kind = stage["kind"]
-        if kind == "shelf":
-            gain_db = _value(stage["gain_db"], bytes_now)
-            corner = _value(stage["corner_hz"], bytes_now)
-            order = int(stage.get("order", 1))
-            shelf = _first_order_shelf if order == 1 else _second_order_shelf
-            out = out * _how_the_gain_reaches(
-                stage,
-                partial(shelf, safe, side=stage["side"], corner_hz=corner, fs=fs),
-                gain_db,
-            )
-        elif kind == "peaking":
-            centre = _value(stage["centre_hz"], bytes_now)
-            q = _value(stage["q"], bytes_now)
-            gain_db = _value(stage["gain_db"], bytes_now)
-            out = out * _how_the_gain_reaches(
-                stage,
-                partial(_peaking, safe, centre_hz=centre, q=q, fs=fs),
-                gain_db,
-            )
-        elif kind == "allpass-chain":
-            returned, resonance = stage.get("feedback"), stage.get("q")
-            out = out * _allpass_chain(
-                safe,
-                sections=int(stage["sections"]),
-                corner_hz=_value(stage["corner_hz"], bytes_now),
-                mix=_value(stage["mix"], bytes_now),
-                fs=fs,
-                q=None if resonance is None else _value(resonance, bytes_now),
-                feedback=0.0 if returned is None else _value(returned, bytes_now),
-                feedback_around=stage.get("feedback_around", "the-chain"),
-                feedback_sections=stage.get("feedback_sections"),
-                feedback_delay=int(stage.get("feedback_delay", 0)),
-                feedback_highpass_hz=stage.get("feedback_highpass_hz"),
-            )
-        elif kind == "pole":
-            resonance = stage.get("q")
-            out = out * _pole_cascade(
-                safe,
-                side=stage["side"],
-                corner_hz=_value(stage["corner_hz"], bytes_now),
-                sections=int(_value(stage["sections"], bytes_now)),
-                q=None if resonance is None else _value(resonance, bytes_now),
-                fs=fs,
-                form=stage.get("form", "bilinear"),
-            )
-        elif kind == "gain":
-            out = out * 10.0 ** (_value(stage["gain_db"], bytes_now) / 20.0)
-        else:
-            raise ValueError(f"{kind!r} is not a section this renderer holds")
+        if stage["kind"] != "allpass-chain" or "feedback" not in stage:
+            out = out * _evaluated(section_sos(stage, bytes_now, fs), safe, fs)
+            continue
+        resonance = stage.get("q")
+        out = out * _allpass_chain(
+            safe,
+            sections=int(stage["sections"]),
+            corner_hz=_value(stage["corner_hz"], bytes_now),
+            mix=_value(stage["mix"], bytes_now),
+            fs=fs,
+            q=None if resonance is None else _value(resonance, bytes_now),
+            feedback=_value(stage["feedback"], bytes_now),
+            feedback_around=stage.get("feedback_around", "the-chain"),
+            feedback_sections=stage.get("feedback_sections"),
+            feedback_delay=int(stage.get("feedback_delay", 0)),
+            feedback_highpass_hz=stage.get("feedback_highpass_hz"),
+        )
     return np.where(inside, out, np.nan)
 
 
