@@ -10,6 +10,10 @@ its own, when a record a claim rests on is re-published with a figure moved.
 None of them touches the unit. They are here rather than in a separate tool for
 the same reason the document commands are: a reader who has to find a second
 program to check a claim will not check it.
+
+`render` and `stage` carry a type's candidate models through stages 7-9: the first
+draws one model on one directory of takes, the second compares a class of them with
+the unit's own takes and, asked to, writes where the type stands.
 """
 
 from __future__ import annotations
@@ -63,6 +67,35 @@ def register(sub) -> None:
     reached.add_argument("unit_id")
     reached.add_argument("--root", default=".", type=Path)
 
+    drawn = inner.add_parser(
+        "render",
+        help="draw one graph model on a directory of the unit's takes, into "
+        ".cache/rendered/<model-id>/, from the bypass takes the ledger finds for it",
+    )
+    drawn.add_argument("model", type=Path, help="a graph model file")
+    drawn.add_argument("takes", type=Path, help="a directory under .cache/takes")
+    drawn.add_argument("--root", default=".", type=Path)
+
+    staged = inner.add_parser(
+        "stage",
+        help="compare a type's candidate models with the unit's own takes and say which "
+        "stage it reached; without --class, run the identity control alone",
+    )
+    staged.add_argument("unit_id")
+    staged.add_argument("type", help="the effect type, e.g. 01-24")
+    staged.add_argument(
+        "--class",
+        dest="class_name",
+        help="the candidates' class, e.g. whole-0124. Without it only the identity model "
+        "is compared, which says whether this comparison could fail anything at all",
+    )
+    staged.add_argument(
+        "--write",
+        action="store_true",
+        help="write inferences/<unit>/stages/<MM-LL>.json; needs --class",
+    )
+    staged.add_argument("--root", default=".", type=Path)
+
 
 def _dispatch(args) -> int:
     return {
@@ -72,6 +105,8 @@ def _dispatch(args) -> int:
         "index": _index,
         "coverage": _coverage,
         "reach": _reach,
+        "render": _render,
+        "stage": _stage,
     }[args.action](args)
 
 
@@ -218,4 +253,77 @@ def _index(args) -> int:
         print(f"wrote {where}")
     else:
         print(json.dumps(listing, indent=2))
+    return 0
+
+
+def _render(args) -> int:
+    from .. import ledger, stages
+
+    root = Path(args.root)
+    takes_root = (root / ledger.TAKES_ROOT).resolve()
+    try:
+        rel = Path(args.takes).resolve().relative_to(takes_root).as_posix()
+    except ValueError:
+        print(f"{args.takes} is not under {ledger.TAKES_ROOT}")
+        return 2
+    try:
+        drawn = stages.render_directory(stages.candidate(args.model, root), root, rel)
+    except stages.LedgerBehind as behind:
+        print(behind)
+        return 1
+    kept = json.loads((drawn / "takes-manifest.json").read_text())["rendered"]
+    print(f"drew {kept['model']} ({kept['model_sha256'][:12]}) on {rel}")
+    print(f"  channels {kept['channels']}, input from {kept['input_from']}")
+    if kept["unrenderable"]:
+        print(f"  unrenderable at {kept['unrenderable']}")
+    print(f"  into {drawn}")
+    return 0
+
+
+def _stage(args) -> int:
+    from .. import stages
+
+    if args.write and not args.class_name:
+        print("--write needs --class: the identity control alone decides no stage")
+        return 2
+    root = Path(args.root)
+    type_ = stages.type_of(args.type)
+    try:
+        found = stages.stage(root, args.unit_id, type_, class_name=args.class_name)
+    except stages.LedgerBehind as behind:
+        print(behind)
+        return 1
+    if "stopped" in found and "p1" not in found and "control" not in found:
+        print(f"{type_} stopped at {found['stopped']['at']}: {found['stopped']['gate']}")
+        print(f"  needs {found['stopped']['needs']}")
+        return 0
+    block = found.get("p1") or found
+    comparison = block["comparison"]
+    print(f"{type_} compared by {comparison['used']} ({comparison['chosen_by']}), "
+          f"{len(block['compared'])} settings in "
+          f"{len({row['dir'] for row in block['compared']})} directories")
+    control = block["control"]
+    if "bypass_check" in control:
+        print(f"  bypass check: {control['bypass_check']}")
+    gates = control["gates"]
+    print(
+        f"  identity control: {'separated' if control['separated'] else 'did not separate'}"
+        f"  gross {gates['gross']['residual_over_span']} of a span of "
+        f"{gates['gross']['span']} {gates['measured_in']}, breakdown "
+        f"{'passed' if gates['breakdown']['passed'] else 'failed'}"
+    )
+    if not args.class_name:
+        return 0
+    for phase in ("p1", "p2"):
+        if phase in found:
+            print(f"  {phase}: {found[phase]['verdict']}, held out "
+                  f"{len(found[phase]['held_out_settings'])}, kept out of the ranking "
+                  f"{found[phase]['excluded_from_ranking']}")
+    if "stopped" in found:
+        print(f"  stopped at {found['stopped']['at']}: {found['stopped']['gate']}")
+    if args.write:
+        where = root / "inferences" / args.unit_id / "stages" / f"{type_.replace(' ', '-')}.json"
+        where.parent.mkdir(parents=True, exist_ok=True)
+        where.write_text(json.dumps(found, indent=2) + "\n")
+        print(f"wrote {where}")
     return 0

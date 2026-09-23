@@ -27,6 +27,26 @@ from pathlib import Path
 
 import numpy as np
 
+_RENDERED_READ: set[str] = set()
+"""Directories of drawn takes whose manifest this process has read.
+
+Set by every function here that reads a manifest, and read by `report.write_json`,
+which refuses the archive to a process holding one: a reading of a model's takes
+is not a measurement of the unit, whichever file it passed through on the way.
+"""
+
+
+def _noted(where: str | Path, kept: dict) -> dict:
+    """The manifest as read, with a drawn directory's mark left behind."""
+    if "rendered" in kept:
+        _RENDERED_READ.add(str(where))
+    return kept
+
+
+def rendered_read() -> list[str]:
+    """The drawn directories this process has read a manifest from."""
+    return sorted(_RENDERED_READ)
+
 
 def _wav(path: str | Path) -> Path:
     path = Path(path)
@@ -364,7 +384,7 @@ def grouped(
     sorted as strings puts 8 after 120.
     """
     root = Path(root)
-    manifest = json.loads((root / "takes-manifest.json").read_text())
+    manifest = _noted(root, json.loads((root / "takes-manifest.json").read_text()))
     leads = {s.get("name"): s.get("lead_s") or 0.6 for s in manifest.get("stimuli", [])}
     by_stimulus: dict[str, dict[str, list[Path]]] = {}
     order: dict[str, list[str]] = {}
@@ -423,6 +443,7 @@ class Store:
         """
         manifest = Path(root) / "takes-manifest.json"
         kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
+        kept = _noted(root, kept)
         return cls(root=Path(root), entries=list(kept.get("takes", ())))
 
     def keep(self, recording, *, stimulus: str, setting: str, take: int, **extra) -> Path:
@@ -502,7 +523,7 @@ def method_of(where: str | Path) -> dict:
     path = Path(where) / "takes-manifest.json"
     if not path.exists():
         return {}
-    kept = json.loads(path.read_text())
+    kept = _noted(where, json.loads(path.read_text()))
     return {key: value for key, value in kept.items() if key != "takes"}
 
 
@@ -517,7 +538,7 @@ def listing(where: str | Path) -> tuple[dict, list[str]]:
     """
     where = Path(where)
     manifest = where / "takes-manifest.json"
-    kept = json.loads(manifest.read_text()) if manifest.exists() else {"takes": []}
+    kept = _noted(where, json.loads(manifest.read_text()) if manifest.exists() else {"takes": []})
     listed = {entry["file"]: entry for entry in kept.get("takes", ())}
     files = sorted(path.name for path in where.glob("*.wav"))
     if not files:
@@ -590,6 +611,7 @@ __all__ = [
     "not_matching",
     "read",
     "read_pair",
+    "rendered_read",
     "unit_state",
     "write",
 ]

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .. import record
+from .. import record, takes
 
 
 def write_json(where: str | None, payload: dict) -> None:
@@ -19,10 +19,21 @@ def write_json(where: str | None, payload: dict) -> None:
     that call this, which is the whole reason those places do not have to
     remember it. Identity written per call site is identity that is optional, and
     it was already missing from most of the archive.
+
+    A process that has read a drawn directory's manifest is refused anything under
+    `data/`: what it read is a model's takes, and the refusal sits here because
+    every record, however it was staged, is written by this one function.
     """
     if not where:
         return
     path = Path(where)
+    parts = path.resolve().parts
+    archive = any(parts[i : i + 2] == ("data", "units") for i in range(len(parts) - 1))
+    if (drawn := takes.rendered_read()) and archive:
+        raise SystemExit(
+            f"refusing to write {path}: this process read drawn takes ({drawn[0]}), and "
+            "nothing read from a model's takes goes under data/"
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     whole = record.envelope(payload, out_path=path)
     path.write_text(json.dumps(whole, indent=2, default=_plain) + "\n")
