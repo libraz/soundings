@@ -92,7 +92,13 @@ def test_a_drum_stimulus_carries_its_own_channel() -> None:
 def test_a_stimulus_that_needs_a_part_set_up_says_which_address() -> None:
     """Written after the reset and before the note, and undone by the next reset."""
     prepared = {s.name: s for s in stimuli.CATALOGUE.values() if s.writes}
-    assert set(prepared) == {"struck_kit", "struck_kit_map2", "struck_kit_36"}
+    assert set(prepared) == {
+        "struck_kit",
+        "struck_kit_map2",
+        "struck_kit_36",
+        "held_organ",
+        "held_applause",
+    }
     assert prepared["struck_kit"].writes == (("40 12 15", 1),)
     assert prepared["struck_kit_map2"].writes == (("40 12 15", 2),)
     assert prepared["struck_kit_36"].writes == (("40 12 15", 1),)
@@ -134,3 +140,21 @@ def test_effect_expands_like_broad_does() -> None:
 def test_a_stimulus_describes_the_channel_only_when_it_overrides_one() -> None:
     assert "channel 10" in stimuli.CATALOGUE["wash"].describe()
     assert "channel" not in stimuli.CATALOGUE["struck"].describe()
+
+
+def test_held_organ_and_held_applause_reproduce_what_the_scripts_sent() -> None:
+    """`held-16` and `held-126` in the takes ledger, sent by held-efx.py and
+    how-much-is-twelve-db.py (via rate-slot-followup.py) respectively."""
+    organ = stimuli.CATALOGUE["held_organ"]
+    assert (organ.program, organ.note, organ.velocity) == (16, 81, 100)
+    assert (organ.hold, organ.seconds, organ.lead) == (8.0, 9.0, 0.6)
+    assert organ.channel == 1
+    assert organ.writes == (("40 12 31", 0),)
+
+    applause = stimuli.CATALOGUE["held_applause"]
+    assert (applause.program, applause.note, applause.velocity) == (126, 60, 100)
+    assert (applause.hold, applause.seconds, applause.lead) == (8.0, 9.0, 0.6)
+    assert applause.channel == 1
+    assert applause.writes == (("40 12 31", 0),)
+
+    assert [s.name for s in stimuli.resolve(["held_organ"])] == ["held_organ"]

@@ -435,7 +435,7 @@ def cmd_contrast(args: argparse.Namespace) -> int:
                 link.send(roland.dt1(prepared, [value], device_id=args.device_id))
             for message in (
                 [0xC0 | channel, stim.program & 0x7F],
-                [0xB0 | channel, 7, 127],
+                [0xB0 | channel, 7, stim.volume],
                 [0xB0 | channel, 11, 127],
             ):
                 link.send(message)

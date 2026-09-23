@@ -61,6 +61,9 @@ class Stimulus:
     not to be.
     """
 
+    volume: int = 127
+    """CC7 sent before the note. Recorded only where it is not the default."""
+
     writes: tuple[tuple[str, int], ...] = ()
     """Addresses set after the reset and before the note, for a stimulus that needs them.
 
@@ -143,6 +146,7 @@ class Stimulus:
             "note": self.note,
             "velocity": self.velocity,
             "channel": self.channel,
+            **({"volume": self.volume} if self.volume != 127 else {}),
             "writes": [[a, v] for a, v in self.writes],
             "also": [list(n) for n in self.also],
             "moves": [m.to_json() for m in self.moves],
@@ -590,6 +594,53 @@ CATALOGUE: dict[str, Stimulus] = {
         sees="anything keyed to pitch at the other end, and short decays",
         blind_to="the bottom of the keyboard; a high note also has less energy below "
         "the corner of most filters",
+    ),
+    # The two below are what reading an insertion effect's own modulator or its
+    # band profile needs: a note held long enough to carry many periods of a slow
+    # LFO, or several seconds of steady broadband energy. Neither decays, so a
+    # comparison against the bypassed take is a comparison at a fixed level rather
+    # than against a moving reference. Reproduced from what the throwaway scripts
+    # that recorded `held-16` and `held-126` actually sent -- held-efx.py for the
+    # organ, how-much-is-twelve-db.py by way of rate-slot-followup.py for the
+    # applause -- rather than re-derived, so a record citing either name still
+    # names the stimulus it was taken under.
+    "held_organ": Stimulus(
+        name="held_organ",
+        program=16,
+        note=81,
+        velocity=100,
+        hold=8.0,
+        seconds=9.0,
+        lead=0.6,
+        channel=1,
+        volume=100,
+        writes=(("40 12 31", 0),),
+        sees="a modulator's period and shape over many swings, on a carrier picked "
+        "for a modulation measurement -- program 16, note 81, sounding a steady 440 "
+        "Hz fundamental with a few strong, steady partials",
+        blind_to="anything the carrier's own partials do not reach: measured, its "
+        "strongest partial is 50 dB down below 400 Hz and it has none at all above "
+        "8 kHz, so a shelf or an equaliser hinging outside that band cannot be seen "
+        "here at all",
+    ),
+    "held_applause": Stimulus(
+        name="held_applause",
+        program=126,
+        note=60,
+        velocity=100,
+        hold=8.0,
+        seconds=9.0,
+        lead=0.6,
+        channel=1,
+        volume=100,
+        writes=(("40 12 31", 0),),
+        sees="a band profile across the whole spectrum, since GM 126 applause is "
+        "broadband and reaches every band a shelf or a multi-band equaliser prints, "
+        "where the organ carrier above cannot",
+        blind_to="anything needing the take to repeat -- applause is noise-driven "
+        "and does not repeat at all, measured, two takes of it 0.1 dB apart -- so a "
+        "modulated delay or anything read by correlation across takes cannot be "
+        "asked with it",
     ),
 }
 

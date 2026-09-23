@@ -137,8 +137,11 @@ def cmd_walk(args: argparse.Namespace) -> int:
             link.send(roland.dt1(address, [value], device_id=args.device_id))
         for message in (
             [0xC0 | channel, stim.program & 0x7F],
-            [0xB0 | channel, 7, 127],
+            [0xB0 | channel, 7, stim.volume],
             [0xB0 | channel, 11, 127],
+            # The insertion effect alone: no system reverb or chorus on the takes.
+            [0xB0 | channel, 91, 0],
+            [0xB0 | channel, 93, 0],
         ):
             link.send(message)
         time.sleep(0.3)

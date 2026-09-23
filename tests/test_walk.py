@@ -219,3 +219,18 @@ def test_an_interrupted_walk_leaves_a_manifest_naming_what_it_reached(
 
     manifest = json.loads((save / "takes-manifest.json").read_text())
     assert [t["setting"] for t in manifest["takes"]] == ["v000"]
+
+
+def test_the_stimulus_volume_is_sent_and_the_system_sends_are_zero(
+    wired_unit, tmp_path, monkeypatch
+):
+    link = UnitLink()
+    monkeypatch.setattr(session, "MidiLink", lambda port: link)
+    args = _args(tmp_path / "takes", stimulus="held_organ", bypass=0, silences=0)
+
+    assert cmd_walk(args) == 0
+
+    controllers = {(m[1], m[2]) for m in link.sent if len(m) == 3 and m[0] & 0xF0 == 0xB0}
+    assert (7, 100) in controllers
+    assert (91, 0) in controllers
+    assert (93, 0) in controllers
