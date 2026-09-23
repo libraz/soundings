@@ -567,6 +567,16 @@ and address's entry, `unread` lists the directories no published record reaches,
 largest first, and `rewritten` lists directories whose newest take is younger
 than a record that read them.
 
+`soundings inferences render` draws a whole-type `graph` model on a directory
+of bypassed takes, sample by sample wherever the model's own wiring requires
+it. `soundings inferences stage` compares every candidate of a type's class,
+plus an identity control that draws the take back unchanged, against the
+unit's own takes: a static type by subtracting the drawn wave from the unit's,
+the rest by reading both sides through the stages that published the type's
+records. The result goes to `inferences/<unit>/stages/<MM-LL>.json`. Nothing
+read from a drawn take is written under `data/units` -- these commands
+measure a model against the unit, not the unit itself.
+
 **A sweep says what changed with the byte and cannot say what was already
 there.** Each reader therefore takes the state it reports against from the same
 session, and as takes rather than as fields: the type loaded with nothing written
