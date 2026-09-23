@@ -552,6 +552,21 @@ unit attached and all of them run while the hardware is busy with something else
 `balance`, `balance-bands` and `arrival` read the same directories for what the
 byte did to the stereo pair.
 
+`soundings walk` writes the type, the routing, and each `--prepare` state, then
+steps one address through a list of settings, writing and reading every setting
+back before it records a take. Bypass takes are recorded under the setting name
+`out`, silence takes under `silence`. It leaves takes and a manifest on disk and
+publishes no record of its own; the stages above read them with a fixed
+`--setting '^v(?P<value>\d{3})$' --control '^out$'`.
+
+`soundings takes` builds a working index, `.cache/takes-ledger.json`, over every
+directory of takes on disk -- the type, address and settings each holds, the
+held state and where it came from, and which published records read it. It is
+not a measurement and is not published. `soundings takes row` returns one type
+and address's entry, `unread` lists the directories no published record reaches,
+largest first, and `rewritten` lists directories whose newest take is younger
+than a record that read them.
+
 **A sweep says what changed with the byte and cannot say what was already
 there.** Each reader therefore takes the state it reports against from the same
 session, and as takes rather than as fields: the type loaded with nothing written
