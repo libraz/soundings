@@ -471,3 +471,23 @@ def test_every_key_the_readings_table_names_is_in_that_stages_records(name):
                 f"a {name} record has no {reading.floor}")
     module, _, function = reading.entry.rpartition(".")
     assert callable(getattr(__import__(f"soundings.{module}", fromlist=[function]), function))
+
+
+def test_a_type_out_of_scope_is_written_as_excluded_and_nothing_is_compared(tmp_path):
+    from soundings.cli import readings
+
+    parser = __import__("argparse").ArgumentParser()
+    readings.register(parser.add_subparsers(dest="command"))
+
+    def run(*argv):
+        args = parser.parse_args(["inferences", "stage", "fixture-unit", "00-00", *argv,
+                                  "--root", str(tmp_path)])
+        return args.func(args)
+
+    assert run("--exclude", "no_effect") == 2
+    assert run("--exclude", "no_effect", "--class", "whole-0000", "--write") == 2
+    assert run("--exclude", "no_effect", "--write") == 0
+    written = json.loads((tmp_path / "inferences/fixture-unit/stages/00-00.json").read_text())
+    assert written["excluded"] == {"reason": "no_effect"}
+    assert "p1" not in written
+    assert _stage_errors(written) == []

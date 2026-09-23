@@ -90,9 +90,15 @@ def register(sub) -> None:
         "is compared, which says whether this comparison could fail anything at all",
     )
     staged.add_argument(
+        "--exclude",
+        metavar="REASON",
+        help="record the type as out of scope for stages 7-9 instead of comparing "
+        "anything, e.g. no_effect for a type that passes its input through; needs --write",
+    )
+    staged.add_argument(
         "--write",
         action="store_true",
-        help="write inferences/<unit>/stages/<MM-LL>.json; needs --class",
+        help="write inferences/<unit>/stages/<MM-LL>.json; needs --class or --exclude",
     )
     staged.add_argument("--root", default=".", type=Path)
 
@@ -283,11 +289,25 @@ def _render(args) -> int:
 def _stage(args) -> int:
     from .. import stages
 
-    if args.write and not args.class_name:
+    if args.exclude and (args.class_name or not args.write):
+        print("--exclude is written instead of a comparison: give it --write and no --class")
+        return 2
+    if args.write and not (args.class_name or args.exclude):
         print("--write needs --class: the identity control alone decides no stage")
         return 2
     root = Path(args.root)
     type_ = stages.type_of(args.type)
+    where = root / "inferences" / args.unit_id / "stages" / f"{type_.replace(' ', '-')}.json"
+    if args.exclude:
+        found = {
+            "type": type_,
+            "excluded": {"reason": args.exclude},
+            "invocation": {"unit": args.unit_id, "type": type_, "exclude": args.exclude},
+        }
+        where.parent.mkdir(parents=True, exist_ok=True)
+        where.write_text(json.dumps(found, indent=2) + "\n")
+        print(f"wrote {where}")
+        return 0
     try:
         found = stages.stage(root, args.unit_id, type_, class_name=args.class_name)
     except stages.LedgerBehind as behind:
@@ -322,7 +342,6 @@ def _stage(args) -> int:
     if "stopped" in found:
         print(f"  stopped at {found['stopped']['at']}: {found['stopped']['gate']}")
     if args.write:
-        where = root / "inferences" / args.unit_id / "stages" / f"{type_.replace(' ', '-')}.json"
         where.parent.mkdir(parents=True, exist_ok=True)
         where.write_text(json.dumps(found, indent=2) + "\n")
         print(f"wrote {where}")
