@@ -1,0 +1,96 @@
+{
+  "class": "whole-0125",
+  "what_the_class_is": "The tremolo as a whole: five fixed modulator shapes selected by the Mod Wave byte at the Mod Rate byte's printed rate, applied to both outputs' level by the Mod Depth byte, then the level multiplier and the fixed shelf pair.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A modulator is a phase accumulator read through a short shape; a triangle, a square and a ramp are a few operations on the accumulator and a sine is the one that has to be stored or approximated.",
+      "Applying a modulator to a level costs one multiply a sample. Swinging it in decibels needs an exponential, which a part of this period would read from a table rather than compute.",
+      "A pan is a multiplier a side. Whether the two multipliers are the byte and its complement, a quarter turn, or one side held at full is a table the designer fills once."
+    ],
+    "would_be_wrong_if": "A take with the depth moved put the top of a tremolo's cycle anywhere but the dry level, or an auto pan's two channels summed to a level that did not follow any one law across the depths."
+  },
+  "candidates": [
+    {
+      "id": "a-multiplier-below-unity",
+      "model": "inferences/models/0125-whole-a-multiplier-below-unity.json",
+      "reading": "An amplitude multiplier swung from unity down by the depth: the top of every cycle is the dry level and the depth sets how far beneath it the bottom falls.",
+      "predicts": "A swing in decibels that grows slowly at the bottom of the byte and steeply at the top, and every shape's cycle undistorted in amplitude."
+    },
+    {
+      "id": "decibels-below-unity",
+      "model": "inferences/models/0125-whole-decibels-below-unity.json",
+      "reading": "A gain in decibels swung from 0 dB down by the depth. The same two plateaus as the multiplier at the fitted settings, reached through a logarithm.",
+      "predicts": "A swing in decibels in proportion to the byte, and every shape's cycle bent in amplitude: a second harmonic on a triangle that the amplitude reading shows and the decibel reading does not."
+    },
+    {
+      "id": "a-multiplier-about-unity",
+      "model": "inferences/models/0125-whole-a-multiplier-about-unity.json",
+      "reading": "An amplitude multiplier swung either side of unity by the depth, so the cycle's mean holds and its top rises over the dry level.",
+      "predicts": "The same cycle as the first in shape, and a mean level that holds as the depth moves where the others lose level with depth."
+    }
+  ],
+  "what_the_fitting_takes_said": {
+    "takes": {
+      "channels": [
+        2,
+        3
+      ],
+      "frame_s": 0.02,
+      "hop_s": 0.005,
+      "how": "The held part of each note framed and each frame's level and balance taken; the medians of the top and bottom fifths of each track are a square's two plateaus.",
+      "dry": {
+        "takes": [
+          "what-shape-the-modulator-has/0125",
+          "held-16-dry-00-00.wav"
+        ],
+        "level": 0.003765,
+        "balance_db": 0.156
+      },
+      "at": {
+        "96": {
+          "takes": [
+            "which-rate-table-005to100",
+            "held-16-0125-04-32-00.wav"
+          ],
+          "level_high": 0.003803,
+          "level_low": 0.001208,
+          "balance_high_db": 0.464,
+          "balance_low_db": -1.23
+        },
+        "127": {
+          "takes": [
+            "what-shape-the-modulator-has/0125",
+            "held-16-wave-001-00.wav"
+          ],
+          "level_high": 0.00375,
+          "level_low": 0.00041,
+          "balance_high_db": 0.761,
+          "balance_low_db": -3.521
+        }
+      }
+    },
+    "depth_by_candidate": {
+      "a-multiplier-below-unity": {
+        "96": 0.6825,
+        "127": 0.8908
+      },
+      "decibels-below-unity": {
+        "96": 9.9642,
+        "127": 19.2318
+      },
+      "a-multiplier-about-unity": {
+        "96": 0.518,
+        "127": 0.803
+      }
+    },
+    "the_top_of_the_cycle_over_the_dry_level_at_127": 0.996,
+    "why_not_ranked_here": "Two settings, one take each, fitted by every candidate to the same two plateaus; the fit cannot tell the candidates apart there, and the settings the stage compares were not used."
+  },
+  "what_no_candidate_here_predicts": [
+    "What the depth does between 0 and 96 or 96 and 127 other than run straight in each candidate's own domain: two settings were read.",
+    "Which side of the stereo pair the modulator reaches first, or whether the two outputs swing together: one modulator drives both and nothing here was read for a phase between them.",
+    "What the Sin entry's small third harmonic is made by: the shape is the wave claim's description of the cycle.",
+    "Anything at the addresses the page does not print for this type, which the parameter walk also swept: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}

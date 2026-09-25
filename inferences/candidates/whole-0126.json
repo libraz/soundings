@@ -1,0 +1,125 @@
+{
+  "class": "whole-0126",
+  "what_the_class_is": "The auto pan as a whole: five fixed modulator shapes selected by the Mod Wave byte at the Mod Rate byte's printed rate, moving a pan position about the centre by the Mod Depth byte, each output taking its own input through its own side of the pan law, then the level multiplier and the fixed shelf pair.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A modulator is a phase accumulator read through a short shape; a triangle, a square and a ramp are a few operations on the accumulator and a sine is the one that has to be stored or approximated.",
+      "Applying a modulator to a level costs one multiply a sample. Swinging it in decibels needs an exponential, which a part of this period would read from a table rather than compute.",
+      "A pan is a multiplier a side. Whether the two multipliers are the byte and its complement, a quarter turn, or one side held at full is a table the designer fills once."
+    ],
+    "would_be_wrong_if": "A take with the depth moved put the top of a tremolo's cycle anywhere but the dry level, or an auto pan's two channels summed to a level that did not follow any one law across the depths."
+  },
+  "candidates": [
+    {
+      "id": "a-crossfade-on-the-amplitudes",
+      "model": "inferences/models/0126-whole-a-crossfade-on-the-amplitudes.json",
+      "reading": "The two sides are the position and its complement: each output at half at the centre, and the pair losing nothing in amplitude as the image moves.",
+      "predicts": "Six decibels less level than the dry note at every depth, and a level in decibels that dips as the image nears either side."
+    },
+    {
+      "id": "a-sine-cosine-pair",
+      "model": "inferences/models/0126-whole-a-sine-cosine-pair.json",
+      "reading": "A quarter turn spread over the axis: each output three decibels down at the centre and the pair's power holding still as the image moves.",
+      "predicts": "Three decibels less at no depth, falling towards six at full swing."
+    },
+    {
+      "id": "the-far-side-alone-is-attenuated",
+      "model": "inferences/models/0126-whole-the-far-side-alone-is-attenuated.json",
+      "reading": "The near side held at full and only the far side turned down: each output at unity at the centre, and the pair losing level as the image leaves it.",
+      "predicts": "The dry level at no depth, falling as the swing grows, and the steepest level-in-decibels swing of the three at any one depth."
+    }
+  ],
+  "what_the_fitting_takes_said": {
+    "takes": {
+      "channels": [
+        2,
+        3
+      ],
+      "frame_s": 0.02,
+      "hop_s": 0.005,
+      "how": "The held part of each note framed and each frame's level and balance taken; the medians of the top and bottom fifths of each track are a square's two plateaus.",
+      "dry": {
+        "takes": [
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+          "held-16-dry-00-00.wav"
+        ],
+        "level": 0.003763,
+        "balance_db": 0.156
+      },
+      "at": {
+        "96": {
+          "takes": [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "held-16-wave-001-00.wav"
+          ],
+          "level_high": 0.002573,
+          "level_low": 0.002446,
+          "balance_high_db": 9.095,
+          "balance_low_db": -9.225
+        },
+        "127": {
+          "takes": [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-at-one-hz",
+            "held-16-wave-001-00.wav"
+          ],
+          "level_high": 0.002053,
+          "level_low": 0.001894,
+          "balance_high_db": 20.697,
+          "balance_low_db": -25.487
+        }
+      }
+    },
+    "position_by_candidate": {
+      "a-crossfade-on-the-amplitudes": {
+        "96": 0.4833,
+        "127": 0.8691
+      },
+      "a-sine-cosine-pair": {
+        "96": 0.5732,
+        "127": 0.911
+      },
+      "the-far-side-alone-is-attenuated": {
+        "96": 0.6517,
+        "127": 0.93
+      }
+    },
+    "the_mean_of_the_two_plateaus_over_the_dry_level": {
+      "96": 0.6669,
+      "127": 0.5244,
+      "32": 0.9035
+    },
+    "what_each_law_puts_there_at_the_balance_read": {
+      "a-crossfade-on-the-amplitudes": {
+        "96": 0.5,
+        "127": 0.5,
+        "32": 0.5
+      },
+      "a-sine-cosine-pair": {
+        "96": 0.6366,
+        "127": 0.5337,
+        "32": 0.7037
+      },
+      "the-far-side-alone-is-attenuated": {
+        "96": 0.6742,
+        "127": 0.535,
+        "32": 0.9102
+      }
+    },
+    "a_setting_read_and_not_fitted": {
+      "setting": 32,
+      "takes": [
+        "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-032",
+        "held-16-wave-001-00.wav"
+      ],
+      "balance_half_swing_db": 1.719
+    },
+    "why_not_ranked_here": "The positions are fitted to the balance, so every law meets the balance at the fitted settings by construction; the level each then gives is what separates them, and it is reported here against a dry take that did not go through the effect at all, so a gain the effect path carries on its own would move every figure alike. The stage compares other directories."
+  },
+  "what_no_candidate_here_predicts": [
+    "Whether the pan mixes the two inputs before it places them: each output here takes its own input, and a note sounding alike in both channels cannot tell that from a sum.",
+    "What the depth does between 0 and 96 or 96 and 127 other than run straight in position: two settings were fitted.",
+    "Which way the image moves first: the page prints no phase.",
+    "Anything at the addresses the page does not print for this type, which the parameter walk also swept: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
