@@ -533,6 +533,9 @@ def render_directory(
         if kept.get("model_sha256") == cand.sha256 and kept.get("channels") == list(channels):
             return out
         shutil.rmtree(out)
+    elif out.exists():
+        # What a run left behind when it stopped before writing the manifest.
+        shutil.rmtree(out)
     out.mkdir(parents=True)
 
     entry = made.entry

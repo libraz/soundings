@@ -108,6 +108,10 @@ def _clamped(value: float, low: float, high: float) -> float:
     return low if value < low else high if value > high else value
 
 
+class NoStateNamed(ValueError):
+    """A byte value a `states` map names neither on its own nor under `*`."""
+
+
 def _from_map(spec: dict, byte_value: int) -> float:
     """One byte turned into the quantity a stage takes, by the model's own rule.
 
@@ -138,6 +142,8 @@ def _from_map(spec: dict, byte_value: int) -> float:
     if kind == "states":
         values = spec["values"]
         key = str(byte_value)
+        if key not in values and "*" not in values:
+            raise NoStateNamed(f"no state is named for {byte_value}")
         return float(values[key] if key in values else values["*"])
     if kind == "points":
         points = sorted((int(v), float(x)) for v, x in spec["points"])

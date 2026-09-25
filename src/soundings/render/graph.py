@@ -11,7 +11,7 @@ the whole take. A loop -- a strongly connected component -- is drawn in blocks n
 longer than the shortest distance any delay in it reads back, less its interpolator's
 reach, so nothing in a block reads a sample the block has not drawn yet. A setting
 that brings that distance under one sample has no order to be drawn in and is refused
-as `Unrenderable`, by name.
+as `Unrenderable`, by name; so is a byte value the model names no state for.
 
 A take is carried to the model's rate and back through one FIR, and compared below
 `CUT_HZ`, where that FIR leaves nothing behind.
@@ -338,7 +338,10 @@ class _Drawing:
         if "value" in spec:
             return float(spec["value"])
         if "byte" in spec:
-            return reproduce._value(spec, self.bytes_now)
+            try:
+                return reproduce._value(spec, self.bytes_now)
+            except reproduce.NoStateNamed as refused:
+                raise Unrenderable(f"{spec['byte']}: {refused}") from refused
         points = sorted((float(c), float(v)) for c, v in spec["map"]["points"])
         xs, ys = [p[0] for p in points], [p[1] for p in points]
         control = self._signals[spec["control"]][a:b]

@@ -383,3 +383,18 @@ def test_the_graph_the_layout_check_calls_good_is_one_the_renderer_loads():
     """The layout check and the renderer read one shape, so they agree on its example."""
     good = json.loads((HERE / "data" / "render-fixtures" / "good-graph.json").read_text())
     render.load_graph(good, models_dir=MODELS, root=FIXTURE_ROOT)
+
+
+@pytest.mark.parametrize(("states", "refused"), [({"0": 0.5, "1": 1.0}, True),
+                                                 ({"0": 0.5, "1": 1.0, "*": 1.0}, False)])
+def test_a_byte_value_the_model_names_no_state_for_is_unrenderable(states, refused):
+    by_byte = {"byte": "40 03 04", "map": {"kind": "states", "values": states},
+               "source": "law", "rests_on": [], "fitted_on": []}
+    model = graph_of([{"id": "g", "kind": "gain", "input": "x", "gain": by_byte,
+                       "unit": "ratio"}], bound=("40 03 04",))
+    x = np.ones(64)
+    if refused:
+        with pytest.raises(render.Unrenderable, match="40 03 04"):
+            drawn(model, x, {"40 03 04": 127})
+    else:
+        assert np.allclose(drawn(model, x, {"40 03 04": 127}), 1.0)
