@@ -376,6 +376,22 @@ def test_a_position_is_compared_only_where_the_unit_has_one():
     assert scored["drawn_only_refused"] == [["d", 1]]
 
 
+def test_a_position_is_held_against_the_width_of_the_band_it_was_read_in():
+    found = {"band_width_octaves": 0.333333, "reference": {"floor_db": [0.1, 0.2]},
+             "readings": []}
+    assert stages.floor_of(found, stages.READINGS["efx-bands:fitted_at_hz"]) == 0.333333
+    assert stages.floor_of(found, stages.READINGS["efx-bands:largest_at_hz"]) == 0.333333
+    assert stages.floor_of(found, stages.READINGS["efx-bands:largest_db"]) == 0.2
+
+
+def test_a_record_name_spells_what_it_differs_by_as_it_was_passed():
+    argv = ["efx-bands", ".cache/takes/d", "--type", "01 02", "--slot", "40 03 03",
+            "--setting", "a-v(?P<value>\\d{3})", "--reference", "a-v000",
+            "--reference-held", "40 42 22=00", "--out", "x.json"]
+    assert stages._scored_name("efx-bands:largest_db", "efx-bands", argv) == (
+        "efx-bands:largest_db [--reference-held 40 42 22=00]")
+
+
 def test_a_stage_publishing_two_quantities_is_scored_as_two_records():
     def excursion(fit, phase):
         return {

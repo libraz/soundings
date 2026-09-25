@@ -130,12 +130,13 @@ _READINGS = (
             "reference.floor_db", "dB", null_is=0.0),
     # A profile that never falls to half on both sides has no measured width, so the
     # band it is largest in is wherever the scatter put it.
-    Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz", None,
-            "octaves", octaves=True, admitted_if=("half_below_hz", "half_above_hz"),
-            unit_has_it=True),
+    Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz",
+            "band_width_octaves", "octaves", octaves=True,
+            admitted_if=("half_below_hz", "half_above_hz"), unit_has_it=True),
     # Where the unit's profile has no feature there is nothing to place.
-    Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz", None,
-            "octaves", octaves=True, unit_has_it=True),
+    # The record holds a position against the band width, having no measured floor.
+    Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz",
+            "band_width_octaves", "octaves", octaves=True, unit_has_it=True),
     Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
     Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB"),
     Reading("efx-orders", "efxorders.read_directory", "readings", "all_of_them_db",
@@ -1137,14 +1138,18 @@ def _signature_suffix(command: str, argv: list[str]) -> str:
         value = getattr(args, action.dest, action.default)
         if value == action.default:
             continue
-        flag = action.option_strings[-1]
-        if isinstance(value, bool):
-            parts.append(flag)
-        elif isinstance(value, list):
-            parts.append(f"{flag} {' '.join(str(v) for v in value)}")
-        else:
-            parts.append(f"{flag} {value}")
+        parts += _as_passed(argv, action)
     return ", ".join(sorted(parts))
+
+
+def _as_passed(argv: list[str], action) -> list[str]:
+    """Each occurrence of `action`'s flag in `argv`, with the tokens it took."""
+    width = 0 if action.nargs == 0 else (action.nargs if isinstance(action.nargs, int) else 1)
+    return [
+        " ".join(argv[i : i + 1 + width])
+        for i, token in enumerate(argv)
+        if token in action.option_strings
+    ]
 
 
 def _scored_name(base: str, command: str, argv: list[str]) -> str:

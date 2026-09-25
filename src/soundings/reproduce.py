@@ -2545,7 +2545,8 @@ def gates(scored: list[dict], *, ranking: list[dict]) -> dict:
     # The worst record and not the average of them. "Roughly reproduces it" has to
     # hold for every row the type has, or the rows it fails are rows a reader has
     # no warning about.
-    share = max(shares) if shares else 1.0
+    # A type whose every record holds still is asked only whether the model stays in the floor.
+    share = max(shares) if shares else (0.0 if nulls else 1.0)
     over_the_floor = [s["record"] for s in nulls if not s["model_stays_inside_the_floor"]]
     gross_ok = share <= GROSS_CEILING and not over_the_floor
 

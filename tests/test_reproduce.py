@@ -1354,3 +1354,17 @@ def test_which_end_the_stored_section_sits_at_is_a_third_curve():
     assert apart[12.0] == pytest.approx(0.0, abs=1e-9)
     assert apart[6.0] > 1.5
     assert apart[-6.0] == pytest.approx(apart[6.0], rel=1e-6)
+
+
+def test_a_type_whose_records_all_hold_still_is_judged_on_the_floor_alone():
+    """A quantity the effect does not move has no span, and that is a reading.
+
+    What is left to ask is whether the model stays inside the floor there, so the
+    gross gate answers that rather than failing for want of a span.
+    """
+    inside = reproduce.gates([scored(span=0.0, null=True, model_largest=0.1, floor=0.33)],
+                             ranking=ranking(0, 3))
+    outside = reproduce.gates([scored(span=0.0, null=True, model_largest=0.9, floor=0.33)],
+                              ranking=ranking(0, 3))
+    assert inside["gross"]["passed"]
+    assert not outside["gross"]["passed"]
