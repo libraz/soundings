@@ -960,3 +960,30 @@ def test_records_in_two_units_are_gated_once_per_unit():
                                 unit, far, floor=0.1)
     assert stages.separated([ms, db]) is True
     assert stages.separated([ms]) is False
+
+
+def test_a_part_routed_past_the_effect_in_another_directory_is_the_input(tmp_path):
+    # A stimulus leaves out the volume where it is the one it always sends.
+    unwritten = {k: v for k, v in TONE.items() if k != "volume"}
+    stimuli = {"params/40-03-03": {**unwritten, "class": TONE["name"]},
+               "params/control": {**TONE, "volume": 127, "class": TONE["name"]}}
+    clean = _clean(TONE, 1.0)
+    dirs = {"params/40-03-03": ("40 03 03", ("0", "127")),
+            "params/control": ("40 42 22", ("0", "1"))}
+    for rel, (address, values) in dirs.items():
+        entries = []
+        for value in values:
+            name = f"{TONE['name']}-{value}-00.wav"
+            takes.write(tmp_path / ".cache/takes" / rel / name, clean, FS)
+            entries.append({"file": name, "stimulus": TONE["name"], "setting": value,
+                            "take": 0, "sample_rate": FS, "channels": 6, "seconds": 1.0})
+        _write(tmp_path / ".cache/takes" / rel / "takes-manifest.json",
+               {"type": TYPE, "address": address, "stimuli": [TONE], "takes": entries})
+    _write(tmp_path / ".cache" / "takes-ledger.json", {"unit": UNIT, "directories": {
+        rel: {"type": TYPE, "address": address, "settings": {v: 1 for v in values},
+              "stimuli": [stimuli[rel]], "held": HELD, "consumed_by": []}
+        for rel, (address, values) in dirs.items()}})
+    found = stages._ledger(tmp_path, TYPE)
+    made = stages.directory(tmp_path, found, "params/40-03-03")
+    assert made.input_from == {TONE["name"]: "params/control"}
+    assert sorted(made.by_setting) == [0, 127]

@@ -39,6 +39,7 @@ import scipy
 from . import efxbands, ledger, reproduce, takes
 from .inferences import EFFECT_BLOCK
 from .render import graph
+from .stimuli import Stimulus
 
 RENDERED_ROOT = Path(".cache/rendered")
 
@@ -47,6 +48,10 @@ SWEPT = re.compile(r"^(?P<prefix>(?:.*\D)?)(?P<value>\d{1,3})$")
 
 BYPASS = re.compile(r"^(out|bypassed|bypassed-\d+)$")
 """A take with the effect routed out of the path, which is the effect's input."""
+
+PART_ROUTING = re.compile(r"^40 4[0-9A-F] 22$")
+"""GS: a part's insertion-effect switch. A directory sweeping it holds, at 0, the part
+routed past the effect -- the input of every directory taken with the same stimulus."""
 
 SILENCE = re.compile(r"^silence(-\d+)?$")
 REFERENCE = re.compile(r"^flat(-\d+)?$")
@@ -284,6 +289,8 @@ def directories(found: dict, type_: str) -> list[str]:
 
 
 def _stimulus_key(stimulus: dict) -> str | None:
+    # A stimulus records its volume only where it is not the one always sent.
+    stimulus = {"volume": Stimulus.volume, **stimulus}
     if any(stimulus.get(f) is None for f in STIMULUS_FIELDS):
         return None
     return json.dumps([stimulus.get(f) for f in STIMULUS_FIELDS], sort_keys=True)
@@ -325,8 +332,10 @@ def _takes(root: Path, found: dict, rel: str) -> list[dict]:
     listed, _ = takes.listing(where)
     named = [s.get("name") for s in entry.get("stimuli") or []]
     only = named[0] if len(named) == 1 else None
+    routing = bool(PART_ROUTING.match(entry.get("address") or ""))
     out = [
-        {**listed.get(name, {}), "file": name, "setting": setting,
+        {**listed.get(name, {}), "file": name,
+         "setting": "bypassed" if routing and str(setting) == "0" else setting,
          "stimulus": listed.get(name, {}).get("stimulus", only)}
         for name, setting in settings.items() if (where / name).is_file()
     ]
