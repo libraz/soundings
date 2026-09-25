@@ -15,6 +15,7 @@ synthetic takes: an amplitude-modulated tone is what it reads a rate from.
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 from pathlib import Path
@@ -337,6 +338,22 @@ def test_a_setting_only_the_drawn_side_refused_costs_the_whole_span():
     assert residuals == {0: [0.0], 1: [2.0], 2: [0.0]}
     assert scored["drawn_only_refused"] == [["d", 1]]
     assert stages.separated([scored]) is True
+
+
+def test_where_a_band_is_largest_is_no_reading_where_the_profile_has_no_width():
+    rows = [
+        {"value": 0, "largest_db": -9.9, "largest_at_hz": 100,
+         "half_below_hz": None, "half_above_hz": None},
+        {"value": 1, "largest_db": -9.8, "largest_at_hz": 10000,
+         "half_below_hz": None, "half_above_hz": 12500},
+        {"value": 2, "largest_db": 9.8, "largest_at_hz": 1000,
+         "half_below_hz": 500, "half_above_hz": 2000},
+    ]
+    found = stages.collected("efx-bands", {"readings": rows}, "d")
+    at = found["efx-bands:largest_at_hz"]["takes"]
+    assert at[("d", 0)] == [[None]] and at[("d", 1)] == [[None]]
+    assert at[("d", 2)] == [[math.log2(1000)]]
+    assert found["efx-bands:largest_db"]["takes"][("d", 0)] == [[-9.9]]
 
 
 def test_a_stage_publishing_two_quantities_is_scored_as_two_records():

@@ -99,7 +99,8 @@ class Reading:
     its record each reading sits in, `quantity` the key read off each row, `floor` the
     record's own floor for that quantity (None where it publishes none) and
     `measured_in` what a residual is in. `octaves` compares the logarithm, as a rate
-    or a frequency is compared.
+    or a frequency is compared. `admitted_if` names row keys that must not be null for
+    the quantity to be read at all, where the record's own rule says so.
     """
 
     command: str
@@ -109,6 +110,7 @@ class Reading:
     floor: str | None
     measured_in: str
     octaves: bool = False
+    admitted_if: tuple[str, ...] = ()
 
 
 _READINGS = (
@@ -121,8 +123,10 @@ _READINGS = (
     Reading("efx-time", "efxtime.read_directory", "readings", "ms", "floor_ms", "ms"),
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_db",
             "reference.floor_db", "dB"),
+    # A profile that never falls to half on both sides has no measured width, so the
+    # band it is largest in is wherever the scatter put it.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz", None,
-            "octaves", octaves=True),
+            "octaves", octaves=True, admitted_if=("half_below_hz", "half_above_hz")),
     Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz", None,
             "octaves", octaves=True),
     Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
@@ -872,6 +876,8 @@ def _cache_key(command: str, args, unit_dir: Path) -> str:
 
 
 def _quantity(row: dict, reading: Reading):
+    if any(at(row, key) in (None, MISSING) for key in reading.admitted_if):
+        return None
     value = at(row, reading.quantity)
     if value is MISSING or value is None:
         return None
