@@ -1,0 +1,50 @@
+{
+  "class": "whole-0111",
+  "what_the_class_is": "The whole distortion type as far as anything measured reaches it: the pair summed to one path, the drive byte as a gain into a memoryless curve, and the level, tone and pan stages the type prints. No ladder was ever made on this type, so its pre-gain and post-gain are fitted on the two ends of its own drive sweep. The cabinet is not drawn. The candidates differ only in the curve.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a fixed clock with a small control processor beside it.",
+    "what_that_implies": [
+      "A fixed-point accumulator in saturating mode is a hard clip for nothing: the curve that costs no instruction at all.",
+      "A smooth curve costs a table or a polynomial; the cubic is the cheapest polynomial that reaches its ceiling with a flat slope, a tanh needs a table.",
+      "Nothing is oversampled: a curve runs at the clock the rest of the effect runs at and what it puts above half of it folds back."
+    ],
+    "would_be_wrong_if": "The order series of a drive sweep read at settings no gain here was fitted on falls away at high orders in a way none of the three curves produces, or the orders stop following the drive byte as a gain."
+  },
+  "candidates": [
+    {
+      "id": "hard-clip",
+      "model": "inferences/models/0111-whole-hard-clip.json",
+      "reading": "The drive byte is a gain in front of a hard clip; the gains either side of it are fitted per candidate on takes no stage compares, and on the two settings of the sweep the drive claim cites.",
+      "fit_residual_db": {
+        "worst_abs": 0.01,
+        "points": 3
+      },
+      "predicts": "Orders past the knee falling as a power of the order, a kink's slope, and the sharpest ceiling of the three: the output stops moving within a few decibels of the knee."
+    },
+    {
+      "id": "tanh",
+      "model": "inferences/models/0111-whole-tanh.json",
+      "reading": "The drive byte is a gain in front of a tanh; the gains either side of it are fitted per candidate on takes no stage compares, and on the two settings of the sweep the drive claim cites.",
+      "fit_residual_db": {
+        "worst_abs": 0.01,
+        "points": 3
+      },
+      "predicts": "Orders falling faster than any power of the order high up, and the softest approach to the ceiling of the three."
+    },
+    {
+      "id": "cubic",
+      "model": "inferences/models/0111-whole-cubic.json",
+      "reading": "The drive byte is a gain in front of a cubic; the gains either side of it are fitted per candidate on takes no stage compares, and on the two settings of the sweep the drive claim cites.",
+      "fit_residual_db": {
+        "worst_abs": 0.01,
+        "points": 3
+      },
+      "predicts": "Orders falling as a steeper power than the clip's, and a small-signal slope half again over unity that the pre-gain absorbs, so its ceiling is reached from further down the drive byte."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Anything the amp switch or the amp type does: the response they put after the curve has no filter here.",
+    "Even orders the curve makes itself: all three curves are odd.",
+    "Content off the whole multiples of a steady tone other than what folds back from above half the clock."
+  ]
+}

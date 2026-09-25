@@ -1,0 +1,1196 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0111-whole-tanh",
+    "class": "whole-0111",
+    "candidate": "tanh",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 11",
+    "kind": "graph",
+    "made_by": "backup/build-distortion-amp-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The clock the delay-time ladder of this unit's other types is cut to; nothing measured on this type names a rate of its own.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "pan.left",
+    "out_r": "pan.right"
+  },
+  "what_varies": "The curve after the drive gain: tanh.",
+  "drive_law": "20 log10(v / 76) dB, held below byte 3.77 at the state the bottom settings of 01 10 share, and carried on above 48 where the drive claim could not follow it. This type was never given a ladder: the form is 01 10's, the origin is this type's own printed rest, and because the pre-gain is fitted on this type's sweep the origin cancels against it and is not a choice with consequence.",
+  "fitted_here": {
+    "pre_db": 70.611,
+    "post_db": -37.354,
+    "residual_db": {
+      "worst_abs": 0.01,
+      "points": 3
+    },
+    "on": [
+      "data/units/roland-sc8850-01/efx-orders/01-11-03-the-drive-byte-as-orders.json"
+    ]
+  },
+  "fixed_rows": {
+    "40 03 04": "Amp Type: four fixed responses the amp claim publishes as a readout, with no filter identified for any of them.",
+    "40 03 05": "Amp Sw: puts that response in the path. On at power-on, so every take that does not hold it Off is drawn without the response it heard."
+  },
+  "what_is_not_modelled": [
+    "The cabinet the amp switch puts after the curve. No claim gives it a filter, and a filter fitted to its band profiles here would be the profiles themselves.",
+    "Any filter in front of the curve. The drive claim reads one on the other type only; at drive 0 this type's orders rise over its input's by 0.7 to 2.2 dB, which is small beside the other type's 8.6 and is left undrawn.",
+    "Anything with a state in the curve, which the drive claim leaves standing."
+  ],
+  "nodes": [
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-orders/01-11-03-the-drive-byte-as-orders.json"
+          ],
+          "fitted_on": [
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              0
+            ],
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              2
+            ],
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              127
+            ]
+          ]
+        },
+        "in_r": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-orders/01-11-03-the-drive-byte-as-orders.json"
+          ],
+          "fitted_on": [
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              0
+            ],
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              2
+            ],
+            [
+              "what-the-drive-byte-does/0111-drive-no-cabinet",
+              127
+            ]
+          ]
+        }
+      },
+      "why": "The pair summed at half each, which on a centred voice is either channel; the pre-gain below was fitted against one channel, so the sum's own scale is carried by that fit and not by this weight."
+    },
+    {
+      "id": "pre",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "db",
+      "gain": {
+        "value": 70.611,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-11-03-the-drive-byte-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            0
+          ],
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            2
+          ],
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "drive",
+      "kind": "shaper",
+      "input": "pre",
+      "curve": "tanh",
+      "oversample": 1,
+      "drive": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "table",
+          "entries": [
+            -26.0914,
+            -26.0914,
+            -26.0914,
+            -26.0914,
+            -25.5751,
+            -23.6369,
+            -22.0532,
+            -20.7143,
+            -19.5545,
+            -18.5314,
+            -17.6163,
+            -16.7884,
+            -16.0326,
+            -15.3374,
+            -14.6937,
+            -14.0944,
+            -13.5339,
+            -13.0073,
+            -12.5108,
+            -12.0412,
+            -11.5957,
+            -11.1719,
+            -10.7678,
+            -10.3817,
+            -10.012,
+            -9.6575,
+            -9.3168,
+            -8.989,
+            -8.6731,
+            -8.3683,
+            -8.0738,
+            -7.789,
+            -7.5133,
+            -7.246,
+            -6.9867,
+            -6.7349,
+            -6.4902,
+            -6.2522,
+            -6.0206,
+            -5.795,
+            -5.5751,
+            -5.3606,
+            -5.1513,
+            -4.9469,
+            -4.7472,
+            -4.552,
+            -4.3611,
+            -4.1743,
+            -3.9914,
+            -3.8124,
+            -3.6369,
+            -3.4649,
+            -3.2962,
+            -3.1308,
+            -2.9684,
+            -2.809,
+            -2.6525,
+            -2.4988,
+            -2.3477,
+            -2.1992,
+            -2.0532,
+            -1.9097,
+            -1.7684,
+            -1.6295,
+            -1.4927,
+            -1.358,
+            -1.2254,
+            -1.0948,
+            -0.9661,
+            -0.8393,
+            -0.7143,
+            -0.5911,
+            -0.4696,
+            -0.3498,
+            -0.2316,
+            -0.115,
+            0.0,
+            0.1135,
+            0.2256,
+            0.3363,
+            0.4455,
+            0.5534,
+            0.66,
+            0.7653,
+            0.8693,
+            0.9721,
+            1.0737,
+            1.1741,
+            1.2734,
+            1.3715,
+            1.4686,
+            1.5646,
+            1.6595,
+            1.7534,
+            1.8463,
+            1.9382,
+            2.0292,
+            2.1192,
+            2.2082,
+            2.2964,
+            2.3837,
+            2.4702,
+            2.5557,
+            2.6405,
+            2.7244,
+            2.8075,
+            2.8898,
+            2.9714,
+            3.0522,
+            3.1323,
+            3.2116,
+            3.2902,
+            3.3681,
+            3.4453,
+            3.5218,
+            3.5977,
+            3.6729,
+            3.7474,
+            3.8214,
+            3.8947,
+            3.9674,
+            4.0394,
+            4.1109,
+            4.1818,
+            4.2522,
+            4.3219,
+            4.3911,
+            4.4598
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0110-a-drive-byte-is-a-gain-in-front-of-a-fixed-curve.json"
+        ],
+        "fitted_on": []
+      },
+      "why_oversample": "Drawn at the model's rate with nothing raised: a DSP of the period runs its curve at its own clock, so what the curve puts above half of it folds back, and that is part of what is drawn."
+    },
+    {
+      "id": "post",
+      "kind": "gain",
+      "input": "drive",
+      "unit": "db",
+      "gain": {
+        "value": -37.354,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-11-03-the-drive-byte-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            0
+          ],
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            2
+          ],
+          [
+            "what-the-drive-byte-does/0111-drive-no-cabinet",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "level",
+      "kind": "gain",
+      "input": "post",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874015748031496,
+            0.007874015748031496,
+            0.015748031496062992,
+            0.023622047244094488,
+            0.031496062992125984,
+            0.031496062992125984,
+            0.03937007874015748,
+            0.047244094488188976,
+            0.047244094488188976,
+            0.05511811023622047,
+            0.06299212598425197,
+            0.07086614173228346,
+            0.07086614173228346,
+            0.07874015748031496,
+            0.08661417322834646,
+            0.09448818897637795,
+            0.09448818897637795,
+            0.10236220472440945,
+            0.11023622047244094,
+            0.11811023622047244,
+            0.11811023622047244,
+            0.12598425196850394,
+            0.13385826771653545,
+            0.14173228346456693,
+            0.14960629921259844,
+            0.14960629921259844,
+            0.15748031496062992,
+            0.16535433070866143,
+            0.1732283464566929,
+            0.18110236220472442,
+            0.18110236220472442,
+            0.1889763779527559,
+            0.1968503937007874,
+            0.2047244094488189,
+            0.2125984251968504,
+            0.2204724409448819,
+            0.2204724409448819,
+            0.2283464566929134,
+            0.23622047244094488,
+            0.2440944881889764,
+            0.25196850393700787,
+            0.25984251968503935,
+            0.2677165354330709,
+            0.2677165354330709,
+            0.2755905511811024,
+            0.28346456692913385,
+            0.29133858267716534,
+            0.2992125984251969,
+            0.30708661417322836,
+            0.31496062992125984,
+            0.3228346456692913,
+            0.33070866141732286,
+            0.33858267716535434,
+            0.3464566929133858,
+            0.3464566929133858,
+            0.3543307086614173,
+            0.36220472440944884,
+            0.3700787401574803,
+            0.3779527559055118,
+            0.3858267716535433,
+            0.3937007874015748,
+            0.4015748031496063,
+            0.4094488188976378,
+            0.41732283464566927,
+            0.4251968503937008,
+            0.4330708661417323,
+            0.4409448818897638,
+            0.44881889763779526,
+            0.4566929133858268,
+            0.4645669291338583,
+            0.47244094488188976,
+            0.48031496062992124,
+            0.4881889763779528,
+            0.49606299212598426,
+            0.5039370078740157,
+            0.5118110236220472,
+            0.5196850393700787,
+            0.5275590551181102,
+            0.5354330708661418,
+            0.5511811023622047,
+            0.5590551181102362,
+            0.5669291338582677,
+            0.5748031496062992,
+            0.5826771653543307,
+            0.5905511811023622,
+            0.5984251968503937,
+            0.6062992125984252,
+            0.6141732283464567,
+            0.6220472440944882,
+            0.6377952755905512,
+            0.6456692913385826,
+            0.6535433070866141,
+            0.6614173228346457,
+            0.6692913385826772,
+            0.6771653543307087,
+            0.6850393700787402,
+            0.7007874015748031,
+            0.7086614173228346,
+            0.7165354330708661,
+            0.7244094488188977,
+            0.7322834645669292,
+            0.7480314960629921,
+            0.7559055118110236,
+            0.7637795275590551,
+            0.7716535433070866,
+            0.7795275590551181,
+            0.7952755905511811,
+            0.8031496062992126,
+            0.8110236220472441,
+            0.8188976377952756,
+            0.8346456692913385,
+            0.84251968503937,
+            0.8503937007874016,
+            0.8661417322834646,
+            0.8740157480314961,
+            0.8818897637795275,
+            0.8976377952755905,
+            0.905511811023622,
+            0.9133858267716536,
+            0.9212598425196851,
+            0.937007874015748,
+            0.9448818897637795,
+            0.9606299212598425,
+            0.968503937007874,
+            0.9763779527559056,
+            0.9921259842519685,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps.json",
+          "data/units/roland-sc8850-01/efx-bands/01-40-16-the-level-on-another-type.json",
+          "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json",
+          "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d00.json"
+        ],
+        "fitted_on": [
+          [
+            "the-level-on-a-third-type",
+            0
+          ],
+          [
+            "the-level-on-a-third-type",
+            1
+          ],
+          [
+            "the-level-on-a-third-type",
+            2
+          ],
+          [
+            "the-level-on-a-third-type",
+            3
+          ],
+          [
+            "the-level-on-a-third-type",
+            4
+          ],
+          [
+            "the-level-on-a-third-type",
+            6
+          ],
+          [
+            "the-level-on-a-third-type",
+            8
+          ],
+          [
+            "the-level-on-a-third-type",
+            12
+          ],
+          [
+            "the-level-on-a-third-type",
+            16
+          ],
+          [
+            "the-level-on-a-third-type",
+            24
+          ],
+          [
+            "the-level-on-a-third-type",
+            32
+          ],
+          [
+            "the-level-on-a-third-type",
+            48
+          ],
+          [
+            "the-level-on-a-third-type",
+            64
+          ],
+          [
+            "the-level-on-a-third-type",
+            80
+          ],
+          [
+            "the-level-on-a-third-type",
+            96
+          ],
+          [
+            "the-level-on-a-third-type",
+            112
+          ],
+          [
+            "the-level-on-a-third-type",
+            127
+          ],
+          [
+            "the-level-on-another-type",
+            0
+          ],
+          [
+            "the-level-on-another-type",
+            2
+          ],
+          [
+            "the-level-on-another-type",
+            4
+          ],
+          [
+            "the-level-on-another-type",
+            6
+          ],
+          [
+            "the-level-on-another-type",
+            8
+          ],
+          [
+            "the-level-on-another-type",
+            12
+          ],
+          [
+            "the-level-on-another-type",
+            16
+          ],
+          [
+            "the-level-on-another-type",
+            24
+          ],
+          [
+            "the-level-on-another-type",
+            32
+          ],
+          [
+            "the-level-on-another-type",
+            48
+          ],
+          [
+            "the-level-on-another-type",
+            64
+          ],
+          [
+            "the-level-on-another-type",
+            80
+          ],
+          [
+            "the-level-on-another-type",
+            96
+          ],
+          [
+            "the-level-on-another-type",
+            112
+          ],
+          [
+            "the-level-on-another-type",
+            127
+          ],
+          [
+            "where-the-level-steps",
+            0
+          ],
+          [
+            "where-the-level-steps",
+            1
+          ],
+          [
+            "where-the-level-steps",
+            2
+          ],
+          [
+            "where-the-level-steps",
+            3
+          ],
+          [
+            "where-the-level-steps",
+            4
+          ],
+          [
+            "where-the-level-steps",
+            5
+          ],
+          [
+            "where-the-level-steps",
+            6
+          ],
+          [
+            "where-the-level-steps",
+            7
+          ],
+          [
+            "where-the-level-steps",
+            8
+          ],
+          [
+            "where-the-level-steps",
+            9
+          ],
+          [
+            "where-the-level-steps",
+            10
+          ],
+          [
+            "where-the-level-steps",
+            11
+          ],
+          [
+            "where-the-level-steps",
+            12
+          ],
+          [
+            "where-the-level-steps",
+            13
+          ],
+          [
+            "where-the-level-steps",
+            14
+          ],
+          [
+            "where-the-level-steps",
+            15
+          ],
+          [
+            "where-the-level-steps",
+            16
+          ],
+          [
+            "where-the-level-steps",
+            17
+          ],
+          [
+            "where-the-level-steps",
+            18
+          ],
+          [
+            "where-the-level-steps",
+            19
+          ],
+          [
+            "where-the-level-steps",
+            20
+          ],
+          [
+            "where-the-level-steps",
+            21
+          ],
+          [
+            "where-the-level-steps",
+            22
+          ],
+          [
+            "where-the-level-steps",
+            23
+          ],
+          [
+            "where-the-level-steps",
+            24
+          ],
+          [
+            "where-the-level-steps",
+            25
+          ],
+          [
+            "where-the-level-steps",
+            26
+          ],
+          [
+            "where-the-level-steps",
+            27
+          ],
+          [
+            "where-the-level-steps",
+            28
+          ],
+          [
+            "where-the-level-steps",
+            29
+          ],
+          [
+            "where-the-level-steps",
+            30
+          ],
+          [
+            "where-the-level-steps",
+            31
+          ],
+          [
+            "where-the-level-steps",
+            32
+          ],
+          [
+            "where-the-level-steps",
+            33
+          ],
+          [
+            "where-the-level-steps",
+            34
+          ],
+          [
+            "where-the-level-steps",
+            35
+          ],
+          [
+            "where-the-level-steps",
+            36
+          ],
+          [
+            "where-the-level-steps",
+            37
+          ],
+          [
+            "where-the-level-steps",
+            38
+          ],
+          [
+            "where-the-level-steps",
+            39
+          ],
+          [
+            "where-the-level-steps",
+            40
+          ],
+          [
+            "where-the-level-steps",
+            41
+          ],
+          [
+            "where-the-level-steps",
+            42
+          ],
+          [
+            "where-the-level-steps",
+            43
+          ],
+          [
+            "where-the-level-steps",
+            44
+          ],
+          [
+            "where-the-level-steps",
+            45
+          ],
+          [
+            "where-the-level-steps",
+            46
+          ],
+          [
+            "where-the-level-steps",
+            47
+          ],
+          [
+            "where-the-level-steps",
+            48
+          ],
+          [
+            "where-the-level-steps",
+            49
+          ],
+          [
+            "where-the-level-steps",
+            50
+          ],
+          [
+            "where-the-level-steps",
+            51
+          ],
+          [
+            "where-the-level-steps",
+            52
+          ],
+          [
+            "where-the-level-steps",
+            53
+          ],
+          [
+            "where-the-level-steps",
+            54
+          ],
+          [
+            "where-the-level-steps",
+            55
+          ],
+          [
+            "where-the-level-steps",
+            56
+          ],
+          [
+            "where-the-level-steps",
+            57
+          ],
+          [
+            "where-the-level-steps",
+            58
+          ],
+          [
+            "where-the-level-steps",
+            59
+          ],
+          [
+            "where-the-level-steps",
+            60
+          ],
+          [
+            "where-the-level-steps",
+            61
+          ],
+          [
+            "where-the-level-steps",
+            62
+          ],
+          [
+            "where-the-level-steps",
+            63
+          ],
+          [
+            "where-the-level-steps",
+            64
+          ],
+          [
+            "where-the-level-steps",
+            65
+          ],
+          [
+            "where-the-level-steps",
+            66
+          ],
+          [
+            "where-the-level-steps",
+            67
+          ],
+          [
+            "where-the-level-steps",
+            68
+          ],
+          [
+            "where-the-level-steps",
+            69
+          ],
+          [
+            "where-the-level-steps",
+            70
+          ],
+          [
+            "where-the-level-steps",
+            71
+          ],
+          [
+            "where-the-level-steps",
+            72
+          ],
+          [
+            "where-the-level-steps",
+            73
+          ],
+          [
+            "where-the-level-steps",
+            74
+          ],
+          [
+            "where-the-level-steps",
+            75
+          ],
+          [
+            "where-the-level-steps",
+            76
+          ],
+          [
+            "where-the-level-steps",
+            77
+          ],
+          [
+            "where-the-level-steps",
+            78
+          ],
+          [
+            "where-the-level-steps",
+            79
+          ],
+          [
+            "where-the-level-steps",
+            80
+          ],
+          [
+            "where-the-level-steps",
+            81
+          ],
+          [
+            "where-the-level-steps",
+            82
+          ],
+          [
+            "where-the-level-steps",
+            83
+          ],
+          [
+            "where-the-level-steps",
+            84
+          ],
+          [
+            "where-the-level-steps",
+            85
+          ],
+          [
+            "where-the-level-steps",
+            86
+          ],
+          [
+            "where-the-level-steps",
+            87
+          ],
+          [
+            "where-the-level-steps",
+            88
+          ],
+          [
+            "where-the-level-steps",
+            89
+          ],
+          [
+            "where-the-level-steps",
+            90
+          ],
+          [
+            "where-the-level-steps",
+            91
+          ],
+          [
+            "where-the-level-steps",
+            92
+          ],
+          [
+            "where-the-level-steps",
+            93
+          ],
+          [
+            "where-the-level-steps",
+            94
+          ],
+          [
+            "where-the-level-steps",
+            95
+          ],
+          [
+            "where-the-level-steps",
+            96
+          ],
+          [
+            "where-the-level-steps",
+            97
+          ],
+          [
+            "where-the-level-steps",
+            98
+          ],
+          [
+            "where-the-level-steps",
+            99
+          ],
+          [
+            "where-the-level-steps",
+            100
+          ],
+          [
+            "where-the-level-steps",
+            101
+          ],
+          [
+            "where-the-level-steps",
+            102
+          ],
+          [
+            "where-the-level-steps",
+            103
+          ],
+          [
+            "where-the-level-steps",
+            104
+          ],
+          [
+            "where-the-level-steps",
+            105
+          ],
+          [
+            "where-the-level-steps",
+            106
+          ],
+          [
+            "where-the-level-steps",
+            107
+          ],
+          [
+            "where-the-level-steps",
+            108
+          ],
+          [
+            "where-the-level-steps",
+            109
+          ],
+          [
+            "where-the-level-steps",
+            110
+          ],
+          [
+            "where-the-level-steps",
+            111
+          ],
+          [
+            "where-the-level-steps",
+            112
+          ],
+          [
+            "where-the-level-steps",
+            113
+          ],
+          [
+            "where-the-level-steps",
+            114
+          ],
+          [
+            "where-the-level-steps",
+            115
+          ],
+          [
+            "where-the-level-steps",
+            116
+          ],
+          [
+            "where-the-level-steps",
+            117
+          ],
+          [
+            "where-the-level-steps",
+            118
+          ],
+          [
+            "where-the-level-steps",
+            119
+          ],
+          [
+            "where-the-level-steps",
+            120
+          ],
+          [
+            "where-the-level-steps",
+            121
+          ],
+          [
+            "where-the-level-steps",
+            122
+          ],
+          [
+            "where-the-level-steps",
+            123
+          ],
+          [
+            "where-the-level-steps",
+            124
+          ],
+          [
+            "where-the-level-steps",
+            125
+          ],
+          [
+            "where-the-level-steps",
+            126
+          ],
+          [
+            "where-the-level-steps",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low",
+      "kind": "section",
+      "input": "level",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high",
+      "kind": "section",
+      "input": "low",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan",
+      "kind": "pan",
+      "input": "high",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "fixed_at_power_on",
+    "40 03 05": "fixed_at_power_on",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}
