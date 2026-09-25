@@ -1,0 +1,60 @@
+{
+  "class": "whole-0121",
+  "what_the_class_is": "The auto wah as a whole: one two-pole filter per output whose band-pass or low-pass tap the Filter Type byte picks, its corner and selectivity read off a position that Manual sets and a modulator sweeps to one side of in Polarity's direction, then the constant the type takes, the fixed tone shelves, the output pan and the level.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A wah is one two-pole resonant filter a sample, a state-variable or a biquad, whose low-pass and band-pass come out of the same two states for the same coefficients; a type that offers both picks a tap rather than running a second filter.",
+      "The corner is a coefficient recomputed from a control, at the sample rate or a slower control rate, through a table indexed by where the control stands; a table can hold the selectivity beside the corner as cheaply as it holds the corner alone.",
+      "The modulator is a phase accumulator read through a short shape; a triangle needs no table and a sinusoid does."
+    ],
+    "would_be_wrong_if": "A walk of Manual or Depth at settings nothing here was read on, with the filter's own modulator stopped or running, returns a band profile further from every candidate than the unit's repeats sit from each other, in a way no swing or table entry of these structures closes."
+  },
+  "candidates": [
+    {
+      "id": "one-sided-triangle",
+      "model": "inferences/models/0121-whole-one-sided-triangle.json",
+      "reading": "A triangle modulator sweeping the corner away from Manual in Polarity's direction, the selectivity travelling with it, the tables carried past the Manual range's ends; the swing in Manual steps a Depth setting commands, as its own fit on the held-noise walk returned it: 32: 21.1, 72: 54.1, 95: 84.3, 127: 101.7.",
+      "predicts": "A sweep that spends equal time at every position between Manual and Manual plus the swing, with the band narrowing as it goes down and widening as it goes up, running on past both ends of the Manual range at the end segments' own slopes."
+    },
+    {
+      "id": "one-sided-raised-sine",
+      "model": "inferences/models/0121-whole-one-sided-raised-sine.json",
+      "reading": "A raised sine modulator sweeping the corner away from Manual in Polarity's direction, the selectivity travelling with it, the tables carried past the Manual range's ends; the swing in Manual steps a Depth setting commands, as its own fit on the held-noise walk returned it: 32: 21.2, 72: 52.5, 95: 81.6, 127: 98.0.",
+      "predicts": "The same sweep lingering at its two ends: more of the time at Manual and at the far end of the swing, less in between, so a time-averaged profile carries two humps where the triangle's is flat."
+    },
+    {
+      "id": "selectivity-stays-at-manual",
+      "model": "inferences/models/0121-whole-selectivity-stays-at-manual.json",
+      "reading": "A triangle modulator sweeping the corner away from Manual in Polarity's direction, the selectivity held where Manual puts it, the tables carried past the Manual range's ends; the swing in Manual steps a Depth setting commands, as its own fit on the held-noise walk returned it: 32: 18.1, 72: 43.3, 95: 71.2, 127: 201.0.",
+      "predicts": "A band that keeps the width Manual gives it as the corner sweeps: narrower than the travelling candidates' at the top of an upward sweep, wider at the bottom of a downward one."
+    },
+    {
+      "id": "held-at-the-manual-ends",
+      "model": "inferences/models/0121-whole-held-at-the-manual-ends.json",
+      "reading": "A triangle modulator sweeping the corner away from Manual in Polarity's direction, the selectivity travelling with it, the tables held at the Manual range's ends; the swing in Manual steps a Depth setting commands, as its own fit on the held-noise walk returned it: 32: 21.1, 72: 54.1, 95: 89.9, 127: 140.8.",
+      "predicts": "A sweep that stops at the corner Manual 0 or 127 gives and sits there for the rest of its travel, so a deep swing parks the filter at 400 Hz or 4.4 kHz rather than carrying it further."
+    }
+  ],
+  "left_out": [
+    {
+      "reading": "A sweep centred on Manual, Polarity turning the modulator over.",
+      "why": "No swing of it reproduces the held-noise Depth walk its competitors are fitted on: the level that walk loses as Depth rises is a sweep spending its time below Manual, and a centred sweep leaves as much above as below. Its best fit misses by 4.5 to 11.2 dB against 0.3 to 1.6 for the one-sided triangle."
+    },
+    {
+      "reading": "Two identical band-pass sections in a row, skirts falling 12 dB an octave.",
+      "why": "With corner, selectivity and gain free at every Manual setting it misses the standing takes by 6.0, 5.5, 4.9, 4.4, 3.9, 3.6, 3.4, 3.8, 4.2, 4.4 dB, where one section misses by 0.38, 0.32, 0.28, 0.27, 0.26, 0.23, 0.24, 0.24, 0.27, 0.27: the skirts fall 6 dB an octave."
+    },
+    {
+      "reading": "One selectivity for every Manual setting.",
+      "why": "The standing takes put the selectivity at 15.0 at Manual 0 and 3.3 at 127 under one Peak setting; one value for all of them misses the settings by 0.7 to 6.7 dB."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "What the Sens byte does. Nothing converts it into a movement of the corner or gives its detector a time, so it is held at power-on, where it is 0, and every take that moves it is a take no candidate here draws.",
+    "What the low-pass tap sounds like: it is read through the band-pass's tables and no take tests it.",
+    "The unprinted address 40 03 0B, which the struck-kit contrast heard, and the rest of 40 03 0A to 12: the page prints no parameter there and no candidate reads them.",
+    "The corner's drift with the Peak byte, 1380 Hz at Peak 0 to 1278 at 127 with Manual at its default, 0.11 of an octave: the corner table is read at Peak 62 alone.",
+    "Whether the modulator's phase is shared by the two outputs; one modulator drives both here."
+  ]
+}

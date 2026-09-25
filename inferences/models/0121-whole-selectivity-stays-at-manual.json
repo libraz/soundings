@@ -1,0 +1,1955 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0121-whole-selectivity-stays-at-manual",
+    "class": "whole-0121",
+    "candidate": "selectivity-stays-at-manual",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 21",
+    "kind": "graph",
+    "made_by": "backup/build-auto-wah-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate every other whole-type model of this unit is drawn at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "level_l",
+    "out_r": "level_r"
+  },
+  "what_varies": "The modulator is a triangle running from 0 to 1, so the sweep lies on one side of Manual; the selectivity stays where Manual puts it while the corner sweeps; the corner and selectivity tables carry their end segments' slopes on past the Manual byte's own range. The depth map is this candidate's own fit.",
+  "position_is": "A control on the Manual byte's own axis: Manual plus the swing, signed by Polarity. The corner and the selectivity are read off it through the tables fitted at nine Manual settings and the printed default with the filter standing still.",
+  "band_pass_is": "A peaking section 20 dB high less the dry path, over the peak's gain less one: the band-pass whose gain at its centre does not move with its selectivity, which is the reading the resonance claim's level law carries.",
+  "low_pass_is": "The same filter's low-pass tap, read through the band-pass's own corner and selectivity tables. No take of this type has the low-pass tap on and nothing measured here tests it.",
+  "fits": {
+    "standing": {
+      "rms_db_per_manual": {
+        "0": 0.383,
+        "16": 0.322,
+        "32": 0.283,
+        "48": 0.268,
+        "64": 0.257,
+        "68": 0.234,
+        "80": 0.238,
+        "96": 0.236,
+        "112": 0.269,
+        "127": 0.269
+      },
+      "constant_over_bypass_db": 10.371
+    },
+    "peak": {
+      "ln_q_a_step": 0.0295,
+      "per_setting": {
+        "0": {
+          "q": 0.916,
+          "corner_hz": 1379.907,
+          "rms_db": 0.223
+        },
+        "32": {
+          "q": 2.418,
+          "corner_hz": 1316.917,
+          "rms_db": 0.229
+        },
+        "62": {
+          "q": 5.879,
+          "corner_hz": 1292.993,
+          "rms_db": 0.233
+        },
+        "95": {
+          "q": 15.595,
+          "corner_hz": 1281.818,
+          "rms_db": 0.267
+        },
+        "127": {
+          "q": 38.73,
+          "corner_hz": 1277.563,
+          "rms_db": 0.587
+        }
+      }
+    },
+    "depth": {
+      "32": {
+        "swing": 18.1,
+        "rms_db": 2.044,
+        "as_well_within": [
+          13.0,
+          23.0
+        ],
+        "at_the_search_bound": false
+      },
+      "72": {
+        "swing": 43.3,
+        "rms_db": 3.289,
+        "as_well_within": [
+          31.0,
+          54.0
+        ],
+        "at_the_search_bound": false
+      },
+      "95": {
+        "swing": 71.2,
+        "rms_db": 3.441,
+        "as_well_within": [
+          58.0,
+          82.0
+        ],
+        "at_the_search_bound": false
+      },
+      "127": {
+        "swing": 201.0,
+        "rms_db": 3.983,
+        "as_well_within": [
+          90.0,
+          200.0
+        ],
+        "at_the_search_bound": true
+      },
+      "depth_zero_rms_db": 0.247
+    },
+    "read_as": "root mean square difference in decibels of twelfth-octave band energy from 150 Hz to 11000 Hz, each take against the bypassed takes of its own directory, on the unit's output channel 2; a sweep is averaged over 48 points of its cycle"
+  },
+  "fixed_rows": {
+    "40 03 04": "Sens: no claim or printed conversion says what a step of it does to the corner, and the only takes that walk it hold a stationary noise, from which a detector's attack and release cannot be read. It powers up at 0."
+  },
+  "nodes": [
+    {
+      "id": "one",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          0.5,
+          1.0
+        ]
+      ],
+      "rate_hz": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "A constant, the axis the Manual byte's weight places the filter on."
+    },
+    {
+      "id": "sweep",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.5,
+          1.0
+        ]
+      ],
+      "rate_hz": {
+        "byte": "40 03 07",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "swing",
+      "kind": "gain",
+      "input": "sweep",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 08",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              32,
+              18.1
+            ],
+            [
+              72,
+              43.3
+            ],
+            [
+              95,
+              71.2
+            ],
+            [
+              127,
+              201.0
+            ]
+          ]
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/depth-an-enhancers-sensitivity-is-one-curve-and-a-swing-has-no-law.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-08-5-settings-walked-under-the-held-applause-with-its-stage-open.json"
+        ],
+        "fitted_on": [
+          [
+            "book-d2-repair/01-21-40-03-08-held_applause",
+            32
+          ],
+          [
+            "book-d2-repair/01-21-40-03-08-held_applause",
+            72
+          ],
+          [
+            "book-d2-repair/01-21-40-03-08-held_applause",
+            95
+          ],
+          [
+            "book-d2-repair/01-21-40-03-08-held_applause",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "direction",
+      "kind": "gain",
+      "input": "swing",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 09",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": -1.0,
+            "1": 1.0,
+            "*": -1.0
+          }
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Auto Wah Polarity, Down/Up over 00/01",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "manual",
+      "kind": "mix",
+      "inputs": [
+        "one"
+      ],
+      "weights": {
+        "one": {
+          "byte": "40 03 05",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                0.0
+              ],
+              [
+                127,
+                127.0
+              ]
+            ]
+          },
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+            "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+          ],
+          "fitted_on": [
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              0
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              16
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              32
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              48
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              64
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              80
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              96
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              112
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              127
+            ],
+            [
+              "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+              "flat-00"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "position",
+      "kind": "mix",
+      "inputs": [
+        "manual",
+        "direction"
+      ],
+      "weights": {
+        "manual": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "direction": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "selectivity_here",
+      "kind": "shaper",
+      "input": "manual",
+      "curve": "points",
+      "points": [
+        [
+          -128.0,
+          3.15539
+        ],
+        [
+          0.0,
+          2.70763
+        ],
+        [
+          16.0,
+          2.65166
+        ],
+        [
+          32.0,
+          2.41821
+        ],
+        [
+          48.0,
+          2.19877
+        ],
+        [
+          64.0,
+          1.94749
+        ],
+        [
+          68.0,
+          1.78281
+        ],
+        [
+          80.0,
+          1.3689
+        ],
+        [
+          96.0,
+          1.25438
+        ],
+        [
+          112.0,
+          1.20445
+        ],
+        [
+          127.0,
+          1.1793
+        ],
+        [
+          255.0,
+          0.96468
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "points_from": {
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "selectivity",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "selectivity_here"
+      ],
+      "weights": {
+        "one": {
+          "byte": "40 03 06",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                -1.82911
+              ],
+              [
+                127,
+                1.91761
+              ]
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json",
+            "data/units/roland-sc8850-01/efx-bands/01-21-06-5-settings-walked-under-the-held-applause.json"
+          ],
+          "fitted_on": [
+            [
+              "book-d2-3/01-21-40-03-06-held_applause",
+              0
+            ],
+            [
+              "book-d2-3/01-21-40-03-06-held_applause",
+              32
+            ],
+            [
+              "book-d2-3/01-21-40-03-06-held_applause",
+              62
+            ],
+            [
+              "book-d2-3/01-21-40-03-06-held_applause",
+              95
+            ],
+            [
+              "book-d2-3/01-21-40-03-06-held_applause",
+              127
+            ]
+          ]
+        },
+        "selectivity_here": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "peak_l",
+      "kind": "section",
+      "input": "in_l",
+      "stage": "peaking",
+      "centre_hz": {
+        "control": "position",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -128.0,
+              35.381
+            ],
+            [
+              0.0,
+              400.609
+            ],
+            [
+              16.0,
+              542.582
+            ],
+            [
+              32.0,
+              683.941
+            ],
+            [
+              48.0,
+              851.39
+            ],
+            [
+              64.0,
+              1098.037
+            ],
+            [
+              68.0,
+              1292.878
+            ],
+            [
+              80.0,
+              1948.858
+            ],
+            [
+              96.0,
+              2830.292
+            ],
+            [
+              112.0,
+              3883.399
+            ],
+            [
+              127.0,
+              4359.086
+            ],
+            [
+              255.0,
+              11684.96
+            ]
+          ],
+          "log": true
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      },
+      "q": {
+        "control": "selectivity",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -6,
+              0.0007838502633365769
+            ],
+            [
+              7,
+              346.7858538298205
+            ]
+          ],
+          "log": true
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "value": 20.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "band_l",
+      "kind": "mix",
+      "inputs": [
+        "peak_l",
+        "in_l"
+      ],
+      "weights": {
+        "peak_l": {
+          "value": 0.111111111,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+          ],
+          "fitted_on": []
+        },
+        "in_l": {
+          "value": -0.111111111,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "lowpass_l",
+      "kind": "section",
+      "input": "in_l",
+      "stage": "pole",
+      "side": "low",
+      "corner_hz": {
+        "control": "position",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -128.0,
+              35.381
+            ],
+            [
+              0.0,
+              400.609
+            ],
+            [
+              16.0,
+              542.582
+            ],
+            [
+              32.0,
+              683.941
+            ],
+            [
+              48.0,
+              851.39
+            ],
+            [
+              64.0,
+              1098.037
+            ],
+            [
+              68.0,
+              1292.878
+            ],
+            [
+              80.0,
+              1948.858
+            ],
+            [
+              96.0,
+              2830.292
+            ],
+            [
+              112.0,
+              3883.399
+            ],
+            [
+              127.0,
+              4359.086
+            ],
+            [
+              255.0,
+              11684.96
+            ]
+          ],
+          "log": true
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      },
+      "q": {
+        "control": "selectivity",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -6,
+              0.0024787521766663585
+            ],
+            [
+              7,
+              1096.6331584284585
+            ]
+          ],
+          "log": true
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "sections": {
+        "value": 1,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "filter_l",
+      "kind": "mix",
+      "inputs": [
+        "band_l",
+        "lowpass_l"
+      ],
+      "weights": {
+        "band_l": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 0.0,
+              "1": 1.0,
+              "*": 0.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Auto Wah Fil Type, LPF/BPF over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        },
+        "lowpass_l": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 1.0,
+              "1": 0.0,
+              "*": 1.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Auto Wah Fil Type, LPF/BPF over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "constant_l",
+      "kind": "gain",
+      "input": "filter_l",
+      "unit": "db",
+      "gain": {
+        "value": 13.435,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json",
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "tone_low_l",
+      "kind": "section",
+      "input": "constant_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "tone_high_l",
+      "kind": "section",
+      "input": "tone_low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_l",
+      "kind": "pan",
+      "input": "tone_high_l",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "pan_l.left",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "peak_r",
+      "kind": "section",
+      "input": "in_r",
+      "stage": "peaking",
+      "centre_hz": {
+        "control": "position",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -128.0,
+              35.381
+            ],
+            [
+              0.0,
+              400.609
+            ],
+            [
+              16.0,
+              542.582
+            ],
+            [
+              32.0,
+              683.941
+            ],
+            [
+              48.0,
+              851.39
+            ],
+            [
+              64.0,
+              1098.037
+            ],
+            [
+              68.0,
+              1292.878
+            ],
+            [
+              80.0,
+              1948.858
+            ],
+            [
+              96.0,
+              2830.292
+            ],
+            [
+              112.0,
+              3883.399
+            ],
+            [
+              127.0,
+              4359.086
+            ],
+            [
+              255.0,
+              11684.96
+            ]
+          ],
+          "log": true
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      },
+      "q": {
+        "control": "selectivity",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -6,
+              0.0007838502633365769
+            ],
+            [
+              7,
+              346.7858538298205
+            ]
+          ],
+          "log": true
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "value": 20.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "band_r",
+      "kind": "mix",
+      "inputs": [
+        "peak_r",
+        "in_r"
+      ],
+      "weights": {
+        "peak_r": {
+          "value": 0.111111111,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+          ],
+          "fitted_on": []
+        },
+        "in_r": {
+          "value": -0.111111111,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "lowpass_r",
+      "kind": "section",
+      "input": "in_r",
+      "stage": "pole",
+      "side": "low",
+      "corner_hz": {
+        "control": "position",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -128.0,
+              35.381
+            ],
+            [
+              0.0,
+              400.609
+            ],
+            [
+              16.0,
+              542.582
+            ],
+            [
+              32.0,
+              683.941
+            ],
+            [
+              48.0,
+              851.39
+            ],
+            [
+              64.0,
+              1098.037
+            ],
+            [
+              68.0,
+              1292.878
+            ],
+            [
+              80.0,
+              1948.858
+            ],
+            [
+              96.0,
+              2830.292
+            ],
+            [
+              112.0,
+              3883.399
+            ],
+            [
+              127.0,
+              4359.086
+            ],
+            [
+              255.0,
+              11684.96
+            ]
+          ],
+          "log": true
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/1108-a-multi-reaches-the-single-types-block.json",
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      },
+      "q": {
+        "control": "selectivity",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              -6,
+              0.0024787521766663585
+            ],
+            [
+              7,
+              1096.6331584284585
+            ]
+          ],
+          "log": true
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/resonance-a-wah-peak-step-narrows-the-filter-by-one-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "sections": {
+        "value": 1,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "filter_r",
+      "kind": "mix",
+      "inputs": [
+        "band_r",
+        "lowpass_r"
+      ],
+      "weights": {
+        "band_r": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 0.0,
+              "1": 1.0,
+              "*": 0.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Auto Wah Fil Type, LPF/BPF over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        },
+        "lowpass_r": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 1.0,
+              "1": 0.0,
+              "*": 1.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Auto Wah Fil Type, LPF/BPF over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "constant_r",
+      "kind": "gain",
+      "input": "filter_r",
+      "unit": "db",
+      "gain": {
+        "value": 13.435,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-bands/01-21-05-the-wahs-corner-in-twelfths.json",
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": [
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            0
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            16
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            32
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            48
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            64
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            80
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            96
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            112
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            127
+          ],
+          [
+            "whether-a-wah-block-is-the-same-block/01-21-05-the-wahs-corner",
+            "flat-00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "tone_low_r",
+      "kind": "section",
+      "input": "constant_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "tone_high_r",
+      "kind": "section",
+      "input": "tone_low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_r",
+      "kind": "pan",
+      "input": "tone_high_r",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "pan_r.right",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "fixed_at_power_on",
+    "40 03 05": "bound",
+    "40 03 06": "bound",
+    "40 03 07": "bound",
+    "40 03 08": "bound",
+    "40 03 09": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}
