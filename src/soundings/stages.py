@@ -102,7 +102,7 @@ class Reading:
     or a frequency is compared. `admitted_if` names row keys that must not be null for
     the quantity to be read at all, where the record's own rule says so. `null_is` is
     the value a null stands for where the record defines one (nothing cleared the
-    floor), and `unit_has_it` keeps only the settings the unit's side read at all.
+    floor); any other null on the unit's side is the record refusing that setting.
     `room` names the row key saying how far a take stood above the chain's silence; a
     row within `WITHIN_THE_FLOOR_DB` of it is the room and not a reading.
     """
@@ -116,7 +116,6 @@ class Reading:
     octaves: bool = False
     admitted_if: tuple[str, ...] = ()
     null_is: float | None = None
-    unit_has_it: bool = False
     room: str | None = None
 
 
@@ -135,13 +134,11 @@ _READINGS = (
     # band it is largest in is wherever the scatter put it.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz",
             "band_width_octaves", "octaves", octaves=True,
-            admitted_if=("half_below_hz", "half_above_hz"), unit_has_it=True,
-            room="above_the_silence_db"),
+            admitted_if=("half_below_hz", "half_above_hz"), room="above_the_silence_db"),
     # Where the unit's profile has no feature there is nothing to place.
     # The record holds a position against the band width, having no measured floor.
     Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz",
-            "band_width_octaves", "octaves", octaves=True, unit_has_it=True,
-            room="above_the_silence_db"),
+            "band_width_octaves", "octaves", octaves=True, room="above_the_silence_db"),
     Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
     Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB"),
     Reading("efx-orders", "efxorders.read_directory", "readings", "all_of_them_db",
@@ -981,8 +978,8 @@ def scored_readings(
 ) -> dict:
     """One stage's readings in the shape `reproduce.gates` scores, per the `readings` table.
 
-    `unit` and `drawn` map `(directory, setting)` to per-take vectors. A setting only
-    one side refused costs the whole span; one both refused is not a row.
+    `unit` and `drawn` map `(directory, setting)` to per-take vectors. A setting the
+    unit refused is not a row; one only the drawn side refused costs the whole span.
     """
     u, d = _medians(unit), _medians(drawn)
     values = [x for vec in u.values() for x in vec if x is not None]
@@ -1001,7 +998,7 @@ def scored_readings(
             if reading.null_is is not None:
                 a = reading.null_is if a is None else a
                 b = reading.null_is if b is None else b
-            if a is None and (b is None or reading.unit_has_it):
+            if a is None:
                 continue
             residual.append(span if a is None or b is None else b - a)
             if a is not None and b is None and list(key) not in refused:

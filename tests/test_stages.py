@@ -366,11 +366,13 @@ def test_a_largest_band_nothing_cleared_is_read_as_no_deviation():
     assert scored["drawn_only_refused"] == []
 
 
-def test_a_position_is_compared_only_where_the_unit_has_one():
-    reading = stages.READINGS["efx-bands:fitted_at_hz"]
+@pytest.mark.parametrize(
+    "name", sorted(k for k, r in stages.READINGS.items() if r.null_is is None))
+def test_a_setting_the_unit_refused_is_not_compared(name):
+    reading = stages.READINGS[name]
     unit = {("d", 0): [[None]], ("d", 1): [[10.0]], ("d", 2): [[11.0]]}
     drawn = {("d", 0): [[12.0]], ("d", 1): [[None]], ("d", 2): [[11.0]]}
-    scored = stages.scored_readings("efx-bands:fitted_at_hz", reading, unit, drawn, floor=0.1)
+    scored = stages.scored_readings(name, reading, unit, drawn, floor=0.1)
     residuals = {row["value"]: row["residual"] for row in scored["rows"]}
     assert residuals == {1: [scored["span"]], 2: [0.0]}
     assert scored["drawn_only_refused"] == [["d", 1]]
