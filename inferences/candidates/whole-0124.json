@@ -1,0 +1,49 @@
+{
+  "class": "whole-0124",
+  "what_the_class_is": "The step flanger as a whole: the stereo flanger's delay and loop, with its modulator sampled and held by a clock the Step Rate byte sets.",
+  "rounds": [
+    {
+      "round": 1,
+      "tried": "triangle and raised sine on the flanger's depth readings, and a triangle on the chorus's",
+      "came_back": "Stopped at gross, the raised sine first at 0.678 of the span; the chorus-depth triangle second, 0.026 of the span behind it."
+    },
+    {
+      "round": 2,
+      "changed": "The chorus-depth triangle is dropped, because an excursion reading cannot tell it from the raised sine, and a raised sine clocked at twice the printed Step Rate table is added.",
+      "why": "Read on the drawn takes, the excursion off the phase moved more with the hold than with anything else tried: 0.86 ms with it and 1.49 without at a depth of 95, and without it the rate read doubled. The step claim leaves open whether its printed table is the train's rate or half of it, so the clock is the one element the reading is known to answer to and that a standing claim leaves undecided."
+    }
+  ],
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A flanger is a delay line whose read address a modulator moves, a loop from the line's output back to its input, and a sum with the dry path; the per-sample cost is one interpolated read and two multiply-accumulates.",
+      "The modulator is a phase accumulator read through a short shape, and a triangle is the cheapest shape to compute: a folded ramp needs no table. A sinusoid needs a table or a polynomial.",
+      "Rates, times and levels are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A reading of the delay's excursion placed the unit's settings outside what either shape predicts by more than the reading's own floor at settings nothing here was built on, or the loop's sign and spacing moved with the depth byte."
+  },
+  "candidates": [
+    {
+      "id": "triangle-held",
+      "model": "inferences/models/0124-whole-triangle-held.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo flanger's pitch excursion read as a delay under that shape. A hold clocked at the Step Rate byte's printed rate samples it.",
+      "predicts": "A peak-to-peak delay excursion 1.57 times the raised sine's at every depth setting."
+    },
+    {
+      "id": "raised-sine-held",
+      "model": "inferences/models/0124-whole-raised-sine-held.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo flanger's pitch excursion read as a delay under that shape. A hold clocked at the Step Rate byte's printed rate samples it.",
+      "predicts": "The smallest excursion of the class at every depth setting."
+    },
+    {
+      "id": "raised-sine-held-at-twice",
+      "model": "inferences/models/0124-whole-raised-sine-held-at-twice.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo flanger's pitch excursion read as a delay under that shape. A hold clocked at twice the Step Rate byte's printed rate samples it.",
+      "predicts": "Steps half as long and half as tall as the printed clock's, so a delay track closer to the unsampled sweep."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Where the feedback is taken other than from the delay's own output.",
+    "Whether the hold sits on the modulator's output or on the delay's control, which the step claim records as equivalent."
+  ]
+}

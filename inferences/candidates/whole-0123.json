@@ -1,0 +1,31 @@
+{
+  "class": "whole-0123",
+  "what_the_class_is": "The stereo flanger as a whole: one modulated delay per output with a loop around it, the dry and delayed paths mixed by the balance byte, and the level and tone stages every insertion type ends in.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A flanger is a delay line whose read address a modulator moves, a loop from the line's output back to its input, and a sum with the dry path; the per-sample cost is one interpolated read and two multiply-accumulates.",
+      "The modulator is a phase accumulator read through a short shape, and a triangle is the cheapest shape to compute: a folded ramp needs no table. A sinusoid needs a table or a polynomial.",
+      "Rates, times and levels are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A reading of the delay's excursion placed the unit's settings outside what either shape predicts by more than the reading's own floor at settings nothing here was built on, or the loop's sign and spacing moved with the depth byte."
+  },
+  "candidates": [
+    {
+      "id": "triangle",
+      "model": "inferences/models/0123-whole-triangle.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo flanger's pitch excursion read as a delay under that shape.",
+      "predicts": "A peak-to-peak delay excursion 1.57 times the raised sine's at every depth setting."
+    },
+    {
+      "id": "raised-sine",
+      "model": "inferences/models/0123-whole-raised-sine.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo flanger's pitch excursion read as a delay under that shape.",
+      "predicts": "The smallest excursion of the class at every depth setting."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Where the feedback is taken other than from the delay's own output, and whether the loop is a sample longer than the pre-delay's ladder entry.",
+    "Anything the pre-filter does: it powers up Off and no compared setting turns it on."
+  ]
+}
