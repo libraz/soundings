@@ -1,0 +1,61 @@
+{
+  "class": "whole-0120",
+  "what_the_class_is": "The phaser as a whole: eight all-pass sections summed with the dry at the Mix byte, a loop around the cascade a sample late through a one-pole high pass weighted by the Resonance byte, a modulator sweeping the sections' shared corner down from the Manual setting, and the level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A phaser is a ladder of first-order all-pass sections sharing one coefficient, which the control processor or the DSP rewrites as the modulator moves; the per-sample cost is one multiply-accumulate pair a section.",
+      "A loop in a sample-by-sample program can only return the previous result, and a fixed-point loop needs something to stop it gathering an offset.",
+      "A modulator is a phase accumulator read through a short shape; a triangle needs no table. What the modulator is added to -- the coefficient, its logarithm, or the byte the page converts -- is a choice the part's designer made once for the type."
+    ],
+    "would_be_wrong_if": "A take with Depth moved placed the sweep's top anywhere but the Manual corner, or the sweep kept its size in octaves where the Manual scale predicts it stops at the bottom of the column."
+  },
+  "candidates": [
+    {
+      "id": "triangle-in-octaves",
+      "model": "inferences/models/0120-whole-triangle-in-octaves.json",
+      "reading": "A triangle sweeps the corner down from the Manual setting's own corner by 0.709 octaves at Depth 64, in proportion to the Depth byte, in octaves of the corner.",
+      "predicts": "A sweep the same size in octaves at every Manual setting. Its corner moves at one rate on its scale from end to end."
+    },
+    {
+      "id": "triangle-on-the-manual-scale",
+      "model": "inferences/models/0120-whole-triangle-on-the-manual-scale.json",
+      "reading": "A triangle sweeps the corner down from the Manual setting's own corner by 15.39 Manual steps at Depth 64, in proportion to the Depth byte, on the Manual byte's printed scale before the page's conversion.",
+      "predicts": "A sweep that shrinks towards the bottom of the Manual column and stops at setting 0, and runs wider in octaves where the column's steps are larger in proportion. Its corner moves at one rate on its scale from end to end."
+    },
+    {
+      "id": "raised-sine-in-octaves",
+      "model": "inferences/models/0120-whole-raised-sine-in-octaves.json",
+      "reading": "A raised sine sweeps the corner down from the Manual setting's own corner by 0.6735 octaves at Depth 64, in proportion to the Depth byte, in octaves of the corner.",
+      "predicts": "A sweep the same size in octaves at every Manual setting. Its corner lingers at the ends of the sweep and passes the middle quickly."
+    },
+    {
+      "id": "raised-sine-on-the-manual-scale",
+      "model": "inferences/models/0120-whole-raised-sine-on-the-manual-scale.json",
+      "reading": "A raised sine sweeps the corner down from the Manual setting's own corner by 14.38 Manual steps at Depth 64, in proportion to the Depth byte, on the Manual byte's printed scale before the page's conversion.",
+      "predicts": "A sweep that shrinks towards the bottom of the Manual column and stops at setting 0, and runs wider in octaves where the column's steps are larger in proportion. Its corner lingers at the ends of the sweep and passes the middle quickly."
+    }
+  ],
+  "what_the_fitting_take_said": {
+    "manual_corner_hz": 3477.9,
+    "with_the_top_free": {
+      "top_octaves_from_the_manual": 0.02,
+      "excursion_octaves": 0.74,
+      "rms_db": 2.323,
+      "grid_octaves": 0.02
+    },
+    "residual_by_candidate_db": {
+      "triangle-in-octaves": 2.324,
+      "triangle-on-the-manual-scale": 2.579,
+      "raised-sine-in-octaves": 3.241,
+      "raised-sine-on-the-manual-scale": 3.553
+    },
+    "why_not_ranked_here": "One take at one Manual and one Depth setting, at a rate a 43 ms frame follows; the residual is what each shape was fitted to and says nothing a held-out setting has not been asked."
+  },
+  "what_no_candidate_here_predicts": [
+    "Whether Depth is proportional between 0 and 64 and beyond it: one setting was fitted and the rest are carried by proportion.",
+    "Whether the two outputs are processed apart or as one: a single modulator drives both and no take here was stereo in a way that would say.",
+    "Whether the loop's high pass sits above 20 Hz: the loop claim publishes that as the lowest corner consistent with its readings.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
