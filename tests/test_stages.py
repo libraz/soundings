@@ -392,6 +392,18 @@ def test_a_record_name_spells_what_it_differs_by_as_it_was_passed():
         "efx-bands:largest_db [--reference-held 40 42 22=00]")
 
 
+def test_a_setting_that_returns_the_room_is_no_reading_of_the_effect():
+    rows = [
+        {"value": 0, "largest_db": -64.4, "largest_at_hz": 2500, "half_below_hz": 100,
+         "half_above_hz": 8000, "above_the_silence_db": 1.1},
+        {"value": 1, "largest_db": -42.1, "largest_at_hz": 800, "half_below_hz": 100,
+         "half_above_hz": 8000, "above_the_silence_db": 15.3},
+    ]
+    found = stages.collected("efx-bands", {"readings": rows}, "d")
+    assert set(found["efx-bands:largest_db"]["takes"]) == {("d", 1)}
+    assert set(found["efx-bands:largest_at_hz"]["takes"]) == {("d", 1)}
+
+
 def test_a_stage_publishing_two_quantities_is_scored_as_two_records():
     def excursion(fit, phase):
         return {

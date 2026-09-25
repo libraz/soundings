@@ -103,6 +103,8 @@ class Reading:
     the quantity to be read at all, where the record's own rule says so. `null_is` is
     the value a null stands for where the record defines one (nothing cleared the
     floor), and `unit_has_it` keeps only the settings the unit's side read at all.
+    `room` names the row key saying how far a take stood above the chain's silence; a
+    row within `WITHIN_THE_FLOOR_DB` of it is the room and not a reading.
     """
 
     command: str
@@ -115,6 +117,7 @@ class Reading:
     admitted_if: tuple[str, ...] = ()
     null_is: float | None = None
     unit_has_it: bool = False
+    room: str | None = None
 
 
 _READINGS = (
@@ -127,16 +130,18 @@ _READINGS = (
     Reading("efx-time", "efxtime.read_directory", "readings", "ms", "floor_ms", "ms"),
     # Null is no band outside its floor, which is an answer and not a refusal.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_db",
-            "reference.floor_db", "dB", null_is=0.0),
+            "reference.floor_db", "dB", null_is=0.0, room="above_the_silence_db"),
     # A profile that never falls to half on both sides has no measured width, so the
     # band it is largest in is wherever the scatter put it.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz",
             "band_width_octaves", "octaves", octaves=True,
-            admitted_if=("half_below_hz", "half_above_hz"), unit_has_it=True),
+            admitted_if=("half_below_hz", "half_above_hz"), unit_has_it=True,
+            room="above_the_silence_db"),
     # Where the unit's profile has no feature there is nothing to place.
     # The record holds a position against the band width, having no measured floor.
     Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz",
-            "band_width_octaves", "octaves", octaves=True, unit_has_it=True),
+            "band_width_octaves", "octaves", octaves=True, unit_has_it=True,
+            room="above_the_silence_db"),
     Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
     Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB"),
     Reading("efx-orders", "efxorders.read_directory", "readings", "all_of_them_db",
@@ -901,9 +906,15 @@ def takes_of(found: dict, reading: Reading, *, setting: int | None = None) -> di
         return {} if setting is None else {setting: [[_quantity(r, reading) for r in rows]]}
     by: dict[int, list[list]] = {}
     for row in rows:
+        if reading.room is not None and _in_the_room(row.get(reading.room)):
+            continue
         if isinstance(row.get("value"), int):
             by.setdefault(row["value"], []).append([_quantity(row, reading)])
     return by
+
+
+def _in_the_room(above_the_silence) -> bool:
+    return isinstance(above_the_silence, (int, float)) and above_the_silence <= WITHIN_THE_FLOOR_DB
 
 
 def floor_of(found: dict, reading: Reading) -> float | None:
