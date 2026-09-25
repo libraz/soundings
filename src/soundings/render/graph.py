@@ -322,13 +322,16 @@ class _Drawing:
         self.referenced = model["referenced"]
         self._signals: dict[str, np.ndarray] = {}
         self._states: dict[str, dict] = {}
+        self._constants: dict[int, float] = {}
 
     def signal(self, ref: str) -> np.ndarray:
         return self._signals[ref]
 
     def output(self, node_id: str, port: str = "") -> np.ndarray:
         key = f"{node_id}.{port}" if port else node_id
-        return self._signals.setdefault(key, np.zeros(self.size))
+        if key not in self._signals:
+            self._signals[key] = np.zeros(self.size)
+        return self._signals[key]
 
     def state(self, node_id: str) -> dict:
         return self._states.setdefault(node_id, {})
@@ -338,10 +341,13 @@ class _Drawing:
         if "value" in spec:
             return float(spec["value"])
         if "byte" in spec:
-            try:
-                return reproduce._value(spec, self.bytes_now)
-            except reproduce.NoStateNamed as refused:
-                raise Unrenderable(f"{spec['byte']}: {refused}") from refused
+            # A byte holds one value for the whole drawing; a loop asks every sample.
+            if id(spec) not in self._constants:
+                try:
+                    self._constants[id(spec)] = reproduce._value(spec, self.bytes_now)
+                except reproduce.NoStateNamed as refused:
+                    raise Unrenderable(f"{spec['byte']}: {refused}") from refused
+            return self._constants[id(spec)]
         points = sorted((float(c), float(v)) for c, v in spec["map"]["points"])
         xs, ys = [p[0] for p in points], [p[1] for p in points]
         control = self._signals[spec["control"]][a:b]
@@ -356,11 +362,11 @@ def _block(model: dict, component: list[str], drawing: _Drawing, max_block: int 
     closest, by = math.inf, None
     for node_id in component:
         node = nodes[node_id]
+        if set(_controls(node)) & inside:
+            raise ValueError(f"{node_id} is driven by a control drawn inside its own loop")
         lead = NODES[node["kind"]].lead
         if lead is None:
             continue
-        if set(_controls(node)) & inside:
-            raise ValueError(f"{node_id} is timed by a control drawn inside its own loop")
         reach = lead(node, drawing)
         if reach < closest:
             closest, by = reach, node_id

@@ -159,9 +159,10 @@ def _from_map(spec: dict, byte_value: int) -> float:
     raise ValueError(f"{kind!r} is not a rule this renderer knows")
 
 
-def _value(param: dict, bytes_now: dict[str, int]) -> float:
+def _value(param: dict, bytes_now: dict[str, int]) -> float | np.ndarray:
     if "fixed" in param:
-        return float(param["fixed"])
+        fixed = param["fixed"]
+        return float(fixed) if np.ndim(fixed) == 0 else np.asarray(fixed, dtype=float)
     address = param["byte"]
     if address not in bytes_now:
         raise KeyError(f"the model reads {address} and the setting does not say what it holds")
@@ -181,10 +182,28 @@ _UNITY = np.array([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]])
 
 
 def _row(b, a) -> np.ndarray:
-    """One section as `[b0, b1, b2, 1, a1, a2]`, padded to second order."""
-    b = np.pad(np.asarray(b, dtype=float), (0, 3 - len(b)))
-    a = np.pad(np.asarray(a, dtype=float), (0, 3 - len(a)))
-    return np.concatenate([b / a[0], a / a[0]])[None, :]
+    """One section as `[b0, b1, b2, 1, a1, a2]`, padded to second order.
+
+    A coefficient may be an array, one entry per sample; the row is then `(n, 1, 6)`.
+    """
+    padded = [*b, *[0.0] * (3 - len(b)), *a, *[0.0] * (3 - len(a))]
+    row = np.broadcast_arrays(*(np.asarray(v, dtype=float) for v in padded))
+    return np.stack([v / row[3] for v in row], axis=-1)[..., None, :]
+
+
+def _scalar(name: str, value):
+    """A value that decides how many sections a stage has, which a control may not move."""
+    if np.ndim(value) != 0:
+        raise ValueError(f"`{name}` decides the sections a stage is built from and cannot vary")
+    return value
+
+
+def _quadratic_roots(p0, p1, p2):
+    """Both roots of `p0 z**2 + p1 z + p2`, elementwise, without cancellation."""
+    root = np.sqrt(p1 * p1 - 4.0 * p0 * p2 + 0j)
+    root = np.where((np.conj(p1) * root).real >= 0, root, -root)
+    q = -0.5 * (p1 + root)
+    return q / p0, p2 / q
 
 
 def _evaluated(sos: np.ndarray, freq_hz, fs: float) -> np.ndarray:
@@ -342,12 +361,15 @@ def _reached_by_a_mix(
     row comes back, or its rendered transfer, which is that row over a denominator of
     one.
     """
-    rows = np.ndim(at_full) == 2
+    rows = np.ndim(at_full) >= 2
     if abs(gain_db) < 1e-9:
         return _UNITY if rows else np.ones_like(at_full, dtype=complex)
     wanted = 10.0 ** ((-gain_db if mirrored else gain_db) / 20.0)
     mix = (wanted - 1.0) / (10.0 ** (towards_db / 20.0) - 1.0)
-    num, den = (at_full[0, :3], at_full[0, 3:]) if rows else (at_full, 1.0)
+    if rows:
+        num, den = (np.moveaxis(at_full[..., 0, k], -1, 0) for k in (slice(3), slice(3, 6)))
+    else:
+        num, den = at_full, 1.0
     blended = (1.0 - mix) * den + mix * num
     top, bottom = (den, blended) if mirrored else (blended, den)
     return _row(top, bottom) if rows else top / bottom
@@ -481,16 +503,16 @@ def _allpass_cascade_sos(
     the `sections` roots of `-1/mix`, which is one small polynomial per root. Nothing
     is factored at a repeated pole, where root finding loses most of its digits.
     """
-    if mix == 0:
+    if _scalar("mix", mix) == 0:
         return _UNITY
     if q is None:
         t = np.tan(np.pi * corner_hz / fs)
         c = (t - 1.0) / (t + 1.0)
-        den = np.array([1.0, c])
+        den = np.stack(np.broadcast_arrays(1.0, c))
     else:
         w0 = 2 * np.pi * corner_hz / fs
         cos0, alpha = np.cos(w0), np.sin(w0) / (2.0 * q)
-        den = np.array([1 + alpha, -2 * cos0, 1 - alpha])
+        den = np.stack(np.broadcast_arrays(1 + alpha, -2 * cos0, 1 - alpha))
     num, den = den[::-1] / den[0], den / den[0]
     radius = abs(mix) ** (-1.0 / sections)
     # The roots of -1/mix sit at pi*m/sections, m odd for a positive mix; m up to
@@ -503,13 +525,15 @@ def _allpass_cascade_sos(
         if real:
             rows.append(_row(solved.real / solved.real[0], den))
             continue
-        pairs = [[1.0, -2.0 * z.real, abs(z) ** 2] for z in np.roots(solved)]
         if len(den) == 2:
-            rows.append(_row(pairs[0], np.convolve(den, den)))
+            z = -solved[1] / solved[0]
+            squared = [den[0] * den[0], 2.0 * den[0] * den[1], den[1] * den[1]]
+            rows.append(_row([1.0, -2.0 * z.real, abs(z) ** 2], squared))
         else:
-            rows.extend(_row(pair, den) for pair in pairs)
-    sos = np.concatenate(rows)
-    sos[0, :3] *= 1.0 + mix * num[0] ** sections
+            for z in _quadratic_roots(*solved):
+                rows.append(_row([1.0, -2.0 * z.real, abs(z) ** 2], den))
+    sos = np.concatenate(np.broadcast_arrays(*rows), axis=-2)
+    sos[..., 0, :3] *= np.expand_dims(1.0 + mix * num[0] ** sections, -1)
     return sos
 
 
@@ -584,7 +608,7 @@ def _pole_cascade_sos(
     form: str = "bilinear",
 ):
     """The coefficients `_pole_cascade` evaluates, one row per stage."""
-    if sections == 0:
+    if _scalar("sections", sections) == 0:
         return _UNITY
     if q is None and form == "one-multiply":
         # `corner_hz` is where the section is three decibels down, the same
@@ -611,7 +635,7 @@ def _pole_cascade_sos(
         else:
             b = [(1 + cos0) / 2.0, -(1 + cos0), (1 + cos0) / 2.0]
         one = _row(b, [1 + alpha, -2 * cos0, 1 - alpha])
-    return np.repeat(one, sections, axis=0)
+    return np.repeat(one, sections, axis=-2)
 
 
 def _how_the_gain_reaches(stage: dict, section, gain_db: float) -> np.ndarray:
@@ -662,7 +686,7 @@ def section_sos(stage: dict, bytes_now: dict[str, int], fs: float) -> np.ndarray
     """
     kind = stage["kind"]
     if kind == "shelf":
-        gain_db = _value(stage["gain_db"], bytes_now)
+        gain_db = _scalar("gain_db", _value(stage["gain_db"], bytes_now))
         corner = _value(stage["corner_hz"], bytes_now)
         order = int(stage.get("order", 1))
         shelf = _first_order_shelf_sos if order == 1 else _second_order_shelf_sos
@@ -672,7 +696,7 @@ def section_sos(stage: dict, bytes_now: dict[str, int], fs: float) -> np.ndarray
     if kind == "peaking":
         centre = _value(stage["centre_hz"], bytes_now)
         q = _value(stage["q"], bytes_now)
-        gain_db = _value(stage["gain_db"], bytes_now)
+        gain_db = _scalar("gain_db", _value(stage["gain_db"], bytes_now))
         return _how_the_gain_reaches(
             stage, partial(_peaking_sos, centre_hz=centre, q=q, fs=fs), gain_db
         )
@@ -692,7 +716,7 @@ def section_sos(stage: dict, bytes_now: dict[str, int], fs: float) -> np.ndarray
         return _pole_cascade_sos(
             side=stage["side"],
             corner_hz=_value(stage["corner_hz"], bytes_now),
-            sections=int(_value(stage["sections"], bytes_now)),
+            sections=int(_scalar("sections", _value(stage["sections"], bytes_now))),
             q=None if resonance is None else _value(resonance, bytes_now),
             fs=fs,
             form=stage.get("form", "bilinear"),

@@ -18,6 +18,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
+import numba
 import numpy as np
 from scipy import signal
 
@@ -251,25 +252,37 @@ def _stage_of(node: dict, values: dict) -> dict:
     return stage
 
 
+@numba.njit(cache=True)
+def _sosfilt_varying(sos: np.ndarray, x: np.ndarray, zi: np.ndarray) -> np.ndarray:
+    """`scipy.signal.sosfilt` with a set of sections per sample, `sos` being `(n, k, 6)`."""
+    y = np.empty_like(x)
+    for n in range(x.shape[0]):
+        now = x[n]
+        for k in range(sos.shape[1]):
+            new = sos[n, k, 0] * now + zi[k, 0]
+            zi[k, 0] = sos[n, k, 1] * now - sos[n, k, 4] * new + zi[k, 1]
+            zi[k, 1] = sos[n, k, 2] * now - sos[n, k, 5] * new
+            now = new
+        y[n] = now
+    return y
+
+
 def _section(node: dict, drawing, a: int, b: int) -> None:
-    """One stage as second-order sections; a control-driven value rebuilds them per sample."""
+    """One stage as second-order sections; a control-driven value rebuilds them per sample.
+
+    The sections are built once for the whole take, which a loop may then draw a
+    sample at a time: a control is drawn outside any loop it drives.
+    """
     state = drawing.state(node["id"])
-    values = {k: drawing.value(v, a, b) for k, v in node.items() if is_value(v)}
-    x = drawing.signal(node["input"])[a:b]
-    out = drawing.output(node["id"])
-    if all(np.ndim(v) == 0 for v in values.values()):
-        if "sos" not in state:
-            state["sos"] = reproduce.section_sos(_stage_of(node, values), {}, drawing.fs)
-            state["zi"] = np.zeros((len(state["sos"]), 2))
-        out[a:b], state["zi"] = signal.sosfilt(state["sos"], x, zi=state["zi"])
-        return
-    for i in range(b - a):
-        now = {k: (v[i] if np.ndim(v) else v) for k, v in values.items()}
-        sos = reproduce.section_sos(_stage_of(node, now), {}, drawing.fs)
-        zi = state.setdefault("zi", np.zeros((len(sos), 2)))
-        if len(sos) != len(zi):
-            raise ValueError(f"{node['id']} changes how many sections it has as its control moves")
-        out[a + i : a + i + 1], state["zi"] = signal.sosfilt(sos, x[i : i + 1], zi=zi)
+    if "sos" not in state:
+        values = {k: drawing.value(v, 0, drawing.size) for k, v in node.items() if is_value(v)}
+        sos = reproduce.section_sos(_stage_of(node, values), {}, drawing.fs)
+        state["sos"] = sos if sos.ndim == 3 else sos[None]
+        state["zi"] = np.zeros((sos.shape[-2], 2))
+    sos = state["sos"]
+    sos = sos[a:b] if len(sos) > 1 else np.broadcast_to(sos, (b - a, *sos.shape[1:]))
+    x = np.ascontiguousarray(drawing.signal(node["input"])[a:b], dtype=float)
+    drawing.output(node["id"])[a:b] = _sosfilt_varying(sos, x, state["zi"])
 
 
 def _check_section(node: dict, referenced) -> None:

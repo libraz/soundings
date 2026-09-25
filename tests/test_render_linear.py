@@ -369,6 +369,76 @@ def test_a_section_driven_by_a_constant_control_is_the_fixed_section():
     assert np.abs(drawn(controlled, x) - drawn(fixed, x)).max() <= 1e-9
 
 
+MOVED_STAGES = {
+    "allpass-chain": {"sections": 8, "mix": 1.0},
+    "allpass-chain-inverted": {"sections": 4, "mix": -0.7},
+    "allpass-chain-resonant": {"sections": 4, "mix": 0.8, "q": 1.3},
+    "peaking": {"q": 2.0, "gain_db": 12.0},
+    "pole": {"side": "low", "sections": 2, "q": 3.0},
+    "pole-one-multiply": {"side": "high", "sections": 1, "form": "one-multiply"},
+    "shelf": {"side": "high", "order": 2, "gain_db": -6.0},
+}
+"""A stage per section kind, with the value a control moves left to the test."""
+
+_MOVED = {"peaking": "centre_hz"}
+_AS_WRITTEN = ("side", "form", "order")
+
+
+def _kind(name: str) -> str:
+    return "allpass-chain" if name.startswith("allpass-chain") else name.split("-")[0]
+
+
+def _moved_stage(name: str, hz) -> dict:
+    kind = _kind(name)
+    stage = {"kind": kind, _MOVED.get(kind, "corner_hz"): {"fixed": hz}}
+    for key, value in MOVED_STAGES[name].items():
+        written = key in _AS_WRITTEN or (kind == "allpass-chain" and key == "sections")
+        stage[key] = value if written else {"fixed": value}
+    return stage
+
+
+@pytest.mark.parametrize("name", sorted(MOVED_STAGES))
+def test_the_sections_for_many_frequencies_are_the_sections_built_one_at_a_time(name):
+    hz = np.geomspace(40.0, 12000.0, 257)
+    many = reproduce.section_sos(_moved_stage(name, hz), {}, FS)
+    one_at_a_time = np.stack([reproduce.section_sos(_moved_stage(name, f), {}, FS) for f in hz])
+    assert many.shape == one_at_a_time.shape
+    assert np.allclose(many, one_at_a_time, rtol=1e-9, atol=1e-12)
+
+
+@pytest.mark.parametrize("name", sorted(MOVED_STAGES))
+def test_a_section_a_control_moves_is_rebuilt_at_every_sample(name):
+    size = FS // 2
+    x = np.random.default_rng(7).standard_normal(size)
+    stage = _moved_stage(name, 0.0)
+    node = {"id": "s", "kind": "section", "input": "x", "stage": stage.pop("kind")}
+    node.update({k: spec(v["fixed"]) if isinstance(v, dict) else v for k, v in stage.items()})
+    node[_MOVED.get(node["stage"], "corner_hz")] = {
+        "control": "lfo",
+        "map": {"kind": "points", "points": [[-1.0, 200.0], [1.0, 4000.0]]},
+        "source": "document",
+        "rests_on": [],
+        "fitted_on": [],
+    }
+    y = drawn(graph_of([_lfo("sine", 3.0), node]), x)
+
+    hz = 200.0 + (np.sin(2 * np.pi * 3.0 * np.arange(size) / FS) + 1.0) / 2.0 * 3800.0
+    expected = np.empty(size)
+    zi = None
+    for i in range(size):
+        sos = reproduce.section_sos(_moved_stage(name, hz[i]), {}, FS)
+        zi = np.zeros((len(sos), 2)) if zi is None else zi
+        expected[i : i + 1], zi = signal.sosfilt(sos, x[i : i + 1], zi=zi)
+    assert np.abs(y - expected).max() <= 1e-7 * np.abs(expected).max()
+
+
+def test_a_control_may_not_decide_how_many_sections_a_stage_has():
+    stage = {"kind": "pole", "side": "low", "corner_hz": {"fixed": 1000.0}}
+    stage["sections"] = {"fixed": np.array([1.0, 2.0])}
+    with pytest.raises(ValueError, match="sections"):
+        reproduce.section_sos(stage, {}, FS)
+
+
 def _lti_graph(name: str, model: dict) -> dict:
     return graph_of(
         [{"id": "eq", "kind": "lti", "input": "x", "model": name}],
