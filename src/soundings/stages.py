@@ -350,6 +350,11 @@ def _bypasses(items: list[dict], where: Path) -> dict[str, list[Path]]:
     return found
 
 
+def _taken_at(paths: list[Path]) -> float:
+    """When takes were recorded, as their files' median modification time."""
+    return float(np.median([p.stat().st_mtime for p in paths]))
+
+
 def directory(root: Path, found: dict, rel: str) -> Directory:
     """One ledger directory, its setting takes grouped, its input found or not."""
     where = root / ledger.TAKES_ROOT / rel
@@ -374,6 +379,8 @@ def directory(root: Path, found: dict, rel: str) -> Directory:
         key = None if mine is None else _stimulus_key(mine)
         if key is None:
             continue
+        taken_at = _taken_at([where / e["file"] for e in items])
+        nearest = None
         for other, theirs in sorted(found["directories"].items()):
             match = next(
                 (s for s in theirs.get("stimuli") or [] if _stimulus_key(s) == key), None)
@@ -382,8 +389,11 @@ def directory(root: Path, found: dict, rel: str) -> Directory:
             there = _bypasses(_takes(root, found, other),
                               root / ledger.TAKES_ROOT / other).get(match["name"])
             if there:
-                made.bypass[name], made.input_from[name] = there, other
-                break
+                apart = abs(_taken_at(there) - taken_at)
+                if nearest is None or apart < nearest[0]:
+                    nearest = (apart, there, other)
+        if nearest is not None:
+            made.bypass[name], made.input_from[name] = nearest[1], nearest[2]
     made.by_setting = {
         v: [e for e in items if str(e["stimulus"]) in made.bypass]
         for v, items in made.by_setting.items()
@@ -517,7 +527,7 @@ def render_directory(
     Each setting take is drawn from a bypass take of its stimulus, its oscillators
     started `k / n` of a cycle apart across the setting's `n` takes; bypass and
     silence takes are copied. A directory already drawn by the same model bytes on
-    the same channels is left as it is.
+    the same channels from the same input is left as it is.
     """
     root = Path(root)
     found = found if found is not None else ledger.load(root)
@@ -530,7 +540,8 @@ def render_directory(
         # Read as a file and not through `takes`: checking what drew a directory is
         # not reading what it drew, and must not mark this process as having done so.
         kept = json.loads((out / "takes-manifest.json").read_text()).get("rendered", {})
-        if kept.get("model_sha256") == cand.sha256 and kept.get("channels") == list(channels):
+        if (kept.get("model_sha256") == cand.sha256 and kept.get("channels") == list(channels)
+                and kept.get("input_from") == made.input_from):
             return out
         shutil.rmtree(out)
     elif out.exists():

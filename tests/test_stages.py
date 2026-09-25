@@ -987,3 +987,26 @@ def test_a_part_routed_past_the_effect_in_another_directory_is_the_input(tmp_pat
     made = stages.directory(tmp_path, found, "params/40-03-03")
     assert made.input_from == {TONE["name"]: "params/control"}
     assert sorted(made.by_setting) == [0, 127]
+
+
+def test_an_input_from_another_directory_is_the_one_taken_nearest_in_time(tmp_path):
+    clean = _clean(TONE, 1.0)
+    dirs = {"a-other-evening/control": ("40 42 22", ("0", "1"), 0),
+            "params/40-03-03": ("40 03 03", ("0", "127"), 9 * 86400),
+            "params/control": ("40 42 22", ("0", "1"), 9 * 86400 - 300)}
+    for rel, (address, values, at) in dirs.items():
+        entries = []
+        for value in values:
+            name = f"{TONE['name']}-{value}-00.wav"
+            takes.write(tmp_path / ".cache/takes" / rel / name, clean, FS)
+            os.utime(tmp_path / ".cache/takes" / rel / name, (1e9 + at, 1e9 + at))
+            entries.append({"file": name, "stimulus": TONE["name"], "setting": value,
+                            "take": 0, "sample_rate": FS, "channels": 6, "seconds": 1.0})
+        _write(tmp_path / ".cache/takes" / rel / "takes-manifest.json",
+               {"type": TYPE, "address": address, "stimuli": [TONE], "takes": entries})
+    _write(tmp_path / ".cache" / "takes-ledger.json", {"unit": UNIT, "directories": {
+        rel: {"type": TYPE, "address": address, "settings": {v: 1 for v in values},
+              "stimuli": [{**TONE, "class": TONE["name"]}], "held": HELD, "consumed_by": []}
+        for rel, (address, values, _) in dirs.items()}})
+    made = stages.directory(tmp_path, stages._ledger(tmp_path, TYPE), "params/40-03-03")
+    assert made.input_from == {TONE["name"]: "params/control"}
