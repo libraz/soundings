@@ -36,7 +36,7 @@ from pathlib import Path
 import numpy as np
 import scipy
 
-from . import ledger, reproduce, takes
+from . import efxbands, ledger, reproduce, takes
 from .inferences import EFFECT_BLOCK
 from .render import graph
 
@@ -564,6 +564,43 @@ def _wave(path: Path, channel: int) -> np.ndarray:
     return _cut(samples[:, channel], rate)
 
 
+CUT_ROOT = Path(".cache/cut")
+"""Where the unit's own takes are kept band-limited to `graph.CUT_HZ`, for `readings`.
+The drawn side is free of energy above it by construction; only the
+unit's own recording needs cutting to compare the two on the same band."""
+
+
+def cut_directory(root: Path, rel: str) -> Path:
+    """A band-limited copy of `rel`'s takes, under `.cache/cut/<rel>/`.
+
+    Same file names as the source, its manifest copied unchanged, filtered with the
+    same FIR `_cut` uses. Rebuilt whenever a source file is newer than the copy.
+    """
+    root = Path(root)
+    where = root / ledger.TAKES_ROOT / rel
+    out = root / CUT_ROOT / rel
+    sources = sorted(where.glob("*.wav"))
+    manifest = where / "takes-manifest.json"
+    newest = max(
+        [p.stat().st_mtime_ns for p in sources]
+        + ([manifest.stat().st_mtime_ns] if manifest.is_file() else []),
+        default=0,
+    )
+    if out.is_dir():
+        built = max((p.stat().st_mtime_ns for p in out.glob("*.wav")), default=-1)
+        if built >= newest:
+            return out
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    for path in sources:
+        samples, rate = takes.read(path)
+        cut = np.stack([_cut(samples[:, c], rate) for c in range(samples.shape[1])], axis=1)
+        takes.write(out / path.name, cut, rate)
+    if manifest.is_file():
+        shutil.copy2(manifest, out / "takes-manifest.json")
+    return out
+
+
 def _unit_waves(made: Directory, channel: int) -> dict:
     """What the unit's own takes say at each setting: floor, doing nothing, level spread."""
     per: dict[int, dict] = {}
@@ -744,16 +781,19 @@ def _subparser(parser, name: str):
     return sub.choices[name]
 
 
-def _rerooted(value, root: Path, unit_dir: Path, drawn_dir: Path | None):
+def _rerooted(value, root: Path, unit_dir: Path, drawn_dir: Path | None,
+             cut_dir: Path | None = None):
     if not isinstance(value, str):
         return value
     path = Path(value) if Path(value).is_absolute() else root / value
     path = path.resolve()
-    if drawn_dir is not None:
+    for base in (drawn_dir, cut_dir):
+        if base is None:
+            continue
         try:
-            return str(drawn_dir / path.relative_to(unit_dir.resolve()))
+            return str(base / path.relative_to(unit_dir.resolve()))
         except ValueError:
-            pass
+            continue
     return str(path)
 
 
@@ -773,14 +813,16 @@ def read_with(
     channel: int | None,
     writes,
     cache: Path | None = None,
+    cut_dir: Path | None = None,
 ) -> dict:
     """A stage's own command, parsed from a record's invocation and run on one side.
 
-    Positionals naming the unit's directory are re-rooted to the drawn one, the
-    channel is set where one is given and the held block is `writes`. With `cache`,
-    the result is kept there under the command, the parsed arguments and the newest
-    mtime in the unit's directory, and a later call with all three unchanged reads it
-    back instead of running the stage.
+    Positionals naming the unit's directory are re-rooted to the drawn one, or to
+    `cut_dir` (the unit's own band-limited copy) where no drawn one is
+    given; the channel is set where one is given and the held block is `writes`. With
+    `cache`, the result is kept there under the command, the parsed arguments and the
+    newest mtime in `cut_dir` or `unit_dir`, and a later call with all three unchanged
+    reads it back instead of running the stage.
     """
     from .cli import build_parser
 
@@ -789,7 +831,7 @@ def read_with(
     for action in _subparser(parser, argv[0])._actions:
         if not action.option_strings and action.dest != "help":
             setattr(args, action.dest,
-                    _rerooted(getattr(args, action.dest), root, unit_dir, drawn_dir))
+                    _rerooted(getattr(args, action.dest), root, unit_dir, drawn_dir, cut_dir))
     if channel is not None:
         if hasattr(args, "channels"):
             args.channels = list(_pair(channel))
@@ -797,7 +839,8 @@ def read_with(
             args.channel = channel
     if hasattr(args, "held"):
         args.held = list(writes)
-    kept = None if cache is None else Path(cache) / f"{_cache_key(argv[0], args, unit_dir)}.json"
+    keyed_on = cut_dir if cut_dir is not None else unit_dir
+    kept = None if cache is None else Path(cache) / f"{_cache_key(argv[0], args, keyed_on)}.json"
     if kept is not None and kept.is_file():
         return json.loads(kept.read_text())
     with tempfile.TemporaryDirectory() as scratch:
@@ -1043,6 +1086,101 @@ LENGTH_FLAGS = {"--hold": "hold_s", "--lead": "lead_s"}
 `--window` is a stretch the question chose and `--settled` a wait, so neither is here.
 """
 
+SIGNATURE_EXCLUDED = (
+    set(TAKE_PATTERNS)
+    | {"--setting", "--held", "--out", "--slot", "--type", "--stimulus", "--channel",
+       "--channels"}
+    | set(LENGTH_FLAGS)
+)
+"""Flags a reading's signature ignores: they pick a take, a directory, or a
+channel, not how the stage read one. Two runs pool as repeats of one setting only
+when every other argument matches; a run that differs scores as its own record."""
+
+
+def _signature_suffix(command: str, argv: list[str]) -> str:
+    """What in `argv` differs from the stage's own defaults, spelled as it was passed.
+
+    Read off the subcommand's own actions rather than the whole namespace, so a
+    parent option unrelated to the reading (`--root`, `--device`, `command`) never
+    shows up here. Empty where every reading argument is at its default, so a run
+    made the ordinary way keeps the plain record name and only a run that asked for
+    something else earns the bracket. Two runs whose non-default
+    arguments are equal share a record; any difference -- including one being at the
+    default and the other not -- gives each its own, since this string doubles as
+    the two runs' grouping key.
+    """
+    from .cli import build_parser
+
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    sub = _subparser(parser, command)
+    parts = []
+    for action in sub._actions:
+        if not action.option_strings or set(action.option_strings) & SIGNATURE_EXCLUDED:
+            continue
+        value = getattr(args, action.dest, action.default)
+        if value == action.default:
+            continue
+        flag = action.option_strings[-1]
+        if isinstance(value, bool):
+            parts.append(flag)
+        elif isinstance(value, list):
+            parts.append(f"{flag} {' '.join(str(v) for v in value)}")
+        else:
+            parts.append(f"{flag} {value}")
+    return ", ".join(sorted(parts))
+
+
+def _scored_name(base: str, command: str, argv: list[str]) -> str:
+    """`base` (a `READINGS` key), suffixed with what this run's own arguments differ by."""
+    suffix = _signature_suffix(command, argv)
+    return f"{base} [{suffix}]" if suffix else base
+
+
+def _base_name(record: str) -> str:
+    """The `READINGS` key a possibly suffixed record name was scored as."""
+    return record.split(" [", 1)[0]
+
+
+def _band_cut_argv(argv: list[str], cut_hz: float) -> list[str]:
+    """`efx-bands`'s band list, replaced by explicit centres whose upper edge clears `cut_hz`.
+
+    Reuses `efxbands.BAND_SETS` for the centres and each set's own width, and the edge
+    `efxbands.energies` reads a band over (`centre * 2 ** (width_octaves / 2)`) rather
+    than a bound worked out separately. A run already naming explicit `--band` centres
+    keeps them, dropping only the ones over the limit; `cmd_efx_bands` reads such a
+    list a third of an octave wide regardless of `--band-set`, so that is the width
+    this filters it by.
+    """
+    from .cli import build_parser
+
+    rest, bands, band_set = [], [], None
+    i = 0
+    while i < len(argv):
+        token = argv[i]
+        if token == "--band" and i + 1 < len(argv):
+            bands.append(float(argv[i + 1]))
+            i += 2
+            continue
+        if token == "--band-set" and i + 1 < len(argv):
+            band_set = argv[i + 1]
+            i += 2
+            continue
+        rest.append(token)
+        i += 1
+    if bands:
+        centres, width = bands, 1 / 3
+    else:
+        if band_set is None:
+            sub = _subparser(build_parser(), "efx-bands")
+            band_set = next(a.default for a in sub._actions if "--band-set" in a.option_strings)
+        centres, width = efxbands.BAND_SETS[band_set]
+    edge = 2 ** (width / 2)
+    for centre in centres:
+        if centre * edge <= cut_hz:
+            rest += ["--band", str(centre)]
+    return rest
+
 
 def _role_pattern(pattern: str, source: list[dict], made: Directory) -> str | None:
     """The takes of `made` holding the role `pattern`'s own takes held where it was written."""
@@ -1237,6 +1375,7 @@ class _Phase:
     def _read_units(self, dirs: list[Directory]) -> None:
         for made in dirs:
             writes = writes_of(made.entry.get("held"))
+            cut_dir = cut_directory(self.root, made.rel)
             runs = [(data["record"]["invocation"], False)
                     for _, data in _consumers(self.root, made.entry, self.type)]
             have = {argv[0] for argv, _ in runs}
@@ -1250,10 +1389,13 @@ class _Phase:
                 runs.append((aimed, True))
             for argv, from_template in runs:
                 command = argv[0]
+                reading_argv = _band_cut_argv(argv, graph.CUT_HZ) if command == "efx-bands" \
+                    else argv
                 try:
-                    read = read_with(argv, root=self.root, unit_dir=made.where, drawn_dir=None,
-                                     channel=self.channel.get(made.rel), writes=writes,
-                                     cache=self.root / STAGE_READINGS)
+                    read = read_with(reading_argv, root=self.root, unit_dir=made.where,
+                                     drawn_dir=None, channel=self.channel.get(made.rel),
+                                     writes=writes, cache=self.root / STAGE_READINGS,
+                                     cut_dir=cut_dir)
                 except (ValueError, FileNotFoundError, SystemExit):
                     if not from_template:
                         raise
@@ -1266,7 +1408,9 @@ class _Phase:
                 if command == "decay" and setting is None:
                     continue
                 for name, part in collected(command, read, made.rel, setting=setting).items():
-                    stage = self.stages.setdefault(name, {"unit": {}, "floors": []})
+                    record_name = _scored_name(name, command, argv)
+                    stage = self.stages.setdefault(
+                        record_name, {"unit": {}, "floors": [], "base": name})
                     for key, vectors in part["takes"].items():
                         if key[1] in made.by_setting:
                             stage["unit"].setdefault(key, []).extend(vectors)
@@ -1322,18 +1466,21 @@ class _Phase:
             for made, argv, setting in runs:
                 if made.rel not in drawn:
                     continue
-                read = read_with(argv, root=self.root, unit_dir=made.where,
+                reading_argv = _band_cut_argv(argv, graph.CUT_HZ) if command == "efx-bands" \
+                    else argv
+                read = read_with(reading_argv, root=self.root, unit_dir=made.where,
                                  drawn_dir=drawn[made.rel], channel=self.channel[made.rel],
                                  writes=writes_of(made.entry.get("held")))
                 for name, part in collected(command, read, made.rel, setting=setting).items():
+                    record_name = _scored_name(name, command, argv)
                     for key, vectors in part["takes"].items():
-                        mine.setdefault(name, {}).setdefault(key, []).extend(vectors)
+                        mine.setdefault(record_name, {}).setdefault(key, []).extend(vectors)
         for name, stage in sorted(self.stages.items()):
             ours = {k: v for k, v in mine.get(name, {}).items() if k in stage["unit"]}
             floor = max(stage["floors"]) if stage["floors"] else repeat_floor(stage["unit"])
             before = self.inherited.get(name, {})
             out.append(scored_readings(
-                name, READINGS[name], stage["unit"], ours, floor=floor,
+                name, READINGS[stage["base"]], stage["unit"], ours, floor=floor,
                 span=before.get("span"), properties_from=before.get("properties"),
                 unrenderable={k for k in lost if k in stage["unit"]}))
         return out, shown
@@ -1371,7 +1518,8 @@ _MEASUREMENT = {
 
 
 def _quantity_of(record: str) -> str:
-    return record if record in READINGS else "waves:residual_db"
+    base = _base_name(record)
+    return base if base in READINGS else "waves:residual_db"
 
 
 def _undecided(gate: str, phase: _Phase, block: dict, scored: list[dict],
@@ -1496,7 +1644,7 @@ def _run(phase: _Phase, candidates: list[Candidate], comparison: dict, classes: 
 def _inherited(block: dict) -> dict:
     """What a later phase takes from this one: each reading's span and properties."""
     return {s["record"]: {"span": s["span"], "properties": s["properties"]}
-            for s in block.get("_scored", []) if s["record"] in READINGS}
+            for s in block.get("_scored", []) if _base_name(s["record"]) in READINGS}
 
 
 def _static(root: Path, unit: str) -> set[str]:
@@ -1509,6 +1657,14 @@ def _delay_rows(model: dict) -> list[str]:
         spec["byte"] for node in model.get("nodes", []) if node.get("kind") == "delay"
         for spec in _values(node.get("time_ms")) if "byte" in spec
     })
+
+
+def _comparison(cls: _Class) -> dict:
+    """The `used`/`chosen_by` a stage records, with `cut_hz` where it read below it."""
+    out = {"used": cls.used, "chosen_by": cls.chosen_by}
+    if cls.used == "readings":
+        out["cut_hz"] = graph.CUT_HZ
+    return out
 
 
 def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = None) -> dict:
@@ -1562,7 +1718,7 @@ def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = N
     phase = phases.get(first.name) if first.name in phases else None
     if phase is None:
         phase = _Phase(root, found, type_, [(first, first.dirs)], waves, published)
-    comparison = {"used": first.used, "chosen_by": first.chosen_by}
+    comparison = _comparison(first)
     block, shown, gate, drawn_on, needs = _run(
         phase, candidates, comparison, [first.shown(first.dirs)], check)
     inherited = _inherited(block)
@@ -1594,7 +1750,7 @@ def stage(root: str | Path, unit: str, type_: str, *, class_name: str | None = N
         p2_phase = _Phase(root, found, type_, later, waves, published, inherited)
         head = later[0][0]
         p2, _, gate2, drawn2, needs2 = _run(
-            p2_phase, candidates, {"used": head.used, "chosen_by": head.chosen_by},
+            p2_phase, candidates, _comparison(head),
             [cls.shown(dirs) for cls, dirs in later])
         p2.pop("_scored", None)
         result["p2"] = p2
@@ -1614,6 +1770,7 @@ __all__ = [
     "Reading",
     "bytes_now",
     "candidate",
+    "cut_directory",
     "fitted_on",
     "inert_settings",
     "p1_class",

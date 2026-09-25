@@ -303,7 +303,8 @@ def test_readings_the_graph_that_made_the_takes_passes_and_its_map_interpolation
     found = stages.stage(readings_root, UNIT, TYPE, class_name="whole-0124")
     assert _stage_errors(found) == []
     p1 = found["p1"]
-    assert p1["comparison"] == {"used": "readings", "chosen_by": "by_repeatability_class"}
+    assert p1["comparison"] == {"used": "readings", "chosen_by": "by_repeatability_class",
+                                "cut_hz": graph.CUT_HZ}
     assert p1["control"]["separated"] is True
     assert p1["gates"]["gross"]["passed"] and p1["gates"]["breakdown"]["passed"]
     assert p1["gates"]["qualitative"]["passed"] and p1["gates"]["power"]["passed"]
@@ -361,6 +362,36 @@ def test_a_stage_publishing_two_quantities_is_scored_as_two_records():
     assert stages.separated(scored) is True
 
 
+def test_two_runs_with_different_reading_arguments_score_as_two_records(tmp_path):
+    """A run of one stage differing in a reading argument is not pooled.
+
+    `--lines` is a convenient stand-in for `--band-set`: a flag `SIGNATURE_EXCLUDED`
+    does not name, so it belongs to the signature and splits the record.
+    """
+    root = _tree(tmp_path, static=False)
+    a = _tremolo("whole-0124-log", log=True)
+    _put_model(root, a)
+    _directory(root, RATE_DIR, stimulus=RATE_TONE, address="40 03 03", seconds=5.0,
+               draw=_drawn_by(root, a, "40 03 03"), seed=7)
+    plain = "data/units/fixture-unit/efx-rate/plain.json"
+    lined = "data/units/fixture-unit/efx-rate/lined.json"
+    base_argv = ["efx-rate", f".cache/takes/{RATE_DIR}", "--type", TYPE, "--slot", "40 03 03",
+                "--setting", r"tone-v(?P<value>\d{3})-\d+", "--channel", "2"]
+    _write(root / plain, {"record": {"invocation": [*base_argv, "--out", plain]},
+                          "type": TYPE, "channel": {"read": 2}, "readings": []})
+    _write(root / lined, {"record": {"invocation": [*base_argv, "--lines", "--out", lined]},
+                          "type": TYPE, "channel": {"read": 2}, "readings": []})
+    _ledger(root, {RATE_DIR: {"address": "40 03 03", "stimulus": RATE_TONE,
+                              "read_by": [plain, lined]}})
+    found = json.loads((root / ".cache/takes-ledger.json").read_text())
+    made = stages.directory(root, found, RATE_DIR)
+    cls = stages._Class(None, [made], len(SETTINGS), None, "readings", "test")
+    phase = stages._Phase(root, found, TYPE, [(cls, [made])], {}, {})
+    scored, _ = phase.scored(stages.identity())
+    names = sorted(s["record"] for s in scored if s["record"].startswith("efx-rate:rate_hz"))
+    assert names == ["efx-rate:rate_hz", "efx-rate:rate_hz [--lines]"]
+
+
 def test_the_units_side_of_a_reading_is_kept_until_its_takes_change(readings_root, tmp_path,
                                                                     monkeypatch):
     from soundings import efxrate
@@ -387,6 +418,60 @@ def test_the_units_side_of_a_reading_is_kept_until_its_takes_change(readings_roo
     os.utime(take, ns=(later, later))
     with pytest.raises(AssertionError, match="although its reading was kept"):
         read()
+
+
+def test_the_unit_side_of_a_reading_is_read_from_its_band_limited_copy(readings_root,
+                                                                       monkeypatch):
+    """`read_with`'s unit-side call is aimed at `cut_dir`, not `unit_dir`."""
+    from soundings import efxrate
+
+    record = json.loads((readings_root / RATE_RECORD).read_text())
+    where = readings_root / ".cache" / "takes" / RATE_DIR
+    cut = stages.cut_directory(readings_root, RATE_DIR)
+    assert cut != where and cut.is_dir()
+    seen = {}
+    original = efxrate.read_directory
+
+    def spy(takes_dir, **kwargs):
+        seen["takes"] = Path(takes_dir)
+        return original(takes_dir, **kwargs)
+
+    monkeypatch.setattr(efxrate, "read_directory", spy)
+    stages.read_with(record["record"]["invocation"], root=readings_root, unit_dir=where,
+                     drawn_dir=None, channel=2, writes=stages.writes_of(HELD), cut_dir=cut)
+    assert seen["takes"] == cut
+
+
+def test_cut_directory_removes_energy_above_cut_hz_and_rebuilds_on_change(tmp_path):
+    """The unit's own band-limited copy, same names, manifest copied."""
+    root = tmp_path / "root"
+    rel = "syn/probe"
+    where = root / ".cache" / "takes" / rel
+    where.mkdir(parents=True)
+    n = FS * 1
+    t = np.arange(n) / FS
+    samples = np.zeros((n, 2))
+    samples[:, 0] = 0.1 * np.sin(2 * np.pi * 15000.0 * t)
+    takes.write(where / "a.wav", samples, FS)
+    _write(where / "takes-manifest.json", {"takes": [{"file": "a.wav"}]})
+
+    cut = stages.cut_directory(root, rel)
+    assert cut == root / ".cache" / "cut" / rel
+    cut_samples, rate = takes.read(cut / "a.wav")
+    spectrum = np.abs(np.fft.rfft(cut_samples[:, 0]))
+    freq = np.fft.rfftfreq(cut_samples.shape[0], 1.0 / rate)
+    original_peak = 0.1 * n / 2
+    assert spectrum[freq > graph.CUT_HZ].max() < 1e-3 * original_peak
+    assert json.loads((cut / "takes-manifest.json").read_text()) == {"takes": [{"file": "a.wav"}]}
+
+    first = (cut / "a.wav").stat().st_mtime_ns
+    stages.cut_directory(root, rel)
+    assert (cut / "a.wav").stat().st_mtime_ns == first
+
+    later = (where / "a.wav").stat().st_mtime_ns + 5_000_000_000
+    os.utime(where / "a.wav", ns=(later, later))
+    stages.cut_directory(root, rel)
+    assert (cut / "a.wav").stat().st_mtime_ns != first
 
 
 def test_a_candidate_fitted_on_every_setting_is_stopped_and_ranked_nowhere(waves_root):
@@ -501,6 +586,36 @@ def test_a_type_out_of_scope_is_written_as_excluded_and_nothing_is_compared(tmp_
     assert _stage_errors(written) == []
 
 
+def test_efx_bands_is_cut_to_explicit_bands_at_or_below_cut_hz():
+    """Only band centres whose upper edge clears `graph.CUT_HZ` survive."""
+    from soundings import efxbands
+
+    base = ["efx-bands", ".cache/takes/x", "--type", TYPE, "--slot", "40 03 05",
+           "--setting", r"v(?P<value>\d{3})", "--reference", "flat"]
+
+    def bands(argv):
+        cut = stages._band_cut_argv(argv, graph.CUT_HZ)
+        return [float(cut[i + 1]) for i, token in enumerate(cut) if token == "--band"], cut
+
+    default_bands, default_cut = bands(base)
+    assert "--band-set" not in default_cut
+    centres, width = efxbands.BAND_SETS["third-octave"]
+    edge = 2 ** (width / 2)
+    assert default_bands == [c for c in centres if c * edge <= graph.CUT_HZ]
+    assert default_bands and max(default_bands) * edge <= graph.CUT_HZ
+
+    twelfth_bands, twelfth_cut = bands([*base, "--band-set", "twelfth-octave"])
+    assert "--band-set" not in twelfth_cut
+    centres12, width12 = efxbands.BAND_SETS["twelfth-octave"]
+    edge12 = 2 ** (width12 / 2)
+    assert twelfth_bands == [c for c in centres12 if c * edge12 <= graph.CUT_HZ]
+    # a finer set reaches a higher band than the third-octave default, still within reach
+    assert max(twelfth_bands) > max(default_bands)
+
+    explicit_bands, _ = bands([*base, "--band", "100", "--band", "13000"])
+    assert explicit_bands == [100.0]
+
+
 # ---------------------------------------------------------------- which takes are settings
 
 
@@ -560,7 +675,8 @@ def test_the_bypass_check_fails_where_the_unit_is_not_doing_nothing(bypass_root)
     assert check["result"] == "failed"
     assert [(a["dir"], a["setting"]) for a in check["asked"]] == [(WAVES_DIR, 127)]
     assert check["asked"][0]["lifted_db"] > stages.WITHIN_THE_FLOOR_DB
-    assert found["comparison"] == {"used": "readings", "chosen_by": "bypass_check_failed"}
+    assert found["comparison"] == {"used": "readings", "chosen_by": "bypass_check_failed",
+                                   "cut_hz": graph.CUT_HZ}
 
 
 @pytest.mark.parametrize("record", [
