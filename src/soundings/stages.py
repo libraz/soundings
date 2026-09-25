@@ -100,7 +100,9 @@ class Reading:
     record's own floor for that quantity (None where it publishes none) and
     `measured_in` what a residual is in. `octaves` compares the logarithm, as a rate
     or a frequency is compared. `admitted_if` names row keys that must not be null for
-    the quantity to be read at all, where the record's own rule says so.
+    the quantity to be read at all, where the record's own rule says so. `null_is` is
+    the value a null stands for where the record defines one (nothing cleared the
+    floor), and `unit_has_it` keeps only the settings the unit's side read at all.
     """
 
     command: str
@@ -111,6 +113,8 @@ class Reading:
     measured_in: str
     octaves: bool = False
     admitted_if: tuple[str, ...] = ()
+    null_is: float | None = None
+    unit_has_it: bool = False
 
 
 _READINGS = (
@@ -121,14 +125,17 @@ _READINGS = (
     Reading("efx-excursion", "efxexcursion.read_directory", "readings", "off_the_phase_ms",
             "floor_off_the_phase.ms", "ms"),
     Reading("efx-time", "efxtime.read_directory", "readings", "ms", "floor_ms", "ms"),
+    # Null is no band outside its floor, which is an answer and not a refusal.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_db",
-            "reference.floor_db", "dB"),
+            "reference.floor_db", "dB", null_is=0.0),
     # A profile that never falls to half on both sides has no measured width, so the
     # band it is largest in is wherever the scatter put it.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_at_hz", None,
-            "octaves", octaves=True, admitted_if=("half_below_hz", "half_above_hz")),
+            "octaves", octaves=True, admitted_if=("half_below_hz", "half_above_hz"),
+            unit_has_it=True),
+    # Where the unit's profile has no feature there is nothing to place.
     Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz", None,
-            "octaves", octaves=True),
+            "octaves", octaves=True, unit_has_it=True),
     Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
     Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB"),
     Reading("efx-orders", "efxorders.read_directory", "readings", "all_of_them_db",
@@ -979,7 +986,10 @@ def scored_readings(
         for i in range(max(len(uv), len(dv))):
             a = uv[i] if i < len(uv) else None
             b = dv[i] if i < len(dv) else None
-            if a is None and b is None:
+            if reading.null_is is not None:
+                a = reading.null_is if a is None else a
+                b = reading.null_is if b is None else b
+            if a is None and (b is None or reading.unit_has_it):
                 continue
             residual.append(span if a is None or b is None else b - a)
             if a is not None and b is None and list(key) not in refused:

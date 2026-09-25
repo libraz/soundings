@@ -356,6 +356,26 @@ def test_where_a_band_is_largest_is_no_reading_where_the_profile_has_no_width():
     assert found["efx-bands:largest_db"]["takes"][("d", 0)] == [[-9.9]]
 
 
+def test_a_largest_band_nothing_cleared_is_read_as_no_deviation():
+    reading = stages.READINGS["efx-bands:largest_db"]
+    unit = {("d", 0): [[-9.0]], ("d", 1): [[None]], ("d", 2): [[6.0]]}
+    drawn = {("d", 0): [[-9.0]], ("d", 1): [[0.3]], ("d", 2): [[None]]}
+    scored = stages.scored_readings("efx-bands:largest_db", reading, unit, drawn, floor=0.2)
+    residuals = {row["value"]: row["residual"] for row in scored["rows"]}
+    assert residuals == {0: [0.0], 1: [0.3], 2: [-6.0]}
+    assert scored["drawn_only_refused"] == []
+
+
+def test_a_position_is_compared_only_where_the_unit_has_one():
+    reading = stages.READINGS["efx-bands:fitted_at_hz"]
+    unit = {("d", 0): [[None]], ("d", 1): [[10.0]], ("d", 2): [[11.0]]}
+    drawn = {("d", 0): [[12.0]], ("d", 1): [[None]], ("d", 2): [[11.0]]}
+    scored = stages.scored_readings("efx-bands:fitted_at_hz", reading, unit, drawn, floor=0.1)
+    residuals = {row["value"]: row["residual"] for row in scored["rows"]}
+    assert residuals == {1: [scored["span"]], 2: [0.0]}
+    assert scored["drawn_only_refused"] == [["d", 1]]
+
+
 def test_a_stage_publishing_two_quantities_is_scored_as_two_records():
     def excursion(fit, phase):
         return {
