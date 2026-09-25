@@ -1,0 +1,842 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0131-whole-peak-decoupled",
+    "class": "whole-0131",
+    "candidate": "peak-decoupled",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 31",
+    "kind": "graph",
+    "made_by": "backup/build-compressor-limiter-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate every other whole-type model of this unit is drawn at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "level_l",
+    "out_r": "level_r"
+  },
+  "what_varies": "The detector: peak level, decoupled attack and release. Its time constants and the offset that puts its threshold where the knee was read are this candidate's own.",
+  "times": {
+    "mean_error_db": 0.698,
+    "as_well_within": {
+      "attack_ms": [
+        0.05,
+        10.0
+      ],
+      "release_ms": [
+        2.0,
+        500.0
+      ]
+    },
+    "read_as": "mean absolute difference of 2 ms envelopes in decibels, over the first 0.4 s of each note, where the unit's take stands within 40 dB of its loudest",
+    "why": "Best of a grid on the onsets named in fitted_on; every pair within 1.1 times its error lies in attack [0.05, 10.0] ms and release [2.0, 500.0] ms."
+  },
+  "threshold_offset_db": {
+    "value": 6.182,
+    "what": "What this candidate's detector settles at on the bypassed held tone, less the level the order reading reports for it. A threshold is written in the detector's own decibels."
+  },
+  "constant_is": "The constant the claim reads the type taking against the bypassed path, less what the pan law gives this side at its printed centre.",
+  "fixed_rows": {
+    "40 03 05": "Release: no claim or printed conversion says what a step of it is in time, and the claim that reads this type held it at power-on"
+  },
+  "nodes": [
+    {
+      "id": "detect_l",
+      "kind": "envelope",
+      "input": "in_l",
+      "detector": "peak",
+      "topology": "decoupled",
+      "domain": "linear",
+      "attack_ms": {
+        "value": 2.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-second-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            0
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            42
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-1",
+            0
+          ]
+        ]
+      },
+      "release_ms": {
+        "value": 20.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-second-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            0
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            42
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-1",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "curve_l",
+      "kind": "gain_computer",
+      "input": "detect_l",
+      "threshold_db": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              -71.987
+            ],
+            [
+              127,
+              -11.332
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            "bypassed"
+          ]
+        ]
+      },
+      "ratio": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 1.3332,
+            "1": 2.021,
+            "2": 4.029,
+            "3": 188.6792
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "knee_db": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "vca_l",
+      "kind": "vca",
+      "input": "in_l",
+      "control": "curve_l"
+    },
+    {
+      "id": "constant_l",
+      "kind": "gain",
+      "input": "vca_l",
+      "unit": "db",
+      "gain": {
+        "value": 0.374,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "post_l",
+      "kind": "gain",
+      "input": "constant_l",
+      "unit": "db",
+      "gain": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 0.0,
+            "1": 6.0,
+            "2": 12.0,
+            "3": 18.0
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/post-gain-four-fixed-steps-of-six-decibels.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "post_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_l",
+      "kind": "pan",
+      "input": "high_l",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "pan_l.left",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "detect_r",
+      "kind": "envelope",
+      "input": "in_r",
+      "detector": "peak",
+      "topology": "decoupled",
+      "domain": "linear",
+      "attack_ms": {
+        "value": 2.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-second-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            0
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            42
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-1",
+            0
+          ]
+        ]
+      },
+      "release_ms": {
+        "value": 20.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-second-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            0
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            42
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-1",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "curve_r",
+      "kind": "gain_computer",
+      "input": "detect_r",
+      "threshold_db": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              -71.987
+            ],
+            [
+              127,
+              -11.332
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json",
+          "data/units/roland-sc8850-01/efx-orders/01-31-03-the-threshold-byte-at-the-fourth-of-four-ratio-settings.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/limiter-ratio-3",
+            "bypassed"
+          ]
+        ]
+      },
+      "ratio": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 1.3332,
+            "1": 2.021,
+            "2": 4.029,
+            "3": 188.6792
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json"
+        ],
+        "fitted_on": []
+      },
+      "knee_db": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "vca_r",
+      "kind": "vca",
+      "input": "in_r",
+      "control": "curve_r"
+    },
+    {
+      "id": "constant_r",
+      "kind": "gain",
+      "input": "vca_r",
+      "unit": "db",
+      "gain": {
+        "value": 0.374,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0131-a-threshold-byte-is-decibels-and-one-state-of-four-is-a-ratio.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "post_r",
+      "kind": "gain",
+      "input": "constant_r",
+      "unit": "db",
+      "gain": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 0.0,
+            "1": 6.0,
+            "2": 12.0,
+            "3": 18.0
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/post-gain-four-fixed-steps-of-six-decibels.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "post_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_r",
+      "kind": "pan",
+      "input": "high_r",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "pan_r.right",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "fixed_at_power_on",
+    "40 03 06": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}

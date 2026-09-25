@@ -1,0 +1,1029 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0130-whole-rms-branching",
+    "class": "whole-0130",
+    "candidate": "rms-branching",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 30",
+    "kind": "graph",
+    "made_by": "backup/build-compressor-limiter-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate every other whole-type model of this unit is drawn at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "level_l",
+    "out_r": "level_r"
+  },
+  "what_varies": "The detector: rms level, branching attack and release. Its time constants and the offset that puts its threshold where the knee was read are this candidate's own.",
+  "times": {
+    "mean_error_db": 0.291,
+    "as_well_within": {
+      "attack_ms": [
+        2.0,
+        50.0
+      ],
+      "release_ms": [
+        10.0,
+        500.0
+      ]
+    },
+    "read_as": "mean absolute difference of 2 ms envelopes in decibels, over the first 0.4 s of each note, where the unit's take stands within 40 dB of its loudest",
+    "why": "Best of a grid on the onsets named in fitted_on; every pair within 1.1 times its error lies in attack [2.0, 50.0] ms and release [10.0, 500.0] ms."
+  },
+  "threshold_offset_db": {
+    "value": 4.195,
+    "what": "What this candidate's detector settles at on the bypassed held tone, less the level the order reading reports for it. A threshold is written in the detector's own decibels."
+  },
+  "constant_is": "The gain the ladder reads under the knee, less what the pan law gives this side at its printed centre.",
+  "static_curve": {
+    "threshold_heard_db": -67.39,
+    "slope": 0.0777,
+    "gain_db": 20.6935,
+    "worst_db": 0.0916,
+    "ratio": 12.8749,
+    "rungs": [
+      {
+        "volume": 20,
+        "went_in_db": -76.96,
+        "came_out_db": -56.28
+      },
+      {
+        "volume": 40,
+        "went_in_db": -64.88,
+        "came_out_db": -46.41
+      },
+      {
+        "volume": 60,
+        "went_in_db": -57.82,
+        "came_out_db": -46.01
+      },
+      {
+        "volume": 80,
+        "went_in_db": -52.82,
+        "came_out_db": -45.65
+      },
+      {
+        "volume": 100,
+        "went_in_db": -48.94,
+        "came_out_db": -45.29
+      },
+      {
+        "volume": 127,
+        "went_in_db": -44.78,
+        "came_out_db": -44.85
+      }
+    ]
+  },
+  "fixed_rows": {
+    "40 03 03": "Attack: no claim or printed conversion says what a step of it is in time",
+    "40 03 04": "Sustain: no claim or printed conversion says what it does to the curve"
+  },
+  "nodes": [
+    {
+      "id": "detect_l",
+      "kind": "envelope",
+      "input": "in_l",
+      "detector": "rms",
+      "topology": "branching",
+      "domain": "linear",
+      "attack_ms": {
+        "value": 5.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ]
+        ]
+      },
+      "release_ms": {
+        "value": 50.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ]
+        ]
+      }
+    },
+    {
+      "id": "curve_l",
+      "kind": "gain_computer",
+      "input": "detect_l",
+      "threshold_db": {
+        "value": -63.195,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            "bypassed-100"
+          ]
+        ]
+      },
+      "ratio": {
+        "value": 12.875,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      },
+      "knee_db": {
+        "value": 0.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "vca_l",
+      "kind": "vca",
+      "input": "in_l",
+      "control": "curve_l"
+    },
+    {
+      "id": "constant_l",
+      "kind": "gain",
+      "input": "vca_l",
+      "unit": "db",
+      "gain": {
+        "value": 23.758,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "post_l",
+      "kind": "gain",
+      "input": "constant_l",
+      "unit": "db",
+      "gain": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 0.0,
+            "1": 6.0,
+            "2": 12.0,
+            "3": 18.0
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/post-gain-four-fixed-steps-of-six-decibels.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "post_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_l",
+      "kind": "pan",
+      "input": "high_l",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "pan_l.left",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "detect_r",
+      "kind": "envelope",
+      "input": "in_r",
+      "detector": "rms",
+      "topology": "branching",
+      "domain": "linear",
+      "attack_ms": {
+        "value": 5.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ]
+        ]
+      },
+      "release_ms": {
+        "value": 50.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ]
+        ]
+      }
+    },
+    {
+      "id": "curve_r",
+      "kind": "gain_computer",
+      "input": "detect_r",
+      "threshold_db": {
+        "value": -63.195,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            "bypassed-100"
+          ]
+        ]
+      },
+      "ratio": {
+        "value": 12.875,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      },
+      "knee_db": {
+        "value": 0.0,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "vca_r",
+      "kind": "vca",
+      "input": "in_r",
+      "control": "curve_r"
+    },
+    {
+      "id": "constant_r",
+      "kind": "gain",
+      "input": "vca_r",
+      "unit": "db",
+      "gain": {
+        "value": 23.758,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-compressor-as-orders.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": [
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            20
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            40
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            60
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            80
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            100
+          ],
+          [
+            "what-a-limiters-ratio-byte-is-the-ratio-of/compressor-ladder",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "post_r",
+      "kind": "gain",
+      "input": "constant_r",
+      "unit": "db",
+      "gain": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 0.0,
+            "1": 6.0,
+            "2": 12.0,
+            "3": 18.0
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/post-gain-four-fixed-steps-of-six-decibels.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "post_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan_r",
+      "kind": "pan",
+      "input": "high_r",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "pan_r.right",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "fixed_at_power_on",
+    "40 03 04": "fixed_at_power_on",
+    "40 03 05": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}

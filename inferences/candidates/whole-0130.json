@@ -1,0 +1,38 @@
+{
+  "class": "whole-0130",
+  "what_the_class_is": "The compressor as a whole: a level detector per output, a hard-knee gain curve read at power-on off a held-tone ladder, the gain the ladder reads under the knee, the post gain, the fixed tone shelves, the output pan and the level.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A dynamics stage is a detector, a gain curve and a multiply. The detector is a one-pole smoother on the rectified or squared signal, one or two multiply-accumulates a sample; the curve is a short table or a few instructions in decibels.",
+      "A peak detector needs an absolute value and a comparison; a mean-square one a multiply more. Neither is ruled out by the cost.",
+      "Which of the two poles runs when is a structural choice with no cost difference, and it decides how a release after a transient is timed."
+    ],
+    "would_be_wrong_if": "A struck or applause take at a setting nothing here was read on sits further from every candidate than the unit's own repeats sit from each other, in a way a different time constant of the same detector does not close."
+  },
+  "candidates": [
+    {
+      "id": "peak-branching",
+      "model": "inferences/models/0130-whole-peak-branching.json",
+      "reading": "A peak detector with branching time constants, attack 2.0 ms and release 200.0 ms as its own fit on held-tone onsets returned them.",
+      "predicts": "A transient caught within the attack time and released on the release pole alone: the least overshoot of the three on a struck note for the same attack."
+    },
+    {
+      "id": "rms-branching",
+      "model": "inferences/models/0130-whole-rms-branching.json",
+      "reading": "A rms detector with branching time constants, attack 5.0 ms and release 50.0 ms as its own fit on held-tone onsets returned them.",
+      "predicts": "A detector that reads a periodic tone about its crest factor lower, so it reaches over the threshold later on a transient and lets more of the strike through before it pulls down."
+    },
+    {
+      "id": "peak-decoupled",
+      "model": "inferences/models/0130-whole-peak-decoupled.json",
+      "reading": "A peak detector with decoupled time constants, attack 10.0 ms and release 10.0 ms as its own fit on held-tone onsets returned them.",
+      "predicts": "A release that takes about the attack and the release together, so a struck note's tail recovers later than under the branching peak detector."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "What the Attack and Sustain bytes do. Nothing converts either into a time or a curve, so both are held at power-on and every take that moves one is a take no candidate here draws.",
+    "Whether the detector is linked across the two outputs. Each side detects its own input, which the held and struck takes cannot tell apart because the part sits at the centre.",
+    "Where the tone shelves sit relative to the detector."
+  ]
+}
