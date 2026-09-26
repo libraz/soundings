@@ -1,0 +1,39 @@
+{
+  "class": "whole-0500",
+  "what_the_class_is": "The keyboard multi: equaliser, one pitch-shifted voice with its balance, phaser and delay, then the output level; the ring modulator is not drawn. Each part is the candidate its stand-alone type's stage put first, re-bound to this type's own addresses.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A block that several types name is one routine reached with a parameter block, so a combination is its single effects called one after another or side by side, and its own code is the wiring and the level, pan and mix multipliers between them.",
+      "A stage switched off is a jump over its routine, so what reaches the next stage is what reached the switched one.",
+      "Placing a half of a pair is two multipliers on its output; moving a stereo pair costs two more."
+    ],
+    "would_be_wrong_if": "A setting nothing here was fitted on came back with a part answering in a place the arrangement does not put it -- a level byte at nothing leaving the other half on a series reading, or silencing it on a parallel one."
+  },
+  "candidates": [
+    {
+      "id": "equaliser-then-shifter-mix-adds",
+      "model": "inferences/models/0500-whole-equaliser-then-shifter-mix-adds.json",
+      "reading": "Equaliser, then the shifter, in the printed order; Dly Mix scales the delay's path and leaves the dry at unity.",
+      "predicts": "The equaliser's shape is shifted along with the voice."
+    },
+    {
+      "id": "shifter-then-equaliser-mix-adds",
+      "model": "inferences/models/0500-whole-shifter-then-equaliser-mix-adds.json",
+      "reading": "The shifter in front of the equaliser; Dly Mix as above.",
+      "predicts": "The equaliser's shape stays where its bytes put it whatever the shift."
+    },
+    {
+      "id": "equaliser-then-shifter-mix-crossfades",
+      "model": "inferences/models/0500-whole-equaliser-then-shifter-mix-crossfades.json",
+      "reading": "Equaliser, then the shifter; Dly Mix crossfades the dry path into the delay's.",
+      "predicts": "The shifted shape, and at Dly Mix 127 no dry path behind the delay."
+    },
+    {
+      "id": "shifter-then-equaliser-mix-crossfades",
+      "model": "inferences/models/0500-whole-shifter-then-equaliser-mix-crossfades.json",
+      "reading": "The shifter in front of the equaliser; Dly Mix crossfades.",
+      "predicts": "The fixed shape, and no dry path behind the delay at 127."
+    }
+  ]
+}

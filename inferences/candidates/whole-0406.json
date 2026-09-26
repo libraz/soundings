@@ -1,0 +1,27 @@
+{
+  "class": "whole-0406",
+  "what_the_class_is": "The Rhodes multi: phaser, CF block with its low pass and delay, and the tremolo/pan block, then the output level; the enhancer is not drawn. Every drawn part is linear, so the order is not a candidate; the CF mix byte is.. Each part is the candidate its stand-alone type's stage put first, re-bound to this type's own addresses.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A block that several types name is one routine reached with a parameter block, so a combination is its single effects called one after another or side by side, and its own code is the wiring and the level, pan and mix multipliers between them.",
+      "A stage switched off is a jump over its routine, so what reaches the next stage is what reached the switched one.",
+      "Placing a half of a pair is two multipliers on its output; moving a stereo pair costs two more."
+    ],
+    "would_be_wrong_if": "A setting nothing here was fitted on came back with a part answering in a place the arrangement does not put it -- a level byte at nothing leaving the other half on a series reading, or silencing it on a parallel one."
+  },
+  "candidates": [
+    {
+      "id": "mix-byte-adds-the-effect",
+      "model": "inferences/models/0406-whole-mix-byte-adds-the-effect.json",
+      "reading": "CF Mix scales the CF block's path and leaves its dry path at unity, as the phaser's own mix byte was read.",
+      "predicts": "At CF Mix 127 the dry path is still there at full level."
+    },
+    {
+      "id": "mix-byte-crossfades",
+      "model": "inferences/models/0406-whole-mix-byte-crossfades.json",
+      "reading": "CF Mix moves from the dry path to the CF block's path.",
+      "predicts": "At CF Mix 127 the dry path is gone and at 0 the CF block is."
+    }
+  ]
+}
