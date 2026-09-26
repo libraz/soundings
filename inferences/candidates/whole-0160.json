@@ -1,0 +1,49 @@
+{
+  "class": "whole-0160",
+  "what_the_class_is": "The two-voice pitch shifter as a whole: two shifters off the mono sum of the inputs, each behind its own pre-delay and placed by its own EFX Pan byte, weighed against each other by L.Bal, mixed with the dry by the balance byte, then the level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A time-domain shifter is a circular buffer read by pointers that move through it at the ratio and jump back by a stored length when they reach the end of it; two pointers a length apart, crossfaded, hide the jump. It costs two interpolated reads and a few multiplies a sample and no transform.",
+      "The length is a table the mode byte indexes, and a table whose entries are powers of two costs nothing to wrap: the pointer arithmetic is a mask.",
+      "A feedback shifter writes its own output back into what it reads, so each pass through the loop is shifted again and the repeats climb or fall by the ratio.",
+      "Times, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The splice rate at settings nothing here was built on came back other than the ratio's distance from one over the window the mode byte picks, or a copy of the output in itself stood at a distance that does not follow the mode byte."
+  },
+  "candidates": [
+    {
+      "id": "pair-a-window-apart-straight-crossfade",
+      "model": "inferences/models/0160-whole-pair-a-window-apart-straight-crossfade.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored a whole window apart, and a straight crossfade between the two read-outs.",
+      "predicts": "Splices at the ratio's distance from one over the window, and a copy of the output in itself a whole window apart in what is stored; the level dips at every splice for as long as the straight fade takes to cross."
+    },
+    {
+      "id": "pair-a-window-apart-raised-cosine-crossfade",
+      "model": "inferences/models/0160-whole-pair-a-window-apart-raised-cosine-crossfade.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored a whole window apart, and a raised-cosine crossfade between the two read-outs.",
+      "predicts": "Splices at the ratio's distance from one over the window, and a copy of the output in itself a whole window apart in what is stored; the level dips at every splice and is back sooner than under a straight fade."
+    },
+    {
+      "id": "pair-half-a-window-apart-straight-crossfade",
+      "model": "inferences/models/0160-whole-pair-half-a-window-apart-straight-crossfade.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored half a window apart, and a straight crossfade between the two read-outs.",
+      "predicts": "Splices twice as often as the window claim reads, and a copy half a window apart in what is stored, which at the octave arrives a quarter window apart."
+    },
+    {
+      "id": "pair-half-a-window-apart-raised-cosine-crossfade",
+      "model": "inferences/models/0160-whole-pair-half-a-window-apart-raised-cosine-crossfade.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored half a window apart, and a raised-cosine crossfade between the two read-outs.",
+      "predicts": "Splices twice as often as the window claim reads, and a copy half a window apart in what is stored; the raised-cosine fade shortens each dip."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "The copy a window apart at unison. At a ratio of one the node's sweep is nothing and both pointers read the same place, so every candidate returns the input a sample late where the unit holds a copy of it a window back.",
+    "What coarse and fine do together. Each is its own shifter in series here, splicing at its own rate; a single shifter on the product of the two ratios is what a table-driven design would more likely do, and no value this renderer holds can be keyed on two bytes.",
+    "What either pitch byte does outside its printed range. Settings there have no state and are not drawn.",
+    "L.Bal's curve. It is drawn as the balance byte's two ramps because the page prints the two alike; only its two ends were heard, as one shifter alone each.",
+    "How the inputs are summed onto the shifters: half of each here; no reading fixed it.",
+    "The node's crossfade spans the whole half-sweep, so at small shifts it is seconds long. Whether the unit fades over a fixed share of the window instead is not asked by any candidate here.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
