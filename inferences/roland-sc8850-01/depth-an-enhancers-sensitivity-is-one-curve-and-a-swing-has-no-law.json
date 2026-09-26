@@ -3,7 +3,7 @@
     "schema_version": 1,
     "unit_id": "roland-sc8850-01",
     "state": "standing",
-    "made_at": "2026-09-23T19:36:51.668250+00:00",
+    "made_at": "2026-09-26T16:13:50.954833+00:00",
     "made_by": "backup/write-d2-depth-claim.py",
     "rounds": 1,
     "about": {
@@ -857,7 +857,7 @@
           4.5,
           2.4414,
           4.5,
-          11.1119,
+          11.1121,
           0.51,
           null,
           0.47,
@@ -983,7 +983,7 @@
           0.45,
           null,
           0.44,
-          null,
+          7.3008,
           0.45,
           null,
           0.44,
@@ -2548,6 +2548,7 @@
           96
         ],
         "fitted_at": [
+          48,
           96
         ],
         "rate_read_hz": {
@@ -2626,17 +2627,32 @@
       }
     },
     "delay_swing_where_one_modulator_was_fitted_twice": {
-      "type": "02 06",
-      "settings": [
-        51,
-        101
-      ],
-      "excursion_ms": [
-        3.9831,
-        9.1106
-      ],
-      "straight_through_zero_predicts_ms": 7.888,
-      "floor_ms": 0.3745
+      "02 06": {
+        "settings": [
+          51,
+          101
+        ],
+        "excursion_ms": [
+          3.9831,
+          9.1106
+        ],
+        "takes_fitted": 5,
+        "straight_through_zero_predicts_ms": 7.888,
+        "floor_ms": 0.3745
+      },
+      "04 01": {
+        "settings": [
+          48,
+          96
+        ],
+        "excursion_ms": [
+          7.3008,
+          8.9364
+        ],
+        "takes_fitted": 2,
+        "straight_through_zero_predicts_ms": 14.602,
+        "floor_ms": null
+      }
     },
     "band_profiles_read": {
       "01 02 40 03 03": {
@@ -2905,7 +2921,7 @@
     {
       "reading": "A delay swing is proportional to its depth byte.",
       "standing": false,
-      "ruled_out_by": "02 06 is the one two-setting type fitted at both settings on one modulator. From 3.98 ms at 51, proportional puts 7.89 ms at 101; the takes return 9.11, against a repeat spread of 0.3745 ms. Two points refute a law and cannot set one."
+      "ruled_out_by": "Two two-setting types were fitted at both settings on one modulator. 02 06: from 3.98 ms at 51, proportional puts 7.89 ms at 101; the takes return 9.11, against a repeat spread of 0.3745 ms, on 5 fitted takes. 04 01 was fitted at both settings too, on 2 takes with no setting fitted twice, so no repeat spread stands to hold its difference against. Two points refute a law and cannot set one."
     },
     {
       "reading": "The tremolo's swing is proportional to its byte, read in one of the two domains the stage publishes.",
