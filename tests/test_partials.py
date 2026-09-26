@@ -379,3 +379,41 @@ def test_takes_the_manifest_forgot_are_read_and_named(tmp_path) -> None:
         "held-bypassed-00.wav",
         "held-01-40-00.wav",
     }
+
+
+def _coarse_row(left: float, middle: float, start: float, hz: float = 0.5) -> tuple:
+    return (left, 1.0, middle, 0.7, start, hz)
+
+
+def test_a_tie_across_the_pool_cut_is_refined_whichever_side_it_fell():
+    """Two rows one sine writes the same level with are both refined, however their
+    residuals rounded, so the width reported beside the fit does not follow the order."""
+    above = [_coarse_row(0.1 + 0.01 * k, 0.0, k / 64) for k in range(partials.REFINE_FROM - 1)]
+    edge = 0.1 + 0.01 * partials.REFINE_FROM
+    tied = [_coarse_row(edge, 1.0, 0.25), _coarse_row(edge * (1 + 1e-15), 2 * np.pi - 1.0, 0.75)]
+    found = above + tied + [_coarse_row(9.0, 0.0, 0.5)]
+    rows = partials.to_refine(found)
+    assert tied[0] in rows and tied[1] in rows
+    assert found[-1] not in rows
+
+
+def test_a_tie_across_a_seeds_own_cut_is_refined_whichever_side_it_fell():
+    crowd = [_coarse_row(0.01 * k, 0.0, k / 64) for k in range(partials.REFINE_FROM)]
+    own = [_coarse_row(1.0 + k, 0.0, k / 64, hz=2.0) for k in range(partials.REFINE_PER_SEED - 1)]
+    edge = 1.0 + partials.REFINE_PER_SEED
+    tied = [_coarse_row(edge, 1.0, 0.25, 2.0), _coarse_row(edge, 2 * np.pi - 1.0, 0.75, 2.0)]
+    rows = partials.to_refine(crowd + own + tied + [_coarse_row(99.0, 0.0, 0.5, 2.0)])
+    assert tied[0] in rows and tied[1] in rows
+    assert _coarse_row(99.0, 0.0, 0.5, 2.0) not in rows
+
+
+def test_without_a_tie_the_rows_refined_are_the_pool_and_each_seeds_best():
+    found = sorted(
+        [_coarse_row(0.013 * k + 0.001 * (k % 3), 0.0, k / 64, hz=(0.5, 2.0)[k % 2])
+         for k in range(40)])
+    pool = found[: partials.REFINE_FROM]
+    seeds = {}
+    for row in found:
+        seeds.setdefault(row[5], []).append(row)
+    extra = [r for rows in seeds.values() for r in rows[: partials.REFINE_PER_SEED]]
+    assert partials.to_refine(found) == pool + [r for r in found if r in extra and r not in pool]

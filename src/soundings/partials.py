@@ -582,6 +582,35 @@ fit is the last few per cent the projection's grid cannot place.
 """
 
 
+TIED_WITHIN = 1e-9
+"""How close, as a proportion, two coarse residuals are to be refined as one tie. Far
+above the scan's rounding, which moves an exact tie by a few parts in 1e16, and far
+below any difference the scan resolves between two fits."""
+
+def to_refine(found: list[tuple[float, ...]]) -> list[tuple[float, ...]]:
+    """The coarse rows refined: the pool's best, then each seed's best not already in it.
+
+    `found` is sorted by residual, and a row's seed is its last entry. A row as good as
+    the last one a cut keeps, to `TIED_WITHIN`, is kept with it: a sine writes the same
+    level at `(middle, start)` and `(2 pi - middle, start + 1/2)`, and which of the two
+    rounds lower is arithmetic, not the take.
+    """
+
+    def within(cut: list[tuple[float, ...]], count: int) -> list[tuple[float, ...]]:
+        if len(cut) <= count:
+            return list(cut)
+        edge = cut[count - 1][0] * (1.0 + TIED_WITHIN)
+        return [row for row in cut if row[0] <= edge]
+
+    rows = within(found, REFINE_FROM)
+    by_seed: dict[float, list[tuple[float, ...]]] = {}
+    for row in found:
+        by_seed.setdefault(row[5], []).append(row)
+    extra = {id(row) for cut in by_seed.values() for row in within(cut, REFINE_PER_SEED)}
+    rows += [row for row in found if id(row) in extra and row not in rows]
+    return rows
+
+
 def fit_one(observed: np.ndarray, at: np.ndarray, seeds: tuple[float, ...], shape: str) -> dict:
     """Best fit of one shape: coarse over the whole space, then refined with the rate free.
 
@@ -631,15 +660,7 @@ def fit_one(observed: np.ndarray, at: np.ndarray, seeds: tuple[float, ...], shap
 
         return cost
 
-    taken: dict[float, int] = {}
-    rows = list(found[:REFINE_FROM])
-    for row in found:
-        if taken.get(row[5], 0) >= REFINE_PER_SEED:
-            continue
-        taken[row[5]] = taken.get(row[5], 0) + 1
-        if row not in rows:
-            rows.append(row)
-
+    rows = to_refine(found)
     best = (found[0][0], np.array(found[0][1:], dtype=np.float64))
     settled: list[tuple[float, np.ndarray]] = []
     for row in rows:
