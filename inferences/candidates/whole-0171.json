@@ -1,0 +1,125 @@
+{
+  "class": "whole-0171",
+  "what_the_class_is": "The 3D Manual as a whole: one source placed by the azimuth byte's 31 positions, a spherical head's delay, shadow and level per ear, a speaker rendering the Out byte switches in, and the level multiplier.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A placement a part of this period could afford is a few taps and a few one-pole filters per ear, not a measured head response per position: the per-position work is a handful of coefficients the control processor looks up.",
+      "A spherical head is the cheapest model with both cues in it -- a delay and a shelf per ear whose values follow the angle to that ear -- and it is front-back symmetric unless something is added to break that.",
+      "A loudspeaker rendering of a binaural placement cancels each speaker's path to the far ear with a filtered, delayed, inverted copy of the other channel; written on the sum and difference it is a filter on the difference alone and the sum is left, written on the two channels it is two cross-fed paths."
+    ],
+    "would_be_wrong_if": "Takes of a placement off the median plane, read against their own input, showed the two ears differing by a response no delay and one-pole shelf can shape, or the speaker rendering disagreeing with the phones one on the median plane."
+  },
+  "candidates": [
+    {
+      "id": "head-shadow-alone-the-mid-restored",
+      "model": "inferences/models/0171-whole-head-shadow-alone-the-mid-restored.json",
+      "reading": "A spherical head alone: per ear a delay and a head-shadow shelf following the angle to that ear, and a level that rises towards the near ear and falls towards the far one. Speaker cancels crosstalk on the difference between the ears only, so the median plane is the phones rendering exactly.",
+      "predicts": "Behind rendering as the front (largest band 0.0 dB apart); the speaker front 0.0 dB from the phones front at its largest band."
+    },
+    {
+      "id": "head-shadow-alone-each-side-less-the-other",
+      "model": "inferences/models/0171-whole-head-shadow-alone-each-side-less-the-other.json",
+      "reading": "A spherical head alone: per ear a delay and a head-shadow shelf following the angle to that ear, and a level that rises towards the near ear and falls towards the far one. Speaker takes a filtered, delayed copy of each output from the other, so the median plane is filtered too.",
+      "predicts": "Behind rendering as the front (largest band 0.0 dB apart); the speaker front 4.27 dB from the phones front at its largest band."
+    },
+    {
+      "id": "head-shadow-and-a-rear-cue-the-mid-restored",
+      "model": "inferences/models/0171-whole-head-shadow-and-a-rear-cue-the-mid-restored.json",
+      "reading": "A spherical head with a front-back cue on it: the same per-ear delay, shadow and level, and a low pass and level that grow with the angle off the front in both ears together. Speaker cancels crosstalk on the difference between the ears only, so the median plane is the phones rendering exactly.",
+      "predicts": "Behind rendering differently from the front (largest band 5.71 dB apart); the speaker front 0.0 dB from the phones front at its largest band."
+    },
+    {
+      "id": "head-shadow-and-a-rear-cue-each-side-less-the-other",
+      "model": "inferences/models/0171-whole-head-shadow-and-a-rear-cue-each-side-less-the-other.json",
+      "reading": "A spherical head with a front-back cue on it: the same per-ear delay, shadow and level, and a low pass and level that grow with the angle off the front in both ears together. Speaker takes a filtered, delayed copy of each output from the other, so the median plane is filtered too.",
+      "predicts": "Behind rendering differently from the front (largest band 5.71 dB apart); the speaker front 6.28 dB from the phones front at its largest band."
+    }
+  ],
+  "what_the_fitting_takes_said": {
+    "takes": {
+      "phones": [
+        "where-the-azimuth-puts-it/01-71-phones",
+        "where-the-azimuth-puts-it/01-71-phones-bypassed"
+      ],
+      "speaker": [
+        "where-the-azimuth-puts-it/01-71-speaker",
+        "where-the-azimuth-puts-it/01-71-speaker-bypassed"
+      ],
+      "channels": [
+        2,
+        3
+      ],
+      "body_s": [
+        1.1,
+        3.8
+      ],
+      "how": "Third-octave energies of the held part of every take, averaged over the takes of one position, read against the same bands of the bypassed pair summed; a band is used where that sum is within 30 dB of its loudest band."
+    },
+    "why_one_source": {
+      "bypassed_pair_balance_db": 9.82,
+      "front_outputs_balance_db": 0.14,
+      "read_as": "The inputs arrive 9.8 dB apart and the front placement returns them level and flat against their sum, so what is placed is the sum."
+    },
+    "fitted": {
+      "phones_law": {
+        "head-shadow-alone": {
+          "shadow_hz": 300.0,
+          "depth": 0.1219,
+          "widest": 163.2478,
+          "near_far_db": -3.1794
+        },
+        "head-shadow-and-a-rear-cue": {
+          "shadow_hz": 894.2409,
+          "depth": 0.2864,
+          "widest": 180.0,
+          "near_far_db": 1.1041,
+          "cue_hz": 823.6548,
+          "cue_high": 0.4476,
+          "cue_low_db": 1.2576
+        }
+      },
+      "phones_rms_db": {
+        "head-shadow-alone": 2.862,
+        "head-shadow-and-a-rear-cue": 2.257
+      },
+      "canceller": {
+        "head-shadow-alone-the-mid-restored": {
+          "gain": 0.3651,
+          "corner_hz": 11326.2531,
+          "samples": 7
+        },
+        "head-shadow-alone-each-side-less-the-other": {
+          "gain": 0.427,
+          "corner_hz": 11490.807,
+          "samples": 4
+        },
+        "head-shadow-and-a-rear-cue-the-mid-restored": {
+          "gain": 0.5873,
+          "corner_hz": 8885.5834,
+          "samples": 8
+        },
+        "head-shadow-and-a-rear-cue-each-side-less-the-other": {
+          "gain": 0.6708,
+          "corner_hz": 5735.1801,
+          "samples": 3
+        }
+      },
+      "speaker_rms_db": {
+        "head-shadow-alone-the-mid-restored": 5.159,
+        "head-shadow-alone-each-side-less-the-other": 5.48,
+        "head-shadow-and-a-rear-cue-the-mid-restored": 3.535,
+        "head-shadow-and-a-rear-cue-each-side-less-the-other": 4.251
+      }
+    },
+    "which_type_the_takes_are_of": "This type's own sweeps.",
+    "where_a_fit_stopped": "Without a rear cue the shadow's corner sits on the 300 Hz end of its search. The corner also sets the head's radius and so the interaural delay, which no magnitude constrains: that candidate's far ear lags by up to 2.73 ms.",
+    "why_not_ranked_here": "Every candidate is fitted to the same takes, and those directories carry no input the stage can find, so it never compares them. The stage compares the settings the parameter walk and the power-on bookings took, which sit on the median plane: that is where a rear cue and a canceller that moves the mid are told apart, and the fit's own residuals are not."
+  },
+  "what_no_candidate_here_predicts": [
+    "A narrow rise near 8 kHz in the near ear that reaches 13 dB at a quarter turn: no one-pole shelf draws it, so every candidate misses it by about that much there.",
+    "How the placement moves from one written azimuth to the next. The azimuth claim's own runs waited ten seconds and more for it to arrive; every candidate is there at once.",
+    "Which filters the speaker rendering is in phase. The fit is to magnitudes a band at a time, which cannot tell a subtraction across from another pair of filters with the same magnitudes; the Out claim names the reading of phase between the channels as what would sharpen it.",
+    "Anything at the addresses the page does not print for this type, which the parameter walk also swept: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
