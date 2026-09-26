@@ -1,0 +1,31 @@
+{
+  "class": "whole-0208",
+  "what_the_class_is": "EH -> Delay as a whole: an enhancer that is not drawn, then a line a side with a damped loop, one time for both, balanced against a dry path, then the output level and the tone pair every insertion type ends in.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A combination is two of the machine's single effects run one into the other in one program, and the cheapest way to build one is to reuse each single effect's code and tables as they stand, which is what the flanger half of these types was measured to do.",
+      "What a combination has to decide for itself is the wiring between the two: which signal the second effect's balance mixes its own output against, and where the one shared tone pair and output level go.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A part named after a single effect came back with a delay, a rate or a loop of its own at settings nothing here was built on, or the dry end of the second part's balance sounded as neither the first part's output nor the chain's own input."
+  },
+  "candidates": [
+    {
+      "id": "loop-a-sample-late",
+      "model": "inferences/models/0208-whole-loop-a-sample-late.json",
+      "reading": "The delay's loop returns through a second read of its line one sample past the ladder entry, as the stereo delay's leading candidate reads it; the enhancer ahead of it is not drawn.",
+      "predicts": "Each repeat one sample later than the ladder puts it, which grows by a sample a repeat; a time of 0 is drawn a sample at a time rather than refused."
+    },
+    {
+      "id": "loop-on-the-ladder-entry",
+      "model": "inferences/models/0208-whole-loop-on-the-ladder-entry.json",
+      "reading": "The delay's loop returns straight off the line at the ladder entry; the enhancer ahead of it is not drawn.",
+      "predicts": "Repeats exactly a ladder entry apart; a time of 0 has no order to be drawn in and is refused."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "The enhancer itself: at power-on its mix is full and no candidate draws it, so a take at any setting carries a path none of these renders.",
+    "Whether the stereo delay's damping pole reaches this type's HF byte: carried unmeasured."
+  ]
+}

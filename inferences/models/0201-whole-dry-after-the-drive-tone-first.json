@@ -1,0 +1,3500 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0201-whole-dry-after-the-drive-tone-first",
+    "class": "whole-0201",
+    "candidate": "dry-after-the-drive-tone-first",
+    "unit_id": "roland-sc8850-01",
+    "type": "02 01",
+    "kind": "graph",
+    "made_by": "backup/build-combination-02-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate every part copied here was drawn at on its own type; a chain of parts drawn at one rate has to be drawn at that rate.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "level_l",
+    "out_r": "level_r"
+  },
+  "what_varies": "The flanger balances against the drive's panned output, so the drive is on both of its paths; the tone pair is on the chain's input, ahead of the drive.",
+  "parts_copied_from": [
+    "inferences/models/0110-whole-tanh.json",
+    "inferences/models/0123-whole-raised-sine.json"
+  ],
+  "fixed_rows": {
+    "40 03 05": "Amp: the four fixed responses the amp claim publishes as a readout, with no filter identified for any of them.",
+    "40 03 06": "Amp Sw: puts that response after the drive. Off at power-on."
+  },
+  "nodes": [
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "in_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "in_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "od_mono",
+      "kind": "mix",
+      "inputs": [
+        "high_l",
+        "high_r"
+      ],
+      "weights": {
+        "high_l": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+            "inferences/models/0110-whole-tanh.json"
+          ],
+          "fitted_on": [
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              127
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              127
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              127
+            ]
+          ]
+        },
+        "high_r": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+            "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+            "inferences/models/0110-whole-tanh.json"
+          ],
+          "fitted_on": [
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component",
+              127
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+              127
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              16
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              28
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              40
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              52
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              64
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              76
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              88
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              100
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              112
+            ],
+            [
+              "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+              127
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "od_before",
+      "kind": "section",
+      "input": "od_mono",
+      "stage": "pole",
+      "side": "high",
+      "form": "bilinear",
+      "sections": {
+        "value": 2,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0110-a-drive-byte-is-a-gain-in-front-of-a-fixed-curve.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": [
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            127
+          ]
+        ]
+      },
+      "corner_hz": {
+        "value": 230.0,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0110-a-drive-byte-is-a-gain-in-front-of-a-fixed-curve.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": [
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "od_pre",
+      "kind": "gain",
+      "input": "od_before",
+      "unit": "db",
+      "gain": {
+        "value": 63.014,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": [
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "od_drive",
+      "kind": "shaper",
+      "input": "od_pre",
+      "curve": "tanh",
+      "oversample": 1,
+      "drive": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "table",
+          "entries": [
+            -22.1,
+            -22.1,
+            -22.1,
+            -22.1,
+            -21.5836,
+            -19.6454,
+            -18.0618,
+            -16.7229,
+            -15.563,
+            -14.54,
+            -13.6248,
+            -12.797,
+            -12.0412,
+            -11.346,
+            -10.7023,
+            -10.103,
+            -9.5424,
+            -9.0158,
+            -8.5194,
+            -8.0498,
+            -7.6042,
+            -7.1804,
+            -6.7764,
+            -6.3903,
+            -6.0206,
+            -5.666,
+            -5.3254,
+            -4.9975,
+            -4.6817,
+            -4.3769,
+            -4.0824,
+            -3.7976,
+            -3.5218,
+            -3.2545,
+            -2.9952,
+            -2.7435,
+            -2.4988,
+            -2.2608,
+            -2.0292,
+            -1.8035,
+            -1.5836,
+            -1.3691,
+            -1.1598,
+            -0.9555,
+            -0.7558,
+            -0.5606,
+            -0.3697,
+            -0.1829,
+            0.0,
+            0.1791,
+            0.3546,
+            0.5266,
+            0.6952,
+            0.8607,
+            1.0231,
+            1.1824,
+            1.3389,
+            1.4927,
+            1.6437,
+            1.7922,
+            1.9382,
+            2.0818,
+            2.223,
+            2.362,
+            2.4988,
+            2.6334,
+            2.7661,
+            2.8967,
+            3.0254,
+            3.1522,
+            3.2771,
+            3.4003,
+            3.5218,
+            3.6416,
+            3.7598,
+            3.8764,
+            3.9914,
+            4.105,
+            4.2171,
+            4.3277,
+            4.437,
+            4.5449,
+            4.6515,
+            4.7567,
+            4.8608,
+            4.9636,
+            5.0651,
+            5.1656,
+            5.2648,
+            5.363,
+            5.46,
+            5.556,
+            5.6509,
+            5.7448,
+            5.8377,
+            5.9296,
+            6.0206,
+            6.1106,
+            6.1997,
+            6.2879,
+            6.3752,
+            6.4616,
+            6.5472,
+            6.6319,
+            6.7158,
+            6.799,
+            6.8813,
+            6.9629,
+            7.0437,
+            7.1237,
+            7.203,
+            7.2816,
+            7.3595,
+            7.4367,
+            7.5133,
+            7.5891,
+            7.6643,
+            7.7389,
+            7.8128,
+            7.8861,
+            7.9588,
+            8.0309,
+            8.1024,
+            8.1733,
+            8.2436,
+            8.3134,
+            8.3826,
+            8.4512
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0110-a-drive-byte-is-a-gain-in-front-of-a-fixed-curve.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": []
+      },
+      "why_oversample": "Drawn at the model's rate with nothing raised: a DSP of the period runs its curve at its own clock, so what the curve puts above half of it folds back, and that is part of what is drawn."
+    },
+    {
+      "id": "od_post",
+      "kind": "gain",
+      "input": "od_drive",
+      "unit": "db",
+      "gain": {
+        "value": -33.051,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-an-octave-up.json",
+          "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-the-drive-as-orders-on-one-component-a-twelfth-up.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": [
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-a-twelfth-up",
+            127
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            16
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            28
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            40
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            52
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            64
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            76
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            88
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            100
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            112
+          ],
+          [
+            "the-curve-on-a-carrier-that-is-one-component-an-octave-up",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "od_pan",
+      "kind": "pan",
+      "input": "od_post",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json",
+          "inferences/models/0110-whole-tanh.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "fl_sweep_l",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.015625,
+          0.002407637
+        ],
+        [
+          0.03125,
+          0.00960736
+        ],
+        [
+          0.046875,
+          0.021529832
+        ],
+        [
+          0.0625,
+          0.038060234
+        ],
+        [
+          0.078125,
+          0.059039368
+        ],
+        [
+          0.09375,
+          0.084265194
+        ],
+        [
+          0.109375,
+          0.113494773
+        ],
+        [
+          0.125,
+          0.146446609
+        ],
+        [
+          0.140625,
+          0.182803358
+        ],
+        [
+          0.15625,
+          0.222214883
+        ],
+        [
+          0.171875,
+          0.264301632
+        ],
+        [
+          0.1875,
+          0.308658284
+        ],
+        [
+          0.203125,
+          0.354857661
+        ],
+        [
+          0.21875,
+          0.402454839
+        ],
+        [
+          0.234375,
+          0.45099143
+        ],
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.265625,
+          0.54900857
+        ],
+        [
+          0.28125,
+          0.597545161
+        ],
+        [
+          0.296875,
+          0.645142339
+        ],
+        [
+          0.3125,
+          0.691341716
+        ],
+        [
+          0.328125,
+          0.735698368
+        ],
+        [
+          0.34375,
+          0.777785117
+        ],
+        [
+          0.359375,
+          0.817196642
+        ],
+        [
+          0.375,
+          0.853553391
+        ],
+        [
+          0.390625,
+          0.886505227
+        ],
+        [
+          0.40625,
+          0.915734806
+        ],
+        [
+          0.421875,
+          0.940960632
+        ],
+        [
+          0.4375,
+          0.961939766
+        ],
+        [
+          0.453125,
+          0.978470168
+        ],
+        [
+          0.46875,
+          0.99039264
+        ],
+        [
+          0.484375,
+          0.997592363
+        ],
+        [
+          0.5,
+          1.0
+        ],
+        [
+          0.515625,
+          0.997592363
+        ],
+        [
+          0.53125,
+          0.99039264
+        ],
+        [
+          0.546875,
+          0.978470168
+        ],
+        [
+          0.5625,
+          0.961939766
+        ],
+        [
+          0.578125,
+          0.940960632
+        ],
+        [
+          0.59375,
+          0.915734806
+        ],
+        [
+          0.609375,
+          0.886505227
+        ],
+        [
+          0.625,
+          0.853553391
+        ],
+        [
+          0.640625,
+          0.817196642
+        ],
+        [
+          0.65625,
+          0.777785117
+        ],
+        [
+          0.671875,
+          0.735698368
+        ],
+        [
+          0.6875,
+          0.691341716
+        ],
+        [
+          0.703125,
+          0.645142339
+        ],
+        [
+          0.71875,
+          0.597545161
+        ],
+        [
+          0.734375,
+          0.54900857
+        ],
+        [
+          0.75,
+          0.5
+        ],
+        [
+          0.765625,
+          0.45099143
+        ],
+        [
+          0.78125,
+          0.402454839
+        ],
+        [
+          0.796875,
+          0.354857661
+        ],
+        [
+          0.8125,
+          0.308658284
+        ],
+        [
+          0.828125,
+          0.264301632
+        ],
+        [
+          0.84375,
+          0.222214883
+        ],
+        [
+          0.859375,
+          0.182803358
+        ],
+        [
+          0.875,
+          0.146446609
+        ],
+        [
+          0.890625,
+          0.113494773
+        ],
+        [
+          0.90625,
+          0.084265194
+        ],
+        [
+          0.921875,
+          0.059039368
+        ],
+        [
+          0.9375,
+          0.038060234
+        ],
+        [
+          0.953125,
+          0.021529832
+        ],
+        [
+          0.96875,
+          0.00960736
+        ],
+        [
+          0.984375,
+          0.002407637
+        ]
+      ],
+      "rate_hz": {
+        "byte": "40 03 09",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "fl_loop_l",
+      "kind": "mix",
+      "inputs": [
+        "od_pan.left",
+        "fl_line_l"
+      ],
+      "weights": {
+        "od_pan.left": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        },
+        "fl_line_l": {
+          "byte": "40 03 0B",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                15,
+                -0.98
+              ],
+              [
+                64,
+                0.0
+              ],
+              [
+                113,
+                0.98
+              ]
+            ]
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 219: OD -> Flanger FL Fb, -98%-+80%-+98% over 0F-71",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "fl_line_l",
+      "kind": "delay",
+      "input": "fl_loop_l",
+      "interpolation": "linear",
+      "time_ms": {
+        "byte": "40 03 08",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.09375,
+            0.1875,
+            0.28125,
+            0.375,
+            0.5,
+            0.59375,
+            0.6875,
+            0.78125,
+            0.875,
+            1.0,
+            1.09375,
+            1.1875,
+            1.28125,
+            1.375,
+            1.5,
+            1.59375,
+            1.6875,
+            1.78125,
+            1.875,
+            2.0,
+            2.09375,
+            2.1875,
+            2.28125,
+            2.375,
+            2.5,
+            2.59375,
+            2.6875,
+            2.78125,
+            2.875,
+            3.0,
+            3.09375,
+            3.1875,
+            3.28125,
+            3.375,
+            3.5,
+            3.59375,
+            3.6875,
+            3.78125,
+            3.875,
+            4.0,
+            4.09375,
+            4.1875,
+            4.28125,
+            4.375,
+            4.5,
+            4.59375,
+            4.6875,
+            4.78125,
+            4.875,
+            5.0,
+            5.5,
+            6.0,
+            6.5,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0,
+            11.0,
+            12.0,
+            13.0,
+            14.0,
+            15.0,
+            16.0,
+            17.0,
+            18.0,
+            19.0,
+            20.0,
+            21.0,
+            22.0,
+            23.0,
+            24.0,
+            25.0,
+            26.0,
+            27.0,
+            28.0,
+            29.0,
+            30.0,
+            31.0,
+            32.0,
+            33.0,
+            34.0,
+            35.0,
+            36.0,
+            37.0,
+            38.0,
+            39.0,
+            40.0,
+            41.0,
+            42.0,
+            43.0,
+            44.0,
+            45.0,
+            46.0,
+            47.0,
+            48.0,
+            49.0,
+            50.0,
+            52.0,
+            54.0,
+            56.0,
+            58.0,
+            60.0,
+            62.0,
+            64.0,
+            66.0,
+            68.0,
+            70.0,
+            72.0,
+            74.0,
+            76.0,
+            78.0,
+            80.0,
+            82.0,
+            84.0,
+            86.0,
+            88.0,
+            90.0,
+            92.0,
+            94.0,
+            96.0,
+            98.0,
+            100.0,
+            100.0,
+            100.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+          "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+          "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "modulated_by": {
+        "control": "fl_sweep_l",
+        "depth_ms": {
+          "byte": "40 03 0A",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                0.0
+              ],
+              [
+                16,
+                1.2067
+              ],
+              [
+                32,
+                2.576
+              ],
+              [
+                64,
+                5.725
+              ],
+              [
+                96,
+                9.4294
+              ],
+              [
+                127,
+                13.7752
+              ]
+            ]
+          },
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-with-the-loop-open.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-near-the-printed-pre-delay.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-well-clear-of-the-floor.json",
+            "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": [
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "016"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "032"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "064"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "096"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "127"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "016"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "032"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "064"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "096"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "127"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "016"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "032"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "064"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "096"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "127"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "fl_out_l",
+      "kind": "mix",
+      "inputs": [
+        "od_pan.left",
+        "fl_line_l"
+      ],
+      "weights": {
+        "od_pan.left": {
+          "byte": "40 03 0C",
+          "map": {
+            "kind": "table",
+            "entries": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              0.9765625,
+              0.953125,
+              0.9375,
+              0.9140625,
+              0.8984375,
+              0.875,
+              0.859375,
+              0.8359375,
+              0.8125,
+              0.796875,
+              0.7734375,
+              0.7578125,
+              0.734375,
+              0.71875,
+              0.6953125,
+              0.6796875,
+              0.65625,
+              0.6328125,
+              0.6171875,
+              0.59375,
+              0.578125,
+              0.5546875,
+              0.5390625,
+              0.515625,
+              0.5,
+              0.4765625,
+              0.453125,
+              0.4375,
+              0.4140625,
+              0.3984375,
+              0.375,
+              0.359375,
+              0.3359375,
+              0.3125,
+              0.296875,
+              0.2734375,
+              0.2578125,
+              0.234375,
+              0.21875,
+              0.1953125,
+              0.1796875,
+              0.15625,
+              0.1328125,
+              0.1171875,
+              0.09375,
+              0.078125,
+              0.0546875,
+              0.0390625,
+              0.015625,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        },
+        "fl_line_l": {
+          "byte": "40 03 0C",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.015625,
+              0.0390625,
+              0.0546875,
+              0.078125,
+              0.09375,
+              0.1171875,
+              0.1328125,
+              0.15625,
+              0.1796875,
+              0.1953125,
+              0.21875,
+              0.234375,
+              0.2578125,
+              0.2734375,
+              0.296875,
+              0.3125,
+              0.3359375,
+              0.359375,
+              0.375,
+              0.3984375,
+              0.4140625,
+              0.4375,
+              0.453125,
+              0.4765625,
+              0.5,
+              0.515625,
+              0.5390625,
+              0.5546875,
+              0.578125,
+              0.59375,
+              0.6171875,
+              0.6328125,
+              0.65625,
+              0.6796875,
+              0.6953125,
+              0.71875,
+              0.734375,
+              0.7578125,
+              0.7734375,
+              0.796875,
+              0.8125,
+              0.8359375,
+              0.859375,
+              0.875,
+              0.8984375,
+              0.9140625,
+              0.9375,
+              0.953125,
+              0.9765625,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "fl_sweep_r",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.015625,
+          0.002407637
+        ],
+        [
+          0.03125,
+          0.00960736
+        ],
+        [
+          0.046875,
+          0.021529832
+        ],
+        [
+          0.0625,
+          0.038060234
+        ],
+        [
+          0.078125,
+          0.059039368
+        ],
+        [
+          0.09375,
+          0.084265194
+        ],
+        [
+          0.109375,
+          0.113494773
+        ],
+        [
+          0.125,
+          0.146446609
+        ],
+        [
+          0.140625,
+          0.182803358
+        ],
+        [
+          0.15625,
+          0.222214883
+        ],
+        [
+          0.171875,
+          0.264301632
+        ],
+        [
+          0.1875,
+          0.308658284
+        ],
+        [
+          0.203125,
+          0.354857661
+        ],
+        [
+          0.21875,
+          0.402454839
+        ],
+        [
+          0.234375,
+          0.45099143
+        ],
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.265625,
+          0.54900857
+        ],
+        [
+          0.28125,
+          0.597545161
+        ],
+        [
+          0.296875,
+          0.645142339
+        ],
+        [
+          0.3125,
+          0.691341716
+        ],
+        [
+          0.328125,
+          0.735698368
+        ],
+        [
+          0.34375,
+          0.777785117
+        ],
+        [
+          0.359375,
+          0.817196642
+        ],
+        [
+          0.375,
+          0.853553391
+        ],
+        [
+          0.390625,
+          0.886505227
+        ],
+        [
+          0.40625,
+          0.915734806
+        ],
+        [
+          0.421875,
+          0.940960632
+        ],
+        [
+          0.4375,
+          0.961939766
+        ],
+        [
+          0.453125,
+          0.978470168
+        ],
+        [
+          0.46875,
+          0.99039264
+        ],
+        [
+          0.484375,
+          0.997592363
+        ],
+        [
+          0.5,
+          1.0
+        ],
+        [
+          0.515625,
+          0.997592363
+        ],
+        [
+          0.53125,
+          0.99039264
+        ],
+        [
+          0.546875,
+          0.978470168
+        ],
+        [
+          0.5625,
+          0.961939766
+        ],
+        [
+          0.578125,
+          0.940960632
+        ],
+        [
+          0.59375,
+          0.915734806
+        ],
+        [
+          0.609375,
+          0.886505227
+        ],
+        [
+          0.625,
+          0.853553391
+        ],
+        [
+          0.640625,
+          0.817196642
+        ],
+        [
+          0.65625,
+          0.777785117
+        ],
+        [
+          0.671875,
+          0.735698368
+        ],
+        [
+          0.6875,
+          0.691341716
+        ],
+        [
+          0.703125,
+          0.645142339
+        ],
+        [
+          0.71875,
+          0.597545161
+        ],
+        [
+          0.734375,
+          0.54900857
+        ],
+        [
+          0.75,
+          0.5
+        ],
+        [
+          0.765625,
+          0.45099143
+        ],
+        [
+          0.78125,
+          0.402454839
+        ],
+        [
+          0.796875,
+          0.354857661
+        ],
+        [
+          0.8125,
+          0.308658284
+        ],
+        [
+          0.828125,
+          0.264301632
+        ],
+        [
+          0.84375,
+          0.222214883
+        ],
+        [
+          0.859375,
+          0.182803358
+        ],
+        [
+          0.875,
+          0.146446609
+        ],
+        [
+          0.890625,
+          0.113494773
+        ],
+        [
+          0.90625,
+          0.084265194
+        ],
+        [
+          0.921875,
+          0.059039368
+        ],
+        [
+          0.9375,
+          0.038060234
+        ],
+        [
+          0.953125,
+          0.021529832
+        ],
+        [
+          0.96875,
+          0.00960736
+        ],
+        [
+          0.984375,
+          0.002407637
+        ]
+      ],
+      "rate_hz": {
+        "byte": "40 03 09",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "fl_loop_r",
+      "kind": "mix",
+      "inputs": [
+        "od_pan.right",
+        "fl_line_r"
+      ],
+      "weights": {
+        "od_pan.right": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        },
+        "fl_line_r": {
+          "byte": "40 03 0B",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                15,
+                -0.98
+              ],
+              [
+                64,
+                0.0
+              ],
+              [
+                113,
+                0.98
+              ]
+            ]
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 219: OD -> Flanger FL Fb, -98%-+80%-+98% over 0F-71",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "fl_line_r",
+      "kind": "delay",
+      "input": "fl_loop_r",
+      "interpolation": "linear",
+      "time_ms": {
+        "byte": "40 03 08",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.09375,
+            0.1875,
+            0.28125,
+            0.375,
+            0.5,
+            0.59375,
+            0.6875,
+            0.78125,
+            0.875,
+            1.0,
+            1.09375,
+            1.1875,
+            1.28125,
+            1.375,
+            1.5,
+            1.59375,
+            1.6875,
+            1.78125,
+            1.875,
+            2.0,
+            2.09375,
+            2.1875,
+            2.28125,
+            2.375,
+            2.5,
+            2.59375,
+            2.6875,
+            2.78125,
+            2.875,
+            3.0,
+            3.09375,
+            3.1875,
+            3.28125,
+            3.375,
+            3.5,
+            3.59375,
+            3.6875,
+            3.78125,
+            3.875,
+            4.0,
+            4.09375,
+            4.1875,
+            4.28125,
+            4.375,
+            4.5,
+            4.59375,
+            4.6875,
+            4.78125,
+            4.875,
+            5.0,
+            5.5,
+            6.0,
+            6.5,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0,
+            11.0,
+            12.0,
+            13.0,
+            14.0,
+            15.0,
+            16.0,
+            17.0,
+            18.0,
+            19.0,
+            20.0,
+            21.0,
+            22.0,
+            23.0,
+            24.0,
+            25.0,
+            26.0,
+            27.0,
+            28.0,
+            29.0,
+            30.0,
+            31.0,
+            32.0,
+            33.0,
+            34.0,
+            35.0,
+            36.0,
+            37.0,
+            38.0,
+            39.0,
+            40.0,
+            41.0,
+            42.0,
+            43.0,
+            44.0,
+            45.0,
+            46.0,
+            47.0,
+            48.0,
+            49.0,
+            50.0,
+            52.0,
+            54.0,
+            56.0,
+            58.0,
+            60.0,
+            62.0,
+            64.0,
+            66.0,
+            68.0,
+            70.0,
+            72.0,
+            74.0,
+            76.0,
+            78.0,
+            80.0,
+            82.0,
+            84.0,
+            86.0,
+            88.0,
+            90.0,
+            92.0,
+            94.0,
+            96.0,
+            98.0,
+            100.0,
+            100.0,
+            100.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+          "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+          "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      },
+      "modulated_by": {
+        "control": "fl_sweep_r",
+        "depth_ms": {
+          "byte": "40 03 0A",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                0.0
+              ],
+              [
+                16,
+                1.2067
+              ],
+              [
+                32,
+                2.576
+              ],
+              [
+                64,
+                5.725
+              ],
+              [
+                96,
+                9.4294
+              ],
+              [
+                127,
+                13.7752
+              ]
+            ]
+          },
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0123-the-flanger-and-the-chorus-share-a-front-end.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-with-the-loop-open.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-near-the-printed-pre-delay.json",
+            "data/units/roland-sc8850-01/vibrato/01-23-07-what-a-depth-byte-is-worth-well-clear-of-the-floor.json",
+            "inferences/roland-sc8850-01/a-flanger-named-inside-a-larger-type-is-the-one-that-stands-alone.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": [
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "016"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "032"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "064"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "096"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-clear",
+              "127"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "016"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "032"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "064"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "096"
+            ],
+            [
+              "the-same-depth-byte-with-room-to-sweep/0123-near",
+              "127"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "016"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "032"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "064"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "096"
+            ],
+            [
+              "whether-the-two-share-a-modulator/0123",
+              "127"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "fl_out_r",
+      "kind": "mix",
+      "inputs": [
+        "od_pan.right",
+        "fl_line_r"
+      ],
+      "weights": {
+        "od_pan.right": {
+          "byte": "40 03 0C",
+          "map": {
+            "kind": "table",
+            "entries": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              0.9765625,
+              0.953125,
+              0.9375,
+              0.9140625,
+              0.8984375,
+              0.875,
+              0.859375,
+              0.8359375,
+              0.8125,
+              0.796875,
+              0.7734375,
+              0.7578125,
+              0.734375,
+              0.71875,
+              0.6953125,
+              0.6796875,
+              0.65625,
+              0.6328125,
+              0.6171875,
+              0.59375,
+              0.578125,
+              0.5546875,
+              0.5390625,
+              0.515625,
+              0.5,
+              0.4765625,
+              0.453125,
+              0.4375,
+              0.4140625,
+              0.3984375,
+              0.375,
+              0.359375,
+              0.3359375,
+              0.3125,
+              0.296875,
+              0.2734375,
+              0.2578125,
+              0.234375,
+              0.21875,
+              0.1953125,
+              0.1796875,
+              0.15625,
+              0.1328125,
+              0.1171875,
+              0.09375,
+              0.078125,
+              0.0546875,
+              0.0390625,
+              0.015625,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        },
+        "fl_line_r": {
+          "byte": "40 03 0C",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.015625,
+              0.0390625,
+              0.0546875,
+              0.078125,
+              0.09375,
+              0.1171875,
+              0.1328125,
+              0.15625,
+              0.1796875,
+              0.1953125,
+              0.21875,
+              0.234375,
+              0.2578125,
+              0.2734375,
+              0.296875,
+              0.3125,
+              0.3359375,
+              0.359375,
+              0.375,
+              0.3984375,
+              0.4140625,
+              0.4375,
+              0.453125,
+              0.4765625,
+              0.5,
+              0.515625,
+              0.5390625,
+              0.5546875,
+              0.578125,
+              0.59375,
+              0.6171875,
+              0.6328125,
+              0.65625,
+              0.6796875,
+              0.6953125,
+              0.71875,
+              0.734375,
+              0.7578125,
+              0.7734375,
+              0.796875,
+              0.8125,
+              0.8359375,
+              0.859375,
+              0.875,
+              0.8984375,
+              0.9140625,
+              0.9375,
+              0.953125,
+              0.9765625,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json",
+            "inferences/models/0123-whole-raised-sine.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "fl_out_l",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "fl_out_r",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "inferences/models/0123-whole-raised-sine.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "fixed_at_power_on",
+    "40 03 06": "fixed_at_power_on",
+    "40 03 08": "bound",
+    "40 03 09": "bound",
+    "40 03 0A": "bound",
+    "40 03 0B": "bound",
+    "40 03 0C": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 16": "bound"
+  }
+}

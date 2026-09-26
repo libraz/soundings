@@ -1,0 +1,31 @@
+{
+  "class": "whole-020B",
+  "what_the_class_is": "Cho -> Flanger as a whole: a modulated line a side balanced against a dry path, then a modulated line a side with a loop around it, balanced against a dry path, then the output level and the tone pair every insertion type ends in.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A combination is two of the machine's single effects run one into the other in one program, and the cheapest way to build one is to reuse each single effect's code and tables as they stand, which is what the flanger half of these types was measured to do.",
+      "What a combination has to decide for itself is the wiring between the two: which signal the second effect's balance mixes its own output against, and where the one shared tone pair and output level go.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A part named after a single effect came back with a delay, a rate or a loop of its own at settings nothing here was built on, or the dry end of the second part's balance sounded as neither the first part's output nor the chain's own input."
+  },
+  "candidates": [
+    {
+      "id": "dry-after-the-chorus",
+      "model": "inferences/models/020B-whole-dry-after-the-chorus.json",
+      "reading": "The flanger balances against the chorus's output, so the chorus is on both of the flanger's paths.",
+      "predicts": "At the dry end of the flanger's balance byte the chorus alone, still moving."
+    },
+    {
+      "id": "dry-before-the-chorus",
+      "model": "inferences/models/020B-whole-dry-before-the-chorus.json",
+      "reading": "The flanger balances against the chain's own input, so the chorus is inside the flanger's wet path only.",
+      "predicts": "At the dry end of the flanger's balance byte the input alone, with nothing of the chorus left in it."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Where the flanger's balance byte puts its two paths equal. Measured on the chorus-into-flanger type it is deepest at 96 where the single flanger is deepest at 64, and every candidate here carries the single flanger's two ramps.",
+    "The chorus's depth and the phase between its two modulators: nothing measured reaches the chorus inside a combination, so the single chorus's depth readings are carried and the two sides move together."
+  ]
+}

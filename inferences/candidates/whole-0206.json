@@ -1,0 +1,31 @@
+{
+  "class": "whole-0206",
+  "what_the_class_is": "EH -> Chorus as a whole: an enhancer that is not drawn, then a modulated line a side balanced against a dry path, then the output level and the tone pair every insertion type ends in.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A combination is two of the machine's single effects run one into the other in one program, and the cheapest way to build one is to reuse each single effect's code and tables as they stand, which is what the flanger half of these types was measured to do.",
+      "What a combination has to decide for itself is the wiring between the two: which signal the second effect's balance mixes its own output against, and where the one shared tone pair and output level go.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A part named after a single effect came back with a delay, a rate or a loop of its own at settings nothing here was built on, or the dry end of the second part's balance sounded as neither the first part's output nor the chain's own input."
+  },
+  "candidates": [
+    {
+      "id": "raised-sine",
+      "model": "inferences/models/0206-whole-raised-sine.json",
+      "reading": "The chorus's modulator is a raised sine, as the single chorus's leading candidate reads it; the enhancer ahead of it is not drawn.",
+      "predicts": "The smaller delay excursion of the two at every depth setting."
+    },
+    {
+      "id": "triangle",
+      "model": "inferences/models/0206-whole-triangle.json",
+      "reading": "The chorus's modulator is a triangle; the enhancer ahead of it is not drawn.",
+      "predicts": "A peak-to-peak delay excursion 1.57 times the raised sine's at every depth setting."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "The enhancer itself: at power-on its mix is full and no candidate draws it, so a take at any setting carries a path none of these renders.",
+    "The chorus's depth and the phase between its two modulators: nothing measured reaches the chorus inside a combination, so the single chorus's depth readings are carried and the two sides move together."
+  ]
+}
