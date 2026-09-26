@@ -1,0 +1,1769 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0103-whole-band-passes-in-parallel-drive-before",
+    "class": "whole-0103",
+    "candidate": "band-passes-in-parallel-drive-before",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 03",
+    "kind": "graph",
+    "made_by": "backup/build-humanizer-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate every other whole-type model of this unit is drawn at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "pan.left",
+    "out_r": "pan.right"
+  },
+  "what_varies": "The vowel filter is 3 constant-peak band-passes in parallel beside a direct path, each with its own signed weight; the drive stage sits in front of it.",
+  "vowel_is": "The filter fitted on the first printed vowel with the drive stage out. The Vowel byte names that vowel and every value past the printed list, which keeps the state asked before it -- every take of a value past the list asked it straight after 00. The other four printed vowels were never taken where a fit may read them, so no state is named for 01 to 04 and those settings cannot be drawn.",
+  "drive_is": "A tanh behind a gain of 20 log10(v / 48) dB, held below byte 3.77 at the state the bottom settings of the overdrive's drive byte share: the drive claim's law on another type, carried here with this type's own printed rest of 48. The gains either side of the curve are fitted at that rest only, so every other drive setting is the carried law's prediction. Drive Sw takes the whole stage out of the path.",
+  "fits": {
+    "vowel": {
+      "rms_db": 1.494,
+      "worst_db": 7.133
+    },
+    "drive": {
+      "pre_db": 50.998,
+      "post_db": -35.162,
+      "rms_db": 1.304,
+      "worst_db": 4.241
+    },
+    "read_as": "root mean square difference in decibels of twelfth-octave band energy from 150 Hz to 11000 Hz, each take against the bypassed takes the stage resolves as that directory's input, on the unit's output channel 2",
+    "inputs_from": [
+      "04-02-its-stage-mixed-in/control"
+    ]
+  },
+  "fixed_rows": {
+    "40 03 06": "Accel: the conversion table maps the byte to sixteen steps and no step to a time, and no take moves the Vowel byte while a note sounds, so nothing measured is what this byte governs. It powers up at 127."
+  },
+  "nodes": [
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        },
+        "in_r": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        }
+      },
+      "why": "The pair summed at half each, which on a centred voice is either channel; the gains fitted below were read on one channel, so the sum's own scale is carried by those fits and not by this weight."
+    },
+    {
+      "id": "vowel",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 1.0,
+            "5": 1.0,
+            "6": 1.0,
+            "7": 1.0,
+            "8": 1.0,
+            "9": 1.0,
+            "10": 1.0,
+            "11": 1.0,
+            "12": 1.0,
+            "13": 1.0,
+            "14": 1.0,
+            "15": 1.0,
+            "16": 1.0,
+            "17": 1.0,
+            "18": 1.0,
+            "19": 1.0,
+            "20": 1.0,
+            "21": 1.0,
+            "22": 1.0,
+            "23": 1.0,
+            "24": 1.0,
+            "25": 1.0,
+            "26": 1.0,
+            "27": 1.0,
+            "28": 1.0,
+            "29": 1.0,
+            "30": 1.0,
+            "31": 1.0,
+            "32": 1.0,
+            "33": 1.0,
+            "34": 1.0,
+            "35": 1.0,
+            "36": 1.0,
+            "37": 1.0,
+            "38": 1.0,
+            "39": 1.0,
+            "40": 1.0,
+            "41": 1.0,
+            "42": 1.0,
+            "43": 1.0,
+            "44": 1.0,
+            "45": 1.0,
+            "46": 1.0,
+            "47": 1.0,
+            "48": 1.0,
+            "49": 1.0,
+            "50": 1.0,
+            "51": 1.0,
+            "52": 1.0,
+            "53": 1.0,
+            "54": 1.0,
+            "55": 1.0,
+            "56": 1.0,
+            "57": 1.0,
+            "58": 1.0,
+            "59": 1.0,
+            "60": 1.0,
+            "61": 1.0,
+            "62": 1.0,
+            "63": 1.0,
+            "64": 1.0,
+            "65": 1.0,
+            "66": 1.0,
+            "67": 1.0,
+            "68": 1.0,
+            "69": 1.0,
+            "70": 1.0,
+            "71": 1.0,
+            "72": 1.0,
+            "73": 1.0,
+            "74": 1.0,
+            "75": 1.0,
+            "76": 1.0,
+            "77": 1.0,
+            "78": 1.0,
+            "79": 1.0,
+            "80": 1.0,
+            "81": 1.0,
+            "82": 1.0,
+            "83": 1.0,
+            "84": 1.0,
+            "85": 1.0,
+            "86": 1.0,
+            "87": 1.0,
+            "88": 1.0,
+            "89": 1.0,
+            "90": 1.0,
+            "91": 1.0,
+            "92": 1.0,
+            "93": 1.0,
+            "94": 1.0,
+            "95": 1.0,
+            "96": 1.0,
+            "97": 1.0,
+            "98": 1.0,
+            "99": 1.0,
+            "100": 1.0,
+            "101": 1.0,
+            "102": 1.0,
+            "103": 1.0,
+            "104": 1.0,
+            "105": 1.0,
+            "106": 1.0,
+            "107": 1.0,
+            "108": 1.0,
+            "109": 1.0,
+            "110": 1.0,
+            "111": 1.0,
+            "112": 1.0,
+            "113": 1.0,
+            "114": 1.0,
+            "115": 1.0,
+            "116": 1.0,
+            "117": 1.0,
+            "118": 1.0,
+            "119": 1.0,
+            "120": 1.0,
+            "121": 1.0,
+            "122": 1.0,
+            "123": 1.0,
+            "124": 1.0,
+            "125": 1.0,
+            "126": 1.0,
+            "127": 1.0
+          }
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Humanizer Vowel, a/i/u/e/o over 00/01/02/03/04",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pre",
+      "kind": "gain",
+      "input": "vowel",
+      "unit": "db",
+      "gain": {
+        "value": 50.998,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-two",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-two",
+            2
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-the-top",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-the-top",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "drive",
+      "kind": "shaper",
+      "input": "pre",
+      "curve": "tanh",
+      "oversample": 1,
+      "drive": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "table",
+          "entries": [
+            -22.1,
+            -22.1,
+            -22.1,
+            -22.1,
+            -21.5836,
+            -19.6454,
+            -18.0618,
+            -16.7229,
+            -15.563,
+            -14.54,
+            -13.6248,
+            -12.797,
+            -12.0412,
+            -11.346,
+            -10.7023,
+            -10.103,
+            -9.5424,
+            -9.0158,
+            -8.5194,
+            -8.0498,
+            -7.6042,
+            -7.1804,
+            -6.7764,
+            -6.3903,
+            -6.0206,
+            -5.666,
+            -5.3254,
+            -4.9975,
+            -4.6817,
+            -4.3769,
+            -4.0824,
+            -3.7976,
+            -3.5218,
+            -3.2545,
+            -2.9952,
+            -2.7435,
+            -2.4988,
+            -2.2608,
+            -2.0292,
+            -1.8035,
+            -1.5836,
+            -1.3691,
+            -1.1598,
+            -0.9555,
+            -0.7558,
+            -0.5606,
+            -0.3697,
+            -0.1829,
+            0.0,
+            0.1791,
+            0.3546,
+            0.5266,
+            0.6952,
+            0.8607,
+            1.0231,
+            1.1824,
+            1.3389,
+            1.4927,
+            1.6437,
+            1.7922,
+            1.9382,
+            2.0818,
+            2.223,
+            2.362,
+            2.4988,
+            2.6334,
+            2.7661,
+            2.8967,
+            3.0254,
+            3.1522,
+            3.2771,
+            3.4003,
+            3.5218,
+            3.6416,
+            3.7598,
+            3.8764,
+            3.9914,
+            4.105,
+            4.2171,
+            4.3277,
+            4.437,
+            4.5449,
+            4.6515,
+            4.7567,
+            4.8608,
+            4.9636,
+            5.0651,
+            5.1656,
+            5.2648,
+            5.363,
+            5.46,
+            5.556,
+            5.6509,
+            5.7448,
+            5.8377,
+            5.9296,
+            6.0206,
+            6.1106,
+            6.1997,
+            6.2879,
+            6.3752,
+            6.4616,
+            6.5472,
+            6.6319,
+            6.7158,
+            6.799,
+            6.8813,
+            6.9629,
+            7.0437,
+            7.1237,
+            7.203,
+            7.2816,
+            7.3595,
+            7.4367,
+            7.5133,
+            7.5891,
+            7.6643,
+            7.7389,
+            7.8128,
+            7.8861,
+            7.9588,
+            8.0309,
+            8.1024,
+            8.1733,
+            8.2436,
+            8.3134,
+            8.3826,
+            8.4512
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0110-a-drive-byte-is-a-gain-in-front-of-a-fixed-curve.json"
+        ],
+        "fitted_on": []
+      },
+      "why_oversample": "Drawn at the model's rate with nothing raised: a DSP of the period runs its curve at its own clock, so what the curve puts above half of it folds back, and that is part of what is drawn."
+    },
+    {
+      "id": "post",
+      "kind": "gain",
+      "input": "drive",
+      "unit": "db",
+      "gain": {
+        "value": -35.162,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-two",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-two",
+            2
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-the-top",
+            1
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-one-and-the-top",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "switched",
+      "kind": "mix",
+      "inputs": [
+        "vowel",
+        "post"
+      ],
+      "weights": {
+        "vowel": {
+          "byte": "40 03 04",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 1.0,
+              "1": 0.0,
+              "*": 1.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Humanizer Drive Sw, Off/On over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        },
+        "post": {
+          "byte": "40 03 04",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 0.0,
+              "1": 1.0,
+              "*": 0.0
+            }
+          },
+          "source": "document",
+          "rests_on": [
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 216: Humanizer Drive Sw, Off/On over 00/01",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "peak_1",
+      "kind": "section",
+      "input": "switched",
+      "stage": "peaking",
+      "centre_hz": {
+        "value": 1003.972,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "q": {
+        "value": 1.582894,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "gain_db": {
+        "value": 20.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "peak_2",
+      "kind": "section",
+      "input": "switched",
+      "stage": "peaking",
+      "centre_hz": {
+        "value": 1312.844,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "q": {
+        "value": 0.764481,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "gain_db": {
+        "value": 20.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "peak_3",
+      "kind": "section",
+      "input": "switched",
+      "stage": "peaking",
+      "centre_hz": {
+        "value": 1903.283,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "q": {
+        "value": 2.161686,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      },
+      "gain_db": {
+        "value": 20.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "vowel_sum",
+      "kind": "mix",
+      "inputs": [
+        "peak_1",
+        "peak_2",
+        "peak_3",
+        "switched"
+      ],
+      "weights": {
+        "peak_1": {
+          "value": 0.162137595,
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        },
+        "peak_2": {
+          "value": -0.027334462,
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        },
+        "peak_3": {
+          "value": 0.080888403,
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        },
+        "switched": {
+          "value": -0.150716821,
+          "source": "measured",
+          "rests_on": [
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+            "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json"
+          ],
+          "fitted_on": [
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-one",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              0
+            ],
+            [
+              "two-state-rule/humanizer/40-03-04-nought-and-two",
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "constant",
+      "kind": "gain",
+      "input": "vowel_sum",
+      "unit": "db",
+      "gain": {
+        "value": 3.064,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-one.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-nought-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-two.json",
+          "data/units/roland-sc8850-01/contrast/40-03-04-humanizer-one-and-the-top.json",
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": [
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-one",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            0
+          ],
+          [
+            "two-state-rule/humanizer/40-03-04-nought-and-two",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "level",
+      "kind": "gain",
+      "input": "constant",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874015748031496,
+            0.007874015748031496,
+            0.015748031496062992,
+            0.023622047244094488,
+            0.031496062992125984,
+            0.031496062992125984,
+            0.03937007874015748,
+            0.047244094488188976,
+            0.047244094488188976,
+            0.05511811023622047,
+            0.06299212598425197,
+            0.07086614173228346,
+            0.07086614173228346,
+            0.07874015748031496,
+            0.08661417322834646,
+            0.09448818897637795,
+            0.09448818897637795,
+            0.10236220472440945,
+            0.11023622047244094,
+            0.11811023622047244,
+            0.11811023622047244,
+            0.12598425196850394,
+            0.13385826771653545,
+            0.14173228346456693,
+            0.14960629921259844,
+            0.14960629921259844,
+            0.15748031496062992,
+            0.16535433070866143,
+            0.1732283464566929,
+            0.18110236220472442,
+            0.18110236220472442,
+            0.1889763779527559,
+            0.1968503937007874,
+            0.2047244094488189,
+            0.2125984251968504,
+            0.2204724409448819,
+            0.2204724409448819,
+            0.2283464566929134,
+            0.23622047244094488,
+            0.2440944881889764,
+            0.25196850393700787,
+            0.25984251968503935,
+            0.2677165354330709,
+            0.2677165354330709,
+            0.2755905511811024,
+            0.28346456692913385,
+            0.29133858267716534,
+            0.2992125984251969,
+            0.30708661417322836,
+            0.31496062992125984,
+            0.3228346456692913,
+            0.33070866141732286,
+            0.33858267716535434,
+            0.3464566929133858,
+            0.3464566929133858,
+            0.3543307086614173,
+            0.36220472440944884,
+            0.3700787401574803,
+            0.3779527559055118,
+            0.3858267716535433,
+            0.3937007874015748,
+            0.4015748031496063,
+            0.4094488188976378,
+            0.41732283464566927,
+            0.4251968503937008,
+            0.4330708661417323,
+            0.4409448818897638,
+            0.44881889763779526,
+            0.4566929133858268,
+            0.4645669291338583,
+            0.47244094488188976,
+            0.48031496062992124,
+            0.4881889763779528,
+            0.49606299212598426,
+            0.5039370078740157,
+            0.5118110236220472,
+            0.5196850393700787,
+            0.5275590551181102,
+            0.5354330708661418,
+            0.5511811023622047,
+            0.5590551181102362,
+            0.5669291338582677,
+            0.5748031496062992,
+            0.5826771653543307,
+            0.5905511811023622,
+            0.5984251968503937,
+            0.6062992125984252,
+            0.6141732283464567,
+            0.6220472440944882,
+            0.6377952755905512,
+            0.6456692913385826,
+            0.6535433070866141,
+            0.6614173228346457,
+            0.6692913385826772,
+            0.6771653543307087,
+            0.6850393700787402,
+            0.7007874015748031,
+            0.7086614173228346,
+            0.7165354330708661,
+            0.7244094488188977,
+            0.7322834645669292,
+            0.7480314960629921,
+            0.7559055118110236,
+            0.7637795275590551,
+            0.7716535433070866,
+            0.7795275590551181,
+            0.7952755905511811,
+            0.8031496062992126,
+            0.8110236220472441,
+            0.8188976377952756,
+            0.8346456692913385,
+            0.84251968503937,
+            0.8503937007874016,
+            0.8661417322834646,
+            0.8740157480314961,
+            0.8818897637795275,
+            0.8976377952755905,
+            0.905511811023622,
+            0.9133858267716536,
+            0.9212598425196851,
+            0.937007874015748,
+            0.9448818897637795,
+            0.9606299212598425,
+            0.968503937007874,
+            0.9763779527559056,
+            0.9921259842519685,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json",
+          "data/units/roland-sc8850-01/efx-bands/01-00-16-where-the-level-steps.json",
+          "data/units/roland-sc8850-01/efx-bands/01-40-16-the-level-on-another-type.json",
+          "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d96.json",
+          "data/units/roland-sc8850-01/efx-bands/01-11-16-the-level-on-a-third-type-d00.json"
+        ],
+        "fitted_on": [
+          [
+            "the-level-on-a-third-type",
+            0
+          ],
+          [
+            "the-level-on-a-third-type",
+            1
+          ],
+          [
+            "the-level-on-a-third-type",
+            2
+          ],
+          [
+            "the-level-on-a-third-type",
+            3
+          ],
+          [
+            "the-level-on-a-third-type",
+            4
+          ],
+          [
+            "the-level-on-a-third-type",
+            6
+          ],
+          [
+            "the-level-on-a-third-type",
+            8
+          ],
+          [
+            "the-level-on-a-third-type",
+            12
+          ],
+          [
+            "the-level-on-a-third-type",
+            16
+          ],
+          [
+            "the-level-on-a-third-type",
+            24
+          ],
+          [
+            "the-level-on-a-third-type",
+            32
+          ],
+          [
+            "the-level-on-a-third-type",
+            48
+          ],
+          [
+            "the-level-on-a-third-type",
+            64
+          ],
+          [
+            "the-level-on-a-third-type",
+            80
+          ],
+          [
+            "the-level-on-a-third-type",
+            96
+          ],
+          [
+            "the-level-on-a-third-type",
+            112
+          ],
+          [
+            "the-level-on-a-third-type",
+            127
+          ],
+          [
+            "the-level-on-another-type",
+            0
+          ],
+          [
+            "the-level-on-another-type",
+            2
+          ],
+          [
+            "the-level-on-another-type",
+            4
+          ],
+          [
+            "the-level-on-another-type",
+            6
+          ],
+          [
+            "the-level-on-another-type",
+            8
+          ],
+          [
+            "the-level-on-another-type",
+            12
+          ],
+          [
+            "the-level-on-another-type",
+            16
+          ],
+          [
+            "the-level-on-another-type",
+            24
+          ],
+          [
+            "the-level-on-another-type",
+            32
+          ],
+          [
+            "the-level-on-another-type",
+            48
+          ],
+          [
+            "the-level-on-another-type",
+            64
+          ],
+          [
+            "the-level-on-another-type",
+            80
+          ],
+          [
+            "the-level-on-another-type",
+            96
+          ],
+          [
+            "the-level-on-another-type",
+            112
+          ],
+          [
+            "the-level-on-another-type",
+            127
+          ],
+          [
+            "where-the-level-steps",
+            0
+          ],
+          [
+            "where-the-level-steps",
+            1
+          ],
+          [
+            "where-the-level-steps",
+            2
+          ],
+          [
+            "where-the-level-steps",
+            3
+          ],
+          [
+            "where-the-level-steps",
+            4
+          ],
+          [
+            "where-the-level-steps",
+            5
+          ],
+          [
+            "where-the-level-steps",
+            6
+          ],
+          [
+            "where-the-level-steps",
+            7
+          ],
+          [
+            "where-the-level-steps",
+            8
+          ],
+          [
+            "where-the-level-steps",
+            9
+          ],
+          [
+            "where-the-level-steps",
+            10
+          ],
+          [
+            "where-the-level-steps",
+            11
+          ],
+          [
+            "where-the-level-steps",
+            12
+          ],
+          [
+            "where-the-level-steps",
+            13
+          ],
+          [
+            "where-the-level-steps",
+            14
+          ],
+          [
+            "where-the-level-steps",
+            15
+          ],
+          [
+            "where-the-level-steps",
+            16
+          ],
+          [
+            "where-the-level-steps",
+            17
+          ],
+          [
+            "where-the-level-steps",
+            18
+          ],
+          [
+            "where-the-level-steps",
+            19
+          ],
+          [
+            "where-the-level-steps",
+            20
+          ],
+          [
+            "where-the-level-steps",
+            21
+          ],
+          [
+            "where-the-level-steps",
+            22
+          ],
+          [
+            "where-the-level-steps",
+            23
+          ],
+          [
+            "where-the-level-steps",
+            24
+          ],
+          [
+            "where-the-level-steps",
+            25
+          ],
+          [
+            "where-the-level-steps",
+            26
+          ],
+          [
+            "where-the-level-steps",
+            27
+          ],
+          [
+            "where-the-level-steps",
+            28
+          ],
+          [
+            "where-the-level-steps",
+            29
+          ],
+          [
+            "where-the-level-steps",
+            30
+          ],
+          [
+            "where-the-level-steps",
+            31
+          ],
+          [
+            "where-the-level-steps",
+            32
+          ],
+          [
+            "where-the-level-steps",
+            33
+          ],
+          [
+            "where-the-level-steps",
+            34
+          ],
+          [
+            "where-the-level-steps",
+            35
+          ],
+          [
+            "where-the-level-steps",
+            36
+          ],
+          [
+            "where-the-level-steps",
+            37
+          ],
+          [
+            "where-the-level-steps",
+            38
+          ],
+          [
+            "where-the-level-steps",
+            39
+          ],
+          [
+            "where-the-level-steps",
+            40
+          ],
+          [
+            "where-the-level-steps",
+            41
+          ],
+          [
+            "where-the-level-steps",
+            42
+          ],
+          [
+            "where-the-level-steps",
+            43
+          ],
+          [
+            "where-the-level-steps",
+            44
+          ],
+          [
+            "where-the-level-steps",
+            45
+          ],
+          [
+            "where-the-level-steps",
+            46
+          ],
+          [
+            "where-the-level-steps",
+            47
+          ],
+          [
+            "where-the-level-steps",
+            48
+          ],
+          [
+            "where-the-level-steps",
+            49
+          ],
+          [
+            "where-the-level-steps",
+            50
+          ],
+          [
+            "where-the-level-steps",
+            51
+          ],
+          [
+            "where-the-level-steps",
+            52
+          ],
+          [
+            "where-the-level-steps",
+            53
+          ],
+          [
+            "where-the-level-steps",
+            54
+          ],
+          [
+            "where-the-level-steps",
+            55
+          ],
+          [
+            "where-the-level-steps",
+            56
+          ],
+          [
+            "where-the-level-steps",
+            57
+          ],
+          [
+            "where-the-level-steps",
+            58
+          ],
+          [
+            "where-the-level-steps",
+            59
+          ],
+          [
+            "where-the-level-steps",
+            60
+          ],
+          [
+            "where-the-level-steps",
+            61
+          ],
+          [
+            "where-the-level-steps",
+            62
+          ],
+          [
+            "where-the-level-steps",
+            63
+          ],
+          [
+            "where-the-level-steps",
+            64
+          ],
+          [
+            "where-the-level-steps",
+            65
+          ],
+          [
+            "where-the-level-steps",
+            66
+          ],
+          [
+            "where-the-level-steps",
+            67
+          ],
+          [
+            "where-the-level-steps",
+            68
+          ],
+          [
+            "where-the-level-steps",
+            69
+          ],
+          [
+            "where-the-level-steps",
+            70
+          ],
+          [
+            "where-the-level-steps",
+            71
+          ],
+          [
+            "where-the-level-steps",
+            72
+          ],
+          [
+            "where-the-level-steps",
+            73
+          ],
+          [
+            "where-the-level-steps",
+            74
+          ],
+          [
+            "where-the-level-steps",
+            75
+          ],
+          [
+            "where-the-level-steps",
+            76
+          ],
+          [
+            "where-the-level-steps",
+            77
+          ],
+          [
+            "where-the-level-steps",
+            78
+          ],
+          [
+            "where-the-level-steps",
+            79
+          ],
+          [
+            "where-the-level-steps",
+            80
+          ],
+          [
+            "where-the-level-steps",
+            81
+          ],
+          [
+            "where-the-level-steps",
+            82
+          ],
+          [
+            "where-the-level-steps",
+            83
+          ],
+          [
+            "where-the-level-steps",
+            84
+          ],
+          [
+            "where-the-level-steps",
+            85
+          ],
+          [
+            "where-the-level-steps",
+            86
+          ],
+          [
+            "where-the-level-steps",
+            87
+          ],
+          [
+            "where-the-level-steps",
+            88
+          ],
+          [
+            "where-the-level-steps",
+            89
+          ],
+          [
+            "where-the-level-steps",
+            90
+          ],
+          [
+            "where-the-level-steps",
+            91
+          ],
+          [
+            "where-the-level-steps",
+            92
+          ],
+          [
+            "where-the-level-steps",
+            93
+          ],
+          [
+            "where-the-level-steps",
+            94
+          ],
+          [
+            "where-the-level-steps",
+            95
+          ],
+          [
+            "where-the-level-steps",
+            96
+          ],
+          [
+            "where-the-level-steps",
+            97
+          ],
+          [
+            "where-the-level-steps",
+            98
+          ],
+          [
+            "where-the-level-steps",
+            99
+          ],
+          [
+            "where-the-level-steps",
+            100
+          ],
+          [
+            "where-the-level-steps",
+            101
+          ],
+          [
+            "where-the-level-steps",
+            102
+          ],
+          [
+            "where-the-level-steps",
+            103
+          ],
+          [
+            "where-the-level-steps",
+            104
+          ],
+          [
+            "where-the-level-steps",
+            105
+          ],
+          [
+            "where-the-level-steps",
+            106
+          ],
+          [
+            "where-the-level-steps",
+            107
+          ],
+          [
+            "where-the-level-steps",
+            108
+          ],
+          [
+            "where-the-level-steps",
+            109
+          ],
+          [
+            "where-the-level-steps",
+            110
+          ],
+          [
+            "where-the-level-steps",
+            111
+          ],
+          [
+            "where-the-level-steps",
+            112
+          ],
+          [
+            "where-the-level-steps",
+            113
+          ],
+          [
+            "where-the-level-steps",
+            114
+          ],
+          [
+            "where-the-level-steps",
+            115
+          ],
+          [
+            "where-the-level-steps",
+            116
+          ],
+          [
+            "where-the-level-steps",
+            117
+          ],
+          [
+            "where-the-level-steps",
+            118
+          ],
+          [
+            "where-the-level-steps",
+            119
+          ],
+          [
+            "where-the-level-steps",
+            120
+          ],
+          [
+            "where-the-level-steps",
+            121
+          ],
+          [
+            "where-the-level-steps",
+            122
+          ],
+          [
+            "where-the-level-steps",
+            123
+          ],
+          [
+            "where-the-level-steps",
+            124
+          ],
+          [
+            "where-the-level-steps",
+            125
+          ],
+          [
+            "where-the-level-steps",
+            126
+          ],
+          [
+            "where-the-level-steps",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low",
+      "kind": "section",
+      "input": "level",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high",
+      "kind": "section",
+      "input": "low",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json",
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pan",
+      "kind": "pan",
+      "input": "high",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "bound",
+    "40 03 06": "fixed_at_power_on",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}

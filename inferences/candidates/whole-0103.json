@@ -1,0 +1,91 @@
+{
+  "class": "whole-0103",
+  "what_the_class_is": "The humanizer as a whole: the pair summed to one path, a vowel filter, a drive stage the Drive Sw byte puts in or takes out, then the constant the type takes, the level, the fixed tone shelves and the output pan. The candidates differ in the vowel filter's form and in which side of it the drive stage sits.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at a fixed clock with a small control processor beside it.",
+    "what_that_implies": [
+      "A vowel is a handful of two-pole sections, one a formant; whether they are chained, each lifting its band off a flat path, or summed side by side with their own levels is the one structural choice a formant filter of the period makes, and both cost the same few multiplies a formant.",
+      "A formant set is a short table of coefficients indexed by the vowel, so a vowel byte picks entries rather than computing them.",
+      "A drive is a gain into a curve at the clock the rest of the effect runs at, with nothing oversampled."
+    ],
+    "would_be_wrong_if": "The struck-kit takes of the drive byte at its two ends, or of the Drive Sw pair the fits did not read, fall further from every candidate than the unit's repeats sit from each other, in a way no placement of the drive stage or form of the vowel filter closes."
+  },
+  "candidates": [
+    {
+      "id": "peaking-in-series-drive-before",
+      "model": "inferences/models/0103-whole-peaking-in-series-drive-before.json",
+      "reading": "Peaking sections in series for the vowel, the drive stage in front of it; the vowel filter and the gains either side of the curve fitted on the struck-kit takes of the Drive Sw pairs, which no stage compares.",
+      "fit_residual_db": {
+        "drive_out": {
+          "rms_db": 2.796,
+          "worst_db": 12.429
+        },
+        "drive_in": {
+          "rms_db": 2.582,
+          "worst_db": 11.213
+        }
+      },
+      "predicts": "Below the lowest section and above the highest the level returns to the chain's one gain, so the two ends of the band sit at one level unless a section is spent on the slope; a dip between two peaks is a section of its own, cut rather than boosted. The curve's products go through the vowel filter, so with the drive in the band profile keeps the dips between the peaks and the high end falls as it does with the drive out."
+    },
+    {
+      "id": "peaking-in-series-drive-after",
+      "model": "inferences/models/0103-whole-peaking-in-series-drive-after.json",
+      "reading": "Peaking sections in series for the vowel, the drive stage after it; the vowel filter and the gains either side of the curve fitted on the struck-kit takes of the Drive Sw pairs, which no stage compares.",
+      "fit_residual_db": {
+        "drive_out": {
+          "rms_db": 2.796,
+          "worst_db": 12.429
+        },
+        "drive_in": {
+          "rms_db": 2.564,
+          "worst_db": 9.424
+        }
+      },
+      "predicts": "Below the lowest section and above the highest the level returns to the chain's one gain, so the two ends of the band sit at one level unless a section is spent on the slope; a dip between two peaks is a section of its own, cut rather than boosted. The curve works on what the vowel filter already shaped, so its products land at the multiples of the peaks, filling the dips between them and lifting the high end with the drive in."
+    },
+    {
+      "id": "band-passes-in-parallel-drive-before",
+      "model": "inferences/models/0103-whole-band-passes-in-parallel-drive-before.json",
+      "reading": "Band-passes in parallel beside a direct path for the vowel, the drive stage in front of it; the vowel filter and the gains either side of the curve fitted on the struck-kit takes of the Drive Sw pairs, which no stage compares.",
+      "fit_residual_db": {
+        "drive_out": {
+          "rms_db": 1.494,
+          "worst_db": 7.133
+        },
+        "drive_in": {
+          "rms_db": 1.304,
+          "worst_db": 4.241
+        }
+      },
+      "predicts": "Below the first peak and above the last the level is the direct path's alone, and a dip between two peaks can fall far below either skirt where the two band-passes' phases turn against each other. The curve's products go through the vowel filter, so with the drive in the band profile keeps the dips between the peaks and the high end falls as it does with the drive out."
+    },
+    {
+      "id": "band-passes-in-parallel-drive-after",
+      "model": "inferences/models/0103-whole-band-passes-in-parallel-drive-after.json",
+      "reading": "Band-passes in parallel beside a direct path for the vowel, the drive stage after it; the vowel filter and the gains either side of the curve fitted on the struck-kit takes of the Drive Sw pairs, which no stage compares.",
+      "fit_residual_db": {
+        "drive_out": {
+          "rms_db": 1.494,
+          "worst_db": 7.133
+        },
+        "drive_in": {
+          "rms_db": 1.742,
+          "worst_db": 5.532
+        }
+      },
+      "predicts": "Below the first peak and above the last the level is the direct path's alone, and a dip between two peaks can fall far below either skirt where the two band-passes' phases turn against each other. The curve works on what the vowel filter already shaped, so its products land at the multiples of the peaks, filling the dips between them and lifting the high end with the drive in."
+    }
+  ],
+  "left_out": [
+    {
+      "reading": "3 resonant two-pole low-passes in series behind one gain, the cascade formant synthesiser.",
+      "why": "Fitted on the same takes with the drive stage out it misses them by 5.41 dB root mean square and 16.8 at worst, against 2.80 and 1.49 for the two candidates: above its highest resonator it falls twelve decibels an octave a section, where the unit's profile falls under ten over the whole top of the band, so every fit spends its resonators holding the top up rather than on the two peaks."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Any vowel but the first. Only the first printed vowel was taken where a fit may read it, so no candidate names a state for Vowel 01 to 04 and every take of one is a setting none of them draws.",
+    "What the Accel byte does. The conversion table gives it sixteen steps and no time, and no take changes the vowel while a note sounds.",
+    "Any other drive curve: the tanh is carried from the drive types, where no curve has yet closed.",
+    "Whether the vowel filter's peaks move with the drive byte: they are fitted at its rest alone."
+  ]
+}
