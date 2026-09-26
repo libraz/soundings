@@ -379,6 +379,44 @@ def _block(model: dict, component: list[str], drawing: _Drawing, max_block: int 
     return size if max_block is None else min(size, max_block)
 
 
+def _silenced(spec: dict, drawing: _Drawing) -> bool:
+    return "control" not in spec and drawing.value(spec, 0, 0) == 0.0
+
+
+def _heard(model: dict, nodes: dict[str, dict], drawing: _Drawing) -> set[str]:
+    """The nodes an output reads, not counting a mix input weighted a constant zero.
+
+    A node left out keeps an output of zeros, and a mix adding zero returns the sum it
+    had, so the outputs come out in the same bits as when every node is drawn.
+    """
+    ids = set(nodes)
+    todo = [_owner(ref, ids) for ref in model["outputs"].values()]
+    heard: set[str] = set()
+    while todo:
+        node_id = todo.pop()
+        if node_id is None or node_id in heard:
+            continue
+        heard.add(node_id)
+        node = nodes[node_id]
+        audio = _audio(node)
+        if node["kind"] == "mix":
+            audio = [ref for ref in audio if not _silenced(node["weights"][ref], drawing)]
+        todo += [_owner(ref, ids) for ref in audio + _controls(node)]
+    return heard
+
+
+def _resolve_bytes(item, drawing: _Drawing) -> None:
+    """Read every byte a node names, so a state it names none for refuses the setting."""
+    if isinstance(item, dict):
+        if "byte" in item and "map" in item:
+            drawing.value(item, 0, 0)
+        for value in item.values():
+            _resolve_bytes(value, drawing)
+    elif isinstance(item, list):
+        for value in item:
+            _resolve_bytes(value, drawing)
+
+
 def run(
     model: dict,
     inputs: dict[str, np.ndarray],
@@ -403,14 +441,20 @@ def run(
         for port in NODES[node["kind"]].ports:
             drawing.output(node["id"], port)
 
+    heard = _heard(model, nodes, drawing)
+    for node_id in nodes.keys() - heard:
+        _resolve_bytes(nodes[node_id], drawing)
+
+    # Blocks are sized on the whole graph, so leaving a node out moves nothing else.
     every, immediate = _edges(model)
     for component in _components(list(nodes), every):
         if not _looped(component, every):
             node = nodes[component[0]]
-            NODES[node["kind"]].render(node, drawing, 0, size)
+            if node["id"] in heard:
+                NODES[node["kind"]].render(node, drawing, 0, size)
             continue
         block = _block(model, component, drawing, max_block)
-        order = [nodes[v] for v in _in_order(component, immediate)]
+        order = [nodes[v] for v in _in_order(component, immediate) if v in heard]
         for a in range(0, size, block):
             b = min(a + block, size)
             for node in order:

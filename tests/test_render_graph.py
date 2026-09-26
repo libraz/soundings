@@ -13,6 +13,7 @@ tree, so without one the test skips.
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 from pathlib import Path
 
@@ -398,3 +399,56 @@ def test_a_byte_value_the_model_names_no_state_for_is_unrenderable(states, refus
             drawn(model, x, {"40 03 04": 127})
     else:
         assert np.allclose(drawn(model, x, {"40 03 04": 127}), 1.0)
+
+
+def _by_mode(values: dict) -> dict:
+    return {"byte": "40 03 04", "map": {"kind": "states", "values": values},
+            "source": "law", "rests_on": [], "fitted_on": []}
+
+
+def _two_branches(quiet: dict) -> dict:
+    """`y` mixes a branch the mode byte keeps with one it weights at zero."""
+    return graph_of([
+        quiet,
+        {"id": "loud", "kind": "gain", "input": "x", "gain": spec(0.5), "unit": "ratio"},
+        {"id": "y", "kind": "mix", "inputs": ["loud", "quiet"],
+         "weights": {"loud": spec(1.0), "quiet": _by_mode({"0": 0.0, "1": 1.0})}},
+    ], bound=("40 03 04",))
+
+
+def _quiet_gain(gain: dict) -> dict:
+    return {"id": "quiet", "kind": "gain", "input": "x", "gain": gain, "unit": "ratio"}
+
+
+@pytest.mark.parametrize(("mode", "drawn_quiet"), [(0, False), (1, True)])
+def test_a_node_heard_only_through_a_weight_of_zero_is_not_drawn(monkeypatch, mode, drawn_quiet):
+    seen = []
+    kind = render.graph.NODES["gain"]
+
+    def counted(node, drawing, a, b):
+        seen.append(node["id"])
+        kind.render(node, drawing, a, b)
+
+    monkeypatch.setitem(render.graph.NODES, "gain", dataclasses.replace(kind, render=counted))
+    x = np.random.default_rng(3).standard_normal(256)
+    y = drawn(_two_branches(_quiet_gain(spec(2.0))), x, {"40 03 04": mode})
+    assert ("quiet" in seen) is drawn_quiet
+    np.testing.assert_array_equal(y, 0.5 * x + (2.0 * x if drawn_quiet else 0.0))
+
+
+def test_a_loop_with_a_silenced_branch_draws_what_the_loop_without_it_draws():
+    silenced = comb(0.7, 2.0, "linear")
+    silenced["nodes"].append(
+        {"id": "aside", "kind": "gain", "input": "line", "gain": spec(-3.0), "unit": "ratio"})
+    silenced["nodes"][0]["inputs"].append("aside")
+    silenced["nodes"][0]["weights"]["aside"] = _by_mode({"0": 0.0, "1": 1.0})
+    silenced["rows"]["40 03 04"] = "bound"
+    x = np.random.default_rng(5).standard_normal(4000)
+    np.testing.assert_array_equal(
+        drawn(silenced, x, {"40 03 04": 0}), drawn(comb(0.7, 2.0, "linear"), x))
+
+
+def test_a_silenced_node_with_no_state_named_still_makes_the_setting_unrenderable():
+    model = _two_branches(_quiet_gain(_by_mode({"1": 2.0})))
+    with pytest.raises(render.Unrenderable, match="40 03 04"):
+        drawn(model, np.ones(64), {"40 03 04": 0})
