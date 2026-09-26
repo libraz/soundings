@@ -212,6 +212,9 @@ def partials(
     frequencies = np.fft.rfftfreq(signal.size, 1.0 / rate)
     kept: list[float] = []
     for index in np.argsort(spectrum)[::-1]:
+        # A frequency holding nothing is not a partial, however high it ranks.
+        if spectrum[index] <= 0.0:
+            break
         candidate = float(frequencies[index])
         if candidate < 40.0:
             continue

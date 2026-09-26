@@ -277,3 +277,14 @@ def test_a_take_nothing_agreed_in_still_names_one_partials_rate() -> None:
     assert got["agreeing"] == 1
     assert got["rate_hz"] == pytest.approx(3.1019, abs=5e-4)
     assert "split_between_hz" not in got
+
+
+def test_a_take_with_nothing_in_it_has_no_partials_to_read() -> None:
+    """A spectrum of zeros has no strongest frequency, and the top bin is not one.
+
+    A model can put out digital silence where the unit never does, and ranking an
+    empty spectrum returns the Nyquist bin, around which no band can be placed.
+    """
+    silent = np.zeros(48000)
+    assert rates.partials(silent, 48000) == []
+    assert rates.read_partials(silent, 48000) == []
