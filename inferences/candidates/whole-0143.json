@@ -1,0 +1,45 @@
+{
+  "class": "whole-0143",
+  "what_the_class_is": "The Space D type as a whole: two chorus voices whose modulators the Phase byte sets apart, the balance of dry against wet, then the level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A chorus is a delay line whose read address a modulator moves, summed with the dry path; the per-sample cost is one interpolated read a voice and a multiply-accumulate to mix it, so six voices cost six reads and nothing else new.",
+      "The modulator is a phase accumulator read through a short shape, and a triangle is the cheapest shape: a folded ramp needs no table. Several voices off one accumulator are that accumulator read at several offsets.",
+      "A chorus built after a two-line analogue design feeds each output both lines, one of them inverted, so that the delayed copies cancel in a mono sum; a digital copy of that design costs one more multiply-accumulate an output.",
+      "Rates, times and levels are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A reading of the delay's excursion placed the unit's settings outside what either shape predicts by more than the reading's own floor at settings nothing here was built on, or a byte this family reads through a shared table returned values that table does not hold."
+  },
+  "candidates": [
+    {
+      "id": "triangle-a-voice-a-side",
+      "model": "inferences/models/0143-whole-triangle-a-voice-a-side.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The modulator's shape (triangle) and what each output carries: its own voice.",
+      "predicts": "A chorus as wide as the stereo chorus's, each output swinging in pitch with its own voice. Its delay moves at one rate from end to end, so its pitch holds two values a cycle and jumps between them."
+    },
+    {
+      "id": "raised-sine-a-voice-a-side",
+      "model": "inferences/models/0143-whole-raised-sine-a-voice-a-side.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The modulator's shape (raised sine) and what each output carries: its own voice.",
+      "predicts": "A chorus as wide as the stereo chorus's, each output swinging in pitch with its own voice. Its delay lingers at the ends of the sweep and passes the middle quickly, and at every depth its excursion is 0.64 of the triangle's."
+    },
+    {
+      "id": "triangle-both-voices-crossed",
+      "model": "inferences/models/0143-whole-triangle-both-voices-crossed.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The modulator's shape (triangle) and what each output carries: its own voice less the other side's, half of each.",
+      "predicts": "At the power-on phase of half a cycle and the depth at nought, the two voices cancel and the wet path is silent; with the depth up, a wet signal that is the difference of two voices and a mono sum with no wet in it. Its delay moves at one rate from end to end, so its pitch holds two values a cycle and jumps between them."
+    },
+    {
+      "id": "raised-sine-both-voices-crossed",
+      "model": "inferences/models/0143-whole-raised-sine-both-voices-crossed.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The modulator's shape (raised sine) and what each output carries: its own voice less the other side's, half of each.",
+      "predicts": "At the power-on phase of half a cycle and the depth at nought, the two voices cancel and the wet path is silent; with the depth up, a wet signal that is the difference of two voices and a mono sum with no wet in it. Its delay lingers at the ends of the sweep and passes the middle quickly, and at every depth its excursion is 0.64 of the triangle's."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Whether the depth curve is the stereo chorus's: the excursion takes this type was walked at read almost nothing off the phase, which the crossed reading predicts and the other does not, but no depth curve was read on this type.",
+    "What the Phase byte does above 5A, where the page prints nothing: it is held at half a cycle.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "class": "whole-0141",
+  "what_the_class_is": "The tremolo chorus as a whole: one chorus voice an output off a single modulator, a triangle tremolo whose rate and side-to-side phase are bytes, the balance of dry against wet, then the level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A chorus is a delay line whose read address a modulator moves, summed with the dry path; the per-sample cost is one interpolated read a voice and a multiply-accumulate to mix it, so six voices cost six reads and nothing else new.",
+      "The modulator is a phase accumulator read through a short shape, and a triangle is the cheapest shape: a folded ramp needs no table. Several voices off one accumulator are that accumulator read at several offsets.",
+      "A chorus built after a two-line analogue design feeds each output both lines, one of them inverted, so that the delayed copies cancel in a mono sum; a digital copy of that design costs one more multiply-accumulate an output.",
+      "Rates, times and levels are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "A reading of the delay's excursion placed the unit's settings outside what either shape predicts by more than the reading's own floor at settings nothing here was built on, or a byte this family reads through a shared table returned values that table does not hold."
+  },
+  "candidates": [
+    {
+      "id": "triangle-tremolo-on-the-wet",
+      "model": "inferences/models/0141-whole-triangle-tremolo-on-the-wet.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The chorus modulator's shape (triangle) and where the tremolo sits: on the wet path, before the balance.",
+      "predicts": "With the balance at all-dry the output is steady; the tremolo appears only as the wet path is brought in. Its delay moves at one rate from end to end, so its pitch holds two values a cycle and jumps between them."
+    },
+    {
+      "id": "raised-sine-tremolo-on-the-wet",
+      "model": "inferences/models/0141-whole-raised-sine-tremolo-on-the-wet.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The chorus modulator's shape (raised sine) and where the tremolo sits: on the wet path, before the balance.",
+      "predicts": "With the balance at all-dry the output is steady; the tremolo appears only as the wet path is brought in. Its delay lingers at the ends of the sweep and passes the middle quickly, and at every depth its excursion is 0.64 of the triangle's."
+    },
+    {
+      "id": "triangle-tremolo-after-the-balance",
+      "model": "inferences/models/0141-whole-triangle-tremolo-after-the-balance.json",
+      "reading": "The modulator is a triangle spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The chorus modulator's shape (triangle) and where the tremolo sits: after the balance, on dry and wet together.",
+      "predicts": "The tremolo at the same depth whatever the balance, the all-dry output included. Its delay moves at one rate from end to end, so its pitch holds two values a cycle and jumps between them."
+    },
+    {
+      "id": "raised-sine-tremolo-after-the-balance",
+      "model": "inferences/models/0141-whole-raised-sine-tremolo-after-the-balance.json",
+      "reading": "The modulator is a raised sine spanning the depth above the pre-delay, and the depth byte is worth the stereo chorus's pitch excursion read as a delay under that shape. The chorus modulator's shape (raised sine) and where the tremolo sits: after the balance, on dry and wet together.",
+      "predicts": "The tremolo at the same depth whatever the balance, the all-dry output included. Its delay lingers at the ends of the sweep and passes the middle quickly, and at every depth its excursion is 0.64 of the triangle's."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Anything Trem Sep does. It is printed 0-127 with no unit and no claim reads it, so it is held at its power-on 96 and the tremolo is drawn at the depth the Depth-0 takes show there.",
+    "Whether the chorus's two outputs are modulated apart: the page prints no chorus phase, and both outputs follow one modulator here.",
+    "The tremolo's level at its peak. It is drawn as a dip from unity; the takes fix its trough over its peak and not where the pair sits.",
+    "Why the two outputs' tremolo is 0.04 deeper on the left than the right: both are drawn at the mean.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ],
+  "what_the_fitting_takes_said": {
+    "depth": 0.6144,
+    "depth_by_side": [
+      0.6334,
+      0.5954
+    ],
+    "shape": "triangle",
+    "why_not_ranked_here": "Three takes at one setting of every byte; the tremolo was read on them and every candidate carries the same reading, so nothing here tells the candidates apart."
+  }
+}
