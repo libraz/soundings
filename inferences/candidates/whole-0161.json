@@ -1,0 +1,48 @@
+{
+  "class": "whole-0161",
+  "what_the_class_is": "The feedback pitch shifter as a whole: one shifter off the mono sum of the inputs with its output fed back by the Feedback byte, a pre-delay, the EFX Pan byte placing it, mixed with the dry by the balance byte, then the level and tone stages. The five windows are the single shifter's, which the feedback shifter's own claim was predicted from before its takes were made, so every take of this type is held out of the table.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A time-domain shifter is a circular buffer read by pointers that move through it at the ratio and jump back by a stored length when they reach the end of it; two pointers a length apart, crossfaded, hide the jump. It costs two interpolated reads and a few multiplies a sample and no transform.",
+      "The length is a table the mode byte indexes, and a table whose entries are powers of two costs nothing to wrap: the pointer arithmetic is a mask.",
+      "A feedback shifter writes its own output back into what it reads, so each pass through the loop is shifted again and the repeats climb or fall by the ratio.",
+      "Times, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The splice rate at settings nothing here was built on came back other than the ratio's distance from one over the window the mode byte picks, or a copy of the output in itself stood at a distance that does not follow the mode byte."
+  },
+  "candidates": [
+    {
+      "id": "pair-a-window-apart-loop-through-the-pre-delay",
+      "model": "inferences/models/0161-whole-pair-a-window-apart-loop-through-the-pre-delay.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored a whole window apart, and the loop returning ahead of the pre-delay, a sample past its ladder entry.",
+      "predicts": "A copy of the output in itself at the window over the ratio, which two semitones up is 0.891 of the window; with feedback and a pre-delay, repeats spaced by the pre-delay and the shifter together, each shifted once more."
+    },
+    {
+      "id": "pair-a-window-apart-pre-delay-ahead-of-the-loop",
+      "model": "inferences/models/0161-whole-pair-a-window-apart-pre-delay-ahead-of-the-loop.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored a whole window apart, and the pre-delay ahead of the loop, the loop returning one sample after the shifter.",
+      "predicts": "A copy of the output in itself at the window over the ratio, which two semitones up is 0.891 of the window; with feedback, repeats spaced by the shifter alone and the pre-delay only delaying the lot."
+    },
+    {
+      "id": "pair-half-a-window-apart-loop-through-the-pre-delay",
+      "model": "inferences/models/0161-whole-pair-half-a-window-apart-loop-through-the-pre-delay.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored half a window apart, and the loop returning ahead of the pre-delay, a sample past its ladder entry.",
+      "predicts": "A copy of the output in itself at half the window over the ratio, 0.445 of the window two semitones up; repeats spaced by the pre-delay and the shifter together."
+    },
+    {
+      "id": "pair-half-a-window-apart-pre-delay-ahead-of-the-loop",
+      "model": "inferences/models/0161-whole-pair-half-a-window-apart-pre-delay-ahead-of-the-loop.json",
+      "reading": "Each pitch byte is a shifter whose window is the one the mode byte picks over the ratio's distance from one, so the read-out drifts a window at a time and is re-entered there. The pair stored half a window apart, and the pre-delay ahead of the loop, the loop returning one sample after the shifter.",
+      "predicts": "A copy of the output in itself at half the window over the ratio, 0.445 of the window two semitones up; repeats spaced by the shifter alone."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "The copy at unison, for the reason the single shifter's class gives: at a ratio of one the node's pointers coincide.",
+    "The crossfade's shape. Every candidate here fades straight; the single shifter's class is where the shape is compared, and a loop drawn a sample at a time makes a second axis here twice as dear.",
+    "What coarse and fine do together, and what either does outside its printed range, as on the single shifter.",
+    "How the inputs are summed onto the shifter: half of each here; no reading fixed it.",
+    "Where in the chain the feedback is scaled against the level and tone stages: every candidate feeds back the shifter's own output, before the pan.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
