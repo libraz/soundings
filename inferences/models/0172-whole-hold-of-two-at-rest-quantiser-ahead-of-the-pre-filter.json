@@ -1,0 +1,1749 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0172-whole-hold-of-two-at-rest-quantiser-ahead-of-the-pre-filter",
+    "class": "whole-0172",
+    "candidate": "hold-of-two-at-rest-quantiser-ahead-of-the-pre-filter",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 72",
+    "kind": "graph",
+    "made_by": "backup/build-lo-fi-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The clock the degrader claim reads its two holds at: the nulls of a hold of three and a hold of four imply 32036 and 32000 Hz, and the pre filter's tap puts its dip at a quarter of it.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "high_l",
+    "out_r": "high_r"
+  },
+  "what_varies": "The byte's flat group holds two samples, which droops the top of the band by three decibels at eight kilohertz and nulls it at sixteen. The quantiser sits at the type's input ahead of the pre filter, so each rung of the ladder raises its noise with the signal.",
+  "fitted_here": {
+    "pre_filter_rungs": {
+      "entries_db": {
+        "0": -5.002,
+        "1": 12.253,
+        "2": 12.253,
+        "3": 18.276,
+        "4": 18.276,
+        "5": 24.22
+      },
+      "the_two_sweeps_apart_db": {
+        "0": 0.055,
+        "1": 0.016,
+        "3": 0.016,
+        "5": 0.002
+      }
+    },
+    "post_filter_shelves": {
+      "1": {
+        "corner_hz": 1334.1,
+        "gain_db": -10.007,
+        "rms_db": 2.262
+      },
+      "2": {
+        "corner_hz": 1050.96,
+        "gain_db": -19.193,
+        "rms_db": 2.251
+      },
+      "3": {
+        "corner_hz": 1874.12,
+        "gain_db": -11.102,
+        "rms_db": 1.941
+      },
+      "4": {
+        "corner_hz": 1426.65,
+        "gain_db": -19.439,
+        "rms_db": 2.014
+      },
+      "5": {
+        "corner_hz": 2420.32,
+        "gain_db": -13.051,
+        "rms_db": 1.279
+      }
+    },
+    "quantiser_step": {
+      "log2_step": -6.35,
+      "step_db_under_full_scale": -38.23,
+      "median_apart_db": {
+        "127": 3.06,
+        "040": -3.14,
+        "016": -3.35
+      },
+      "log2_steps_that_fit_about_as_well": [
+        -6.5,
+        -6.25
+      ],
+      "about_as_well_means": "a summed square within twice the best's plus one square decibel",
+      "orders_read": [
+        13,
+        31
+      ],
+      "channel": 3
+    },
+    "pre_filter_tap_weight": 0.4605
+  },
+  "what_is_not_modelled": [
+    "The shape of the pre filter's entry 0. It stands seventeen decibels under entry 1 with a tilt the floor does not account for; only its level is drawn.",
+    "A fixed droop above five kilohertz that every entry measured here carries against the bypassed path, four to five decibels at the ladder's rungs. No claim names it and a filter fitted to it would be the profile itself.",
+    "Where the quantiser's word saturates, and whether it rounds or truncates: it rounds here, and its word is kept wide enough never to saturate.",
+    "What the quiet field's first two values do beyond nothing: the degrader claim reads them as one value and neither added anything the run could see."
+  ],
+  "fixed_rows": {},
+  "nodes": [
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-with-the-filters-open-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-in-twelfths.json"
+          ],
+          "fitted_on": [
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              0
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              1
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              2
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              3
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              4
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              5
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              0
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              1
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              2
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              3
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              4
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              5
+            ]
+          ]
+        },
+        "in_r": {
+          "value": 0.5,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-with-the-filters-open-in-twelfths.json",
+            "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-in-twelfths.json"
+          ],
+          "fitted_on": [
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              0
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              1
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              2
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              3
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              4
+            ],
+            [
+              "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+              5
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              0
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              1
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              2
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              3
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              4
+            ],
+            [
+              "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+              5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "crush_in",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "ratio",
+      "gain": {
+        "value": 0.0008996937628989374,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0172-a-degrader-byte-is-a-rate-and-something-else.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-127.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-040.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-016.json"
+        ],
+        "fitted_on": [
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-127",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-127",
+            6
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-040",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-040",
+            6
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-016",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-016",
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "crush_word",
+      "kind": "quantize",
+      "input": "crush_in",
+      "bits": 21,
+      "why_bits": "The word the step is written in: this width with the gain either side of it puts the step where the fit did and the word's ends out of reach."
+    },
+    {
+      "id": "crush_out",
+      "kind": "gain",
+      "input": "crush_word",
+      "unit": "ratio",
+      "gain": {
+        "value": 1111.489310293607,
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0172-a-degrader-byte-is-a-rate-and-something-else.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-127.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-040.json",
+          "data/units/roland-sc8850-01/efx-orders/01-72-04-the-quiet-field-as-orders-at-volume-016.json"
+        ],
+        "fitted_on": [
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-127",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-127",
+            6
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-040",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-040",
+            6
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-016",
+            0
+          ],
+          [
+            "what-the-degraders-quiet-field-adds/at-volume-016",
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "crush",
+      "kind": "mix",
+      "inputs": [
+        "mono",
+        "crush_out"
+      ],
+      "weights": {
+        "mono": {
+          "byte": "40 03 04",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 0.0,
+              "7": 0.0,
+              "8": 0.0,
+              "*": 1.0
+            }
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0172-a-degrader-byte-is-a-rate-and-something-else.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        },
+        "crush_out": {
+          "byte": "40 03 04",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 0.0,
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 1.0,
+              "7": 1.0,
+              "8": 1.0,
+              "*": 0.0
+            }
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0172-a-degrader-byte-is-a-rate-and-something-else.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "pre",
+      "kind": "gain",
+      "input": "crush",
+      "unit": "db",
+      "gain": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": -5.002,
+            "1": 12.253,
+            "2": 12.253,
+            "3": 18.276,
+            "4": 18.276,
+            "5": 24.22,
+            "*": -5.002
+          }
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-with-the-filters-open-in-twelfths.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-03-the-pre-filter-in-twelfths.json",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": [
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            0
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            1
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            2
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            3
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            4
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-03-the-pre-filter",
+            5
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            0
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            1
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            2
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            3
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            4
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-03-the-pre-filter",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "pre_tap",
+      "kind": "delay",
+      "input": "pre",
+      "interpolation": "none",
+      "time_ms": {
+        "value": 0.0625,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "pre_out",
+      "kind": "mix",
+      "inputs": [
+        "pre",
+        "pre_tap"
+      ],
+      "weights": {
+        "pre": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 0.684697,
+              "3": 1.0,
+              "4": 0.684697,
+              "5": 1.0,
+              "*": 1.0
+            }
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        },
+        "pre_tap": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "states",
+            "values": {
+              "0": 0.0,
+              "1": 0.0,
+              "2": 0.315303,
+              "3": 0.0,
+              "4": 0.315303,
+              "5": 0.0,
+              "*": 0.0
+            }
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+          ],
+          "fitted_on": []
+        }
+      },
+      "why": "The tap the even entries add, scaled so the stage is unity at the bottom of the band, which is where the claim's fit normalised it."
+    },
+    {
+      "id": "hold",
+      "kind": "hold",
+      "input": "pre_out",
+      "rate_hz": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 16000.0,
+            "1": 10666.666666666668,
+            "2": 8000.0,
+            "3": 16000.0,
+            "4": 10666.666666666668,
+            "5": 8000.0,
+            "6": 16000.0,
+            "7": 10666.666666666668,
+            "8": 8000.0,
+            "*": 16000.0
+          }
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0172-a-degrader-byte-is-a-rate-and-something-else.json",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": []
+      },
+      "why_rate": "The clock over the number of samples held, the count picked by the byte modulo three. A third of the clock is written one float above itself so the hold counts whole thirds rather than rounding under one."
+    },
+    {
+      "id": "post",
+      "kind": "section",
+      "input": "hold",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 1334.1,
+            "1": 1334.1,
+            "2": 1050.96,
+            "3": 1874.12,
+            "4": 1426.65,
+            "5": 2420.32,
+            "*": 1334.1
+          }
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-05-the-post-filter-with-the-filters-open-in-twelfths.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-05-the-post-filter-in-twelfths.json",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": [
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            0
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            1
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            2
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            3
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            4
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            5
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            0
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            1
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            2
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            3
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            4
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            5
+          ]
+        ]
+      },
+      "gain_db": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "states",
+          "values": {
+            "0": 0.0,
+            "1": -10.007,
+            "2": -19.193,
+            "3": -11.102,
+            "4": -19.439,
+            "5": -13.051,
+            "*": 0.0
+          }
+        },
+        "source": "measured",
+        "rests_on": [
+          "inferences/roland-sc8850-01/lo-fi-two-filter-bytes-that-share-a-printed-name.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-05-the-post-filter-with-the-filters-open-in-twelfths.json",
+          "data/units/roland-sc8850-01/efx-bands/01-72-05-the-post-filter-in-twelfths.json",
+          "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json"
+        ],
+        "fitted_on": [
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            0
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            1
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            2
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            3
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            4
+          ],
+          [
+            "the-first-lo-fi-with-its-filters-open/0172-05-the-post-filter",
+            5
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            0
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            1
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            2
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            3
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            4
+          ],
+          [
+            "what-the-first-lo-fi-is-made-of/0172-05-the-post-filter",
+            5
+          ]
+        ]
+      },
+      "why": "Entry 0 is the open entry and every other sweep's reference, so it is a shelf of nothing and the corner it carries does nothing."
+    },
+    {
+      "id": "pan",
+      "kind": "pan",
+      "input": "post",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 15",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              127,
+              127
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "out_l",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "pan.left"
+      ],
+      "weights": {
+        "in_l": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              0.9765625,
+              0.953125,
+              0.9375,
+              0.9140625,
+              0.8984375,
+              0.875,
+              0.859375,
+              0.8359375,
+              0.8125,
+              0.796875,
+              0.7734375,
+              0.7578125,
+              0.734375,
+              0.71875,
+              0.6953125,
+              0.6796875,
+              0.65625,
+              0.6328125,
+              0.6171875,
+              0.59375,
+              0.578125,
+              0.5546875,
+              0.5390625,
+              0.515625,
+              0.5,
+              0.4765625,
+              0.453125,
+              0.4375,
+              0.4140625,
+              0.3984375,
+              0.375,
+              0.359375,
+              0.3359375,
+              0.3125,
+              0.296875,
+              0.2734375,
+              0.2578125,
+              0.234375,
+              0.21875,
+              0.1953125,
+              0.1796875,
+              0.15625,
+              0.1328125,
+              0.1171875,
+              0.09375,
+              0.078125,
+              0.0546875,
+              0.0390625,
+              0.015625,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        },
+        "pan.left": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.015625,
+              0.0390625,
+              0.0546875,
+              0.078125,
+              0.09375,
+              0.1171875,
+              0.1328125,
+              0.15625,
+              0.1796875,
+              0.1953125,
+              0.21875,
+              0.234375,
+              0.2578125,
+              0.2734375,
+              0.296875,
+              0.3125,
+              0.3359375,
+              0.359375,
+              0.375,
+              0.3984375,
+              0.4140625,
+              0.4375,
+              0.453125,
+              0.4765625,
+              0.5,
+              0.515625,
+              0.5390625,
+              0.5546875,
+              0.578125,
+              0.59375,
+              0.6171875,
+              0.6328125,
+              0.65625,
+              0.6796875,
+              0.6953125,
+              0.71875,
+              0.734375,
+              0.7578125,
+              0.7734375,
+              0.796875,
+              0.8125,
+              0.8359375,
+              0.859375,
+              0.875,
+              0.8984375,
+              0.9140625,
+              0.9375,
+              0.953125,
+              0.9765625,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "out_l",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "level_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "out_r",
+      "kind": "mix",
+      "inputs": [
+        "in_r",
+        "pan.right"
+      ],
+      "weights": {
+        "in_r": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              0.9765625,
+              0.953125,
+              0.9375,
+              0.9140625,
+              0.8984375,
+              0.875,
+              0.859375,
+              0.8359375,
+              0.8125,
+              0.796875,
+              0.7734375,
+              0.7578125,
+              0.734375,
+              0.71875,
+              0.6953125,
+              0.6796875,
+              0.65625,
+              0.6328125,
+              0.6171875,
+              0.59375,
+              0.578125,
+              0.5546875,
+              0.5390625,
+              0.515625,
+              0.5,
+              0.4765625,
+              0.453125,
+              0.4375,
+              0.4140625,
+              0.3984375,
+              0.375,
+              0.359375,
+              0.3359375,
+              0.3125,
+              0.296875,
+              0.2734375,
+              0.2578125,
+              0.234375,
+              0.21875,
+              0.1953125,
+              0.1796875,
+              0.15625,
+              0.1328125,
+              0.1171875,
+              0.09375,
+              0.078125,
+              0.0546875,
+              0.0390625,
+              0.015625,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        },
+        "pan.right": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.015625,
+              0.0390625,
+              0.0546875,
+              0.078125,
+              0.09375,
+              0.1171875,
+              0.1328125,
+              0.15625,
+              0.1796875,
+              0.1953125,
+              0.21875,
+              0.234375,
+              0.2578125,
+              0.2734375,
+              0.296875,
+              0.3125,
+              0.3359375,
+              0.359375,
+              0.375,
+              0.3984375,
+              0.4140625,
+              0.4375,
+              0.453125,
+              0.4765625,
+              0.5,
+              0.515625,
+              0.5390625,
+              0.5546875,
+              0.578125,
+              0.59375,
+              0.6171875,
+              0.6328125,
+              0.65625,
+              0.6796875,
+              0.6953125,
+              0.71875,
+              0.734375,
+              0.7578125,
+              0.7734375,
+              0.796875,
+              0.8125,
+              0.8359375,
+              0.859375,
+              0.875,
+              0.8984375,
+              0.9140625,
+              0.9375,
+              0.953125,
+              0.9765625,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "out_r",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "level_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "bound",
+    "40 03 12": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 15": "bound",
+    "40 03 16": "bound"
+  }
+}

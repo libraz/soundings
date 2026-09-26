@@ -1,0 +1,46 @@
+{
+  "class": "whole-0172",
+  "what_the_class_is": "The first Lo-Fi as a whole: the pair summed to one path, the pre filter as a gain ladder with a two-sample tap on its even entries, the degrader as a hold the byte's low field counts and a quantiser its high field switches in, the post filter as a table of low shelves, the pan, then the balance, level and tone stages. The candidates differ in what the byte's flat group holds and in where the quantiser sits against the pre filter.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A rate reduction is a counter and a register: hold a sample for a whole number of clocks, with no filter in front of it, because the aliasing is the sound asked for.",
+      "A bit reduction is a mask or a rounding on the fixed-point word, memoryless, so where it sits against a hold makes no difference and where it sits against a gain does.",
+      "A filter is the cheapest one that does the job -- one multiply and one state -- and its corner is a table read, not a formula."
+    ],
+    "would_be_wrong_if": "A setting nothing here was fitted on came back with the band's top shaped otherwise than the hold its byte names, or with a noise that followed the signal down."
+  },
+  "candidates": [
+    {
+      "id": "hold-of-one-at-rest-quantiser-after-the-pre-filter",
+      "model": "inferences/models/0172-whole-hold-of-one-at-rest-quantiser-after-the-pre-filter.json",
+      "reading": "The byte's flat group holds nothing: a hold of one sample. The quantiser sits after the pre filter, so the ladder is a drive into a step fixed in its own units.",
+      "predicts": "At the byte's flat entries the path is as flat as the ladder, and the quiet field's added orders stand where the fit put them at the loudest rung and rise against the signal as the pre filter's rung falls."
+    },
+    {
+      "id": "hold-of-one-at-rest-quantiser-ahead-of-the-pre-filter",
+      "model": "inferences/models/0172-whole-hold-of-one-at-rest-quantiser-ahead-of-the-pre-filter.json",
+      "reading": "The byte's flat group holds nothing: a hold of one sample. The quantiser sits at the type's input ahead of the pre filter, so each rung of the ladder raises its noise with the signal.",
+      "predicts": "At the byte's flat entries the path is as flat as the ladder, and the quiet field's added orders keep the same distance under the signal whichever rung of the pre filter is asked."
+    },
+    {
+      "id": "hold-of-two-at-rest-quantiser-after-the-pre-filter",
+      "model": "inferences/models/0172-whole-hold-of-two-at-rest-quantiser-after-the-pre-filter.json",
+      "reading": "The byte's flat group holds two samples, which droops the top of the band by three decibels at eight kilohertz and nulls it at sixteen. The quantiser sits after the pre filter, so the ladder is a drive into a step fixed in its own units.",
+      "predicts": "At the byte's flat entries the top of the band droops three decibels at eight kilohertz against the bypassed path, and the quiet field's orders rise against the signal as the pre filter's rung falls."
+    },
+    {
+      "id": "hold-of-two-at-rest-quantiser-ahead-of-the-pre-filter",
+      "model": "inferences/models/0172-whole-hold-of-two-at-rest-quantiser-ahead-of-the-pre-filter.json",
+      "reading": "The byte's flat group holds two samples, which droops the top of the band by three decibels at eight kilohertz and nulls it at sixteen. The quantiser sits at the type's input ahead of the pre filter, so each rung of the ladder raises its noise with the signal.",
+      "predicts": "At the byte's flat entries the top of the band droops three decibels at eight kilohertz, and the quiet field's orders keep one distance under the signal whichever rung is asked."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Which sample the hold starts counting on. The unit's clock is not the interface's and a hold's alias pattern moves with its phase, so a subtraction of waves at a holding entry compares one phase against another.",
+    "The shape of the pre filter's entry 0. It stands seventeen decibels under entry 1 with a tilt the floor does not account for; only its level is drawn.",
+    "A fixed droop above five kilohertz that every entry measured here carries against the bypassed path, four to five decibels at the ladder's rungs. No claim names it and a filter fitted to it would be the profile itself.",
+    "Where the quantiser's word saturates, and whether it rounds or truncates: it rounds here, and its word is kept wide enough never to saturate.",
+    "What the quiet field's first two values do beyond nothing: the degrader claim reads them as one value and neither added anything the run could see."
+  ]
+}

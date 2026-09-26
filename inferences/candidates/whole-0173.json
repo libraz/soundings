@@ -1,0 +1,46 @@
+{
+  "class": "whole-0173",
+  "what_the_class_is": "The second Lo-Fi as far as this renderer reaches it: the M/S switch picking the pair or its mono sum placed by the pan, the type's own filter, then the balance, level and tone stages. None of the four generators is drawn. The candidates differ in the filter's order and in whether the pan byte moves a stereo pair.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A rate reduction is a counter and a register: hold a sample for a whole number of clocks, with no filter in front of it, because the aliasing is the sound asked for.",
+      "A bit reduction is a mask or a rounding on the fixed-point word, memoryless, so where it sits against a hold makes no difference and where it sits against a gain does.",
+      "A filter is the cheapest one that does the job -- one multiply and one state -- and its corner is a table read, not a formula."
+    ],
+    "would_be_wrong_if": "A setting nothing here was fitted on came back with the band's top shaped otherwise than the hold its byte names, or with a noise that followed the signal down."
+  },
+  "candidates": [
+    {
+      "id": "one-pole-pan-places-only-the-mono-sum",
+      "model": "inferences/models/0173-whole-one-pole-pan-places-only-the-mono-sum.json",
+      "reading": "The type's filter is one bilinear pole, as the identically printed pre filter of the stereo chorus was read. In Stereo the pan byte does nothing; it places only the mono sum.",
+      "predicts": "Fil Type at LPF falls six decibels an octave past the Cutoff entry, and the Pan byte leaves a Stereo take where it was."
+    },
+    {
+      "id": "one-pole-pan-moves-the-pair-too",
+      "model": "inferences/models/0173-whole-one-pole-pan-moves-the-pair-too.json",
+      "reading": "The type's filter is one bilinear pole, as the identically printed pre filter of the stereo chorus was read. In Stereo the pan byte moves each side by its own multiplier as well.",
+      "predicts": "Fil Type at LPF falls six decibels an octave past the Cutoff entry, and in Stereo the Pan byte at either end silences the other side and at the centre costs three decibels a side."
+    },
+    {
+      "id": "two-poles-pan-places-only-the-mono-sum",
+      "model": "inferences/models/0173-whole-two-poles-pan-places-only-the-mono-sum.json",
+      "reading": "The type's filter is two bilinear poles cascaded, twelve decibels an octave. In Stereo the pan byte does nothing; it places only the mono sum.",
+      "predicts": "Fil Type at LPF falls twelve decibels an octave past the Cutoff entry and is six down at it, and the Pan byte leaves a Stereo take where it was."
+    },
+    {
+      "id": "two-poles-pan-moves-the-pair-too",
+      "model": "inferences/models/0173-whole-two-poles-pan-moves-the-pair-too.json",
+      "reading": "The type's filter is two bilinear poles cascaded, twelve decibels an octave. In Stereo the pan byte moves each side by its own multiplier as well.",
+      "predicts": "Fil Type at LPF falls twelve decibels an octave past the Cutoff entry, and in Stereo the Pan byte moves each side by its own multiplier."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "All four generators -- radio noise, white or pink noise, disc noise and hum -- and every byte that sets them. The radio noise powers up at 64, so if it sounds with its detune at 0, every take at power-on carries noise no candidate draws.",
+    "The Lo-Fi Type byte, which no record reads.",
+    "The level of the path through the type against the path past it: no record on this type reads it, so the path is drawn at unity before the balance.",
+    "Whether the Cutoff table's sixteenth entry is 8000 Hz on this type: it is carried from the stereo chorus's identically printed column.",
+    "How the inputs are summed onto the mono path: half each here; no reading fixed it."
+  ]
+}
