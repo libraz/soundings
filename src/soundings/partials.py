@@ -36,6 +36,7 @@ reported apart because they are not the same reading.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
@@ -502,6 +503,36 @@ def _comb_level(swings: np.ndarray, middle: float, mix: float, shaped: np.ndarra
     return level - level.mean(axis=1, keepdims=True)
 
 
+COARSE_THREADS = 2
+"""How many mix and middle pairs of the coarse scan are built at once. Each pair is
+built exactly as it would be alone, so the scan returns the same bits whatever this
+is; numpy's ufuncs run outside the GIL, so two threads halve the wait."""
+
+
+def _coarse_left(
+    swings: np.ndarray,
+    shaped: np.ndarray,
+    middles: np.ndarray,
+    mixes: np.ndarray,
+    observed: np.ndarray,
+) -> np.ndarray:
+    """RMS each swing leaves of `observed`, for every mix and middle, as `(mix, middle, swing)`."""
+    held = float(np.dot(observed, observed))
+
+    def one(pair: tuple[float, float]) -> np.ndarray:
+        mix, middle = pair
+        level = _comb_level(swings, middle, mix, shaped)
+        along = level @ observed
+        energy = np.einsum("st,st->s", level, level)
+        left = held - np.where(energy > 0, along**2 / np.maximum(energy, 1e-30), 0.0)
+        return np.sqrt(np.maximum(left, 0.0) / observed.size)
+
+    pairs = [(mix, middle) for mix in mixes for middle in middles]
+    with ThreadPoolExecutor(COARSE_THREADS) as pool:
+        rows = list(pool.map(one, pairs))
+    return np.stack(rows).reshape(len(mixes), len(middles), swings.size)
+
+
 def _residual(observed: np.ndarray, model: np.ndarray) -> float:
     """RMS left after the model is scaled to the observation as well as it can be.
 
@@ -570,18 +601,13 @@ def fit_one(observed: np.ndarray, at: np.ndarray, seeds: tuple[float, ...], shap
     found: list[tuple[float, ...]] = []
     for hz in sorted(set(seeds)):
         for start in starts:
-            shaped = wave(shape, at * hz + start)
-            for mix in mixes:
-                for middle in middles:
-                    level = _comb_level(swings, middle, mix, shaped)
-                    along = level @ observed
-                    energy = np.einsum("st,st->s", level, level)
-                    left = float(np.dot(observed, observed)) - np.where(
-                        energy > 0, along**2 / np.maximum(energy, 1e-30), 0.0
+            left = _coarse_left(swings, wave(shape, at * hz + start), middles, mixes, observed)
+            for i, mix in enumerate(mixes):
+                for j, middle in enumerate(middles):
+                    where = int(np.argmin(left[i, j]))
+                    found.append(
+                        (float(left[i, j, where]), float(swings[where]), middle, mix, start, hz)
                     )
-                    left = np.sqrt(np.maximum(left, 0.0) / observed.size)
-                    where = int(np.argmin(left))
-                    found.append((float(left[where]), float(swings[where]), middle, mix, start, hz))
     found.sort(key=lambda row: row[0])
 
     def costing(seed: float):

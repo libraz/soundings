@@ -247,6 +247,39 @@ def test_every_seed_is_refined_even_when_another_seed_fills_the_pool() -> None:
     assert crowded["excursion_ms"] == pytest.approx(5.0, rel=0.1)
 
 
+def test_the_coarse_scan_leaves_what_the_comb_level_leaves() -> None:
+    """Every row of the coarse scan is the comb level projected onto the series.
+
+    The pairs are built side by side, and a pair built beside another must come out
+    bit for bit as it does alone: the scan has exact ties between a phase and its
+    mirror half a cycle on, and rounding decides which of them is refined.
+    """
+    dry = tone(seconds=2.0)
+    swings = np.arange(partials.SWING_STEP_RAD, 20.0, partials.SWING_STEP_RAD)
+    middles = np.linspace(0.0, 2.0 * np.pi, 12, endpoint=False)
+    mixes = np.array([0.4, 0.7, partials.DEEPEST_MIX])
+    rng = np.random.default_rng(3)
+    for observed in (
+        partials.swept(dry, SR, 3.0, 2.0, 1.0, 0.25)[: 4 * SR // 10],
+        rng.standard_normal(4 * SR // 10),
+    ):
+        observed = observed - observed.mean()
+        at = np.arange(observed.size) / 400.0
+        for shape in partials.SHAPES:
+            shaped = partials.wave(shape, at * 0.9 + 0.3)
+            left = partials._coarse_left(swings, shaped, middles, mixes, observed)
+            for i, mix in enumerate(mixes):
+                for j, middle in enumerate(middles):
+                    level = partials._comb_level(swings, middle, mix, shaped)
+                    along = level @ observed
+                    energy = np.einsum("st,st->s", level, level)
+                    want = float(np.dot(observed, observed)) - np.where(
+                        energy > 0, along**2 / np.maximum(energy, 1e-30), 0.0
+                    )
+                    want = np.sqrt(np.maximum(want, 0.0) / observed.size)
+                    np.testing.assert_array_equal(left[i, j], want)
+
+
 def test_the_room_around_the_gate_is_read_off_the_run_and_not_typed_in() -> None:
     """How much the gate's exact figure decided is a fact about the run, not the gate.
 
