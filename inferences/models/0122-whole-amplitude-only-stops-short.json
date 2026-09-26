@@ -1,0 +1,3039 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0122-whole-amplitude-only-stops-short",
+    "class": "whole-0122",
+    "candidate": "amplitude-only-stops-short",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 22",
+    "kind": "graph",
+    "made_by": "backup/build-rotary-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The clock the acceleration constant is a power of two under, and the rate the other whole-type models of this unit are drawn at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "high_l",
+    "out_r": "high_r"
+  },
+  "what_varies": "Each rotor swings its band's amplitude and does not move it in time, so no partial changes pitch; and a rotor sent up stops short of its entry by the constant the Accl byte's table divides, never below where it rested, and one sent down lands on it.",
+  "fixed_rows": {
+    "40 03 0B": "Separate, printed 0-96-127 with no unit and read by no claim; each side is drawn as the rotor-alone takes show it at the power-on 96"
+  },
+  "nodes": [
+    {
+      "id": "one",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          0.5,
+          1.0
+        ]
+      ],
+      "rate_hz": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "A constant, the axis a byte's weight places a value on."
+    },
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 0.5,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "in_r": {
+          "value": 0.5,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_slow_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Low Slow, 0.05-0.35-10.0"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_fast_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Low Fast, 0.05-6.40-10.0"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_gap_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "stepped-table",
+          "per_entry": 8,
+          "entries": [
+            0.9768,
+            0.4884,
+            0.3256,
+            0.2442,
+            0.19536,
+            0.1628,
+            0.139543,
+            0.1221,
+            0.108533,
+            0.09768,
+            0.0814,
+            0.06105,
+            0.030525,
+            0.015263,
+            0.007631,
+            0.005814
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-an-acceleration-byte-is-four-bits-and-a-multiplier.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Low Accl, 0-3-15"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_slow_short",
+      "kind": "mix",
+      "inputs": [
+        "low_slow_hz",
+        "low_gap_hz",
+        "one"
+      ],
+      "weights": {
+        "low_slow_hz": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_gap_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "one": {
+          "value": -0.595,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+            "inferences/models/0122-stops-short-low.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_slow_climb",
+      "kind": "shaper",
+      "input": "low_slow_short",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "low_slow_floor",
+      "kind": "mix",
+      "inputs": [
+        "low_slow_climb",
+        "one"
+      ],
+      "weights": {
+        "low_slow_climb": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "one": {
+          "value": 0.595,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+            "inferences/models/0122-stops-short-low.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_slow_over",
+      "kind": "mix",
+      "inputs": [
+        "low_slow_floor",
+        "low_slow_hz"
+      ],
+      "weights": {
+        "low_slow_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_slow_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_slow_past",
+      "kind": "shaper",
+      "input": "low_slow_over",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "low_slow_rate",
+      "kind": "mix",
+      "inputs": [
+        "low_slow_floor",
+        "low_slow_past"
+      ],
+      "weights": {
+        "low_slow_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_slow_past": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_fast_short",
+      "kind": "mix",
+      "inputs": [
+        "low_fast_hz",
+        "low_gap_hz",
+        "low_slow_rate"
+      ],
+      "weights": {
+        "low_fast_hz": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_gap_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_slow_rate": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/0122-an-acceleration-byte-is-four-bits-and-a-multiplier.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_fast_climb",
+      "kind": "shaper",
+      "input": "low_fast_short",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "low_fast_floor",
+      "kind": "mix",
+      "inputs": [
+        "low_fast_climb",
+        "low_slow_rate"
+      ],
+      "weights": {
+        "low_fast_climb": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_slow_rate": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_fast_over",
+      "kind": "mix",
+      "inputs": [
+        "low_fast_floor",
+        "low_fast_hz"
+      ],
+      "weights": {
+        "low_fast_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_fast_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_fast_past",
+      "kind": "shaper",
+      "input": "low_fast_over",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "low_fast_rate",
+      "kind": "mix",
+      "inputs": [
+        "low_fast_floor",
+        "low_fast_past"
+      ],
+      "weights": {
+        "low_fast_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "low_fast_past": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_rate",
+      "kind": "mix",
+      "inputs": [
+        "low_slow_rate",
+        "low_fast_rate"
+      ],
+      "weights": {
+        "low_slow_rate": {
+          "byte": "40 03 0D",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                1.0
+              ],
+              [
+                63,
+                1.0
+              ],
+              [
+                64,
+                0.0
+              ],
+              [
+                127,
+                0.0
+              ]
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Speed, Slow/Fast over 00/7F"
+          ],
+          "fitted_on": []
+        },
+        "low_fast_rate": {
+          "byte": "40 03 0D",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                0.0
+              ],
+              [
+                63,
+                0.0
+              ],
+              [
+                64,
+                1.0
+              ],
+              [
+                127,
+                1.0
+              ]
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Speed, Slow/Fast over 00/7F"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "low_band",
+      "kind": "section",
+      "input": "mono",
+      "stage": "pole",
+      "side": "low",
+      "form": "bilinear",
+      "corner_hz": {
+        "value": 2197.8,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      },
+      "sections": {
+        "value": 1,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_face_l",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "control": "low_rate",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              20.0,
+              20.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.4914,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low_swing_l",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "low_face_l"
+      ],
+      "weights": {
+        "one": {
+          "value": 0.747608,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        },
+        "low_face_l": {
+          "value": 0.252392,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "low_swung_l",
+      "kind": "vca",
+      "input": "low_band",
+      "control": "low_swing_l"
+    },
+    {
+      "id": "low_gain_l",
+      "kind": "gain",
+      "input": "low_swung_l",
+      "unit": "db",
+      "gain": {
+        "value": 0.186,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low_level_l",
+      "kind": "gain",
+      "input": "low_gain_l",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Low Level, 0-127",
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_face_r",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "control": "low_rate",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              20.0,
+              20.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0047,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low_swing_r",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "low_face_r"
+      ],
+      "weights": {
+        "one": {
+          "value": 0.879121,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        },
+        "low_face_r": {
+          "value": 0.120879,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "low_swung_r",
+      "kind": "vca",
+      "input": "low_band",
+      "control": "low_swing_r"
+    },
+    {
+      "id": "low_gain_r",
+      "kind": "gain",
+      "input": "low_swung_r",
+      "unit": "db",
+      "gain": {
+        "value": -0.938,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "low_level_r",
+      "kind": "gain",
+      "input": "low_gain_r",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Low Level, 0-127",
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_slow_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 07",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Hi Slow, 0.05-0.90-10.0"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_fast_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 08",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1.0,
+            1.05,
+            1.1,
+            1.15,
+            1.2,
+            1.25,
+            1.3,
+            1.35,
+            1.4,
+            1.45,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.85,
+            1.9,
+            1.95,
+            2.0,
+            2.05,
+            2.1,
+            2.15,
+            2.2,
+            2.25,
+            2.3,
+            2.35,
+            2.4,
+            2.45,
+            2.5,
+            2.55,
+            2.6,
+            2.65,
+            2.7,
+            2.75,
+            2.8,
+            2.85,
+            2.9,
+            2.95,
+            3.0,
+            3.05,
+            3.1,
+            3.15,
+            3.2,
+            3.25,
+            3.3,
+            3.35,
+            3.4,
+            3.45,
+            3.5,
+            3.55,
+            3.6,
+            3.65,
+            3.7,
+            3.75,
+            3.8,
+            3.85,
+            3.9,
+            3.95,
+            4.0,
+            4.05,
+            4.1,
+            4.15,
+            4.2,
+            4.25,
+            4.3,
+            4.35,
+            4.4,
+            4.45,
+            4.5,
+            4.55,
+            4.6,
+            4.65,
+            4.7,
+            4.75,
+            4.8,
+            4.85,
+            4.9,
+            4.95,
+            5.0,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6.0,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0
+          ],
+          "out_of_range": 125
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+          "inferences/roland-sc8850-01/rate-the-byte-indexes-a-printed-table.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Hi Fast, 0.05-7.50-10.0"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_gap_hz",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 09",
+        "map": {
+          "kind": "stepped-table",
+          "per_entry": 8,
+          "entries": [
+            0.9768,
+            0.4884,
+            0.3256,
+            0.2442,
+            0.19536,
+            0.1628,
+            0.139543,
+            0.1221,
+            0.108533,
+            0.09768,
+            0.0814,
+            0.06105,
+            0.030525,
+            0.015263,
+            0.007631,
+            0.005814
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-an-acceleration-byte-is-four-bits-and-a-multiplier.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Hi Accl, 0-11-15"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_slow_short",
+      "kind": "mix",
+      "inputs": [
+        "high_slow_hz",
+        "high_gap_hz",
+        "one"
+      ],
+      "weights": {
+        "high_slow_hz": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_gap_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "one": {
+          "value": -0.799,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+            "inferences/models/0122-stops-short-high.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_slow_climb",
+      "kind": "shaper",
+      "input": "high_slow_short",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "high_slow_floor",
+      "kind": "mix",
+      "inputs": [
+        "high_slow_climb",
+        "one"
+      ],
+      "weights": {
+        "high_slow_climb": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "one": {
+          "value": 0.799,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+            "inferences/models/0122-stops-short-high.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_slow_over",
+      "kind": "mix",
+      "inputs": [
+        "high_slow_floor",
+        "high_slow_hz"
+      ],
+      "weights": {
+        "high_slow_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_slow_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_slow_past",
+      "kind": "shaper",
+      "input": "high_slow_over",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "high_slow_rate",
+      "kind": "mix",
+      "inputs": [
+        "high_slow_floor",
+        "high_slow_past"
+      ],
+      "weights": {
+        "high_slow_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_slow_past": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_fast_short",
+      "kind": "mix",
+      "inputs": [
+        "high_fast_hz",
+        "high_gap_hz",
+        "high_slow_rate"
+      ],
+      "weights": {
+        "high_fast_hz": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_gap_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_slow_rate": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/0122-an-acceleration-byte-is-four-bits-and-a-multiplier.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_fast_climb",
+      "kind": "shaper",
+      "input": "high_fast_short",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "high_fast_floor",
+      "kind": "mix",
+      "inputs": [
+        "high_fast_climb",
+        "high_slow_rate"
+      ],
+      "weights": {
+        "high_fast_climb": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_slow_rate": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_fast_over",
+      "kind": "mix",
+      "inputs": [
+        "high_fast_floor",
+        "high_fast_hz"
+      ],
+      "weights": {
+        "high_fast_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_fast_hz": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_fast_past",
+      "kind": "shaper",
+      "input": "high_fast_over",
+      "curve": "points",
+      "points": [
+        [
+          -1000.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1000.0,
+          1000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "The part of the input above nothing."
+    },
+    {
+      "id": "high_fast_rate",
+      "kind": "mix",
+      "inputs": [
+        "high_fast_floor",
+        "high_fast_past"
+      ],
+      "weights": {
+        "high_fast_floor": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_fast_past": {
+          "value": -1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_rate",
+      "kind": "mix",
+      "inputs": [
+        "high_slow_rate",
+        "high_fast_rate"
+      ],
+      "weights": {
+        "high_slow_rate": {
+          "byte": "40 03 0D",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                1.0
+              ],
+              [
+                63,
+                1.0
+              ],
+              [
+                64,
+                0.0
+              ],
+              [
+                127,
+                0.0
+              ]
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Speed, Slow/Fast over 00/7F"
+          ],
+          "fitted_on": []
+        },
+        "high_fast_rate": {
+          "byte": "40 03 0D",
+          "map": {
+            "kind": "points",
+            "points": [
+              [
+                0,
+                0.0
+              ],
+              [
+                63,
+                0.0
+              ],
+              [
+                64,
+                1.0
+              ],
+              [
+                127,
+                1.0
+              ]
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json",
+            "inferences/roland-sc8850-01/states-a-value-the-page-prints-no-state-for-is-not-taken.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Speed, Slow/Fast over 00/7F"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "high_band",
+      "kind": "section",
+      "input": "mono",
+      "stage": "pole",
+      "side": "high",
+      "form": "bilinear",
+      "corner_hz": {
+        "value": 2009.2,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      },
+      "q": {
+        "value": 5.241,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      },
+      "sections": {
+        "value": 1,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_face_l",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "control": "high_rate",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              20.0,
+              20.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.8345,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "high_swing_l",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "high_face_l"
+      ],
+      "weights": {
+        "one": {
+          "value": 0.716384,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        },
+        "high_face_l": {
+          "value": 0.283616,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "high_swung_l",
+      "kind": "vca",
+      "input": "high_band",
+      "control": "high_swing_l"
+    },
+    {
+      "id": "high_gain_l",
+      "kind": "gain",
+      "input": "high_swung_l",
+      "unit": "db",
+      "gain": {
+        "value": 1.245,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "high_level_l",
+      "kind": "gain",
+      "input": "high_gain_l",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 0A",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Hi Level, 0-64-127",
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_face_r",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "control": "high_rate",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              20.0,
+              20.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json",
+          "inferences/roland-sc8850-01/0122-the-speed-switch-picks-which-rate-byte-the-rotor-follows.json"
+        ],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.3196,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "high_swing_r",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "high_face_r"
+      ],
+      "weights": {
+        "one": {
+          "value": 0.696864,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        },
+        "high_face_r": {
+          "value": 0.303136,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+          ],
+          "fitted_on": [
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-03-LoSlowalone-127"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-032"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-110"
+            ],
+            [
+              "silence-the-other-stage",
+              "0122-07-HiSlowalone-127"
+            ],
+            [
+              "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+              "dry"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "high_swung_r",
+      "kind": "vca",
+      "input": "high_band",
+      "control": "high_swing_r"
+    },
+    {
+      "id": "high_gain_r",
+      "kind": "gain",
+      "input": "high_swung_r",
+      "unit": "db",
+      "gain": {
+        "value": 1.622,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json",
+          "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096/held-16-dry-00-00.wav"
+        ],
+        "fitted_on": [
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-03-LoSlowalone-127"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-032"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-110"
+          ],
+          [
+            "silence-the-other-stage",
+            "0122-07-HiSlowalone-127"
+          ],
+          [
+            "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+            "dry"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "high_level_r",
+      "kind": "gain",
+      "input": "high_gain_r",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 0A",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 217: Rotary Hi Level, 0-64-127",
+          "inferences/roland-sc8850-01/0122-a-rotary-rate-byte-aims-a-rotor-and-the-rotor-stops-short.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "sum_l",
+      "kind": "mix",
+      "inputs": [
+        "low_level_l",
+        "high_level_l"
+      ],
+      "weights": {
+        "low_level_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_level_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "sum_l",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "level_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "sum_r",
+      "kind": "mix",
+      "inputs": [
+        "low_level_r",
+        "high_level_r"
+      ],
+      "weights": {
+        "low_level_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "high_level_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "sum_r",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "level_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "bound",
+    "40 03 06": "bound",
+    "40 03 07": "bound",
+    "40 03 08": "bound",
+    "40 03 09": "bound",
+    "40 03 0A": "bound",
+    "40 03 0B": "fixed_at_power_on",
+    "40 03 0D": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 16": "bound"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "class": "whole-0156",
+  "what_the_class_is": "The gate reverb as a whole: the mono sum of the inputs through the pre-delay ladder, sixteen reads of it spread evenly up to the gate time, each weighted and placed between the outputs by the Type byte, then the balance, level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A reverb is a handful of circular buffers read back into themselves, each read scaled and added to what is written, because a loop costs one read, one multiply and one add however long its buffer is.",
+      "Whether the loops feed only themselves or each other is a question of which reads each write adds, and costs the same either way once the matrix is a set of signs.",
+      "A gated reverb is cheapest as a run of reads of one buffer with fixed weights, which ends exactly where its last read is and needs no detector.",
+      "Times, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The tail of a struck note came back with a density or a stereo spread no four-loop network or sixteen-read run can give, or its level at the Time or Gate Time settings nothing here was built on fell off other than the law each candidate states."
+  },
+  "candidates": [
+    {
+      "id": "bare-taps-gate-through-the-printed-ends",
+      "model": "inferences/models/0156-whole-bare-taps-gate-through-the-printed-ends.json",
+      "reading": "The sixteen reads reach the outputs bare, sixteen discrete copies. The Gate Time byte runs straight between the printed ends, 0 at 00 and 500 ms at 63.",
+      "predicts": "Sixteen discrete copies of a struck note, ending exactly one gate time after the pre-delay; at Gate Time 00 they pile onto one copy at the pre-delay."
+    },
+    {
+      "id": "bare-taps-gate-five-ms-a-step",
+      "model": "inferences/models/0156-whole-bare-taps-gate-five-ms-a-step.json",
+      "reading": "The sixteen reads reach the outputs bare, sixteen discrete copies. The Gate Time byte is five milliseconds a step from five at 00, reaching the printed 65 ms at 0C and 500 ms at 63.",
+      "predicts": "Sixteen discrete copies of a struck note, ending exactly one gate time after the pre-delay; at Gate Time 00 they spread over five milliseconds."
+    },
+    {
+      "id": "diffused-taps-gate-through-the-printed-ends",
+      "model": "inferences/models/0156-whole-diffused-taps-gate-through-the-printed-ends.json",
+      "reading": "The sixteen reads run through a pair of series all-passes a side. The Gate Time byte runs straight between the printed ends, 0 at 00 and 500 ms at 63.",
+      "predicts": "A smeared burst ending about one gate time after the pre-delay with the all-passes' short ring after it; at Gate Time 00 a single all-passed copy at the pre-delay."
+    },
+    {
+      "id": "diffused-taps-gate-five-ms-a-step",
+      "model": "inferences/models/0156-whole-diffused-taps-gate-five-ms-a-step.json",
+      "reading": "The sixteen reads run through a pair of series all-passes a side. The Gate Time byte is five milliseconds a step from five at 00, reaching the printed 65 ms at 0C and 500 ms at 63.",
+      "predicts": "A smeared burst ending about one gate time after the pre-delay with the all-passes' short ring after it; at Gate Time 00 a five-millisecond smear."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "How many reads the gate is made of, and how Norm and Reverse weigh them: sixteen, alike for Norm and rising in a straight line for Reverse. The page names the four Types and nothing more.",
+    "A Gate Time past the printed 63. No reading says what the byte does there, so no candidate draws it.",
+    "Whether a Sweep walks the reads across the pan claim's law or some other: the law is carried here from the placement claim unmeasured on this type.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "How the inputs are summed onto the line: half of each here; no reading fixed it.",
+    "The lengths of the loops and all-passes, the all-pass gain of 0.7 and how the wet paths are scaled: no measurement here fixes any of them, and a waveform subtraction fits one gain over the whole take."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "class": "whole-0155",
+  "what_the_class_is": "The reverb as a whole: the mono sum of the inputs through the pre-delay ladder, four loops each with the damping pole on its line's input, summed into a pair of series all-passes a side, then the balance, level and tone stages. The loops' loss a pass at the power-on Time is set so the 500 Hz band decays as the decay record read it at the power-on setting.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A reverb is a handful of circular buffers read back into themselves, each read scaled and added to what is written, because a loop costs one read, one multiply and one add however long its buffer is.",
+      "Whether the loops feed only themselves or each other is a question of which reads each write adds, and costs the same either way once the matrix is a set of signs.",
+      "A gated reverb is cheapest as a run of reads of one buffer with fixed weights, which ends exactly where its last read is and needs no detector.",
+      "Times, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The tail of a struck note came back with a density or a stereo spread no four-loop network or sixteen-read run can give, or its level at the Time or Gate Time settings nothing here was built on fell off other than the law each candidate states."
+  },
+  "candidates": [
+    {
+      "id": "parallel-combs-time-byte-a-loss-a-pass",
+      "model": "inferences/models/0155-whole-parallel-combs-time-byte-a-loss-a-pass.json",
+      "reading": "The four loops are apart: each line is fed its own return only, a parallel comb bank. The Time byte is a loss a pass that falls by an eighth of its power-on value a step towards 128.",
+      "predicts": "Discrete, regularly spaced early returns at each loop's length that thicken only through the all-passes; a tail of about a quarter second at Time 0 and eight times longer at 127 than at 120."
+    },
+    {
+      "id": "parallel-combs-time-byte-a-decay-time",
+      "model": "inferences/models/0155-whole-parallel-combs-time-byte-a-decay-time.json",
+      "reading": "The four loops are apart: each line is fed its own return only, a parallel comb bank. The Time byte is a decay time proportional to the byte, nothing at 0.",
+      "predicts": "Discrete, regularly spaced early returns at each loop's length that thicken only through the all-passes; no tail past one pass of each loop at Time 0, and at 127 a tail six percent longer than at 120."
+    },
+    {
+      "id": "coupled-lines-time-byte-a-loss-a-pass",
+      "model": "inferences/models/0155-whole-coupled-lines-time-byte-a-loss-a-pass.json",
+      "reading": "The four loops are coupled: each line is fed every loop's return through an orthogonal four-by-four matrix. The Time byte is a loss a pass that falls by an eighth of its power-on value a step towards 128.",
+      "predicts": "Returns that multiply with every pass, each loop feeding the others, so the tail is dense sooner; a tail of about a quarter second at Time 0 and eight times longer at 127 than at 120."
+    },
+    {
+      "id": "coupled-lines-time-byte-a-decay-time",
+      "model": "inferences/models/0155-whole-coupled-lines-time-byte-a-decay-time.json",
+      "reading": "The four loops are coupled: each line is fed every loop's return through an orthogonal four-by-four matrix. The Time byte is a decay time proportional to the byte, nothing at 0.",
+      "predicts": "Returns that multiply with every pass, each loop feeding the others, so the tail is dense sooner; no tail past one pass at Time 0, and at 127 a tail six percent longer than at 120."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Any Type but the one the type powers up in. The page names the six by room size and no reading gives a length or a decay for any of them, so every candidate draws Stage2 alone and leaves the other five, and the value past the list that reads as Room1, undrawn.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on each line's input inside its loop.",
+    "Whether the Time byte's law is either of the two here: each has one anchor, the power-on setting, and the other end of the byte is the law's own.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "How the inputs are summed onto the line: half of each here; no reading fixed it.",
+    "The lengths of the loops and all-passes, the all-pass gain of 0.7 and how the wet paths are scaled: no measurement here fixes any of them, and a waveform subtraction fits one gain over the whole take."
+  ]
+}

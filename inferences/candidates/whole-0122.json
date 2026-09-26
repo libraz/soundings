@@ -1,0 +1,359 @@
+{
+  "class": "whole-0122",
+  "what_the_class_is": "The rotary as a whole: the mono sum split into a low band and a high band, each moved by its own rotor at the rate its slow or fast byte names as the Speed byte picks, each rotor's Level byte, then the level multiplier and the fixed shelf pair.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A rotating speaker is a band split and, per band, a delay line whose read address a phase accumulator moves plus a multiplier the same accumulator swings; a sine is the shape rotation gives and the one a period part would read from a short table.",
+      "A rotor's speed is a register the control processor walks towards the rate entry with a shift, which is what the acceleration claim reads, so where it settles can be short of the entry it was sent to.",
+      "The two sides of the stereo image are two read-outs of one rotor at different angles, which costs a second read and a second multiply and nothing else."
+    ],
+    "would_be_wrong_if": "A setting nothing here was fitted on read a rotor rate the rate chain does not produce, or a rotor's partials moved in pitch where the amplitude-only reading says they cannot."
+  },
+  "candidates": [
+    {
+      "id": "doppler-and-amplitude-stops-short",
+      "model": "inferences/models/0122-whole-doppler-and-amplitude-stops-short.json",
+      "reading": "Each rotor moves its band through a delay swung as a sine by the Doppler excursion the rotor-alone takes carry, and swings its amplitude; and a rotor sent up stops short of its entry by the constant the Accl byte's table divides, never below where it rested, and one sent down lands on it.",
+      "predicts": "Every partial of each band swings in pitch at its rotor's rate; the low rotor at Low Slow 127 turns at 9.76 Hz rather than 10.0, and at Speed 127 the rotors settle at 6.16 and 7.44 Hz."
+    },
+    {
+      "id": "doppler-and-amplitude-lands-on-the-entry",
+      "model": "inferences/models/0122-whole-doppler-and-amplitude-lands-on-the-entry.json",
+      "reading": "Each rotor moves its band through a delay swung as a sine by the Doppler excursion the rotor-alone takes carry, and swings its amplitude; and every rotor turns at the entry its selected rate byte names, and the Accl bytes change nothing a settled take can hold.",
+      "predicts": "Every partial swings in pitch; the rotors turn at 10.0 Hz at Low Slow 127 and at 6.40 and 7.50 Hz at Speed 127, and the Accl bytes move no reading."
+    },
+    {
+      "id": "amplitude-only-stops-short",
+      "model": "inferences/models/0122-whole-amplitude-only-stops-short.json",
+      "reading": "Each rotor swings its band's amplitude and does not move it in time, so no partial changes pitch; and a rotor sent up stops short of its entry by the constant the Accl byte's table divides, never below where it rested, and one sent down lands on it.",
+      "predicts": "A rate read off the level alone, the partials holding their pitch; the same settled rates as the other stops-short candidate."
+    },
+    {
+      "id": "amplitude-only-lands-on-the-entry",
+      "model": "inferences/models/0122-whole-amplitude-only-lands-on-the-entry.json",
+      "reading": "Each rotor swings its band's amplitude and does not move it in time, so no partial changes pitch; and every rotor turns at the entry its selected rate byte names, and the Accl bytes change nothing a settled take can hold.",
+      "predicts": "A rate read off the level alone, and the rotors on their entries."
+    }
+  ],
+  "what_the_fitting_takes_said": {
+    "takes": {
+      "directory": "silence-the-other-stage",
+      "settings": [
+        "0122-03-LoSlowalone-032",
+        "0122-03-LoSlowalone-110",
+        "0122-03-LoSlowalone-127",
+        "0122-07-HiSlowalone-032",
+        "0122-07-HiSlowalone-110",
+        "0122-07-HiSlowalone-127"
+      ],
+      "channels": [
+        2,
+        3
+      ],
+      "dry": [
+        "what-the-sin-entry-is-and-where-else-the-names-are/0126-depth-096",
+        "held-16-dry-00-00.wav"
+      ],
+      "rates_from": [
+        "data/units/roland-sc8850-01/efx-rate/01-22-03-silence-the-other-stage-LoSlowalone.json",
+        "data/units/roland-sc8850-01/efx-rate/01-22-07-silence-the-other-stage-HiSlowalone.json"
+      ]
+    },
+    "bands": {
+      "used_partials": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        12
+      ],
+      "low": {
+        "corner_hz": 2197.8,
+        "rms_db": 0.93,
+        "gain_db": [
+          -2.1,
+          -2.016
+        ]
+      },
+      "high": {
+        "corner_hz": 2009.2,
+        "q": 5.241,
+        "rms_db": 1.25,
+        "gain_db": [
+          -1.324,
+          -1.122
+        ]
+      },
+      "a_one_pole_high_pass_instead": {
+        "corner_hz": 4722.5,
+        "rms_db": 7.52
+      },
+      "a_complementary_first_order_split_instead": {
+        "corner_hz": 3601.0,
+        "rms_db": 5.44
+      }
+    },
+    "modulation": {
+      "low": {
+        "per_take": [
+          {
+            "value": 32,
+            "rate_hz": 1.4068,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.253,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.3237,
+                "am_cycles": 0.2329,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.2551,
+                "fm_cycles": 0.0065,
+                "am_ratio": 0.1375,
+                "am_cycles": 0.821,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              }
+            }
+          },
+          {
+            "value": 110,
+            "rate_hz": 5.8566,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.2254,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.3376,
+                "am_cycles": 0.2287,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.2505,
+                "fm_cycles": 0.01,
+                "am_ratio": 0.1438,
+                "am_cycles": 0.7573,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              }
+            }
+          },
+          {
+            "value": 127,
+            "rate_hz": 9.7548,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.2559,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.356,
+                "am_cycles": 0.2625,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.2543,
+                "fm_cycles": 0.0078,
+                "am_ratio": 0.0362,
+                "am_cycles": 0.6856,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  6,
+                  8
+                ]
+              }
+            }
+          }
+        ],
+        "drawn": {
+          "l": {
+            "excursion_ms": 0.253,
+            "delay_cycles": 0.0,
+            "am_ratio": 0.3376,
+            "am_cycles": 0.2414
+          },
+          "r": {
+            "excursion_ms": 0.2543,
+            "delay_cycles": 0.0081,
+            "am_ratio": 0.1375,
+            "am_cycles": 0.7547
+          }
+        }
+      },
+      "high": {
+        "per_take": [
+          {
+            "value": 32,
+            "rate_hz": 1.5887,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.2117,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.4088,
+                "am_cycles": 0.5928,
+                "partials": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.1995,
+                "fm_cycles": 0.5683,
+                "am_ratio": 0.4229,
+                "am_cycles": 0.0694,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              }
+            }
+          },
+          {
+            "value": 110,
+            "rate_hz": 6.0415,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.1601,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.3945,
+                "am_cycles": 0.5721,
+                "partials": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.1991,
+                "fm_cycles": 0.5286,
+                "am_ratio": 0.435,
+                "am_cycles": 0.0612,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              }
+            }
+          },
+          {
+            "value": 127,
+            "rate_hz": 9.9442,
+            "sides": {
+              "l": {
+                "excursion_ms": 0.1745,
+                "fm_cycles": 0.0,
+                "am_ratio": 0.3959,
+                "am_cycles": 0.5886,
+                "partials": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              },
+              "r": {
+                "excursion_ms": 0.2353,
+                "fm_cycles": 0.4396,
+                "am_ratio": 0.4433,
+                "am_cycles": 0.0783,
+                "partials": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  8
+                ]
+              }
+            }
+          }
+        ],
+        "drawn": {
+          "l": {
+            "excursion_ms": 0.1745,
+            "delay_cycles": 0.0,
+            "am_ratio": 0.3959,
+            "am_cycles": 0.5845
+          },
+          "r": {
+            "excursion_ms": 0.1995,
+            "delay_cycles": 0.5126,
+            "am_ratio": 0.435,
+            "am_cycles": 0.0696
+          }
+        }
+      }
+    },
+    "why_not_ranked_here": "Every candidate carries the same band shapes and the same swings read off these six takes, so they do not tell the candidates apart; the stage compares other directories."
+  },
+  "what_no_candidate_here_predicts": [
+    "A swing that differs from partial to partial. On the low rotor the amplitude swing's phase scatters by up to half a cycle between partials and between the two sides, and on the high rotor the strongest partial on the left barely moves in pitch while its neighbours swing half a cycle against the others. That is what two read-outs of one rotor at different angles summed on one side would do; every candidate draws one read-out a side and one multiplier standing for all partials.",
+    "What Separate does. The two sides are drawn as the takes show them at its power-on 96: the low rotor's delay swinging alike on both, the high rotor's half a cycle apart.",
+    "How the rotor gets from one rate to another. Every take compared is settled, and no claim reads the path; no candidate draws a slew.",
+    "Whether the input is summed before the split. Both sides here take the mean of the two inputs; a note that sounds alike in both channels cannot tell that from a split per side.",
+    "What a Level byte's curve is between its ends. Both are drawn straight from nothing at 0 to the fitted gain at 127; the takes read were at 127 and at 0.",
+    "What the low rotor's fast byte does. It is drawn the way the speed-switch claim reads the high rotor's, the acceleration claim reading the two rotors as one routine; it has no reading of its own.",
+    "The level the rotor paths stand at against the dry path. The dry take is from another evening, so each path's gain carries that evening's offset.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state."
+  ]
+}
