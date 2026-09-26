@@ -1,0 +1,1380 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "0154-whole-pan-on-the-whole-output",
+    "class": "whole-0154",
+    "candidate": "pan-on-the-whole-output",
+    "unit_id": "roland-sc8850-01",
+    "type": "01 54",
+    "kind": "graph",
+    "made_by": "backup/build-delay-family-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The clock the delay-time ladder is cut to whole samples of, and the one the damping pole's corners land on the printed series at.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "high_l",
+    "out_r": "high_r"
+  },
+  "what_varies": "The EFX Pan byte places the balanced sum of the dry mono and the delayed copy.",
+  "fixed_rows": {},
+  "nodes": [
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 0.5,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "in_r": {
+          "value": 0.5,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "one",
+      "kind": "lfo",
+      "shape": "points",
+      "points": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          0.5,
+          1.0
+        ]
+      ],
+      "rate_hz": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "A constant, the axis a byte's weight places a value on."
+    },
+    {
+      "id": "shortfall",
+      "kind": "gain",
+      "input": "one",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 04",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              63,
+              -31.75
+            ],
+            [
+              64,
+              -15.875
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay Accel, 0-10-15, column *14",
+          "documents/roland-sc-8850-owners-manual-en/value-conversion.json pages 224-225"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "gap",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "shortfall"
+      ],
+      "weights": {
+        "one": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "table",
+            "out_of_range": 127,
+            "entries": [
+              -297.65625,
+              -292.71875,
+              -287.75,
+              -282.78125,
+              -277.8125,
+              -272.875,
+              -267.90625,
+              -262.9375,
+              -257.96875,
+              -253.03125,
+              -248.0625,
+              -243.09375,
+              -238.125,
+              -233.1875,
+              -228.21875,
+              -223.25,
+              -218.28125,
+              -213.34375,
+              -208.375,
+              -203.40625,
+              -198.4375,
+              -193.5,
+              -188.53125,
+              -183.5625,
+              -178.59375,
+              -173.65625,
+              -168.6875,
+              -163.71875,
+              -158.75,
+              -153.8125,
+              -148.84375,
+              -143.875,
+              -138.90625,
+              -133.96875,
+              -129.0,
+              -124.03125,
+              -119.0625,
+              -114.125,
+              -109.15625,
+              -104.1875,
+              -99.21875,
+              -94.28125,
+              -89.3125,
+              -84.34375,
+              -79.375,
+              -74.4375,
+              -69.46875,
+              -64.5,
+              -59.53125,
+              -54.59375,
+              -49.625,
+              -44.65625,
+              -39.6875,
+              -34.75,
+              -29.78125,
+              -24.8125,
+              -19.84375,
+              -14.90625,
+              -9.9375,
+              -4.96875,
+              0.0,
+              4.9375,
+              9.90625,
+              14.875,
+              19.84375,
+              24.78125,
+              29.75,
+              34.71875,
+              39.6875,
+              44.625,
+              49.59375,
+              54.5625,
+              59.53125,
+              64.46875,
+              69.4375,
+              74.40625,
+              79.375,
+              84.3125,
+              89.28125,
+              94.25,
+              99.21875,
+              109.125,
+              119.0625,
+              128.96875,
+              138.90625,
+              148.8125,
+              158.75,
+              168.65625,
+              178.59375,
+              188.5,
+              198.4375,
+              208.34375,
+              218.28125,
+              228.1875,
+              238.125,
+              248.03125,
+              257.96875,
+              267.875,
+              277.8125,
+              287.71875,
+              297.65625,
+              307.5625,
+              317.5,
+              327.40625,
+              337.34375,
+              347.25,
+              357.1875,
+              367.09375,
+              377.03125,
+              386.9375,
+              396.875,
+              406.78125,
+              416.71875,
+              426.625,
+              436.5625,
+              446.46875,
+              456.40625,
+              466.3125,
+              476.25,
+              486.15625,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay Dly Time, 200ms-500ms-990ms/1sec, column *3",
+            "documents/roland-sc-8850-owners-manual-en/value-conversion.json pages 224-225"
+          ],
+          "fitted_on": []
+        },
+        "shortfall": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "climb",
+      "kind": "shaper",
+      "input": "gap",
+      "curve": "points",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          2000.0,
+          2000.0
+        ]
+      ],
+      "oversample": 1,
+      "drive": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [],
+        "fitted_on": []
+      },
+      "is": "A glide stopping short of where it was sent never ends under where it began."
+    },
+    {
+      "id": "from_below",
+      "kind": "gain",
+      "input": "climb",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 03",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              60,
+              0.0
+            ],
+            [
+              61,
+              1.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+          "inferences/roland-sc8850-01/defaults-every-parameter-powers-up-where-its-page-says.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay Dly Time, 200ms-500ms-990ms/1sec, column *3"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "lands",
+      "kind": "mix",
+      "inputs": [
+        "one",
+        "from_below"
+      ],
+      "weights": {
+        "one": {
+          "byte": "40 03 03",
+          "map": {
+            "kind": "table",
+            "out_of_range": 127,
+            "entries": [
+              198.4375,
+              203.375,
+              208.34375,
+              213.3125,
+              218.28125,
+              223.21875,
+              228.1875,
+              233.15625,
+              238.125,
+              243.0625,
+              248.03125,
+              253.0,
+              257.96875,
+              262.90625,
+              267.875,
+              272.84375,
+              277.8125,
+              282.75,
+              287.71875,
+              292.6875,
+              297.65625,
+              302.59375,
+              307.5625,
+              312.53125,
+              317.5,
+              322.4375,
+              327.40625,
+              332.375,
+              337.34375,
+              342.28125,
+              347.25,
+              352.21875,
+              357.1875,
+              362.125,
+              367.09375,
+              372.0625,
+              377.03125,
+              381.96875,
+              386.9375,
+              391.90625,
+              396.875,
+              401.8125,
+              406.78125,
+              411.75,
+              416.71875,
+              421.65625,
+              426.625,
+              431.59375,
+              436.5625,
+              441.5,
+              446.46875,
+              451.4375,
+              456.40625,
+              461.34375,
+              466.3125,
+              471.28125,
+              476.25,
+              481.1875,
+              486.15625,
+              491.125,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375,
+              496.09375
+            ]
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json",
+            "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay Dly Time, 200ms-500ms-990ms/1sec, column *3",
+            "documents/roland-sc-8850-owners-manual-en/value-conversion.json pages 224-225"
+          ],
+          "fitted_on": []
+        },
+        "from_below": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "fb",
+      "kind": "gain",
+      "input": "line",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 05",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              15,
+              -0.98
+            ],
+            [
+              64,
+              0.0
+            ],
+            [
+              113,
+              0.98
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay Feedback, -98%-+32%-+98% over 0F-71"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "into",
+      "kind": "mix",
+      "inputs": [
+        "mono",
+        "fb"
+      ],
+      "weights": {
+        "mono": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        },
+        "fb": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "damp",
+      "kind": "section",
+      "input": "into",
+      "stage": "pole",
+      "side": "low",
+      "form": "one-multiply",
+      "corner_hz": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "stepped-table",
+          "entries": [
+            315.0,
+            400.0,
+            500.0,
+            630.0,
+            800.0,
+            1000.0,
+            1250.0,
+            1600.0,
+            2000.0,
+            2500.0,
+            3150.0,
+            4000.0,
+            5000.0,
+            6300.0,
+            8000.0
+          ],
+          "per_entry": 8
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/freq-the-byte-indexes-a-third-octave-table.json",
+          "inferences/roland-sc8850-01/0150-a-damping-byte-sits-on-the-cheapest-pole.json"
+        ],
+        "fitted_on": []
+      },
+      "sections": {
+        "byte": "40 03 06",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              119,
+              1
+            ],
+            [
+              120,
+              0
+            ]
+          ]
+        },
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay HF Damp, 315-8k/Bypass, column *8",
+          "documents/roland-sc-8850-owners-manual-en/value-conversion.json pages 224-225",
+          "inferences/roland-sc8850-01/0150-a-damping-byte-sits-on-the-cheapest-pole.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "line",
+      "kind": "delay",
+      "input": "damp",
+      "interpolation": "none",
+      "time_ms": {
+        "control": "lands",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              2000,
+              2000.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/time-the-byte-indexes-a-ladder-cut-to-whole-samples.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "out",
+      "kind": "mix",
+      "inputs": [
+        "mono",
+        "line"
+      ],
+      "weights": {
+        "mono": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              0.9765625,
+              0.953125,
+              0.9375,
+              0.9140625,
+              0.8984375,
+              0.875,
+              0.859375,
+              0.8359375,
+              0.8125,
+              0.796875,
+              0.7734375,
+              0.7578125,
+              0.734375,
+              0.71875,
+              0.6953125,
+              0.6796875,
+              0.65625,
+              0.6328125,
+              0.6171875,
+              0.59375,
+              0.578125,
+              0.5546875,
+              0.5390625,
+              0.515625,
+              0.5,
+              0.4765625,
+              0.453125,
+              0.4375,
+              0.4140625,
+              0.3984375,
+              0.375,
+              0.359375,
+              0.3359375,
+              0.3125,
+              0.296875,
+              0.2734375,
+              0.2578125,
+              0.234375,
+              0.21875,
+              0.1953125,
+              0.1796875,
+              0.15625,
+              0.1328125,
+              0.1171875,
+              0.09375,
+              0.078125,
+              0.0546875,
+              0.0390625,
+              0.015625,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        },
+        "line": {
+          "byte": "40 03 12",
+          "map": {
+            "kind": "table",
+            "entries": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.015625,
+              0.0390625,
+              0.0546875,
+              0.078125,
+              0.09375,
+              0.1171875,
+              0.1328125,
+              0.15625,
+              0.1796875,
+              0.1953125,
+              0.21875,
+              0.234375,
+              0.2578125,
+              0.2734375,
+              0.296875,
+              0.3125,
+              0.3359375,
+              0.359375,
+              0.375,
+              0.3984375,
+              0.4140625,
+              0.4375,
+              0.453125,
+              0.4765625,
+              0.5,
+              0.515625,
+              0.5390625,
+              0.5546875,
+              0.578125,
+              0.59375,
+              0.6171875,
+              0.6328125,
+              0.65625,
+              0.6796875,
+              0.6953125,
+              0.71875,
+              0.734375,
+              0.7578125,
+              0.7734375,
+              0.796875,
+              0.8125,
+              0.8359375,
+              0.859375,
+              0.875,
+              0.8984375,
+              0.9140625,
+              0.9375,
+              0.953125,
+              0.9765625,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "out_of_range": 127
+          },
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/balance-two-ramps-that-meet-at-full.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "place",
+      "kind": "pan",
+      "input": "out",
+      "law": "pan-a-sine-cosine-pair.json",
+      "position": {
+        "byte": "40 03 07",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              127.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/pan-one-multiplier-a-side-under-a-term-added-after-it.json",
+          "documents/roland-sc-8850-owners-manual-en/effect-list.json page 218: Tm Ctrl Delay EFX Pan, L63-0-R63 over 00-7F"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_l",
+      "kind": "gain",
+      "input": "place.left",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_l",
+      "kind": "section",
+      "input": "level_l",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_l",
+      "kind": "section",
+      "input": "low_l",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "level_r",
+      "kind": "gain",
+      "input": "place.right",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 16",
+        "map": {
+          "kind": "table",
+          "entries": [
+            0.0,
+            0.007874,
+            0.007874,
+            0.015748,
+            0.023622,
+            0.031496,
+            0.031496,
+            0.03937,
+            0.047244,
+            0.047244,
+            0.055118,
+            0.062992,
+            0.070866,
+            0.070866,
+            0.07874,
+            0.086614,
+            0.094488,
+            0.094488,
+            0.102362,
+            0.110236,
+            0.11811,
+            0.11811,
+            0.125984,
+            0.133858,
+            0.141732,
+            0.149606,
+            0.149606,
+            0.15748,
+            0.165354,
+            0.173228,
+            0.181102,
+            0.181102,
+            0.188976,
+            0.19685,
+            0.204724,
+            0.212598,
+            0.220472,
+            0.220472,
+            0.228346,
+            0.23622,
+            0.244094,
+            0.251969,
+            0.259843,
+            0.267717,
+            0.267717,
+            0.275591,
+            0.283465,
+            0.291339,
+            0.299213,
+            0.307087,
+            0.314961,
+            0.322835,
+            0.330709,
+            0.338583,
+            0.346457,
+            0.346457,
+            0.354331,
+            0.362205,
+            0.370079,
+            0.377953,
+            0.385827,
+            0.393701,
+            0.401575,
+            0.409449,
+            0.417323,
+            0.425197,
+            0.433071,
+            0.440945,
+            0.448819,
+            0.456693,
+            0.464567,
+            0.472441,
+            0.480315,
+            0.488189,
+            0.496063,
+            0.503937,
+            0.511811,
+            0.519685,
+            0.527559,
+            0.535433,
+            0.551181,
+            0.559055,
+            0.566929,
+            0.574803,
+            0.582677,
+            0.590551,
+            0.598425,
+            0.606299,
+            0.614173,
+            0.622047,
+            0.637795,
+            0.645669,
+            0.653543,
+            0.661417,
+            0.669291,
+            0.677165,
+            0.685039,
+            0.700787,
+            0.708661,
+            0.716535,
+            0.724409,
+            0.732283,
+            0.748031,
+            0.755906,
+            0.76378,
+            0.771654,
+            0.779528,
+            0.795276,
+            0.80315,
+            0.811024,
+            0.818898,
+            0.834646,
+            0.84252,
+            0.850394,
+            0.866142,
+            0.874016,
+            0.88189,
+            0.897638,
+            0.905512,
+            0.913386,
+            0.92126,
+            0.937008,
+            0.944882,
+            0.96063,
+            0.968504,
+            0.976378,
+            0.992126,
+            1.0
+          ],
+          "out_of_range": 127
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/level-the-multiplier-is-a-seventh-bit-table.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "low_r",
+      "kind": "section",
+      "input": "level_r",
+      "stage": "shelf",
+      "side": "low",
+      "order": 1,
+      "corner_hz": {
+        "value": 160.5968987248378,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 13",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "high_r",
+      "kind": "section",
+      "input": "low_r",
+      "stage": "shelf",
+      "side": "high",
+      "order": 1,
+      "corner_hz": {
+        "value": 6986.979260633256,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      },
+      "gain_db": {
+        "byte": "40 03 14",
+        "map": {
+          "kind": "window",
+          "low": 52,
+          "high": 76,
+          "at_low": -12.0,
+          "at_high": 12.0
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/gain-the-byte-is-a-decibel-a-step.json",
+          "inferences/roland-sc8850-01/tone-a-pair-of-fixed-first-order-shelves.json"
+        ],
+        "fitted_on": []
+      }
+    }
+  ],
+  "rows": {
+    "40 03 03": "bound",
+    "40 03 04": "bound",
+    "40 03 05": "bound",
+    "40 03 06": "bound",
+    "40 03 07": "bound",
+    "40 03 12": "bound",
+    "40 03 13": "bound",
+    "40 03 14": "bound",
+    "40 03 16": "bound"
+  }
+}

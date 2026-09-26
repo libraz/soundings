@@ -1,0 +1,35 @@
+{
+  "class": "whole-0154",
+  "what_the_class_is": "The time-controlled delay as a whole: one line from the mono sum of the inputs, its time where the time claim reads a setting landing, the loop with the damping pole inside it, the EFX Pan byte placing it, then the balance, level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A delay is a circular buffer addressed by a sample count, so a time is a whole number of samples and a tap is one more read of the same buffer; three or four taps cost three or four reads and no more memory.",
+      "A loop takes a read of the buffer, scales it and adds it to what is written, and damping in it is the cheapest pole there is -- one multiply and one state -- because it only has to take the top off the repeats.",
+      "Whether the value fed back is the read of this sample or of the last one is a question of how the program is scheduled, and either costs the same.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The repeats of a held or struck note came back at spacings other than the ladder entry (or the entry and a sample) at settings nothing here was built on, or their level fell per repeat by other than the printed feedback times the damping pole."
+  },
+  "candidates": [
+    {
+      "id": "pan-on-the-delayed-copy",
+      "model": "inferences/models/0154-whole-pan-on-the-delayed-copy.json",
+      "reading": "The EFX Pan byte places the delayed copy alone; the dry passes each side as it came.",
+      "predicts": "With the balance at all-dry each output carries its own input, whatever the EFX Pan byte holds."
+    },
+    {
+      "id": "pan-on-the-whole-output",
+      "model": "inferences/models/0154-whole-pan-on-the-whole-output.json",
+      "reading": "The EFX Pan byte places the balanced sum of the dry mono and the delayed copy.",
+      "predicts": "With the balance at all-dry the output is the mono sum placed by the EFX Pan byte, so at either end of it one output falls silent."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "The glide itself. A take is drawn at the time a setting lands on, never on the way there, and the side it was reached from is read off the power-on setting: a take reaching a setting at or under it from above lands on the column times 127/128, one reaching a setting over it from below lands short. The directory that took one setting from three sides will disagree with this at two of them.",
+    "What the Accel byte does beyond halving the shortfall at its top nibble bit, the one thing the time claim read off it.",
+    "How the inputs are summed onto the line: half of each here; no reading fixed it.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on the line's input inside the loop."
+  ]
+}

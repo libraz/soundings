@@ -1,0 +1,47 @@
+{
+  "class": "whole-0151",
+  "what_the_class_is": "The mod delay as a whole: the stereo delay's two lines, loops, Fb Mode and damping, each line's read swept above its ladder entry by a modulator whose rate is the printed table and whose right side the Mod Phase byte sets apart, then the balance, level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A delay is a circular buffer addressed by a sample count, so a time is a whole number of samples and a tap is one more read of the same buffer; three or four taps cost three or four reads and no more memory.",
+      "A loop takes a read of the buffer, scales it and adds it to what is written, and damping in it is the cheapest pole there is -- one multiply and one state -- because it only has to take the top off the repeats.",
+      "Whether the value fed back is the read of this sample or of the last one is a question of how the program is scheduled, and either costs the same.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The repeats of a held or struck note came back at spacings other than the ladder entry (or the entry and a sample) at settings nothing here was built on, or their level fell per repeat by other than the printed feedback times the damping pole."
+  },
+  "candidates": [
+    {
+      "id": "triangle-loop-on-the-ladder-entry",
+      "model": "inferences/models/0151-whole-triangle-loop-on-the-ladder-entry.json",
+      "reading": "The modulator's shape (triangle). The loop returns straight off the line at the ladder entry.",
+      "predicts": "A pitch that holds two values a cycle and jumps between them, and a time of 0 has no order to be drawn in."
+    },
+    {
+      "id": "triangle-loop-a-sample-late",
+      "model": "inferences/models/0151-whole-triangle-loop-a-sample-late.json",
+      "reading": "The modulator's shape (triangle). The loop returns through a second read of the line one sample past the ladder entry.",
+      "predicts": "A pitch that holds two values a cycle, with every repeat a sample later than the ladder puts it."
+    },
+    {
+      "id": "raised-sine-loop-on-the-ladder-entry",
+      "model": "inferences/models/0151-whole-raised-sine-loop-on-the-ladder-entry.json",
+      "reading": "The modulator's shape (raised sine). The loop returns straight off the line at the ladder entry.",
+      "predicts": "A pitch that swings smoothly, the delay lingering at the ends of the sweep and at every depth 0.64 of the triangle's excursion; a time of 0 has no order to be drawn in."
+    },
+    {
+      "id": "raised-sine-loop-a-sample-late",
+      "model": "inferences/models/0151-whole-raised-sine-loop-a-sample-late.json",
+      "reading": "The modulator's shape (raised sine). The loop returns through a second read of the line one sample past the ladder entry.",
+      "predicts": "A pitch that swings smoothly at 0.64 of the triangle's excursion, with every repeat a sample later than the ladder puts it."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "What the Mod Depth byte is worth on this type. The depth claim sets no law for a byte that swings a modulator, and the two takes walked on this type were refused by the reading at nearly every take, so the byte is read through the stereo chorus's pitch excursion -- the only depth curve measured on a swept delay line -- with no claim that the two types share it.",
+    "Whether the modulated read is interpolated otherwise than linearly: nothing here was asked about it.",
+    "What an Fb Mode value past 01 does beyond keeping the state 00, for the reason given on the stereo delay.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on the line's input inside the loop."
+  ]
+}

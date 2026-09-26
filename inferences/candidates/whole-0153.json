@@ -1,0 +1,47 @@
+{
+  "class": "whole-0153",
+  "what_the_class_is": "The four-tap delay as a whole: one line from the mono sum of the inputs, four reads of it at the four times, each through its own level and placed between the outputs, the loop fed from tap 1 with the damping pole inside it, then the balance, level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A delay is a circular buffer addressed by a sample count, so a time is a whole number of samples and a tap is one more read of the same buffer; three or four taps cost three or four reads and no more memory.",
+      "A loop takes a read of the buffer, scales it and adds it to what is written, and damping in it is the cheapest pole there is -- one multiply and one state -- because it only has to take the top off the repeats.",
+      "Whether the value fed back is the read of this sample or of the last one is a question of how the program is scheduled, and either costs the same.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The repeats of a held or struck note came back at spacings other than the ladder entry (or the entry and a sample) at settings nothing here was built on, or their level fell per repeat by other than the printed feedback times the damping pole."
+  },
+  "candidates": [
+    {
+      "id": "spread-in-order-fed-before-the-first-level",
+      "model": "inferences/models/0153-whole-spread-in-order-fed-before-the-first-level.json",
+      "reading": "The four taps sit left to right in printed order under the pan law. The loop is fed from tap 1 before its level.",
+      "predicts": "Each tap alone moves the image a third of the way further right than the tap before it, and with Dly Lev 1 at 0 the other taps still carry repeats spaced at tap 1's time."
+    },
+    {
+      "id": "spread-in-order-fed-after-the-first-level",
+      "model": "inferences/models/0153-whole-spread-in-order-fed-after-the-first-level.json",
+      "reading": "The four taps sit left to right in printed order under the pan law. The loop is fed from tap 1 after its level.",
+      "predicts": "Each tap alone moves the image a third of the way further right than the tap before it, and with Dly Lev 1 at 0 nothing repeats."
+    },
+    {
+      "id": "alternating-sides-fed-before-the-first-level",
+      "model": "inferences/models/0153-whole-alternating-sides-fed-before-the-first-level.json",
+      "reading": "Taps 1 and 3 go left and taps 2 and 4 right. The loop is fed from tap 1 before its level.",
+      "predicts": "Taps 1 and 3 on the left output only and taps 2 and 4 on the right only, and with Dly Lev 1 at 0 the other taps still carry repeats."
+    },
+    {
+      "id": "alternating-sides-fed-after-the-first-level",
+      "model": "inferences/models/0153-whole-alternating-sides-fed-after-the-first-level.json",
+      "reading": "Taps 1 and 3 go left and taps 2 and 4 right. The loop is fed from tap 1 after its level.",
+      "predicts": "Taps 1 and 3 on the left output only and taps 2 and 4 on the right only, and with Dly Lev 1 at 0 nothing repeats."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "Which tap the loop is fed from other than tap 1, the first the page prints.",
+    "How the inputs are summed onto the line: half of each here; no reading fixed it.",
+    "Whether a tap level is the output level's stored curve: the level claim is carried to these bytes unmeasured, and every take asks them only at 0 and 127, where the curve and the byte over 127 agree.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on the line's input inside the loop."
+  ]
+}

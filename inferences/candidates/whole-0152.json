@@ -1,0 +1,35 @@
+{
+  "class": "whole-0152",
+  "what_the_class_is": "The three-tap delay as a whole: one line from the mono sum of the inputs, three reads of it at the C, L and R times, each through its own level, the centre tap to both outputs and the side taps to their own, the loop fed from the centre tap with the damping pole inside it, then the balance, level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A delay is a circular buffer addressed by a sample count, so a time is a whole number of samples and a tap is one more read of the same buffer; three or four taps cost three or four reads and no more memory.",
+      "A loop takes a read of the buffer, scales it and adds it to what is written, and damping in it is the cheapest pole there is -- one multiply and one state -- because it only has to take the top off the repeats.",
+      "Whether the value fed back is the read of this sample or of the last one is a question of how the program is scheduled, and either costs the same.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The repeats of a held or struck note came back at spacings other than the ladder entry (or the entry and a sample) at settings nothing here was built on, or their level fell per repeat by other than the printed feedback times the damping pole."
+  },
+  "candidates": [
+    {
+      "id": "fed-before-the-centre-level",
+      "model": "inferences/models/0152-whole-fed-before-the-centre-level.json",
+      "reading": "The loop is fed from the centre tap before its level, so Dly Lev C scales only what reaches the outputs.",
+      "predicts": "With Dly Lev C at 0 the repeats go on: the centre copy is gone from the outputs, but the side taps keep reading recirculated copies spaced at the centre time."
+    },
+    {
+      "id": "fed-after-the-centre-level",
+      "model": "inferences/models/0152-whole-fed-after-the-centre-level.json",
+      "reading": "The loop is fed from the centre tap after its level, so Dly Lev C scales the repeats too.",
+      "predicts": "With Dly Lev C at 0 the loop is cut, so the side taps each return one copy and nothing repeats."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "How the inputs are summed onto the line: half of each here; no reading fixed it.",
+    "Whether the centre tap reaches each output at its full level or through a pan law's centre: at its full level here.",
+    "Whether a tap level is the output level's stored curve: the level claim is carried to these bytes unmeasured, and every take asks them only at 0 and 127, where the curve and the byte over 127 agree.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on the line's input inside the loop."
+  ]
+}

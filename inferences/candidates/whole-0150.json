@@ -1,0 +1,45 @@
+{
+  "class": "whole-0150",
+  "what_the_class_is": "The stereo delay as a whole: a line an output with a loop around each, the Fb Mode byte sending each loop home or across, the damping pole inside the loops, a Phase byte a side turning the delayed copy over, the balance of dry against wet, then the level and tone stages.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP running its effects at 32 kHz with a small control processor beside it.",
+    "what_that_implies": [
+      "A delay is a circular buffer addressed by a sample count, so a time is a whole number of samples and a tap is one more read of the same buffer; three or four taps cost three or four reads and no more memory.",
+      "A loop takes a read of the buffer, scales it and adds it to what is written, and damping in it is the cheapest pole there is -- one multiply and one state -- because it only has to take the top off the repeats.",
+      "Whether the value fed back is the read of this sample or of the last one is a question of how the program is scheduled, and either costs the same.",
+      "Times, rates, levels and corners are tables indexed by the byte, as the classes that read them closed on; a whole-type model borrows those tables rather than fitting its own."
+    ],
+    "would_be_wrong_if": "The repeats of a held or struck note came back at spacings other than the ladder entry (or the entry and a sample) at settings nothing here was built on, or their level fell per repeat by other than the printed feedback times the damping pole."
+  },
+  "candidates": [
+    {
+      "id": "phase-on-the-way-out-loop-on-the-ladder-entry",
+      "model": "inferences/models/0150-whole-phase-on-the-way-out-loop-on-the-ladder-entry.json",
+      "reading": "The Phase bytes turn a side's delayed copy over on its way out only, after the loop has taken it. The loop returns straight off the line at the ladder entry.",
+      "predicts": "With feedback, every repeat of a side turned over when its Phase byte is Invert, and a time of 0 has no order to be drawn in."
+    },
+    {
+      "id": "phase-on-the-way-out-loop-a-sample-late",
+      "model": "inferences/models/0150-whole-phase-on-the-way-out-loop-a-sample-late.json",
+      "reading": "The Phase bytes turn a side's delayed copy over on its way out only, after the loop has taken it. The loop returns through a second read of the line one sample past the ladder entry.",
+      "predicts": "With feedback, every repeat of a side turned over when its Phase byte is Invert; each repeat one sample later than the ladder puts it, which grows by a sample a repeat."
+    },
+    {
+      "id": "phase-inside-the-loop-loop-on-the-ladder-entry",
+      "model": "inferences/models/0150-whole-phase-inside-the-loop-loop-on-the-ladder-entry.json",
+      "reading": "The Phase bytes turn a side's delayed copy over inside the loop, so the copy fed back is turned over too. The loop returns straight off the line at the ladder entry.",
+      "predicts": "With feedback and a side at Invert, that side's repeats alternate in sign, and in Cross mode what that side sends the other is turned over too; a time of 0 has no order to be drawn in."
+    },
+    {
+      "id": "phase-inside-the-loop-loop-a-sample-late",
+      "model": "inferences/models/0150-whole-phase-inside-the-loop-loop-a-sample-late.json",
+      "reading": "The Phase bytes turn a side's delayed copy over inside the loop, so the copy fed back is turned over too. The loop returns through a second read of the line one sample past the ladder entry.",
+      "predicts": "With feedback and a side at Invert, that side's repeats alternate in sign, and each repeat lands one sample later than the ladder puts it."
+    }
+  ],
+  "what_no_candidate_here_predicts": [
+    "What a Phase or Fb Mode value past 01 does beyond keeping the state 00: every take asking one asked it straight after 00, and the states claim reads it as leaving the slot where it stood, which a take written from another state would contradict.",
+    "Anything at the addresses the page does not print: no node reads them, so every candidate renders them as the power-on state.",
+    "Whether the damping claim, closed on the stereo delay and checked on the mod delay, reaches this type's HF Damp byte: it is carried here unmeasured, one pole on the line's input inside the loop."
+  ]
+}
