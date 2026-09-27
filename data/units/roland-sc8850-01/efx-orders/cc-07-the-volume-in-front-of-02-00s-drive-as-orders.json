@@ -1,0 +1,1741 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-orders",
+    "invocation": [
+      "efx-orders",
+      ".cache/takes/book-f8/0200-volume-at-drive-48",
+      "--cc",
+      "7",
+      "--setting",
+      "through-(?P<value>\\d+)",
+      "--control",
+      "bypassed-(?P<value>\\d+)",
+      "--type",
+      "02 00",
+      "--carrier",
+      "110.0",
+      "--reference",
+      "flat-\\d+",
+      "--silence",
+      "silence-\\d+",
+      "--stimulus",
+      "a note held through the effect -- program 81 at note 45, nominally a hundred and ten hertz, the carrier 01 10's drive byte and volume ladder were read on and chosen for the same reason: it is near a single partial and is not one. What it brings to the stage is measured in this record rather than restated: the `control` takes are the part routed past the effect, read exactly as the routed takes are. The figures compare one setting against another on this one signal; they are not the harmonic series a single tone through a curve would give.",
+      "--channel",
+      "3",
+      "--held",
+      "40 03 03=30",
+      "--held",
+      "40 03 04=40",
+      "--held",
+      "40 03 05=00",
+      "--held",
+      "40 03 06=00",
+      "--held",
+      "40 03 0C=00",
+      "--held",
+      "40 03 13=40",
+      "--held",
+      "40 03 14=40",
+      "--held",
+      "40 03 16=7F",
+      "--out",
+      "data/units/roland-sc8850-01/efx-orders/cc-07-the-volume-in-front-of-02-00s-drive-as-orders.json"
+    ],
+    "measured_at": "2026-09-27T21:22:44+00:00",
+    "elapsed_s": 7.3,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "What one setting did to the harmonic orders of a held tone -- the level of each order under the first -- at each setting swept.",
+  "type": "02 00",
+  "controller": 7,
+  "method": "A tone was held through the effect at one setting and each of the first orders of its carrier was demodulated by that order's own frequency. The carrier itself was measured from each take rather than taken from the note that was played, because a demodulation aimed off a partial reads it through the skirt of its own filter. The filter after the mixer is the whole of the held stretch, windowed -- a matched filter for a partial that stands still, and the narrowest one these takes can give. The level reported per order is that filter's output, in decibels under the first order of the same take.",
+  "limits": "Every figure is the level of an order under the first order **of the same take**, so nothing here is a level and nothing here moves when something after the stage scales the output. That is what makes settings of different loudness comparable and it is also what this record cannot report: how loud the setting came back is in `heard_db` and nowhere in the orders. `floor_db` is the spread of the run's own repeats of one setting, order by order, and a difference inside it is not a reading. It is a range over a handful of takes rather than a bound, so a difference just outside it is not thereby a reading either, and how many takes drew it is in `reference`. A run with no repeats in it carries no floor at all: its figures still stand, because each is read against its own take's first order, but nothing says how small a difference between two of them can be told from the same setting asked twice. Only whole multiples of the carrier are read. A stimulus that is not one partial arrives with orders of its own and returns products between them, and a product on a whole multiple is counted as that order; what bounds this is how much of the stimulus is its own fundamental, which is stated with the stimulus and is not a figure this reading can produce. Energy the stage put between the orders is not here at all. An order quieter than what the same chain recorded with nothing played is the floor and not the order. That comparison is between levels and cannot be made between two ratios, which is why `orders_db` is beside `under_the_first_db` on every reading here and on every take in `silence`: the check is each order against the same order of the silence, and it is left for a reader to make rather than folded into a verdict. `floor_between_orders_db` is the same check made without another take at all -- what stands halfway to the next order, read through the same filter, in this take and at this moment -- and it is the tighter of the two wherever the chain was quieter than the silence take happened to be. **Halfway to the next order is not empty by construction, and on some stimuli it is the least empty place in the gap.** A voice whose partials sit at half multiples of its own fundamental puts a line exactly there, and one of this unit's own voices does: sixty-six to eighty-three decibels under its first partial, the same series at every note it was asked at, standing about eleven decibels over the median of the gap it sits in and tens of decibels over the emptiest points either side of it. So this figure bounds what is at that frequency, which is what it is for when an order is being called an order, and it is a floor only where there is nothing there. Which of the two it is for a given stimulus is not something this reading can tell, and the stimulus is stated beside it. `orders_turn_deg` is which way each order points against the carrier, with the take's own clock taken out by subtracting `k` times the first order's own angle. Nothing is fitted in it and it does not depend on when the note was struck. Fed one steady tone, a stage with no state in it returns every order either along the carrier or exactly against it, so a turn that is neither nought nor a hundred and eighty is a reading -- but of what, this record does not say: a state inside the stage and a filter after it that is not flat across the orders both do it, and separating those needs a second carrier at another frequency. **`Fed one steady tone` is a condition and not a preamble, and a stimulus carrying its own orders does not meet it.** Where it is not met these angles are not a reading about the stage at all, and neither is how they move across a sweep. Order `k` then collects products of the stimulus's own components alongside whatever the stage's own `k`-th term puts there -- landing on the same frequency, in the same bin, separable by no floor in this record or any take beside it, because the take routed past the stage never made them. The two grow at different rates as the level rises, so their sum turns as a sweep proceeds with nothing inside the stage turning. A stimulus is one steady tone only if it carries no orders of its own; how much it carries is stated with the stimulus, and where a record's control takes show any, these angles belong to the voice. How far from nought-or-against counts is `floor_turn_deg` in `reference`, which is the run's own repeats of one setting read the same way. It is an arc and not a difference of two numbers: two takes at plus and minus a hundred and seventy-nine degrees are two degrees apart, and the reading beside it for the sizes is a subtraction because a level is on a line and an angle is not. The whole series is determined only up to which way round the carrier was fed in, which adds `k` times a hundred and eighty to every turn and leaves the distance from nought-or-against unchanged -- so that distance is the reading and the value is not. A turn on an order that is at its own floor is the floor's angle and means nothing. `orders` is a resolution. Where `settled_at_the_top_db` is not near nothing the series was still carrying level at the last order read, so the total below it is a lower bound on what the stage returned rather than the whole of it, and the answer is to read the same takes again with more orders asked for. The orders are read where they were put, which holds only while they stay under half the rate the stage runs at. Where the last one lands is `top_order_hz`, the carrier asked for times the number of orders asked for, and it is printed rather than judged: this record does not know what rate the stage runs at, so whether the top of this series is where the reading says it is has to be decided against that figure by a reader who does. Raising `orders` and raising the carrier both move it, and neither announces itself in the numbers.",
+  "not_in_this_record": "No curve, no order of polynomial and no clipper. Which nonlinearity these orders belong to, whether it is symmetric, and where along it the signal sat is a fit across settings and types, and the fit is not made here. Neither is what set the orders: a stage reached through the part rather than through the type is a stage the type's own bytes also reach, and which of them a reader is looking at is what the subject of this record says and what these figures cannot.",
+  "orders": 8,
+  "carrier_asked_hz": 110.0,
+  "top_order_hz": 880.0,
+  "read_over": "the whole of the held stretch",
+  "why_read_over": "How long the filter after the mixer is, which decides what counts as an order. Over the whole held stretch it is a matched filter for a steady partial and the narrowest this take can give, so what it returns is the order and very little else; over a boxcar a few carrier periods long the lobe is a fraction of a fundamental wide and whatever the stage put beside the order is read as part of it. Both are readings of these takes and neither is the better one in general -- a partial that moves is read by the short filter and lost by the long one. Which was used is stated because the same takes read the other way are another record, and because two records that disagree are saying where the energy sits rather than that one of them is wrong.",
+  "why_fundamental": "The carrier each take was actually read at, and the note it was asked for. Measured per take because a boxcar aimed off the partial reads every order through the skirt of its own window, and because a take whose carrier is not where it was asked for is a take of something else -- which is a reading and not a nuisance.",
+  "channel": {
+    "read": 3,
+    "chosen_by": "given",
+    "named_by": "the reference takes",
+    "reference_db": [
+      -69.7,
+      -73.9,
+      -40.6,
+      -39.7,
+      -240.0,
+      -240.0
+    ],
+    "loudest_elsewhere": [
+      "held-81-bypassed-016-00.wav",
+      "held-81-bypassed-028-00.wav",
+      "held-81-bypassed-040-00.wav",
+      "held-81-bypassed-052-00.wav",
+      "held-81-bypassed-064-00.wav",
+      "held-81-bypassed-076-00.wav",
+      "held-81-bypassed-088-00.wav",
+      "held-81-bypassed-100-00.wav",
+      "held-81-bypassed-112-00.wav",
+      "held-81-bypassed-127-00.wav",
+      "held-81-silence-00-00.wav",
+      "held-81-silence-01-00.wav"
+    ],
+    "why": "Which channel of the interface every take was read from, and how loud the reference takes were in each. One channel for the run rather than the loudest of each take: an interface carries inputs the unit is not on and they are not silent, so a setting that turns the output down is otherwise read from whichever input happened to be noisiest, and the orders of that are a complete and entirely wrong answer."
+  },
+  "other_channel": {
+    "read": 2,
+    "under_the_first_db": [
+      -5.71,
+      -8.17,
+      -10.05,
+      -12.04,
+      -12.72,
+      -14.22,
+      -15.61
+    ],
+    "why": "The same orders read on the next loudest channel, as a control on the first. It is named rather than assumed to be the unit's other output; what says it carried the unit is that it follows the setting, and how far the two channels disagree is reported with every reading.",
+    "over_the_swept_takes": {
+      "takes": 10,
+      "apart_db": -0.68,
+      "widest_apart_db": -0.51,
+      "the_read_side_moves_db": 29.14,
+      "the_other_side_moves_db": 28.8,
+      "why": "Every figure in this record is read from one channel, and which one decides the answer. A run that read the side the unit was not on returns the idle input's own behaviour, which looks like a stage doing nothing rather than like a failure: one published run held a byte that panned its effect hard over, read the silent side of the pair, and came out looking whole. So each reading carries the level of the other output on the same take beside its own, and a reader can ask of the swept takes alone whether the side that was read is the side the unit was on. `reached_db` cannot answer that, and is not meant to: it is the highest each channel reached anywhere in the run, and a run's control take has the two sides equal by construction, so the figure it gives is a fifth of a decibel on exactly the run that was read 22 dB down on every swept take."
+    }
+  },
+  "silence": {
+    "takes": [
+      "held-81-silence-00-00.wav",
+      "held-81-silence-01-00.wav"
+    ],
+    "readings": [
+      {
+        "under_the_first_db": [
+          -5.54,
+          -10.35,
+          -14.24,
+          -10.41,
+          -6.88,
+          -14.6,
+          -5.67
+        ],
+        "all_of_them_db": 0.05,
+        "settled_at_the_top_db": -0.13,
+        "orders_db": [
+          -154.07,
+          -159.61,
+          -164.41,
+          -168.31,
+          -164.48,
+          -160.94,
+          -168.67,
+          -159.74
+        ],
+        "orders_turn_deg": [
+          0.0,
+          112.1,
+          -77.6,
+          57.2,
+          -15.4,
+          15.8,
+          178.6,
+          148.4
+        ],
+        "floor_between_orders_db": [
+          -163.63,
+          -163.63,
+          -166.91,
+          -166.91,
+          -167.57,
+          -172.78,
+          -172.78,
+          -166.13
+        ],
+        "heard_db": -110.49,
+        "take": "held-81-silence-00-00.wav"
+      },
+      {
+        "under_the_first_db": [
+          -11.89,
+          -13.83,
+          -18.49,
+          -18.4,
+          -9.82,
+          -16.33,
+          -21.44
+        ],
+        "all_of_them_db": -5.7,
+        "settled_at_the_top_db": -11.62,
+        "orders_db": [
+          -150.85,
+          -162.75,
+          -164.68,
+          -169.34,
+          -169.25,
+          -160.67,
+          -167.18,
+          -172.3
+        ],
+        "orders_turn_deg": [
+          0.0,
+          -61.9,
+          28.0,
+          138.1,
+          -90.3,
+          -178.6,
+          -178.6,
+          -21.6
+        ],
+        "floor_between_orders_db": [
+          -162.35,
+          -160.89,
+          -164.3,
+          -164.3,
+          -170.35,
+          -170.35,
+          -164.38,
+          -173.62
+        ],
+        "heard_db": -110.49,
+        "take": "held-81-silence-01-00.wav"
+      }
+    ],
+    "why": "The takes made with the same chain and nothing played, read as orders the same way. A setting that turns the output down far enough returns the room and the converter, and those have a shape at every frequency asked for -- so an order that has fallen into this is the floor being reported as a harmonic."
+  },
+  "reference": {
+    "takes": [
+      "held-81-flat-00-00.wav",
+      "held-81-flat-01-00.wav",
+      "held-81-flat-02-00.wav",
+      "held-81-flat-03-00.wav"
+    ],
+    "under_the_first_db": [
+      -6.77,
+      -11.07,
+      -11.14,
+      -12.01,
+      -14.96,
+      -14.74,
+      -17.98
+    ],
+    "floor_db": [
+      0.02,
+      0.02,
+      0.01,
+      0.0,
+      0.0,
+      0.0,
+      0.01
+    ],
+    "turn_deg": [
+      0.0,
+      -3.9,
+      17.9,
+      77.8,
+      141.7,
+      -153.9,
+      -102.2,
+      -30.9
+    ],
+    "floor_turn_deg": [
+      0.0,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8
+    ],
+    "heard_db": -40.11,
+    "fundamental_hz": 110.115,
+    "why": "The setting the run repeated, and the spread of those repeats is the floor every difference here has to clear. Taken in the same session rather than carried from another run: what a held voice fails to repeat belongs to the sitting it was recorded in. Unlike the band reading beside this one, nothing below is reported against these takes -- each reading is under its own take's first order -- so a run without them still produces its figures. What it loses is the floor, and a record that lost it says so here rather than leaving a reader to notice."
+  },
+  "control": {
+    "takes": [
+      "held-81-bypassed-016-00.wav",
+      "held-81-bypassed-028-00.wav",
+      "held-81-bypassed-040-00.wav",
+      "held-81-bypassed-052-00.wav",
+      "held-81-bypassed-064-00.wav",
+      "held-81-bypassed-076-00.wav",
+      "held-81-bypassed-088-00.wav",
+      "held-81-bypassed-100-00.wav",
+      "held-81-bypassed-112-00.wav",
+      "held-81-bypassed-127-00.wav"
+    ],
+    "readings": [
+      {
+        "value": 16,
+        "under_the_first_db": [
+          -13.46,
+          -17.97,
+          -20.51,
+          -22.64,
+          -24.32,
+          -25.65,
+          -26.84
+        ],
+        "all_of_them_db": -10.76,
+        "settled_at_the_top_db": -13.38,
+        "orders_db": [
+          -87.74,
+          -101.2,
+          -105.71,
+          -108.25,
+          -110.37,
+          -112.05,
+          -113.39,
+          -114.58
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          12.8,
+          -139.1,
+          70.0,
+          -79.9,
+          130.8,
+          -19.6
+        ],
+        "floor_between_orders_db": [
+          -160.35,
+          -156.21,
+          -178.2,
+          -178.2,
+          -169.68,
+          -177.02,
+          -177.02,
+          -167.71
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.9,
+          -9.37,
+          -10.63,
+          -9.36,
+          -10.91,
+          -8.86
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.91,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.08,
+        "other_channel_apart_at_order": 6,
+        "fundamental_hz": 109.359,
+        "heard_db": -82.36,
+        "above_the_silence_db": 28.1,
+        "take": "held-81-bypassed-016-00.wav"
+      },
+      {
+        "value": 28,
+        "under_the_first_db": [
+          -13.46,
+          -18.03,
+          -20.56,
+          -22.67,
+          -24.37,
+          -25.67,
+          -26.79
+        ],
+        "all_of_them_db": -10.78,
+        "settled_at_the_top_db": -13.33,
+        "orders_db": [
+          -77.93,
+          -91.39,
+          -95.96,
+          -98.49,
+          -100.6,
+          -102.3,
+          -103.6,
+          -104.71
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          12.9,
+          -138.8,
+          69.7,
+          -80.3,
+          130.6,
+          -20.2
+        ],
+        "floor_between_orders_db": [
+          -160.22,
+          -159.72,
+          -160.0,
+          -164.91,
+          -164.91,
+          -166.61,
+          -166.61,
+          -164.63
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.96,
+          -9.42,
+          -10.66,
+          -9.41,
+          -10.93,
+          -8.81
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -72.63,
+        "above_the_silence_db": 37.9,
+        "take": "held-81-bypassed-028-00.wav"
+      },
+      {
+        "value": 40,
+        "under_the_first_db": [
+          -13.46,
+          -18.06,
+          -20.58,
+          -22.67,
+          -24.39,
+          -25.67,
+          -26.78
+        ],
+        "all_of_them_db": -10.79,
+        "settled_at_the_top_db": -13.32,
+        "orders_db": [
+          -71.71,
+          -85.17,
+          -89.77,
+          -92.29,
+          -94.38,
+          -96.09,
+          -97.38,
+          -98.49
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          12.9,
+          -138.8,
+          69.6,
+          -80.4,
+          130.6,
+          -20.2
+        ],
+        "floor_between_orders_db": [
+          -162.79,
+          -162.59,
+          -169.14,
+          -169.14,
+          -172.66,
+          -178.98,
+          -178.98,
+          -170.05
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.99,
+          -9.44,
+          -10.66,
+          -9.43,
+          -10.93,
+          -8.8
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -66.43,
+        "above_the_silence_db": 44.1,
+        "take": "held-81-bypassed-040-00.wav"
+      },
+      {
+        "value": 52,
+        "under_the_first_db": [
+          -13.47,
+          -18.07,
+          -20.59,
+          -22.68,
+          -24.39,
+          -25.68,
+          -26.79
+        ],
+        "all_of_them_db": -10.8,
+        "settled_at_the_top_db": -13.32,
+        "orders_db": [
+          -67.13,
+          -80.6,
+          -85.2,
+          -87.72,
+          -89.81,
+          -91.53,
+          -92.81,
+          -93.92
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.1,
+          12.9,
+          -138.8,
+          69.6,
+          -80.5,
+          130.5,
+          -20.2
+        ],
+        "floor_between_orders_db": [
+          -161.76,
+          -169.16,
+          -172.16,
+          -172.16,
+          -170.54,
+          -165.86,
+          -165.86,
+          -162.67
+        ],
+        "against_the_reference_db": [
+          -6.7,
+          -7.0,
+          -9.45,
+          -10.67,
+          -9.43,
+          -10.94,
+          -8.81
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.94,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.03,
+        "other_channel_apart_at_order": 6,
+        "fundamental_hz": 109.359,
+        "heard_db": -61.87,
+        "above_the_silence_db": 48.6,
+        "take": "held-81-bypassed-052-00.wav"
+      },
+      {
+        "value": 64,
+        "under_the_first_db": [
+          -13.46,
+          -18.06,
+          -20.58,
+          -22.67,
+          -24.39,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.79,
+        "settled_at_the_top_db": -13.31,
+        "orders_db": [
+          -63.52,
+          -76.98,
+          -81.59,
+          -84.1,
+          -86.2,
+          -87.91,
+          -89.2,
+          -90.3
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          13.0,
+          -138.7,
+          69.7,
+          -80.3,
+          130.7,
+          -20.0
+        ],
+        "floor_between_orders_db": [
+          -164.45,
+          -167.35,
+          -167.35,
+          -162.45,
+          -167.13,
+          -167.13,
+          -164.14,
+          -179.38
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.99,
+          -9.44,
+          -10.66,
+          -9.43,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -58.21,
+        "above_the_silence_db": 52.3,
+        "take": "held-81-bypassed-064-00.wav"
+      },
+      {
+        "value": 76,
+        "under_the_first_db": [
+          -13.46,
+          -18.06,
+          -20.58,
+          -22.67,
+          -24.38,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.79,
+        "settled_at_the_top_db": -13.31,
+        "orders_db": [
+          -60.54,
+          -74.0,
+          -78.6,
+          -81.12,
+          -83.21,
+          -84.93,
+          -86.21,
+          -87.31
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.3,
+          13.1,
+          -138.6,
+          69.8,
+          -80.2,
+          130.9,
+          -19.8
+        ],
+        "floor_between_orders_db": [
+          -186.58,
+          -163.18,
+          -164.61,
+          -164.61,
+          -162.78,
+          -162.78,
+          -165.6,
+          -165.6
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.99,
+          -9.44,
+          -10.66,
+          -9.42,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.05,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -55.19,
+        "above_the_silence_db": 55.3,
+        "take": "held-81-bypassed-076-00.wav"
+      },
+      {
+        "value": 88,
+        "under_the_first_db": [
+          -13.45,
+          -18.06,
+          -20.57,
+          -22.66,
+          -24.38,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.78,
+        "settled_at_the_top_db": -13.32,
+        "orders_db": [
+          -58.0,
+          -71.45,
+          -76.06,
+          -78.57,
+          -80.66,
+          -82.38,
+          -83.67,
+          -84.77
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.4,
+          13.3,
+          -138.3,
+          70.2,
+          -79.8,
+          131.4,
+          -19.2
+        ],
+        "floor_between_orders_db": [
+          -158.4,
+          -158.36,
+          -166.16,
+          -166.16,
+          -166.75,
+          -166.75,
+          -167.51,
+          -167.51
+        ],
+        "against_the_reference_db": [
+          -6.68,
+          -6.99,
+          -9.43,
+          -10.65,
+          -9.42,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -52.53,
+        "above_the_silence_db": 58.0,
+        "take": "held-81-bypassed-088-00.wav"
+      },
+      {
+        "value": 100,
+        "under_the_first_db": [
+          -13.46,
+          -18.06,
+          -20.58,
+          -22.67,
+          -24.39,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.79,
+        "settled_at_the_top_db": -13.31,
+        "orders_db": [
+          -55.77,
+          -69.23,
+          -73.84,
+          -76.35,
+          -78.44,
+          -80.16,
+          -81.44,
+          -82.54
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.3,
+          13.1,
+          -138.6,
+          69.8,
+          -80.2,
+          130.9,
+          -19.8
+        ],
+        "floor_between_orders_db": [
+          -158.17,
+          -163.81,
+          -163.81,
+          -165.64,
+          -165.64,
+          -164.58,
+          -166.19,
+          -166.2
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -6.99,
+          -9.44,
+          -10.66,
+          -9.43,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -50.43,
+        "above_the_silence_db": 60.1,
+        "take": "held-81-bypassed-100-00.wav"
+      },
+      {
+        "value": 112,
+        "under_the_first_db": [
+          -13.45,
+          -18.06,
+          -20.58,
+          -22.67,
+          -24.38,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.79,
+        "settled_at_the_top_db": -13.32,
+        "orders_db": [
+          -53.81,
+          -67.26,
+          -71.87,
+          -74.38,
+          -76.47,
+          -78.19,
+          -79.48,
+          -80.58
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.3,
+          13.2,
+          -138.5,
+          70.0,
+          -80.0,
+          131.1,
+          -19.5
+        ],
+        "floor_between_orders_db": [
+          -157.62,
+          -165.5,
+          -165.52,
+          -169.04,
+          -169.04,
+          -167.83,
+          -167.47,
+          -164.65
+        ],
+        "against_the_reference_db": [
+          -6.68,
+          -6.99,
+          -9.44,
+          -10.66,
+          -9.42,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.06,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -48.39,
+        "above_the_silence_db": 62.1,
+        "take": "held-81-bypassed-112-00.wav"
+      },
+      {
+        "value": 127,
+        "under_the_first_db": [
+          -13.46,
+          -18.07,
+          -20.59,
+          -22.67,
+          -24.39,
+          -25.67,
+          -26.77
+        ],
+        "all_of_them_db": -10.8,
+        "settled_at_the_top_db": -13.31,
+        "orders_db": [
+          -51.62,
+          -65.08,
+          -69.69,
+          -72.2,
+          -74.29,
+          -76.01,
+          -77.29,
+          -78.39
+        ],
+        "orders_turn_deg": [
+          0.0,
+          166.2,
+          13.0,
+          -138.7,
+          69.6,
+          -80.4,
+          130.6,
+          -20.1
+        ],
+        "floor_between_orders_db": [
+          -163.35,
+          -160.47,
+          -164.24,
+          -166.95,
+          -166.95,
+          -163.56,
+          -163.56,
+          -161.37
+        ],
+        "against_the_reference_db": [
+          -6.69,
+          -7.0,
+          -9.45,
+          -10.66,
+          -9.43,
+          -10.93,
+          -8.79
+        ],
+        "outside_the_floor_orders": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "largest_db": -10.93,
+        "largest_at_order": 7,
+        "other_channel_apart_db": 0.05,
+        "other_channel_apart_at_order": 8,
+        "fundamental_hz": 109.359,
+        "heard_db": -46.33,
+        "above_the_silence_db": 64.2,
+        "take": "held-81-bypassed-127-00.wav"
+      }
+    ],
+    "why": "The takes made with the part routed past the effect. They are what says the orders below belong to the stage rather than to the voice: a carrier is not one partial, and the orders it arrives with are counted by this reading exactly as the ones the stage added are. Without them every order in the record would imply a stage that put it there. Where one of these carries a `value` the run made a control at every setting rather than at one, which it does when what was swept sits in front of the effect: its `heard_db` is then the measurement of what the stage was being given, and the only one in the record, because nothing inside the type reads its own input."
+  },
+  "held": [
+    {
+      "address": "40 03 03",
+      "bytes": "30"
+    },
+    {
+      "address": "40 03 04",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 05",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 06",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 0C",
+      "bytes": "00"
+    },
+    {
+      "address": "40 03 13",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 14",
+      "bytes": "40"
+    },
+    {
+      "address": "40 03 16",
+      "bytes": "7F"
+    }
+  ],
+  "why_held": "The addresses the run had written while it read, and what they held. Orders are the whole chain's, so a setting read with another of the type's stages moved is a reading of something else and nothing in the numbers says so.",
+  "stimulus": "a note held through the effect -- program 81 at note 45, nominally a hundred and ten hertz, the carrier 01 10's drive byte and volume ladder were read on and chosen for the same reason: it is near a single partial and is not one. What it brings to the stage is measured in this record rather than restated: the `control` takes are the part routed past the effect, read exactly as the routed takes are. The figures compare one setting against another on this one signal; they are not the harmonic series a single tone through a curve would give.",
+  "readings": [
+    {
+      "value": 16,
+      "under_the_first_db": [
+        -4.8,
+        -7.63,
+        -7.48,
+        -8.55,
+        -11.61,
+        -11.62,
+        -14.92
+      ],
+      "all_of_them_db": -0.03,
+      "settled_at_the_top_db": -10.12,
+      "orders_db": [
+        -76.99,
+        -81.79,
+        -84.62,
+        -84.48,
+        -85.54,
+        -88.6,
+        -88.61,
+        -91.92
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.3,
+        31.9,
+        92.4,
+        160.4,
+        -130.7,
+        -73.9,
+        4.3
+      ],
+      "floor_between_orders_db": [
+        -156.73,
+        -159.86,
+        -159.86,
+        -158.33,
+        -161.01,
+        -161.01,
+        -161.54,
+        -161.54
+      ],
+      "against_the_reference_db": [
+        1.97,
+        3.44,
+        3.66,
+        3.46,
+        3.35,
+        3.12,
+        3.06
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 3.66,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.91,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -67.73,
+      "also_heard_db": -68.24,
+      "above_the_silence_db": 42.8,
+      "hold_s": 8.045,
+      "take": "held-81-through-016-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 28,
+      "under_the_first_db": [
+        -4.82,
+        -7.7,
+        -7.55,
+        -8.57,
+        -11.68,
+        -11.64,
+        -14.9
+      ],
+      "all_of_them_db": -0.07,
+      "settled_at_the_top_db": -10.08,
+      "orders_db": [
+        -67.18,
+        -72.0,
+        -74.88,
+        -74.73,
+        -75.75,
+        -78.86,
+        -78.82,
+        -82.08
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.1,
+        31.6,
+        92.1,
+        159.5,
+        -131.7,
+        -74.9,
+        3.4
+      ],
+      "floor_between_orders_db": [
+        -159.56,
+        -167.39,
+        -167.39,
+        -161.65,
+        -158.26,
+        -158.26,
+        -161.83,
+        -161.83
+      ],
+      "against_the_reference_db": [
+        1.95,
+        3.37,
+        3.59,
+        3.44,
+        3.28,
+        3.1,
+        3.08
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 3.59,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.9,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -57.9,
+      "also_heard_db": -58.43,
+      "above_the_silence_db": 52.6,
+      "hold_s": 8.045,
+      "take": "held-81-through-028-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 40,
+      "under_the_first_db": [
+        -4.87,
+        -7.79,
+        -7.65,
+        -8.67,
+        -11.79,
+        -11.75,
+        -15.0
+      ],
+      "all_of_them_db": -0.16,
+      "settled_at_the_top_db": -10.13,
+      "orders_db": [
+        -60.95,
+        -65.82,
+        -68.74,
+        -68.6,
+        -69.62,
+        -72.74,
+        -72.7,
+        -75.95
+      ],
+      "orders_turn_deg": [
+        0.0,
+        3.2,
+        31.6,
+        91.9,
+        159.1,
+        -132.2,
+        -75.4,
+        2.7
+      ],
+      "floor_between_orders_db": [
+        -159.42,
+        -155.48,
+        -163.44,
+        -163.44,
+        -162.07,
+        -163.81,
+        -163.81,
+        -159.42
+      ],
+      "against_the_reference_db": [
+        1.9,
+        3.28,
+        3.49,
+        3.34,
+        3.17,
+        2.99,
+        2.98
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 3.49,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -51.87,
+      "also_heard_db": -52.4,
+      "above_the_silence_db": 58.6,
+      "hold_s": 8.045,
+      "take": "held-81-through-040-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 52,
+      "under_the_first_db": [
+        -5.15,
+        -8.17,
+        -8.04,
+        -9.07,
+        -12.2,
+        -12.16,
+        -15.43
+      ],
+      "all_of_them_db": -0.51,
+      "settled_at_the_top_db": -10.28,
+      "orders_db": [
+        -56.51,
+        -61.66,
+        -64.68,
+        -64.55,
+        -65.58,
+        -68.71,
+        -68.67,
+        -71.94
+      ],
+      "orders_turn_deg": [
+        0.0,
+        2.0,
+        29.6,
+        89.3,
+        155.6,
+        -136.5,
+        -80.4,
+        -3.3
+      ],
+      "floor_between_orders_db": [
+        -167.03,
+        -156.11,
+        -151.05,
+        -161.84,
+        -161.84,
+        -156.55,
+        -159.01,
+        -159.01
+      ],
+      "against_the_reference_db": [
+        1.62,
+        2.9,
+        3.1,
+        2.94,
+        2.76,
+        2.58,
+        2.55
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 3.1,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -47.69,
+      "also_heard_db": -48.27,
+      "above_the_silence_db": 62.8,
+      "hold_s": 8.045,
+      "take": "held-81-through-052-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 64,
+      "under_the_first_db": [
+        -5.57,
+        -8.72,
+        -8.63,
+        -9.68,
+        -12.8,
+        -12.76,
+        -16.03
+      ],
+      "all_of_them_db": -1.04,
+      "settled_at_the_top_db": -10.46,
+      "orders_db": [
+        -53.21,
+        -58.79,
+        -61.94,
+        -61.84,
+        -62.9,
+        -66.02,
+        -65.97,
+        -69.24
+      ],
+      "orders_turn_deg": [
+        0.0,
+        0.2,
+        26.9,
+        85.7,
+        151.0,
+        -142.1,
+        -87.1,
+        -11.3
+      ],
+      "floor_between_orders_db": [
+        -159.17,
+        -159.17,
+        -156.85,
+        -162.59,
+        -162.59,
+        -169.82,
+        -169.82,
+        -156.7
+      ],
+      "against_the_reference_db": [
+        1.2,
+        2.35,
+        2.51,
+        2.33,
+        2.16,
+        1.98,
+        1.95
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 2.51,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -44.77,
+      "also_heard_db": -45.41,
+      "above_the_silence_db": 65.7,
+      "hold_s": 8.045,
+      "take": "held-81-through-064-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 76,
+      "under_the_first_db": [
+        -5.99,
+        -9.47,
+        -9.39,
+        -10.46,
+        -13.55,
+        -13.44,
+        -16.72
+      ],
+      "all_of_them_db": -1.67,
+      "settled_at_the_top_db": -10.73,
+      "orders_db": [
+        -50.79,
+        -56.79,
+        -60.27,
+        -60.19,
+        -61.25,
+        -64.34,
+        -64.24,
+        -67.52
+      ],
+      "orders_turn_deg": [
+        0.0,
+        -1.6,
+        23.3,
+        81.7,
+        146.1,
+        -147.8,
+        -94.2,
+        -20.2
+      ],
+      "floor_between_orders_db": [
+        -156.96,
+        -156.96,
+        -154.42,
+        -159.75,
+        -159.85,
+        -159.85,
+        -156.14,
+        -156.14
+      ],
+      "against_the_reference_db": [
+        0.78,
+        1.6,
+        1.75,
+        1.55,
+        1.41,
+        1.3,
+        1.26
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 1.75,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -42.64,
+      "also_heard_db": -43.36,
+      "above_the_silence_db": 67.9,
+      "hold_s": 8.045,
+      "take": "held-81-through-076-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 88,
+      "under_the_first_db": [
+        -6.42,
+        -10.32,
+        -10.31,
+        -11.27,
+        -14.3,
+        -14.12,
+        -17.39
+      ],
+      "all_of_them_db": -2.34,
+      "settled_at_the_top_db": -10.97,
+      "orders_db": [
+        -49.03,
+        -55.46,
+        -59.35,
+        -59.34,
+        -60.3,
+        -63.33,
+        -63.16,
+        -66.42
+      ],
+      "orders_turn_deg": [
+        0.0,
+        -2.8,
+        20.5,
+        79.6,
+        143.6,
+        -151.1,
+        -98.5,
+        -26.0
+      ],
+      "floor_between_orders_db": [
+        -158.65,
+        -166.57,
+        -166.57,
+        -154.21,
+        -153.07,
+        -153.07,
+        -154.44,
+        -154.44
+      ],
+      "against_the_reference_db": [
+        0.35,
+        0.75,
+        0.83,
+        0.74,
+        0.66,
+        0.62,
+        0.59
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": 0.83,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.9,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -41.2,
+      "also_heard_db": -41.97,
+      "above_the_silence_db": 69.3,
+      "hold_s": 8.045,
+      "take": "held-81-through-088-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 100,
+      "under_the_first_db": [
+        -6.76,
+        -11.05,
+        -11.14,
+        -12.01,
+        -14.96,
+        -14.74,
+        -17.98
+      ],
+      "all_of_them_db": -2.92,
+      "settled_at_the_top_db": -11.22,
+      "orders_db": [
+        -47.74,
+        -54.5,
+        -58.79,
+        -58.89,
+        -59.75,
+        -62.7,
+        -62.49,
+        -65.72
+      ],
+      "orders_turn_deg": [
+        0.0,
+        -4.2,
+        17.4,
+        77.2,
+        141.1,
+        -154.7,
+        -103.1,
+        -32.0
+      ],
+      "floor_between_orders_db": [
+        -155.03,
+        -155.21,
+        -173.39,
+        -173.39,
+        -158.26,
+        -158.26,
+        -156.61,
+        -152.52
+      ],
+      "against_the_reference_db": [
+        0.01,
+        0.02,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outside_the_floor_orders": [],
+      "largest_db": null,
+      "largest_at_order": null,
+      "other_channel_apart_db": -2.9,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -40.09,
+      "also_heard_db": -40.9,
+      "above_the_silence_db": 70.4,
+      "hold_s": 8.045,
+      "take": "held-81-through-100-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 112,
+      "under_the_first_db": [
+        -6.95,
+        -11.71,
+        -11.97,
+        -12.7,
+        -15.5,
+        -15.22,
+        -18.43
+      ],
+      "all_of_them_db": -3.38,
+      "settled_at_the_top_db": -11.48,
+      "orders_db": [
+        -46.79,
+        -53.75,
+        -58.5,
+        -58.76,
+        -59.49,
+        -62.29,
+        -62.01,
+        -65.23
+      ],
+      "orders_turn_deg": [
+        0.0,
+        -4.3,
+        15.3,
+        76.7,
+        141.2,
+        -155.0,
+        -104.3,
+        -34.1
+      ],
+      "floor_between_orders_db": [
+        -162.27,
+        -162.27,
+        -152.51,
+        -165.18,
+        -165.18,
+        -161.97,
+        -161.97,
+        -154.53
+      ],
+      "against_the_reference_db": [
+        -0.18,
+        -0.64,
+        -0.83,
+        -0.69,
+        -0.54,
+        -0.48,
+        -0.45
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": -0.83,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -39.29,
+      "also_heard_db": -40.12,
+      "above_the_silence_db": 71.2,
+      "hold_s": 8.045,
+      "take": "held-81-through-112-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 127,
+      "under_the_first_db": [
+        -6.98,
+        -12.48,
+        -13.02,
+        -13.4,
+        -16.0,
+        -15.63,
+        -18.82
+      ],
+      "all_of_them_db": -3.79,
+      "settled_at_the_top_db": -11.84,
+      "orders_db": [
+        -45.98,
+        -52.96,
+        -58.46,
+        -59.0,
+        -59.38,
+        -61.98,
+        -61.61,
+        -64.8
+      ],
+      "orders_turn_deg": [
+        0.0,
+        -3.2,
+        12.7,
+        77.9,
+        143.9,
+        -152.8,
+        -103.0,
+        -33.5
+      ],
+      "floor_between_orders_db": [
+        -157.79,
+        -179.14,
+        -179.14,
+        -151.34,
+        -150.15,
+        -150.15,
+        -156.56,
+        -156.56
+      ],
+      "against_the_reference_db": [
+        -0.21,
+        -1.41,
+        -1.88,
+        -1.39,
+        -1.04,
+        -0.89,
+        -0.84
+      ],
+      "outside_the_floor_orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "largest_db": -1.88,
+      "largest_at_order": 4,
+      "other_channel_apart_db": -2.89,
+      "other_channel_apart_at_order": 3,
+      "fundamental_hz": 110.115,
+      "heard_db": -38.59,
+      "also_heard_db": -39.44,
+      "above_the_silence_db": 71.9,
+      "hold_s": 8.045,
+      "take": "held-81-through-127-00.wav",
+      "named_by": "manifest"
+    }
+  ],
+  "takes_not_matching": {
+    "count": 0,
+    "why": "a take none of the patterns named is counted rather than dropped: a pattern that matches nothing and a directory that holds nothing return the same empty record otherwise, and they are different mistakes"
+  }
+}
