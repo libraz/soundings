@@ -541,6 +541,31 @@ def test_cut_directory_removes_energy_above_cut_hz_and_rebuilds_on_change(tmp_pa
     assert (cut / "a.wav").stat().st_mtime_ns != first
 
 
+def test_a_cut_copy_left_half_written_is_rebuilt_rather_than_read(tmp_path, monkeypatch):
+    """A build stopped after its first take leaves a copy newer than its sources."""
+    root = tmp_path / "root"
+    rel = "syn/probe"
+    where = root / ".cache" / "takes" / rel
+    where.mkdir(parents=True)
+    for name in ("a.wav", "b.wav"):
+        takes.write(where / name, np.zeros((FS // 10, 2)), FS)
+    _write(where / "takes-manifest.json", {"takes": [{"file": "a.wav"}, {"file": "b.wav"}]})
+
+    written = takes.write
+
+    def stops_after_one(path, *args, **kwargs):
+        written(path, *args, **kwargs)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(takes, "write", stops_after_one)
+    with pytest.raises(KeyboardInterrupt):
+        stages.cut_directory(root, rel)
+    monkeypatch.setattr(takes, "write", written)
+
+    cut = stages.cut_directory(root, rel)
+    assert sorted(p.name for p in cut.iterdir()) == ["a.wav", "b.wav", "takes-manifest.json"]
+
+
 def test_a_candidate_fitted_on_every_setting_is_stopped_and_ranked_nowhere(waves_root):
     found = stages.stage(waves_root, UNIT, TYPE, class_name="fitted-only")
     assert _stage_errors(found) == []

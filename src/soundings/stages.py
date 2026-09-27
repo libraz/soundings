@@ -612,6 +612,8 @@ def cut_directory(root: Path, rel: str) -> Path:
 
     Same file names as the source, its manifest copied unchanged, filtered with the
     same FIR `_cut` uses. Rebuilt whenever a source file is newer than the copy.
+    Built beside `out` and moved into place whole, so a build stopped part-way
+    leaves no copy that looks finished.
     """
     root = Path(root)
     where = root / ledger.TAKES_ROOT / rel
@@ -628,13 +630,17 @@ def cut_directory(root: Path, rel: str) -> Path:
         if built >= newest:
             return out
         shutil.rmtree(out)
-    out.mkdir(parents=True)
+    building = out.with_name(out.name + ".building")
+    if building.exists():
+        shutil.rmtree(building)
+    building.mkdir(parents=True)
     for path in sources:
         samples, rate = takes.read(path)
         cut = np.stack([_cut(samples[:, c], rate) for c in range(samples.shape[1])], axis=1)
-        takes.write(out / path.name, cut, rate)
+        takes.write(building / path.name, cut, rate)
     if manifest.is_file():
-        shutil.copy2(manifest, out / "takes-manifest.json")
+        shutil.copy2(manifest, building / "takes-manifest.json")
+    building.rename(out)
     return out
 
 
