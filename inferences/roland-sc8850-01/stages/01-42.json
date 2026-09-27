@@ -1,28 +1,168 @@
 {
   "type": "01 42",
   "p0": {
-    "model": "inferences/models/0142-whole-raised-sine-filter-before-the-split.json",
-    "model_sha256": "8f9ef8b7de13cb1fab800b391409f53b674843a5966a18f0e261d9b47dfe8dda",
-    "rendered_on": []
+    "model": "inferences/models/0142-whole-triangle-filter-before-the-split.json",
+    "model_sha256": "386520f6a58a04084686e452ff85ffaac8181fa4183768843ecad10dd1d38d80",
+    "rendered_on": [
+      ".cache/rendered/0142-whole-triangle-filter-before-the-split/the-depth-byte-on-a-carrier-with-one-partial/0142"
+    ]
   },
   "p1": {
     "verdict": "stopped",
-    "gates": {},
+    "gates": {
+      "measured_in": "ms",
+      "gross": {
+        "passed": false,
+        "residual_over_span": 0.7,
+        "span": 27.226,
+        "ceiling": 0.2,
+        "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+      },
+      "qualitative": {
+        "passed": false,
+        "checked": [
+          {
+            "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+            "property": "direction",
+            "value": [
+              "the-depth-byte-on-a-carrier-with-one-partial/0142",
+              64,
+              96
+            ],
+            "unit": "falls",
+            "model": "rises",
+            "same": false
+          },
+          {
+            "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+            "property": "direction",
+            "value": [
+              "the-depth-byte-on-a-carrier-with-one-partial/0142",
+              96,
+              127
+            ],
+            "unit": "rises",
+            "model": "falls",
+            "same": false
+          },
+          {
+            "record": "efx-excursion:excursion_ms [--carrier-hz 440]",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 0 ms",
+            "model": "0 ms",
+            "same": true
+          }
+        ],
+        "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
+      },
+      "power": {
+        "passed": false,
+        "ranking": [
+          {
+            "candidate": "0142-whole-triangle-filter-before-the-split",
+            "model": "inferences/models/0142-whole-triangle-filter-before-the-split.json",
+            "mean_share_of_span": 0.6996,
+            "worst_share_of_span": 0.6996,
+            "leaning_records": 1,
+            "contradicts_a_property": true
+          },
+          {
+            "candidate": "0142-whole-triangle-filter-on-the-wet",
+            "model": "inferences/models/0142-whole-triangle-filter-on-the-wet.json",
+            "mean_share_of_span": 0.6996,
+            "worst_share_of_span": 0.6996,
+            "leaning_records": 1,
+            "contradicts_a_property": true
+          },
+          {
+            "candidate": "0142-whole-raised-sine-filter-before-the-split",
+            "model": "inferences/models/0142-whole-raised-sine-filter-before-the-split.json",
+            "mean_share_of_span": 0.7052,
+            "worst_share_of_span": 0.7052,
+            "leaning_records": 1,
+            "contradicts_a_property": false
+          },
+          {
+            "candidate": "0142-whole-raised-sine-filter-on-the-wet",
+            "model": "inferences/models/0142-whole-raised-sine-filter-on-the-wet.json",
+            "mean_share_of_span": 0.7052,
+            "worst_share_of_span": 0.7052,
+            "leaning_records": 1,
+            "contradicts_a_property": false
+          }
+        ],
+        "decoy": "0142-whole-triangle-filter-on-the-wet",
+        "beaten_by": "contradicting a property the winner satisfies",
+        "separation": 0.0,
+        "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
+      },
+      "breakdown": {
+        "passed": false,
+        "breaks_down_at": [
+          {
+            "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+            "at": [
+              "the-depth-byte-on-a-carrier-with-one-partial/0142",
+              127
+            ],
+            "residual": 24.3187,
+            "share_of_span": 0.893
+          }
+        ],
+        "leaning_records": [
+          "efx-excursion:off_the_phase_ms [--carrier-hz 440]"
+        ],
+        "records_the_run_did_not_reach": null,
+        "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
+      }
+    },
     "control": {
       "model": "identity",
-      "separated": false,
+      "separated": true,
       "gates": {
-        "measured_in": "dB",
+        "measured_in": "ms",
         "gross": {
           "passed": false,
-          "residual_over_span": 1.0,
-          "span": 0.0,
+          "residual_over_span": 0.384,
+          "span": 27.226,
           "ceiling": 0.2,
           "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
         },
         "qualitative": {
           "passed": false,
-          "checked": [],
+          "checked": [
+            {
+              "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+              "property": "direction",
+              "value": [
+                "the-depth-byte-on-a-carrier-with-one-partial/0142",
+                64,
+                96
+              ],
+              "unit": "falls",
+              "model": "falls",
+              "same": false
+            },
+            {
+              "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+              "property": "direction",
+              "value": [
+                "the-depth-byte-on-a-carrier-with-one-partial/0142",
+                96,
+                127
+              ],
+              "unit": "rises",
+              "model": "falls",
+              "same": false
+            },
+            {
+              "record": "efx-excursion:excursion_ms [--carrier-hz 440]",
+              "property": "the unit's null control shows nothing, and so must the model",
+              "unit": "nothing above a floor of 0 ms",
+              "model": "0 ms",
+              "same": true
+            }
+          ],
           "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
         },
         "power": {
@@ -34,16 +174,90 @@
           "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
         },
         "breakdown": {
-          "passed": true,
-          "breaks_down_at": null,
-          "leaning_records": null,
+          "passed": false,
+          "breaks_down_at": [
+            {
+              "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+              "at": [
+                "the-depth-byte-on-a-carrier-with-one-partial/0142",
+                0
+              ],
+              "residual": 16.8123,
+              "share_of_span": 0.618
+            }
+          ],
+          "leaning_records": [
+            "efx-excursion:off_the_phase_ms [--carrier-hz 440]"
+          ],
           "records_the_run_did_not_reach": null,
           "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
         }
       }
     },
-    "compared": [],
-    "held_out_settings": [],
+    "compared": [
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 0,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      },
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 16,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      },
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 32,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      },
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 64,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      },
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 96,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      },
+      {
+        "dir": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "setting": 127,
+        "input_from": "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        "channel": 2
+      }
+    ],
+    "held_out_settings": [
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        0
+      ],
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        16
+      ],
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        32
+      ],
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        64
+      ],
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        96
+      ],
+      [
+        "the-depth-byte-on-a-carrier-with-one-partial/0142",
+        127
+      ]
+    ],
     "excluded_from_ranking": [],
     "comparison": {
       "used": "readings",
@@ -52,80 +266,22 @@
     },
     "classes": [
       {
-        "class": "struck_kit",
+        "class": "held",
         "used": "readings",
         "chosen_by": "by_repeatability_class",
         "floor_db": null,
-        "settings": 118,
-        "standing": 0,
+        "settings": 6,
+        "standing": 6,
         "dirs": [
-          "efx-params-01-42-parked-under-the-old-gate/40-03-03",
-          "efx-params-01-42-parked-under-the-old-gate/40-03-04",
-          "efx-params-01-42-parked/40-03-03",
-          "efx-params-01-42-parked/40-03-04",
-          "efx-params-01-42-parked/40-03-05",
-          "efx-params-01-42-parked/40-03-06",
-          "efx-params-01-42-parked/40-03-08",
-          "efx-params-01-42-parked/40-03-09",
-          "efx-params-01-42-parked/40-03-0A",
-          "efx-params-01-42-parked/40-03-0B",
-          "efx-params-01-42-parked/40-03-0C",
-          "efx-params-01-42-parked/40-03-0D",
-          "efx-params-01-42-parked/40-03-0E",
-          "efx-params-01-42-parked/40-03-0F",
-          "efx-params-01-42-parked/40-03-10",
-          "efx-params-01-42-parked/40-03-11",
-          "efx-params-01-42-parked/40-03-12",
-          "efx-params-01-42-parked/40-03-13",
-          "efx-params-01-42-parked/40-03-14",
-          "efx-params-01-42-parked/40-03-15",
-          "efx-params-01-42-parked/40-03-16",
-          "efx-params-01-42-parked/40-03-17",
-          "efx-params-01-42-parked/40-03-18",
-          "efx-params-01-42-parked/40-03-19",
-          "efx-params-01-42-parked/40-03-1B",
-          "efx-params-01-42-parked/40-03-1C",
-          "efx-params-01-42-parked/40-03-1D",
-          "efx-params-01-42-parked/40-03-1E",
-          "efx-params-01-42-parked/40-03-1F",
-          "efx-params-01-42/40-03-03",
-          "efx-params-01-42/40-03-04",
-          "efx-params-01-42/40-03-05",
-          "efx-params-01-42/40-03-06",
-          "efx-params-01-42/40-03-07",
-          "efx-params-01-42/40-03-08",
-          "efx-params-01-42/40-03-09",
-          "efx-params-01-42/40-03-0A",
-          "efx-params-01-42/40-03-0B",
-          "efx-params-01-42/40-03-0C",
-          "efx-params-01-42/40-03-0D",
-          "efx-params-01-42/40-03-0E",
-          "efx-params-01-42/40-03-0F",
-          "efx-params-01-42/40-03-10",
-          "efx-params-01-42/40-03-11",
-          "efx-params-01-42/40-03-12",
-          "efx-params-01-42/40-03-13",
-          "efx-params-01-42/40-03-14",
-          "efx-params-01-42/40-03-15",
-          "efx-params-01-42/40-03-16",
-          "efx-params-01-42/40-03-17",
-          "efx-params-01-42/40-03-18",
-          "efx-params-01-42/40-03-19",
-          "efx-params-01-42/40-03-1B",
-          "efx-params-01-42/40-03-1C",
-          "efx-params-01-42/40-03-1D",
-          "efx-params-01-42/40-03-1E",
-          "efx-params-01-42/40-03-1F",
-          "enum-states/01-42-parked/40-03-03",
-          "enum-states/01-42-parked/40-03-09"
+          "the-depth-byte-on-a-carrier-with-one-partial/0142"
         ]
       }
     ]
   },
   "stopped": {
     "at": 8,
-    "gate": "no_input_take",
-    "needs": "no_input_take on efx-bands:fitted_at_hz, efx-bands:largest_at_hz, efx-bands:largest_db, undecided at efx-params-01-42-parked-under-the-old-gate/40-03-03 at 0, 127; efx-params-01-42-parked-under-the-old-gate/40-03-04 at 0, 127; efx-params-01-42-parked/40-03-03 at 0, 127; efx-params-01-42-parked/40-03-04 at 0, 127; efx-params-01-42-parked/40-03-05 at 0, 127; efx-params-01-42-parked/40-03-06 at 0, 127; efx-params-01-42-parked/40-03-08 at 0, 127; efx-params-01-42-parked/40-03-09 at 0, 127; efx-params-01-42-parked/40-03-0A at 0, 127; efx-params-01-42-parked/40-03-0B at 0, 127; efx-params-01-42-parked/40-03-0C at 0, 127; efx-params-01-42-parked/40-03-0D at 0, 127; efx-params-01-42-parked/40-03-0E at 0, 127; efx-params-01-42-parked/40-03-0F at 0, 127; efx-params-01-42-parked/40-03-10 at 0, 127; efx-params-01-42-parked/40-03-11 at 0, 127; efx-params-01-42-parked/40-03-12 at 0, 127; efx-params-01-42-parked/40-03-13 at 0, 127; efx-params-01-42-parked/40-03-14 at 0, 127; efx-params-01-42-parked/40-03-15 at 0, 127; efx-params-01-42-parked/40-03-16 at 0, 127; efx-params-01-42-parked/40-03-17 at 0, 127; efx-params-01-42-parked/40-03-18 at 0, 127; efx-params-01-42-parked/40-03-19 at 0, 127; efx-params-01-42-parked/40-03-1B at 0, 127; efx-params-01-42-parked/40-03-1C at 0, 127; efx-params-01-42-parked/40-03-1D at 0, 127; efx-params-01-42-parked/40-03-1E at 0, 127; efx-params-01-42-parked/40-03-1F at 0, 127; efx-params-01-42/40-03-03 at 0, 127; efx-params-01-42/40-03-04 at 0, 127; efx-params-01-42/40-03-05 at 0, 127; efx-params-01-42/40-03-06 at 0, 127; efx-params-01-42/40-03-07 at 0, 127; efx-params-01-42/40-03-08 at 0, 127; efx-params-01-42/40-03-09 at 0, 127; efx-params-01-42/40-03-0A at 0, 127; efx-params-01-42/40-03-0B at 0, 127; efx-params-01-42/40-03-0C at 0, 127; efx-params-01-42/40-03-0D at 0, 127; efx-params-01-42/40-03-0E at 0, 127; efx-params-01-42/40-03-0F at 0, 127; efx-params-01-42/40-03-10 at 0, 127; efx-params-01-42/40-03-11 at 0, 127; efx-params-01-42/40-03-12 at 0, 127; efx-params-01-42/40-03-13 at 0, 127; efx-params-01-42/40-03-14 at 0, 127; efx-params-01-42/40-03-15 at 0, 127; efx-params-01-42/40-03-16 at 0, 127; efx-params-01-42/40-03-17 at 0, 127; efx-params-01-42/40-03-18 at 0, 127; efx-params-01-42/40-03-19 at 0, 127; efx-params-01-42/40-03-1B at 0, 127; efx-params-01-42/40-03-1C at 0, 127; efx-params-01-42/40-03-1D at 0, 127; efx-params-01-42/40-03-1E at 0, 127; efx-params-01-42/40-03-1F at 0, 127; enum-states/01-42-parked/40-03-03 at 0, 2; enum-states/01-42-parked/40-03-09 at 0, 90. Needs takes of 01 42 with a bypass take of the same stimulus, beside them or in a directory the ledger matches on every stimulus field, swept at one address of the effect's block and read by a stage that publishes a quantity for this type."
+    "gate": "gross",
+    "needs": "gross on efx-excursion:off_the_phase_ms, undecided at the-depth-byte-on-a-carrier-with-one-partial/0142 at 0, 127, 16, 32, 64. Needs a candidate for 01 42 that clears the gross gate, or a measurement that separates the ones standing."
   },
   "equivalent_under_this_test": [],
   "invocation": {

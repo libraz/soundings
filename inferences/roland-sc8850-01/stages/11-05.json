@@ -1,28 +1,131 @@
 {
   "type": "11 05",
   "p0": {
-    "model": "inferences/models/1105-whole-in-series-pan-moves-each-pair.json",
-    "model_sha256": "cc1c0260539eab8c00c1efd00bc0c1b07e39884871e3da29028a93ac355079e2",
-    "rendered_on": []
+    "model": "inferences/models/1105-whole-side-by-side-pan-moves-each-pair.json",
+    "model_sha256": "1bd13ed1d66fe2a32a6bf7a7067451ad05e6c163f960482691ae64a95e29f417",
+    "rendered_on": [
+      ".cache/rendered/1105-whole-side-by-side-pan-moves-each-pair/book-d2-7/11-05-40-03-03-held_organ-p2",
+      ".cache/rendered/1105-whole-side-by-side-pan-moves-each-pair/book-f7/11-05-40-03-09-held_organ"
+    ]
   },
   "p1": {
     "verdict": "stopped",
-    "gates": {},
+    "gates": {
+      "measured_in": "octaves",
+      "gross": {
+        "passed": false,
+        "residual_over_span": 0.77,
+        "span": 1.923,
+        "ceiling": 0.2,
+        "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
+      },
+      "qualitative": {
+        "passed": false,
+        "checked": [
+          {
+            "record": "efx-rate:rate_hz [--settled 0.4]",
+            "property": "direction",
+            "value": [
+              "book-f7/11-05-40-03-09-held_organ",
+              32,
+              64
+            ],
+            "unit": "rises",
+            "model": "falls",
+            "same": false
+          }
+        ],
+        "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
+      },
+      "power": {
+        "passed": false,
+        "ranking": [
+          {
+            "candidate": "1105-whole-side-by-side-pan-moves-each-pair",
+            "model": "inferences/models/1105-whole-side-by-side-pan-moves-each-pair.json",
+            "mean_share_of_span": 0.7698,
+            "worst_share_of_span": 0.7698,
+            "leaning_records": 1,
+            "contradicts_a_property": true
+          },
+          {
+            "candidate": "1105-whole-side-by-side-pan-places-each-half",
+            "model": "inferences/models/1105-whole-side-by-side-pan-places-each-half.json",
+            "mean_share_of_span": 0.7698,
+            "worst_share_of_span": 0.7698,
+            "leaning_records": 1,
+            "contradicts_a_property": true
+          },
+          {
+            "candidate": "1105-whole-in-series-pan-moves-each-pair",
+            "model": "inferences/models/1105-whole-in-series-pan-moves-each-pair.json",
+            "mean_share_of_span": 1.0,
+            "worst_share_of_span": 1.0,
+            "leaning_records": 0,
+            "contradicts_a_property": true
+          },
+          {
+            "candidate": "1105-whole-in-series-pan-places-each-half",
+            "model": "inferences/models/1105-whole-in-series-pan-places-each-half.json",
+            "mean_share_of_span": 1.0,
+            "worst_share_of_span": 1.0,
+            "leaning_records": 0,
+            "contradicts_a_property": true
+          }
+        ],
+        "decoy": "1105-whole-side-by-side-pan-places-each-half",
+        "beaten_by": "contradicting a property the winner satisfies",
+        "separation": -0.0,
+        "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
+      },
+      "breakdown": {
+        "passed": false,
+        "breaks_down_at": [
+          {
+            "record": "efx-rate:rate_hz [--settled 0.4]",
+            "at": [
+              "book-f7/11-05-40-03-09-held_organ",
+              64
+            ],
+            "residual": 2.441178299200164,
+            "share_of_span": 1.269
+          }
+        ],
+        "leaning_records": [
+          "efx-rate:rate_hz [--settled 0.4]"
+        ],
+        "records_the_run_did_not_reach": null,
+        "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
+      }
+    },
     "control": {
       "model": "identity",
-      "separated": false,
+      "separated": true,
       "gates": {
-        "measured_in": "dB",
+        "measured_in": "octaves",
         "gross": {
           "passed": false,
-          "residual_over_span": 1.0,
-          "span": 0.0,
+          "residual_over_span": 0.79,
+          "span": 1.923,
           "ceiling": 0.2,
           "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
         },
         "qualitative": {
           "passed": false,
-          "checked": [],
+          "checked": [
+            {
+              "record": "efx-rate:rate_hz [--settled 0.4]",
+              "property": "direction",
+              "value": [
+                "book-f7/11-05-40-03-09-held_organ",
+                32,
+                64
+              ],
+              "unit": "rises",
+              "model": "falls",
+              "same": false
+            }
+          ],
           "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
         },
         "power": {
@@ -34,16 +137,60 @@
           "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
         },
         "breakdown": {
-          "passed": true,
-          "breaks_down_at": null,
-          "leaning_records": null,
+          "passed": false,
+          "breaks_down_at": [
+            {
+              "record": "efx-rate:rate_hz [--settled 0.4]",
+              "at": [
+                "book-d2-7/11-05-40-03-03-held_organ-p2",
+                0
+              ],
+              "residual": 2.4794162508210515,
+              "share_of_span": 1.289
+            }
+          ],
+          "leaning_records": [
+            "efx-rate:rate_hz [--settled 0.4]"
+          ],
           "records_the_run_did_not_reach": null,
           "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
         }
       }
     },
-    "compared": [],
-    "held_out_settings": [],
+    "compared": [
+      {
+        "dir": "book-d2-7/11-05-40-03-03-held_organ-p2",
+        "setting": 0,
+        "input_from": "book-d2-7/11-05-40-03-03-held_organ-p2",
+        "channel": 2
+      },
+      {
+        "dir": "book-f7/11-05-40-03-09-held_organ",
+        "setting": 32,
+        "input_from": "book-f7/11-05-40-03-09-held_organ",
+        "channel": 2
+      },
+      {
+        "dir": "book-f7/11-05-40-03-09-held_organ",
+        "setting": 64,
+        "input_from": "book-f7/11-05-40-03-09-held_organ",
+        "channel": 2
+      }
+    ],
+    "held_out_settings": [
+      [
+        "book-d2-7/11-05-40-03-03-held_organ-p2",
+        0
+      ],
+      [
+        "book-f7/11-05-40-03-09-held_organ",
+        32
+      ],
+      [
+        "book-f7/11-05-40-03-09-held_organ",
+        64
+      ]
+    ],
     "excluded_from_ranking": [],
     "comparison": {
       "used": "readings",
@@ -52,71 +199,23 @@
     },
     "classes": [
       {
-        "class": "struck_kit",
+        "class": "held_organ",
         "used": "readings",
         "chosen_by": "by_repeatability_class",
         "floor_db": null,
-        "settings": 100,
-        "standing": 0,
+        "settings": 3,
+        "standing": 3,
         "dirs": [
-          "efx-params-11-05-parked/40-03-03",
-          "efx-params-11-05-parked/40-03-04",
-          "efx-params-11-05-parked/40-03-05",
-          "efx-params-11-05-parked/40-03-06",
-          "efx-params-11-05-parked/40-03-07",
-          "efx-params-11-05-parked/40-03-08",
-          "efx-params-11-05-parked/40-03-09",
-          "efx-params-11-05-parked/40-03-0B",
-          "efx-params-11-05-parked/40-03-0C",
-          "efx-params-11-05-parked/40-03-0D",
-          "efx-params-11-05-parked/40-03-0E",
-          "efx-params-11-05-parked/40-03-0F",
-          "efx-params-11-05-parked/40-03-10",
-          "efx-params-11-05-parked/40-03-11",
-          "efx-params-11-05-parked/40-03-12",
-          "efx-params-11-05-parked/40-03-13",
-          "efx-params-11-05-parked/40-03-14",
-          "efx-params-11-05-parked/40-03-15",
-          "efx-params-11-05-parked/40-03-16",
-          "efx-params-11-05/40-03-03",
-          "efx-params-11-05/40-03-04",
-          "efx-params-11-05/40-03-05",
-          "efx-params-11-05/40-03-06",
-          "efx-params-11-05/40-03-07",
-          "efx-params-11-05/40-03-08",
-          "efx-params-11-05/40-03-09",
-          "efx-params-11-05/40-03-0A",
-          "efx-params-11-05/40-03-0B",
-          "efx-params-11-05/40-03-0C",
-          "efx-params-11-05/40-03-0D",
-          "efx-params-11-05/40-03-0E",
-          "efx-params-11-05/40-03-0F",
-          "efx-params-11-05/40-03-10",
-          "efx-params-11-05/40-03-11",
-          "efx-params-11-05/40-03-12",
-          "efx-params-11-05/40-03-13",
-          "efx-params-11-05/40-03-14",
-          "efx-params-11-05/40-03-15",
-          "efx-params-11-05/40-03-16",
-          "efx-params-11-05/40-03-17",
-          "efx-params-11-05/40-03-18",
-          "efx-params-11-05/40-03-19",
-          "efx-params-11-05/40-03-1B",
-          "efx-params-11-05/40-03-1C",
-          "efx-params-11-05/40-03-1D",
-          "efx-params-11-05/40-03-1E",
-          "efx-params-11-05/40-03-1F",
-          "enum-states/11-05-parked/40-03-03",
-          "enum-states/11-05-parked/40-03-05",
-          "enum-states/11-05-parked/40-03-06"
+          "book-d2-7/11-05-40-03-03-held_organ-p2",
+          "book-f7/11-05-40-03-09-held_organ"
         ]
       }
     ]
   },
   "stopped": {
     "at": 8,
-    "gate": "no_input_take",
-    "needs": "no_input_take on a reading of any stage in READINGS, none of which has a published record of 11 05, undecided at efx-params-11-05-parked/40-03-03 at 0, 127; efx-params-11-05-parked/40-03-04 at 0, 127; efx-params-11-05-parked/40-03-05 at 0, 127; efx-params-11-05-parked/40-03-06 at 0, 127; efx-params-11-05-parked/40-03-07 at 0, 127; efx-params-11-05-parked/40-03-08 at 0, 127; efx-params-11-05-parked/40-03-09 at 0, 127; efx-params-11-05-parked/40-03-0B at 0, 127; efx-params-11-05-parked/40-03-0C at 0, 127; efx-params-11-05-parked/40-03-0D at 0, 127; efx-params-11-05-parked/40-03-0E at 0, 127; efx-params-11-05-parked/40-03-0F at 0, 127; efx-params-11-05-parked/40-03-10 at 0, 127; efx-params-11-05-parked/40-03-11 at 0, 127; efx-params-11-05-parked/40-03-12 at 0, 127; efx-params-11-05-parked/40-03-13 at 0, 127; efx-params-11-05-parked/40-03-14 at 0, 127; efx-params-11-05-parked/40-03-15 at 0, 127; efx-params-11-05-parked/40-03-16 at 0, 127; efx-params-11-05/40-03-03 at 0, 127; efx-params-11-05/40-03-04 at 0, 127; efx-params-11-05/40-03-05 at 0, 127; efx-params-11-05/40-03-06 at 0, 127; efx-params-11-05/40-03-07 at 0, 127; efx-params-11-05/40-03-08 at 0, 127; efx-params-11-05/40-03-09 at 0, 127; efx-params-11-05/40-03-0A at 0, 127; efx-params-11-05/40-03-0B at 0, 127; efx-params-11-05/40-03-0C at 0, 127; efx-params-11-05/40-03-0D at 0, 127; efx-params-11-05/40-03-0E at 0, 127; efx-params-11-05/40-03-0F at 0, 127; efx-params-11-05/40-03-10 at 0, 127; efx-params-11-05/40-03-11 at 0, 127; efx-params-11-05/40-03-12 at 0, 127; efx-params-11-05/40-03-13 at 0, 127; efx-params-11-05/40-03-14 at 0, 127; efx-params-11-05/40-03-15 at 0, 127; efx-params-11-05/40-03-16 at 0, 127; efx-params-11-05/40-03-17 at 0, 127; efx-params-11-05/40-03-18 at 0, 127; efx-params-11-05/40-03-19 at 0, 127; efx-params-11-05/40-03-1B at 0, 127; efx-params-11-05/40-03-1C at 0, 127; efx-params-11-05/40-03-1D at 0, 127; efx-params-11-05/40-03-1E at 0, 127; efx-params-11-05/40-03-1F at 0, 127; enum-states/11-05-parked/40-03-03 at 0, 1; enum-states/11-05-parked/40-03-05 at 0, 3; enum-states/11-05-parked/40-03-06 at 0, 1. Needs takes of 11 05 with a bypass take of the same stimulus, beside them or in a directory the ledger matches on every stimulus field, swept at one address of the effect's block and read by a stage that publishes a quantity for this type."
+    "gate": "gross",
+    "needs": "gross on efx-rate:rate_hz, undecided at book-d2-7/11-05-40-03-03-held_organ-p2 at 0; book-f7/11-05-40-03-09-held_organ at 32, 64. Needs a candidate for 11 05 that clears the gross gate, or a measurement that separates the ones standing."
   },
   "equivalent_under_this_test": [],
   "invocation": {
