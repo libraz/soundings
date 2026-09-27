@@ -4,8 +4,8 @@
     "unit_id": "roland-sc8850-01",
     "state": "standing",
     "made_at": "2026-09-23T19:36:51.540621+00:00",
-    "made_by": "backup/write-d2-resonance-claim.py",
-    "rounds": 1,
+    "made_by": "backup/write-d2-resonance-claim.py, backup/add-round-two-to-the-resonance-inference.py",
+    "rounds": 2,
     "about": {
       "quantities": [
         "resonance"
@@ -21,7 +21,7 @@
       ]
     }
   },
-  "claim": "On the two wah types read with nothing after the filter that compresses, each step of the byte printed `Peak` lowers the noise the filter passes by one fixed number of decibels, from 32 to the top of the byte: 0.112 a step on 01 21 and 0.116 on 04 04, so the filter's selectivity is multiplied by one ratio a step and doubles every 26 to 27 steps. A selectivity straight in the byte misses the same takes by 2.8 to 3.1 dB where the straight-in-decibels line misses by 0.05 at most. The law does not carry to a phaser's `Reso` byte, on either phaser walked at two settings: 05 00 from 40 to 80 and 04 06 from 16 to 72 pass the same noise to 0.08 and 0.21 dB where the law would have taken 4.6 and 6.4 dB away, so the bytes the page calls resonance are two different quantities and this law is the wah's.",
+  "claim": "On 01 21, the wah read with its filter standing still and nothing after it that compresses, each step of the byte printed `Peak` lowers the noise the filter passes by one fixed number of decibels, 0.112 a step from 32 to the top of the byte, so the filter's selectivity is multiplied by one ratio a step and doubles every 27 steps; a selectivity straight in the byte misses the same takes by 2.8 dB where the line misses by 0.02. The law is not the wah's. 04 04 follows a line of its own only while its modulator sweeps the filter; stood still it falls 0.143 dB a step on average and bends off any straight line by 0.69 dB against repeats of 0.31, steepening towards the top. Nor does the law carry to a phaser's `Reso` byte: 05 00 from 40 to 80 and 04 06 from 16 to 72 pass the same noise to within a quarter of a decibel where 01 21's step would have taken 4.5 and 6.3 dB away.",
   "named": null,
   "rests_on": {
     "measurements": [
@@ -105,7 +105,7 @@
           -62.64,
           "50"
         ],
-        "why": "The law's second type, a different wah in a multi-effect, walked at five settings with its own modulator running at the depth the type powers up at."
+        "why": "04 04's peak byte at five settings with its own modulator running at the depth the type powers up at: the line it drew while the filter swept, which round two withdrew."
       },
       {
         "file": "data/units/roland-sc8850-01/efx-bands/05-00-11-2-settings-walked-under-the-held-applause.json",
@@ -185,6 +185,48 @@
           "7F"
         ],
         "why": "The second prediction's target: 04 06's phaser resonance at two settings, read with the phaser mixed in."
+      },
+      {
+        "file": "data/units/roland-sc8850-01/efx-bands/04-04-05-5-settings-walked-under-the-held-applause-with-the-wah-standing-still.json",
+        "keys": [
+          "readings[value=0,take=held_applause-v000-00.wav].heard_db",
+          "readings[value=0,take=held_applause-v000-01.wav].heard_db",
+          "readings[value=0,take=held_applause-v000-02.wav].heard_db",
+          "readings[value=32,take=held_applause-v032-00.wav].heard_db",
+          "readings[value=32,take=held_applause-v032-01.wav].heard_db",
+          "readings[value=32,take=held_applause-v032-02.wav].heard_db",
+          "readings[value=40,take=held_applause-v040-00.wav].heard_db",
+          "readings[value=40,take=held_applause-v040-01.wav].heard_db",
+          "readings[value=40,take=held_applause-v040-02.wav].heard_db",
+          "readings[value=95,take=held_applause-v095-00.wav].heard_db",
+          "readings[value=95,take=held_applause-v095-01.wav].heard_db",
+          "readings[value=95,take=held_applause-v095-02.wav].heard_db",
+          "readings[value=127,take=held_applause-v127-00.wav].heard_db",
+          "readings[value=127,take=held_applause-v127-01.wav].heard_db",
+          "readings[value=127,take=held_applause-v127-02.wav].heard_db",
+          "held[address=40 03 07].bytes",
+          "held[address=40 03 04].bytes"
+        ],
+        "values": [
+          -52.79,
+          -52.71,
+          -52.68,
+          -56.36,
+          -56.57,
+          -56.52,
+          -57.49,
+          -57.27,
+          -57.58,
+          -64.62,
+          -64.71,
+          -64.63,
+          -70.43,
+          -70.21,
+          -70.36,
+          "00",
+          "37"
+        ],
+        "why": "04 04's peak byte at five settings with the wah depth written to nothing, and the manual the filter stood at."
       }
     ],
     "document_rows": [],
@@ -293,35 +335,88 @@
     },
     {
       "reading": "The two wahs run on one ratio a step, and the gap between their slopes is 04 04's own modulator sweeping the filter through every take rather than a second table.",
-      "standing": true,
-      "separated_by": {
-        "observable": "04 04's peak byte walked again with that type's wah depth written to nothing, so the filter stands still as 01 21's did.",
-        "predicts": {
-          "one ratio": "the level falls 0.112 dB a step, as 01 21's",
-          "two ratios": "it falls 0.116 dB a step, as it did with the modulator running"
-        },
-        "divergence": "0.37 dB across the 95 steps from 32 to 127.",
-        "sensitivity_here": "How far 01 21's slope moves over every choice of one take per setting, 0.0027 dB a step, which is 0.26 dB across the same steps.",
-        "margin": 1.4,
-        "why_not_separable": null,
-        "run": {
-          "stage": "efx-bands",
-          "type": "04 04",
-          "address": "40 03 05",
-          "settings": [
-            0,
-            32,
-            40,
-            95,
-            127
-          ],
-          "stimulus": "held_applause",
-          "takes": 20,
-          "minutes": 7
-        }
-      }
+      "standing": false,
+      "ruled_out_by": "Both readings the queue set against each other predicted a straight line in decibels, one falling 0.112 a step and one 0.116. With the filter standing still 04 04 falls 0.143 a step on the best line, 0.1409 to 0.1462 over every choice of one take per setting, which misses the nearer prediction by 0.0247 a step against the 0.0027 the queue named, and the line itself misses the takes by 0.69 dB against repeats that spread 0.31. The level steepens: 0.121, 0.130, 0.179 dB a step between the settings asked, bottom to top. Neither slope was the filter's; the straight line 04 04 drew in round one was drawn while its modulator swept it."
     }
   ],
-  "refuted_by": "A third wah whose filter can be read standing still and without a saturating stage after it, walked across its peak byte, returning a level that bends away from a straight line in decibels by more than its own repeats; or 01 21 walked at settings between the five asked here landing off the line.",
-  "what_it_would_change": []
+  "refuted_by": "01 21 walked with its filter still at settings between the five asked here, landing off its line by more than its own repeats.",
+  "what_it_would_change": [],
+  "the_round_that_stood_04_04_still": {
+    "what_was_asked": "Whether 04 04 falls on 01 21's line once its filter stands still: 04 04's peak byte walked again with that type's wah depth written to nothing, so the filter stands still as 01 21's did.",
+    "the_queue_entry_it_answers": {
+      "observable": "04 04's peak byte walked again with that type's wah depth written to nothing, so the filter stands still as 01 21's did.",
+      "predicts": {
+        "one ratio": "the level falls 0.112 dB a step, as 01 21's",
+        "two ratios": "it falls 0.116 dB a step, as it did with the modulator running"
+      },
+      "divergence": "0.37 dB across the 95 steps from 32 to 127.",
+      "sensitivity_here": "How far 01 21's slope moves over every choice of one take per setting, 0.0027 dB a step, which is 0.26 dB across the same steps.",
+      "margin": 1.4,
+      "why_not_separable": null,
+      "run": {
+        "stage": "efx-bands",
+        "type": "04 04",
+        "address": "40 03 05",
+        "settings": [
+          0,
+          32,
+          40,
+          95,
+          127
+        ],
+        "stimulus": "held_applause",
+        "takes": 20,
+        "minutes": 7
+      }
+    },
+    "the_reading": "Round one's own, run on the new takes: the median of the three takes at each setting from 32 up, the least-squares line through them, the same line over every one of the 81 ways of taking one take per setting, and the best line straight in selectivity beside it.",
+    "what_came_back": {
+      "04 04_standing_still": {
+        "settings": [
+          32,
+          40,
+          95,
+          127
+        ],
+        "median_heard_db": [
+          -56.52,
+          -57.49,
+          -64.63,
+          -70.36
+        ],
+        "db_a_step": -0.143,
+        "db_a_step_over_every_choice_of_takes": [
+          -0.1462,
+          -0.1409
+        ],
+        "worst_residual_db": 0.695,
+        "widest_repeat_spread_db": 0.31,
+        "steps_to_double_the_selectivity": 21.0,
+        "straight_in_selectivity_worst_residual_db": 5.05,
+        "bottom_setting": 0,
+        "bottom_segment_db_a_step": -0.1191
+      },
+      "db_a_step_between_settings": {
+        "32-40": -0.1212,
+        "40-95": -0.1298,
+        "95-127": -0.1791
+      },
+      "under_the_swept_walk_db": {
+        "0": -3.98,
+        "32": -4.81,
+        "40": -4.93,
+        "95": -5.59,
+        "127": -7.66
+      },
+      "how_the_profile_moves_from_32_to_127": {
+        "peak_band_hz": 630,
+        "at_the_peak_band_db": -11.9,
+        "at_the_bottom_band_db": -15.2,
+        "at_the_top_band_db": -9.8
+      }
+    },
+    "against_the_predictions": "Both readings the queue set against each other predicted a straight line in decibels, one falling 0.112 a step and one 0.116. With the filter standing still 04 04 falls 0.143 a step on the best line, 0.1409 to 0.1462 over every choice of one take per setting, which misses the nearer prediction by 0.0247 a step against the 0.0027 the queue named, and the line itself misses the takes by 0.69 dB against repeats that spread 0.31. The level steepens: 0.121, 0.130, 0.179 dB a step between the settings asked, bottom to top. Neither slope was the filter's; the straight line 04 04 drew in round one was drawn while its modulator swept it.",
+    "what_it_changes": "The claim was a law of the wah's and rested on two types agreeing. Standing still, only one of them follows it. What stands is 01 21's line, read with its filter still, and its step alone still names 4.5 and 6.3 dB the two phasers do not move by. 04 04's figure is withdrawn from the claim, and its round-one record is kept cited as what the line looked like while the filter swept.",
+    "what_it_does_not_close": "What 04 04's peak byte does to its filter. A level that steepens with the byte fits neither a selectivity multiplied by one ratio a step nor one straight in the byte, and this round offers no third reading for it; the filter stood at one manual setting throughout."
+  }
 }
