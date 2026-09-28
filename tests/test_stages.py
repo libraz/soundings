@@ -74,7 +74,8 @@ def _tree(tmp: Path, *, static: bool) -> Path:
     shutil.copytree(FIXTURE_ROOT, root)
     unit = root / "data" / "units" / UNIT
     _write(unit / "efx-map" / "types.json",
-           {"effects": [{"type": TYPE, "msb": 1, "lsb": 36, "parameters": [40] * 20}]})
+           {"effects": [{"type": TYPE, "msb": 1, "lsb": 36, "parameters": [40] * 20,
+                         "sends_to_reverb_chorus_delay": [40, 0, 0]}]})
     _write(unit / "efx-sort" / "by-repeatability.json",
            {"static": [TYPE] if static else [], "moving": [] if static else [TYPE]})
     (root / "inferences" / "models").mkdir(parents=True)
@@ -653,7 +654,8 @@ def test_a_law_values_fitted_on_is_derived_from_its_claim_and_the_ledger(waves_r
 
 def test_the_bytes_a_take_was_drawn_at_are_power_on_then_held_then_setting(waves_root):
     on = stages.power_on(waves_root, UNIT, TYPE)
-    assert on["40 03 03"] == 40 and on["40 03 16"] == 40 and len(on) == 20
+    assert on["40 03 03"] == 40 and on["40 03 16"] == 40 and len(on) == 23
+    assert (on["40 03 17"], on["40 03 18"], on["40 03 19"]) == (40, 0, 0)
     writes = stages.writes_of({"40 03 00": "01 24", "40 03 05": "7f", "40 03 06": "11"})
     assert writes == [("40 03 00", (0x01, 0x24)), ("40 03 05", (0x7F,)),
                       ("40 03 06", (0x11,))]
@@ -1082,6 +1084,45 @@ def test_a_part_routed_past_the_effect_in_another_directory_is_the_input(tmp_pat
     made = stages.directory(tmp_path, found, "params/40-03-03")
     assert made.input_from == {TONE["name"]: "params/control"}
     assert sorted(made.by_setting) == [0, 127]
+
+
+def _input_tree(tmp_path: Path, extra: dict) -> dict:
+    """A swept directory, its own bypass takes, and `extra`: rel -> (address, values, manifest)."""
+    clean = _clean(TONE, 1.0)
+    dirs = {"params/40-03-03": ("40 03 03", ("0", "127"), {}),
+            "params/control": ("40 42 22", ("0", "1"), {}), **extra}
+    for rel, (address, values, more) in dirs.items():
+        entries = []
+        for value in values:
+            name = f"{TONE['name']}-{value}-00.wav"
+            takes.write(tmp_path / ".cache/takes" / rel / name, clean, FS)
+            entries.append({"file": name, "stimulus": TONE["name"], "setting": value,
+                            "take": 0, "sample_rate": FS, "channels": 6, "seconds": 1.0})
+        _write(tmp_path / ".cache/takes" / rel / "takes-manifest.json",
+               {"type": TYPE if address else None, "address": address, "stimuli": [TONE],
+                "takes": entries, **more})
+    _write(tmp_path / ".cache" / "takes-ledger.json", {"unit": UNIT, "directories": {
+        rel: {"type": TYPE if address else None, "address": address,
+              "settings": {v: 1 for v in values},
+              "stimuli": [{**TONE, "class": TONE["name"]}], "held": HELD if address else None,
+              "consumed_by": []}
+        for rel, (address, values, _) in dirs.items()}})
+    return stages._ledger(tmp_path, TYPE)
+
+
+def test_the_part_with_its_reverb_send_at_0_is_the_input_before_any_bypass_take(tmp_path):
+    found = _input_tree(tmp_path, {"cc91": (None, ("0", "100"), {"controller": 91})})
+    made = stages.directory(tmp_path, found, "params/40-03-03")
+    assert made.input_from == {TONE["name"]: "cc91"}
+    assert made.input_is == {TONE["name"]: "dry"}
+    assert [p.name for p in made.bypass[TONE["name"]]] == [f"{TONE['name']}-0-00.wav"]
+
+
+def test_without_a_dry_take_the_bypass_take_is_the_input_and_is_said_to_be(tmp_path):
+    found = _input_tree(tmp_path, {"cc93": (None, ("0", "100"), {"controller": 93})})
+    made = stages.directory(tmp_path, found, "params/40-03-03")
+    assert made.input_from == {TONE["name"]: "params/control"}
+    assert made.input_is == {TONE["name"]: "bypass"}
 
 
 def test_an_input_from_another_directory_is_the_one_taken_nearest_in_time(tmp_path):

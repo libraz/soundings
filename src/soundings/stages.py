@@ -1,7 +1,8 @@
 """Carrying one effect type through stages 7-9: draw its candidates, compare, decide.
 
-A candidate `graph` model is drawn on the unit's own bypass takes -- the effect's
-input -- and what it drew is compared with the unit's takes in one of two ways,
+A candidate `graph` model is drawn on the effect's input -- the part with no send
+where a run recorded one (`DRY_CONTROLLER`), else the unit's own bypass takes, which
+carry the part's reverb -- and what it drew is compared with the unit's takes in one of two ways,
 chosen mechanically per stimulus class. `waves` subtracts takes, for a type the
 repeatability sort calls static under a stimulus whose takes repeat; `readings`
 reads both sides with the stages that published the type's records, and a directory
@@ -23,6 +24,7 @@ for drawing and for a reading's `held` alike.
 from __future__ import annotations
 
 import contextlib
+import functools
 import hashlib
 import io
 import json
@@ -65,6 +67,11 @@ REPEATS_BELOW_DB = -20.0
 
 Measured: struck notes subtract to -28 to -55 dB, applause and noise to -0.3 and -0.1.
 """
+
+DRY_CONTROLLER = 91
+"""A run sweeping the part's reverb send holds, at 0, the part with no send at all: its
+chorus and delay sends are the reset's 0. The effect's input without the reverb every
+bypass take carries, since a part routed past the effect keeps its own sends."""
 
 STIMULUS_FIELDS = ("name", "program", "note", "velocity", "channel", "writes", "volume", "hold_s")
 """What two directories' stimuli must share for one's bypass take to feed the other."""
@@ -208,14 +215,18 @@ def writes_of(held: dict[str, str] | None) -> list[tuple[str, tuple[int, ...]]]:
 
 
 def power_on(root: Path, unit: str, type_: str) -> dict[str, int]:
-    """What a type powers up holding, `parameters[i]` at `40 03 (03 + i)`."""
+    """What a type powers up holding: `parameters[i]` at `40 03 (03 + i)`, and its sends
+    to reverb, chorus and delay at `40 03 17`-`19`."""
     path = Path(root) / "data" / "units" / unit / "efx-map" / "types.json"
     effects = json.loads(path.read_text())["effects"]
     entry = next((e for e in effects if e["type"] == type_), None)
     if entry is None:
         raise ValueError(f"{path} has no power-on values for {type_}")
-    first = f"{EFFECT_BLOCK} 03"
-    return {_shifted(first, i): int(v) for i, v in enumerate(entry["parameters"])}
+    first, sends = f"{EFFECT_BLOCK} 03", f"{EFFECT_BLOCK} 17"
+    on = {_shifted(first, i): int(v) for i, v in enumerate(entry["parameters"])}
+    on.update({_shifted(sends, i): int(v)
+               for i, v in enumerate(entry.get("sends_to_reverb_chorus_delay") or [])})
+    return on
 
 
 def bytes_now(on: dict[str, int], writes, address: str | None, value: int | None) -> dict:
@@ -317,6 +328,7 @@ class Directory:
     items: list[dict] = field(default_factory=list)
     bypass: dict[str, list[Path]] = field(default_factory=dict)
     input_from: dict[str, str] = field(default_factory=dict)
+    input_is: dict[str, str] = field(default_factory=dict)
 
     def of_role(self, name: str) -> list[dict]:
         return [e for e in self.items if role(e["setting"]) == name]
@@ -359,6 +371,32 @@ def _bypasses(items: list[dict], where: Path) -> dict[str, list[Path]]:
     return found
 
 
+@functools.lru_cache(maxsize=None)
+def _controller(root: Path, rel: str) -> int | None:
+    manifest = root / ledger.TAKES_ROOT / rel / "takes-manifest.json"
+    try:
+        return json.loads(manifest.read_text()).get("controller")
+    except (OSError, ValueError):
+        return None
+
+
+def _dry(root: Path, found: dict, key: str) -> list[tuple[str, list[Path]]]:
+    """Each directory's takes of the stimulus `key` with the part's sends all at 0."""
+    out = []
+    for other, theirs in sorted(found["directories"].items()):
+        if theirs.get("address") is not None or "0" not in (theirs.get("settings") or {}):
+            continue
+        match = next((s for s in theirs.get("stimuli") or [] if _stimulus_key(s) == key), None)
+        if match is None or _controller(root, other) != DRY_CONTROLLER:
+            continue
+        where = root / ledger.TAKES_ROOT / other
+        paths = [where / e["file"] for e in _takes(root, found, other)
+                 if str(e["setting"]) == "0" and e["stimulus"] == match["name"]]
+        if paths:
+            out.append((other, paths))
+    return out
+
+
 def _taken_at(paths: list[Path]) -> float:
     """When takes were recorded, as their files' median modification time."""
     return float(np.median([p.stat().st_mtime for p in paths]))
@@ -381,14 +419,20 @@ def directory(root: Path, found: dict, rel: str) -> Directory:
     own = _bypasses(items, where)
     stimuli = {str(e["stimulus"]) for items in by_setting.values() for e in items}
     for name in sorted(stimuli):
+        mine = next((s for s in entry.get("stimuli") or [] if s.get("name") == name), None)
+        key = None if mine is None else _stimulus_key(mine)
+        taken_at = _taken_at([where / e["file"] for e in items])
+        dry = [] if key is None else _dry(root, found, key)
+        if dry:
+            other, there = min(dry, key=lambda d: abs(_taken_at(d[1]) - taken_at))
+            made.bypass[name], made.input_from[name], made.input_is[name] = there, other, "dry"
+            continue
+        made.input_is[name] = "bypass"
         if own.get(name):
             made.bypass[name], made.input_from[name] = own[name], rel
             continue
-        mine = next((s for s in entry.get("stimuli") or [] if s.get("name") == name), None)
-        key = None if mine is None else _stimulus_key(mine)
         if key is None:
             continue
-        taken_at = _taken_at([where / e["file"] for e in items])
         nearest = None
         for other, theirs in sorted(found["directories"].items()):
             match = next(
@@ -1565,7 +1609,7 @@ class _Phase:
             made = by_rel[rel]
             stimulus = str(made.by_setting[value][0]["stimulus"])
             out.append({"dir": rel, "setting": value, "input_from": made.input_from[stimulus],
-                        "channel": int(self.channel[rel])})
+                        "input": made.input_is[stimulus], "channel": int(self.channel[rel])})
         return out
 
     def scored(self, cand: Candidate) -> tuple[list[dict], list[str]]:
