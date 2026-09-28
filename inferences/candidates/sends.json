@@ -1,0 +1,44 @@
+{
+  "class": "sends",
+  "what_the_class_is": "Where the three bytes that send an insertion effect's output to the system reverb, chorus and delay (40 03 17, 18, 19) take that output from, and what a part routed through the effect still sends of its own. The question is not what the system effects are; it is which signal reaches them and how a send byte scales it.",
+  "era": {
+    "when": "Mid nineteen-nineties, a custom fixed-point DSP with a small control processor beside it.",
+    "what_that_implies": [
+      "A send is one multiply on a signal the DSP already holds. The cheapest place to hold one signal for three sends is the effect's own output once it is finished, and the cheapest scaling of it is the byte over its full scale.",
+      "A part routed into the insertion effect is one signal among sixteen; keeping its own reverb and chorus sends alive beside the effect's would be a second set of accumulators for the same part, which the period has no reason to spend."
+    ],
+    "would_be_wrong_if": "The effect's Level at 0 left a return sounding, or a take with every effect send at 0 carried as much decorrelated power as the same part with the effect switched out."
+  },
+  "candidates": [
+    {
+      "id": "after-the-level",
+      "what": "The type's output after its Level and Pan, summed to one signal, scaled by each send byte over 127 and handed to the system effects; their returns are added to the type's output.",
+      "model": "inferences/models/sends-a.json",
+      "predicts": {
+        "level_at_zero": "The type's Level at 0 silences the returns with the effect: a take at the silence floor.",
+        "every_send_at_zero": "A take with every effect send at 0 carries no more decorrelated power than the part's dry take.",
+        "a_send_byte": "The return's power rises by 20 log10 of the ratio of two send bytes: 10.03 dB from 40 to 127."
+      }
+    },
+    {
+      "id": "before-the-level",
+      "what": "The sends are taken from the type's output before its Level, so the Level scales what the effect adds to the dry output and not what reaches the system effects.",
+      "predicts": {
+        "level_at_zero": "With the Level at 0 and the reverb send at its power-on 40, the reverb return still sounds, at the decorrelated share it reads with the Level at 127.",
+        "every_send_at_zero": "As after-the-level.",
+        "a_send_byte": "As after-the-level."
+      }
+    },
+    {
+      "id": "the-parts-own-sends-in-parallel",
+      "what": "A part routed through the effect keeps its own sends live from its dry signal (CC91 at its reset value of 40), in parallel with the effect's sends.",
+      "predicts": {
+        "level_at_zero": "The part's own reverb return sounds with the effect's Level at 0.",
+        "every_send_at_zero": "A take with every effect send at 0 carries the decorrelated share of the same part with the effect switched out, where the part's own reverb send is live.",
+        "a_send_byte": "As after-the-level, over the part's own return."
+      }
+    }
+  ],
+  "what_the_reading_has_to_be": "The effect-return reading: the share of a stereo take that is not one direction, which a reverb or chorus return raises and a dry struck note does not. The two alternatives cannot be drawn after a type's output -- one taps before the Level, the other from the dry part -- so they are held as predictions against those readings rather than as graph models.",
+  "drawn_after_every_type": "inferences/models/sends-a.json"
+}

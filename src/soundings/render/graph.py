@@ -256,7 +256,10 @@ def _check_rows(model: dict, models_dir: Path, root: Path) -> None:
         if rows.get(address) != "bound":
             raise ValueError(f"{address} is read by the graph and is not `bound` in rows")
     effect_type = model["model"]["type"]
-    missing = _printed(root, model["model"]["unit_id"], effect_type) - set(rows)
+    # A model of no type -- the send path after every type -- has no printed page of its own.
+    if effect_type is None:
+        return
+    missing =_printed(root, model["model"]["unit_id"], effect_type) - set(rows)
     if missing:
         raise ValueError(f"rows omits {sorted(missing)}, which {effect_type} prints")
 

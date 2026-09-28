@@ -445,6 +445,24 @@ def test_a_model_names_the_class_it_is_a_candidate_in():
         )
 
 
+def test_a_model_drawn_after_every_type_is_a_graph_of_no_type_in_its_own_class():
+    """The stage draws whatever this key names after every type's own graph."""
+    for path in sorted((HERE / "candidates").glob("*.json")):
+        catalogue = json.loads(path.read_text())
+        named = catalogue.get("drawn_after_every_type")
+        if named is None:
+            continue
+        model = json.loads((ROOT / named).read_text())["model"]
+        assert model["kind"] == "graph", f"{path.name} names {named}, which is not a graph"
+        assert model["class"] == catalogue["class"], (
+            f"{path.name} names {named}, a candidate in another class"
+        )
+        assert model["type"] is None, (
+            f"{path.name} names {named}, which is a model of {model['type']} and not of "
+            "the path after every type"
+        )
+
+
 def test_a_generated_comparison_set_is_still_what_the_index_yields():
     """The quiet failure the staleness query cannot see.
 

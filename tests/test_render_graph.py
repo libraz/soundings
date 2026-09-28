@@ -176,6 +176,16 @@ def test_a_graph_is_refused_for_its_own_reason(name):
         loaded(model)
 
 
+def test_a_model_of_no_type_is_not_held_to_a_types_printed_rows():
+    model = _valid()
+    model["model"]["type"] = None
+    model["rows"] = {}
+    assert loaded(model)["model"]["type"] is None
+    model["rows"] = {"40 03 04": "bound"}
+    with pytest.raises(ValueError, match="no node reads"):
+        loaded(model)
+
+
 def test_reproduce_hands_a_graph_file_to_the_render_package(tmp_path):
     import shutil
 

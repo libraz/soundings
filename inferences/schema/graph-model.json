@@ -29,7 +29,7 @@
         "class": {"type": "string"},
         "candidate": {"type": "string"},
         "unit_id": {"type": "string"},
-        "type": {"type": "string"},
+        "type": {"type": ["string", "null"], "description": "The effect type the graph is a model of. Null for a graph drawn after every type -- the send path -- which has no printed page of its own, so its `rows` hold only the addresses it reads."},
         "kind": {"const": "graph"},
         "made_by": {"type": "string"}
       }
@@ -45,7 +45,7 @@
           "enum": [
             "gain", "mix", "pan", "delay", "lfo", "section", "lti",
             "shaper", "envelope", "gain_computer", "vca", "hold",
-            "quantize", "pitch"
+            "quantize", "pitch", "response"
           ],
           "description": "Closed. Each kind is drawn by exactly one module and carries its own required values; this file only fences the vocabulary, not the per-kind requirements."
         }

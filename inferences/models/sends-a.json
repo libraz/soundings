@@ -1,0 +1,532 @@
+{
+  "model": {
+    "schema_version": 1,
+    "id": "sends-a",
+    "class": "sends",
+    "candidate": "after-the-level",
+    "unit_id": "roland-sc8850-01",
+    "type": null,
+    "kind": "graph",
+    "made_by": "backup/build-send-models.py"
+  },
+  "sample_rate_hz": 32000,
+  "why_this_rate": "The rate the reverb's response was published at, and the rate every type's graph is drawn at, so a type's drawing is handed on unresampled in the graph's own terms.",
+  "inputs": [
+    "in_l",
+    "in_r"
+  ],
+  "outputs": {
+    "out_l": "out_l",
+    "out_r": "out_r"
+  },
+  "nodes": [
+    {
+      "id": "mono",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "in_r"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "in_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "reverb_send",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 17",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "reverb",
+      "kind": "response",
+      "input": "reverb_send",
+      "record": "data/units/roland-sc8850-01/send-response/cc91-kit.json",
+      "sha256": "5585c0a3618d7ee69e443711acfb0b6cd8e0659d52f5b945416f29419b96d292"
+    },
+    {
+      "id": "reverb_l",
+      "kind": "gain",
+      "input": "reverb.left",
+      "unit": "ratio",
+      "gain": {
+        "value": 0.7406337176554095,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-17.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-17",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "reverb_r",
+      "kind": "gain",
+      "input": "reverb.right",
+      "unit": "ratio",
+      "gain": {
+        "value": 0.7406337176554095,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-17.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-17",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "delay_send",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 19",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "delay_into",
+      "kind": "mix",
+      "inputs": [
+        "delay_send",
+        "delay_feedback"
+      ],
+      "weights": {
+        "delay_send": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "delay_feedback": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "delay_line",
+      "kind": "delay",
+      "input": "delay_into",
+      "interpolation": "linear",
+      "time_ms": {
+        "value": 340.0,
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/address-map.json page 236: DELAY TIME CENTER, 340 at 61"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "delay_feedback",
+      "kind": "gain",
+      "input": "delay_line",
+      "unit": "ratio",
+      "gain": {
+        "value": 0.25396825396825395,
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/address-map.json page 236: DELAY FEEDBACK, -64 - +63, +16 at 50"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "delay_centre",
+      "kind": "gain",
+      "input": "delay_line",
+      "unit": "ratio",
+      "gain": {
+        "value": 1.0,
+        "source": "document",
+        "rests_on": [
+          "documents/roland-sc-8850-owners-manual-en/address-map.json page 236: DELAY LEVEL CENTER, 0 - 127, 127 at 7F"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "delay_return",
+      "kind": "gain",
+      "input": "delay_centre",
+      "unit": "ratio",
+      "gain": {
+        "value": 0.9874067648500648,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-19.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-19",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "chorus_send",
+      "kind": "gain",
+      "input": "mono",
+      "unit": "ratio",
+      "gain": {
+        "byte": "40 03 18",
+        "map": {
+          "kind": "points",
+          "points": [
+            [
+              0,
+              0.0
+            ],
+            [
+              127,
+              1.0
+            ]
+          ]
+        },
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "chorus_lfo_l",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "value": 0.3332708927195924,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      },
+      "phase_offset": {
+        "value": 0.0,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "chorus_line_l",
+      "kind": "delay",
+      "input": "chorus_send",
+      "interpolation": "linear",
+      "time_ms": {
+        "value": 18.09512696311978,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      },
+      "modulated_by": {
+        "control": "chorus_lfo_l",
+        "depth_ms": {
+          "value": 2.443137233542595,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": [
+            [
+              "efx-params-01-00/40-03-18",
+              127
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "chorus_l",
+      "kind": "gain",
+      "input": "chorus_line_l",
+      "unit": "ratio",
+      "gain": {
+        "value": 1.0156671877512218,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "chorus_lfo_r",
+      "kind": "lfo",
+      "shape": "sine",
+      "rate_hz": {
+        "value": 0.3332708927195924,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      },
+      "phase_offset": {
+        "value": 0.5,
+        "source": "law",
+        "rests_on": [
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": []
+      }
+    },
+    {
+      "id": "chorus_line_r",
+      "kind": "delay",
+      "input": "chorus_send",
+      "interpolation": "linear",
+      "time_ms": {
+        "value": 18.09512696311978,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      },
+      "modulated_by": {
+        "control": "chorus_lfo_r",
+        "depth_ms": {
+          "value": 2.443137233542595,
+          "source": "measured",
+          "rests_on": [
+            "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": [
+            [
+              "efx-params-01-00/40-03-18",
+              127
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "chorus_r",
+      "kind": "gain",
+      "input": "chorus_line_r",
+      "unit": "ratio",
+      "gain": {
+        "value": 1.0156671877512218,
+        "source": "measured",
+        "rests_on": [
+          "data/units/roland-sc8850-01/efx-return/01-00-18.json",
+          "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+        ],
+        "fitted_on": [
+          [
+            "efx-params-01-00/40-03-18",
+            127
+          ]
+        ]
+      }
+    },
+    {
+      "id": "out_l",
+      "kind": "mix",
+      "inputs": [
+        "in_l",
+        "reverb_l",
+        "chorus_l",
+        "delay_return"
+      ],
+      "weights": {
+        "in_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "reverb_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "chorus_l": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "delay_return": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    },
+    {
+      "id": "out_r",
+      "kind": "mix",
+      "inputs": [
+        "in_r",
+        "reverb_r",
+        "chorus_r",
+        "delay_return"
+      ],
+      "weights": {
+        "in_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "reverb_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "chorus_r": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        },
+        "delay_return": {
+          "value": 1.0,
+          "source": "law",
+          "rests_on": [
+            "inferences/roland-sc8850-01/sends-a-type-feeds-the-system-effects-from-its-own-output.json"
+          ],
+          "fitted_on": []
+        }
+      }
+    }
+  ],
+  "rows": {
+    "40 03 17": "bound",
+    "40 03 18": "bound",
+    "40 03 19": "bound"
+  },
+  "what_varies": "Nothing within the class: this is the one send path drawn after every type. The alternatives in the class take the send before the type's Level, or from the part's own sends in parallel, and neither can be drawn after a type's output, so they are held as predictions.",
+  "fitted_how": "Each free value was fitted on the 01 00 directory of its own send byte at 127 and nowhere else, on the part's dry takes (CC91 at 0, the same struck note) drawn through the 01 00 model the stage put first at power on and then through this model at the directory's bytes. The reverb gain, then the delay's with the reverb at its power-on send of 40, minimise the mean residual of each drawn take subtracted from the unit's on channels 2 and 3 (`reproduce.subtracted`, both sides cut at 12 kHz). A chorus take does not repeat, since a note-on does not restart its modulator, and the unit's own takes of it subtract to about -1.3 dB, so the chorus is fitted on two readings taken alike of both: the lag at which what a take adds over its send-0 take sits on that take's channel sum, in 100 ms windows per channel (delay, rate and depth, by the mean absolute difference with each window capped at 5 ms, each take's modulator phase fitted beside them and not part of the model), then the rise in the level the efx-return record reads from the send at 0 to 127 (the gain).",
+  "stereo_spread": "The chorus is one modulator read by two delay lines, the right one half a cycle behind: in 100 ms windows the lag at which the 01 00 chorus return sits on its input rises on one channel while it falls on the other, which one line fed to both sides cannot do. The antiphase pair is the simplest form that can, and the only one written here. Read as the efx-return record reads the unit, the decorrelated share rises from the send at 0 to 127 by 17.34 dB with the pair and 4.67 dB with one line, against the unit's 17.23 dB; that rise was not fitted.",
+  "chorus_rate": "The chorus rate is loosely held: the tracked stretch of a take is 2.75 s, under one cycle of the modulator, and each take's phase is free. With the delay and depth held at their fitted values and each take's phase on a twelfth-cycle grid, the capped lag difference is 1.852 ms at 0.325 Hz, the grid's best, and 2.603 ms at 0.2 Hz, 2.403 ms at 0.25 Hz, 1.956 ms at 0.35 Hz, 2.097 ms at 0.4 Hz.",
+  "what_is_not_modelled": "The chorus's printed feedback (8 on a raw 0-127 scale with no conversion) and both pre-LPFs (0 at power on). The delay's left and right taps, whose levels power up at 0. The send EQ switch, which moved nothing on 01 00 with the send EQ flat. The reverb's own structure: it is the response the part's CC91 recovered, which two halves of its takes agree on to -22.4 dB."
+}
