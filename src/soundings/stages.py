@@ -994,6 +994,41 @@ def repeat_floor(unit: dict) -> float:
     return max(spreads)
 
 
+def _maps_of(node, address: str, out: list[dict]) -> list[dict]:
+    if isinstance(node, dict):
+        if node.get("byte") == address and isinstance(node.get("map"), dict):
+            out.append(node["map"])
+        for value in node.values():
+            _maps_of(value, address, out)
+    elif isinstance(node, list):
+        for value in node:
+            _maps_of(value, address, out)
+    return out
+
+
+def one_entry_octaves(raw: dict, address: str | None, values) -> float:
+    """What one entry of a model's table for `address` is worth in octaves, at `values`.
+
+    The second floor `reproduce.score_against_rates` judges a rate's lean against: a
+    residual smaller than one entry is one no candidate built on the table could differ
+    over. Only a table with an entry per setting has one; points, or two tables that
+    disagree about the byte, return 0 and leave the run's own floor to govern alone.
+    """
+    maps = _maps_of(raw, address, []) if address else []
+    if not maps or any(m.get("kind") != "table" for m in maps):
+        return 0.0
+    entries = maps[0].get("entries") or []
+    if any(m.get("entries") != entries for m in maps[1:]):
+        return 0.0
+    last = len(entries) - 1
+    steps = [
+        float(np.log2(entries[v] / entries[v - 1]))
+        for v in (int(v) for v in values)
+        if 0 < v <= last and entries[v] > entries[v - 1] > 0
+    ]
+    return float(np.median(steps)) if steps else 0.0
+
+
 def scored_readings(
     name: str,
     reading: Reading,
@@ -1536,6 +1571,13 @@ class _Phase:
         for name, stage in sorted(self.stages.items()):
             ours = {k: v for k, v in mine.get(name, {}).items() if k in stage["unit"]}
             floor = max(stage["floors"]) if stage["floors"] else repeat_floor(stage["unit"])
+            if READINGS[stage["base"]].octaves:
+                # A rate's lean is judged against the coarser of the run's floor and one
+                # entry of the candidate's own table, as `score_against_rates` does.
+                steps = [one_entry_octaves(cand.raw, by_rel[rel].address, [v])
+                         for rel, v in stage["unit"] if rel in by_rel and v > 0]
+                if steps and all(s > 0 for s in steps):
+                    floor = max(floor, float(np.median(steps)))
             before = self.inherited.get(name, {})
             out.append(scored_readings(
                 name, READINGS[stage["base"]], stage["unit"], ours, floor=floor,

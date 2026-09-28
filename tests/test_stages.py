@@ -340,6 +340,31 @@ def test_a_setting_only_the_drawn_side_refused_costs_the_whole_span():
     assert stages.separated([scored]) is True
 
 
+def _rate_model(slot: str, *maps: dict) -> dict:
+    nodes = [{"id": f"n{i}", "kind": "gain", "gain": {"byte": slot, "map": m}}
+             for i, m in enumerate(maps)]
+    return {"model": {"id": "m"}, "nodes": nodes}
+
+
+LINEAR = {"kind": "table", "entries": [0.05 * (i + 1) for i in range(126)], "out_of_range": 125}
+
+
+def test_one_entry_of_a_rate_table_is_its_step_in_octaves_at_the_settings_compared():
+    raw = _rate_model("40 03 03", LINEAR, dict(LINEAR))
+    worth = stages.one_entry_octaves(raw, "40 03 03", [0, 6, 40, 72])
+    steps = [math.log2(LINEAR["entries"][v] / LINEAR["entries"][v - 1]) for v in (6, 40, 72)]
+    assert worth == pytest.approx(float(np.median(steps)))
+
+
+@pytest.mark.parametrize("maps", [
+    (),
+    ({"kind": "points", "points": [[0, 0.05], [127, 10.0]]},),
+    (LINEAR, {**LINEAR, "entries": [0.1 * (i + 1) for i in range(126)]}),
+])
+def test_a_rate_byte_whose_entries_are_not_one_measured_table_has_no_entry_floor(maps):
+    assert stages.one_entry_octaves(_rate_model("40 03 03", *maps), "40 03 03", [6, 40]) == 0.0
+
+
 def test_where_a_band_is_largest_is_no_reading_where_the_profile_has_no_width():
     rows = [
         {"value": 0, "largest_db": -9.9, "largest_at_hz": 100,
