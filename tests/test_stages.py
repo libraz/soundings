@@ -411,6 +411,43 @@ def test_a_position_is_held_against_the_width_of_the_band_it_was_read_in():
     assert stages.floor_of(found, stages.READINGS["efx-bands:largest_db"]) == 0.2
 
 
+def test_a_delay_is_held_against_the_step_it_was_read_in_where_its_floor_is_finer():
+    reading = stages.READINGS["efx-time:ms"]
+    step = {"quefrency_step_ms": 0.020833, "readings": []}
+    assert stages.floor_of({**step, "floor_ms": 0.0}, reading) == 0.020833
+    assert stages.floor_of({**step, "floor_ms": 4.7083}, reading) == 4.7083
+
+
+def test_a_span_inside_twice_the_floor_is_a_null_the_model_must_show_nothing_on():
+    reading = stages.READINGS["efx-time:ms"]
+    unit = {("d", 0): [[300.0]], ("d", 1): [[300.0208]]}
+    still = stages.scored_readings("efx-time:ms", reading, unit, unit, floor=0.0208)
+    moved = stages.scored_readings(
+        "efx-time:ms", reading, unit, {("d", 0): [[300.0]], ("d", 1): [[0.06]]}, floor=0.0208)
+    assert still["is_null_record"] and still["model_stays_inside_the_floor"]
+    assert moved["is_null_record"] and not moved["model_stays_inside_the_floor"]
+    assert not stages.scored_readings(
+        "efx-time:ms", reading, unit, unit, floor=0.01)["is_null_record"]
+
+
+def test_a_swing_nothing_cleared_is_no_swing_and_a_take_without_signal_is_no_reading():
+    def row(value, depth, frames):
+        return {"value": value, "tracked_frames": frames,
+                "level_in_db": {"depth": depth}, "balance": {"depth": depth}}
+
+    rows = [row(0, None, 1670), row(1, 6.2, 1670), row(2, None, 12)]
+    found = stages.collected("efx-sway", {"readings": rows}, "d")
+    for name in ("efx-sway:level_in_db.depth", "efx-sway:balance.depth"):
+        unit = found[name]["takes"]
+        assert set(unit) == {("d", 0), ("d", 1)}
+        drawn = {("d", 0): [[None]], ("d", 1): [[None]]}
+        scored = stages.scored_readings(name, stages.READINGS[name], unit, drawn, floor=0.5)
+        residuals = {row["value"]: row["residual"] for row in scored["rows"]}
+        assert scored["span"] == 6.2
+        assert residuals == {0: [0.0], 1: [-6.2]}
+        assert scored["drawn_only_refused"] == []
+
+
 def test_a_record_name_spells_what_it_differs_by_as_it_was_passed():
     argv = ["efx-bands", ".cache/takes/d", "--type", "01 02", "--slot", "40 03 03",
             "--setting", "a-v(?P<value>\\d{3})", "--reference", "a-v000",

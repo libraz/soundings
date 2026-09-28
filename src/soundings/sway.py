@@ -91,6 +91,9 @@ WHY_CHANNEL = (
     "is what a setting with none also returns."
 )
 
+LEAST_TRACKED_FRAMES = 64
+"""Fewer frames above the floor than this and the take is read as holding no signal."""
+
 WHY_FLOOR_GATE = (
     "Frames were dropped for holding no signal. A level read out of silence is the noise's own "
     "level and it does not decay, so a tail tracked past the floor reads as a modulation "
@@ -438,7 +441,7 @@ def measure(
     """Say whether the take's level or its channel difference was modulated."""
     series, found = tracks(pair, rate, lead_s=lead_s)
     found.searched_hz = search_hz
-    if found.tracked_frames < 64:
+    if found.tracked_frames < LEAST_TRACKED_FRAMES:
         found.notes.append(WHY_FLOOR_GATE)
         return found
     hop_hz = 1.0 / HOP_S

@@ -36,7 +36,7 @@ from pathlib import Path
 import numpy as np
 import scipy
 
-from . import efxbands, ledger, reproduce, takes
+from . import efxbands, ledger, reproduce, sway, takes
 from .inferences import EFFECT_BLOCK
 from .render import graph
 from .stimuli import Stimulus
@@ -109,7 +109,10 @@ class Reading:
     the value a null stands for where the record defines one (nothing cleared the
     floor); any other null on the unit's side is the record refusing that setting.
     `room` names the row key saying how far a take stood above the chain's silence; a
-    row within `WITHIN_THE_FLOOR_DB` of it is the room and not a reading.
+    row within `WITHIN_THE_FLOOR_DB` of it is the room and not a reading. `tracked`
+    names a row key counting the frames that held signal and the count below which the
+    take is likewise the room. `step` names the record key holding the reading's own
+    resolution, which the floor is never finer than.
     """
 
     command: str
@@ -122,6 +125,8 @@ class Reading:
     admitted_if: tuple[str, ...] = ()
     null_is: float | None = None
     room: str | None = None
+    tracked: tuple[str, int] | None = None
+    step: str | None = None
 
 
 _READINGS = (
@@ -131,7 +136,8 @@ _READINGS = (
             "floor.ms", "ms"),
     Reading("efx-excursion", "efxexcursion.read_directory", "readings", "off_the_phase_ms",
             "floor_off_the_phase.ms", "ms"),
-    Reading("efx-time", "efxtime.read_directory", "readings", "ms", "floor_ms", "ms"),
+    Reading("efx-time", "efxtime.read_directory", "readings", "ms", "floor_ms", "ms",
+            step="quefrency_step_ms"),
     # Null is no band outside its floor, which is an answer and not a refusal.
     Reading("efx-bands", "efxbands.read_directory", "readings", "largest_db",
             "reference.floor_db", "dB", null_is=0.0, room="above_the_silence_db"),
@@ -144,8 +150,11 @@ _READINGS = (
     # The record holds a position against the band width, having no measured floor.
     Reading("efx-bands", "efxbands.read_directory", "readings", "fitted_at_hz",
             "band_width_octaves", "octaves", octaves=True, room="above_the_silence_db"),
-    Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB"),
-    Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB"),
+    # Null is no swing above the reader's least depth, or no rate to fold it at.
+    Reading("efx-sway", "efxsway.sweep", "readings", "level_in_db.depth", None, "dB",
+            null_is=0.0, tracked=("tracked_frames", sway.LEAST_TRACKED_FRAMES)),
+    Reading("efx-sway", "efxsway.sweep", "readings", "balance.depth", None, "dB",
+            null_is=0.0, tracked=("tracked_frames", sway.LEAST_TRACKED_FRAMES)),
     Reading("efx-orders", "efxorders.read_directory", "readings", "all_of_them_db",
             "reference.floor_db", "dB"),
     Reading("decay", "decay.measure", "bands", "rt60_s", None, "s"),
@@ -934,6 +943,8 @@ def takes_of(found: dict, reading: Reading, *, setting: int | None = None) -> di
     for row in rows:
         if reading.room is not None and _in_the_room(row.get(reading.room)):
             continue
+        if reading.tracked is not None and not _tracked(row, *reading.tracked):
+            continue
         if isinstance(row.get("value"), int):
             by.setdefault(row["value"], []).append([_quantity(row, reading)])
     return by
@@ -943,14 +954,26 @@ def _in_the_room(above_the_silence) -> bool:
     return isinstance(above_the_silence, (int, float)) and above_the_silence <= WITHIN_THE_FLOOR_DB
 
 
+def _tracked(row: dict, key: str, least: int) -> bool:
+    count = at(row, key)
+    return isinstance(count, (int, float)) and count >= least
+
+
 def floor_of(found: dict, reading: Reading) -> float | None:
-    """The floor a stage published beside its readings, the widest where it is a list."""
+    """The floor a stage published beside its readings, the widest where it is a list.
+
+    Never finer than the reading's own step: two settings a step apart are the nearest
+    the reading can place them, so a spread of one step is its resolution.
+    """
     if reading.floor is None:
         return None
     value = at(found, reading.floor)
     if isinstance(value, list):
         value = max((v for v in value if isinstance(v, (int, float))), default=None)
-    return float(value) if isinstance(value, (int, float)) else None
+    if not isinstance(value, (int, float)):
+        return None
+    step = at(found, reading.step) if reading.step else None
+    return max(float(value), float(step)) if isinstance(step, (int, float)) else float(value)
 
 
 def collected(command: str, found: dict, rel: str, *, setting: int | None = None) -> dict:
@@ -1046,6 +1069,10 @@ def scored_readings(
     unit refused is not a row; one only the drawn side refused costs the whole span.
     """
     u, d = _medians(unit), _medians(drawn)
+    if reading.null_is is not None:
+        # A null the record defines is a value, and the span runs to it too.
+        u, d = ({k: [reading.null_is if x is None else x for x in vec] for k, vec in side.items()}
+                for side in (u, d))
     values = [x for vec in u.values() for x in vec if x is not None]
     own = (max(values) - min(values)) if values else 0.0
     span = own if (span is None or own > 0) else span
@@ -1073,7 +1100,9 @@ def scored_readings(
     worst = max(magnitudes, key=lambda m: m[0]) if magnitudes else (0.0, None)
     structured, said = reproduce._structured(rows, floor, unit=reading.measured_in)
     properties = _directions(u, d, floor) or list(properties_from or [])
-    null = span <= 0 or not rows
+    # A span that does not clear the floor by a doubling is a byte that did nothing, as
+    # `reproduce` reads it: what a model owes it is to show nothing, not a share of it.
+    null = not rows or span <= 2.0 * floor
     return {
         "record": name,
         "measured_in": reading.measured_in,
