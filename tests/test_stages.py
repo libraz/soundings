@@ -14,6 +14,7 @@ synthetic takes: an amplitude-modulated tone is what it reads a rate from.
 
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import os
@@ -556,6 +557,49 @@ def test_the_units_side_of_a_reading_is_kept_until_its_takes_change(readings_roo
     os.utime(take, ns=(later, later))
     with pytest.raises(AssertionError, match="although its reading was kept"):
         read()
+
+
+def test_a_drawn_reading_is_kept_until_the_takes_are_drawn_again(readings_root, tmp_path,
+                                                                  monkeypatch):
+    from soundings import efxrate
+
+    record = json.loads((readings_root / RATE_RECORD).read_text())
+    where = readings_root / ".cache" / "takes" / RATE_DIR
+    drawn = tmp_path / "drawn"
+    shutil.copytree(where, drawn)
+    kept = tmp_path / "stage-readings"
+
+    def read():
+        return stages.read_with(record["record"]["invocation"], root=readings_root,
+                                unit_dir=where, drawn_dir=drawn, channel=2,
+                                writes=stages.writes_of(HELD), cache=kept)
+
+    first = read()
+    assert first["readings"]
+
+    def refused(*args, **kwargs):
+        raise AssertionError("the stage ran although its reading was kept")
+
+    monkeypatch.setattr(efxrate, "read_directory", refused)
+    assert read() == first
+    take = drawn / "tone-v064-00.wav"
+    later = take.stat().st_mtime_ns + 5_000_000_000
+    os.utime(take, ns=(later, later))
+    with pytest.raises(AssertionError, match="although its reading was kept"):
+        read()
+
+
+def test_a_kept_reading_is_not_read_back_once_the_code_reading_it_changes(monkeypatch):
+    args = argparse.Namespace(directory="d", channel=2)
+    before = stages._cache_key("efx-rate", args, Path("."))
+    monkeypatch.setattr(stages, "_reader_source", lambda command: "another source")
+    assert stages._cache_key("efx-rate", args, Path(".")) != before
+
+
+def test_the_code_a_reading_runs_is_followed_through_its_imports():
+    followed = stages._reader_modules("efx-rate")
+    assert "efxrate" in followed and "rates" in followed
+    assert "stages" not in followed and not any(m.startswith("cli") for m in followed)
 
 
 def test_the_unit_side_of_a_reading_is_read_from_its_band_limited_copy(readings_root,

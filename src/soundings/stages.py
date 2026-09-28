@@ -23,6 +23,7 @@ for drawing and for a reading's `held` alike.
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import functools
 import hashlib
@@ -174,7 +175,8 @@ per quantity a stage's own record names as a reading, each its own record at the
 COMMANDS = sorted({r.command for r in _READINGS})
 
 STAGE_READINGS = Path(".cache/stage-readings")
-"""Where the unit's side of a reading is kept, keyed by command, arguments and mtime."""
+"""Where both sides' readings are kept, keyed by command, arguments, the newest mtime in
+the directory read and the reading's own source (`_cache_key`)."""
 
 MISSING = object()
 
@@ -963,7 +965,8 @@ def read_with(
             args.channel = channel
     if hasattr(args, "held"):
         args.held = list(writes)
-    keyed_on = cut_dir if cut_dir is not None else unit_dir
+    keyed_on = drawn_dir if drawn_dir is not None else cut_dir if cut_dir is not None \
+        else unit_dir
     kept = None if cache is None else Path(cache) / f"{_cache_key(argv[0], args, keyed_on)}.json"
     if kept is not None and kept.is_file():
         return json.loads(kept.read_text())
@@ -987,12 +990,55 @@ def read_with(
 
 
 def _cache_key(command: str, args, unit_dir: Path) -> str:
-    """The command, its parsed arguments and the newest mtime among the directory's files."""
+    """The command, its parsed arguments, the newest mtime among the directory's files,
+    and the source of the code the reading runs."""
     said = {k: v for k, v in sorted(vars(args).items()) if k not in ("func", "out")}
     newest = max((f.stat().st_mtime_ns for f in Path(unit_dir).iterdir() if f.is_file()),
                  default=0)
-    text = json.dumps([command, said, newest], default=str, sort_keys=True)
+    text = json.dumps([command, said, newest, _reader_source(command)], default=str,
+                      sort_keys=True)
     return f"{command}-{hashlib.sha256(text.encode()).hexdigest()[:24]}"
+
+
+PACKAGE = Path(__file__).resolve().parent
+NOT_A_READER = ("cli", "stages")
+"""What a reading's code is not taken to include: the command line that parses its
+arguments, and this module, whose gates change without changing any reading."""
+
+
+def _imported(module: str) -> set[str]:
+    tree = ast.parse((PACKAGE / f"{module.replace('.', '/')}.py").read_text())
+    found = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.level == 1:
+            if node.module:
+                found.add(node.module)
+            else:
+                found |= {alias.name for alias in node.names}
+    return {m for m in found if (PACKAGE / f"{m.replace('.', '/')}.py").is_file()}
+
+
+@functools.cache
+def _reader_modules(command: str) -> frozenset[str]:
+    """The package's modules a stage's reading runs: its entries, through their imports."""
+    todo = {r.entry.split(".")[0] for r in _READINGS if r.command == command}
+    seen: set[str] = set()
+    while todo:
+        module = todo.pop()
+        if module in seen or module.split(".")[0] in NOT_A_READER:
+            continue
+        seen.add(module)
+        todo |= _imported(module)
+    return frozenset(seen)
+
+
+@functools.cache
+def _reader_source(command: str) -> str:
+    """The SHA-256 of the source of `_reader_modules`, so a kept reading goes stale with it."""
+    digest = hashlib.sha256()
+    for module in sorted(_reader_modules(command)):
+        digest.update((PACKAGE / f"{module.replace('.', '/')}.py").read_bytes())
+    return digest.hexdigest()
 
 
 def _quantity(row: dict, reading: Reading):
@@ -1665,7 +1711,8 @@ class _Phase:
                     else argv
                 read = read_with(reading_argv, root=self.root, unit_dir=made.where,
                                  drawn_dir=drawn[made.rel], channel=self.channel[made.rel],
-                                 writes=writes_of(made.entry.get("held")))
+                                 writes=writes_of(made.entry.get("held")),
+                                 cache=self.root / STAGE_READINGS)
                 for name, part in collected(command, read, made.rel, setting=setting).items():
                     record_name = _scored_name(name, command, argv)
                     for key, vectors in part["takes"].items():
