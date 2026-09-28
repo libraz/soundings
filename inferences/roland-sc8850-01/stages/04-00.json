@@ -72,23 +72,23 @@
               {
                 "candidate": "0400-whole-compressor-then-drive",
                 "model": "inferences/models/0400-whole-compressor-then-drive.json",
-                "mean_share_of_span": 4806.7837,
-                "worst_share_of_span": 14419.0721,
-                "leaning_records": 3,
+                "mean_share_of_span": 0.8324,
+                "worst_share_of_span": 0.8324,
+                "leaning_records": 1,
                 "contradicts_a_property": true
               },
               {
                 "candidate": "0400-whole-drive-then-compressor",
                 "model": "inferences/models/0400-whole-drive-then-compressor.json",
-                "mean_share_of_span": 4806.7837,
-                "worst_share_of_span": 14419.0721,
-                "leaning_records": 3,
+                "mean_share_of_span": 0.8324,
+                "worst_share_of_span": 0.8324,
+                "leaning_records": 1,
                 "contradicts_a_property": true
               }
             ],
             "decoy": "0400-whole-drive-then-compressor",
-            "beaten_by": "leaning where the winner does not",
-            "separation": 14418.24,
+            "beaten_by": "contradicting a property the winner satisfies",
+            "separation": 0.0,
             "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
           },
           "breakdown": {
@@ -115,8 +115,8 @@
           "measured_in": "ms",
           "gross": {
             "passed": false,
-            "residual_over_span": 14419.072,
-            "span": 1.933,
+            "residual_over_span": 0.0,
+            "span": 0.0,
             "ceiling": 0.2,
             "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
           },
@@ -124,23 +124,25 @@
             "passed": false,
             "checked": [
               {
-                "record": "efx-time:ms [--byte-names-no-delay]",
-                "property": "direction",
-                "value": [
-                  "book-d2-4/04-00-40-03-14-held_applause",
-                  95,
-                  127
-                ],
-                "unit": "rises",
-                "model": "falls",
-                "same": false
-              },
-              {
                 "record": "efx-excursion:excursion_ms [--carrier-hz 440]",
                 "property": "the unit's null control shows nothing, and so must the model",
                 "unit": "nothing above a floor of 0 ms",
                 "model": "0 ms",
                 "same": true
+              },
+              {
+                "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+                "property": "the unit's null control shows nothing, and so must the model",
+                "unit": "nothing above a floor of 1.197 ms",
+                "model": "1.814 ms",
+                "same": false
+              },
+              {
+                "record": "efx-time:ms [--byte-names-no-delay]",
+                "property": "the unit's null control shows nothing, and so must the model",
+                "unit": "nothing above a floor of 0.02083 ms",
+                "model": "299.9 ms",
+                "same": false
               }
             ],
             "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -151,51 +153,29 @@
               {
                 "candidate": "0400-whole-compressor-then-drive",
                 "model": "inferences/models/0400-whole-compressor-then-drive.json",
-                "mean_share_of_span": 4806.7837,
-                "worst_share_of_span": 14419.0721,
-                "leaning_records": 3,
+                "mean_share_of_span": 0.8324,
+                "worst_share_of_span": 0.8324,
+                "leaning_records": 1,
                 "contradicts_a_property": true
               },
               {
                 "candidate": "0400-whole-drive-then-compressor",
                 "model": "inferences/models/0400-whole-drive-then-compressor.json",
-                "mean_share_of_span": 4806.7837,
-                "worst_share_of_span": 14419.0721,
-                "leaning_records": 3,
+                "mean_share_of_span": 0.8324,
+                "worst_share_of_span": 0.8324,
+                "leaning_records": 1,
                 "contradicts_a_property": true
               }
             ],
             "decoy": "0400-whole-drive-then-compressor",
             "beaten_by": "leaning where the winner does not",
-            "separation": -0.0,
+            "separation": 0.832,
             "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
           },
           "breakdown": {
-            "passed": false,
-            "breaks_down_at": [
-              {
-                "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-                "at": [
-                  "book-d2-4/04-00-40-03-14-held_applause",
-                  127
-                ],
-                "residual": 1.8136999999999999,
-                "share_of_span": 0.938
-              },
-              {
-                "record": "efx-time:ms [--byte-names-no-delay]",
-                "at": [
-                  "book-d2-4/04-00-40-03-14-held_applause",
-                  127
-                ],
-                "residual": 299.9375,
-                "share_of_span": 14420.072
-              }
-            ],
-            "leaning_records": [
-              "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-              "efx-time:ms [--byte-names-no-delay]"
-            ],
+            "passed": true,
+            "breaks_down_at": null,
+            "leaning_records": null,
             "records_the_run_did_not_reach": null,
             "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
           }
@@ -203,7 +183,7 @@
       },
       "gross": {
         "passed": false,
-        "residual_over_span": 14419.072,
+        "residual_over_span": 0.832,
         "span": null
       },
       "qualitative": {
@@ -308,8 +288,8 @@
             "measured_in": "ms",
             "gross": {
               "passed": false,
-              "residual_over_span": 14419.072,
-              "span": 1.933,
+              "residual_over_span": 0.0,
+              "span": 0.0,
               "ceiling": 0.2,
               "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
             },
@@ -317,23 +297,25 @@
               "passed": false,
               "checked": [
                 {
-                  "record": "efx-time:ms [--byte-names-no-delay]",
-                  "property": "direction",
-                  "value": [
-                    "book-d2-4/04-00-40-03-14-held_applause",
-                    95,
-                    127
-                  ],
-                  "unit": "rises",
-                  "model": "falls",
-                  "same": false
-                },
-                {
                   "record": "efx-excursion:excursion_ms [--carrier-hz 440]",
                   "property": "the unit's null control shows nothing, and so must the model",
                   "unit": "nothing above a floor of 0 ms",
                   "model": "0 ms",
                   "same": true
+                },
+                {
+                  "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+                  "property": "the unit's null control shows nothing, and so must the model",
+                  "unit": "nothing above a floor of 1.197 ms",
+                  "model": "3.484 ms",
+                  "same": false
+                },
+                {
+                  "record": "efx-time:ms [--byte-names-no-delay]",
+                  "property": "the unit's null control shows nothing, and so must the model",
+                  "unit": "nothing above a floor of 0.02083 ms",
+                  "model": "299.9 ms",
+                  "same": false
                 }
               ],
               "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -347,31 +329,9 @@
               "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
             },
             "breakdown": {
-              "passed": false,
-              "breaks_down_at": [
-                {
-                  "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-                  "at": [
-                    "book-d2-4/04-00-40-03-14-held_applause",
-                    127
-                  ],
-                  "residual": 3.4840999999999998,
-                  "share_of_span": 1.803
-                },
-                {
-                  "record": "efx-time:ms [--byte-names-no-delay]",
-                  "at": [
-                    "book-d2-4/04-00-40-03-14-held_applause",
-                    127
-                  ],
-                  "residual": 299.9375,
-                  "share_of_span": 14420.072
-                }
-              ],
-              "leaning_records": [
-                "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-                "efx-time:ms [--byte-names-no-delay]"
-              ],
+              "passed": true,
+              "breaks_down_at": null,
+              "leaning_records": null,
               "records_the_run_did_not_reach": null,
               "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
             }
@@ -379,7 +339,7 @@
         },
         "gross": {
           "passed": false,
-          "residual_over_span": 14419.072,
+          "residual_over_span": 0.223,
           "span": null
         },
         "qualitative": {
@@ -470,7 +430,7 @@
   "stopped": {
     "at": 8,
     "gate": "gross",
-    "needs": "gross on efx-excursion:off_the_phase_ms, efx-orders:all_of_them_db, efx-time:ms, undecided at book-d2-4/04-00-40-03-14-held_applause at 0, 127, 32, 34, 95. Needs a candidate for 04 00 that clears the gross gate, or a measurement that separates the ones standing."
+    "needs": "gross on efx-orders:all_of_them_db, undecided at book-d2-4/04-00-40-03-14-held_applause at 0, 127, 32, 34, 95. Needs a candidate for 04 00 that clears the gross gate, or a measurement that separates the ones standing."
   },
   "equivalent_under_this_test": [],
   "invocation": {

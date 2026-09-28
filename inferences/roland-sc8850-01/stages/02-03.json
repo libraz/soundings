@@ -1,12 +1,12 @@
 {
   "type": "02 03",
   "p0": {
-    "model": "inferences/models/0203-whole-dry-after-the-drive-tone-first.json",
-    "model_sha256": "f8303173b57b66f175feef12e043996c2a7c376f44c17ae3b53ec1085c5b219f",
+    "model": "inferences/models/0203-whole-dry-before-the-drive-tone-first.json",
+    "model_sha256": "a0ff55390baf223f99c597b40a72f8ccae69f68c8dc4319b4d6088d27faca715",
     "rendered_on": [
-      ".cache/rendered/0203-whole-dry-after-the-drive-tone-first/book-d2-1/02-03-40-03-0A-held_organ",
-      ".cache/rendered/0203-whole-dry-after-the-drive-tone-first/book-d2-3/02-03-40-03-03-held_organ",
-      ".cache/rendered/0203-whole-dry-after-the-drive-tone-first/book-d2-6/02-03-40-03-03-held_organ-p2"
+      ".cache/rendered/0203-whole-dry-before-the-drive-tone-first/book-d2-1/02-03-40-03-0A-held_organ",
+      ".cache/rendered/0203-whole-dry-before-the-drive-tone-first/book-d2-3/02-03-40-03-03-held_organ",
+      ".cache/rendered/0203-whole-dry-before-the-drive-tone-first/book-d2-6/02-03-40-03-03-held_organ-p2"
     ]
   },
   "p1": {
@@ -21,13 +21,13 @@
           "measured_in": "dB",
           "gross": {
             "passed": false,
-            "residual_over_span": 3.263,
+            "residual_over_span": 1.832,
             "span": 0.95,
             "ceiling": 0.2,
             "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
           },
           "qualitative": {
-            "passed": true,
+            "passed": false,
             "checked": [
               {
                 "record": "efx-orders:all_of_them_db [--carrier 440]",
@@ -38,8 +38,8 @@
                   72
                 ],
                 "unit": "falls",
-                "model": "falls",
-                "same": true
+                "model": "rises",
+                "same": false
               },
               {
                 "record": "efx-orders:all_of_them_db [--carrier 440]",
@@ -50,8 +50,8 @@
                   88
                 ],
                 "unit": "rises",
-                "model": "rises",
-                "same": true
+                "model": "falls",
+                "same": false
               }
             ],
             "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -60,9 +60,25 @@
             "passed": false,
             "ranking": [
               {
+                "candidate": "0203-whole-dry-before-the-drive-tone-first",
+                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-first.json",
+                "mean_share_of_span": 1.0874,
+                "worst_share_of_span": 1.8316,
+                "leaning_records": 2,
+                "contradicts_a_property": true
+              },
+              {
+                "candidate": "0203-whole-dry-before-the-drive-tone-last",
+                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-last.json",
+                "mean_share_of_span": 1.0874,
+                "worst_share_of_span": 1.8316,
+                "leaning_records": 2,
+                "contradicts_a_property": true
+              },
+              {
                 "candidate": "0203-whole-dry-after-the-drive-tone-first",
                 "model": "inferences/models/0203-whole-dry-after-the-drive-tone-first.json",
-                "mean_share_of_span": 1.3917,
+                "mean_share_of_span": 1.93,
                 "worst_share_of_span": 3.2632,
                 "leaning_records": 2,
                 "contradicts_a_property": false
@@ -70,29 +86,13 @@
               {
                 "candidate": "0203-whole-dry-after-the-drive-tone-last",
                 "model": "inferences/models/0203-whole-dry-after-the-drive-tone-last.json",
-                "mean_share_of_span": 1.3917,
+                "mean_share_of_span": 1.93,
                 "worst_share_of_span": 3.2632,
                 "leaning_records": 2,
                 "contradicts_a_property": false
-              },
-              {
-                "candidate": "0203-whole-dry-before-the-drive-tone-first",
-                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-first.json",
-                "mean_share_of_span": 1.677,
-                "worst_share_of_span": 2.8563,
-                "leaning_records": 3,
-                "contradicts_a_property": true
-              },
-              {
-                "candidate": "0203-whole-dry-before-the-drive-tone-last",
-                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-last.json",
-                "mean_share_of_span": 1.677,
-                "worst_share_of_span": 2.8563,
-                "leaning_records": 3,
-                "contradicts_a_property": true
               }
             ],
-            "decoy": "0203-whole-dry-after-the-drive-tone-last",
+            "decoy": "0203-whole-dry-before-the-drive-tone-last",
             "beaten_by": "leaning where the winner does not",
             "separation": 0.0,
             "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
@@ -103,11 +103,11 @@
               {
                 "record": "efx-orders:all_of_them_db [--carrier 440]",
                 "at": [
-                  "book-d2-3/02-03-40-03-03-held_organ",
-                  88
+                  "book-d2-1/02-03-40-03-0A-held_organ",
+                  36
                 ],
-                "residual": 3.17,
-                "share_of_span": 3.337
+                "residual": 3.0,
+                "share_of_span": 3.158
               }
             ],
             "leaning_records": [
@@ -121,13 +121,13 @@
           "measured_in": "ms",
           "gross": {
             "passed": false,
-            "residual_over_span": 0.597,
+            "residual_over_span": 0.343,
             "span": 3.288,
             "ceiling": 0.2,
             "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
           },
           "qualitative": {
-            "passed": true,
+            "passed": false,
             "checked": [
               {
                 "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
@@ -140,6 +140,13 @@
                 "unit": "rises",
                 "model": "rises",
                 "same": true
+              },
+              {
+                "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+                "property": "the unit's null control shows nothing, and so must the model",
+                "unit": "nothing above a floor of 0.5187 ms",
+                "model": "2.846 ms",
+                "same": false
               }
             ],
             "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -148,9 +155,25 @@
             "passed": false,
             "ranking": [
               {
+                "candidate": "0203-whole-dry-before-the-drive-tone-first",
+                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-first.json",
+                "mean_share_of_span": 1.0874,
+                "worst_share_of_span": 1.8316,
+                "leaning_records": 2,
+                "contradicts_a_property": true
+              },
+              {
+                "candidate": "0203-whole-dry-before-the-drive-tone-last",
+                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-last.json",
+                "mean_share_of_span": 1.0874,
+                "worst_share_of_span": 1.8316,
+                "leaning_records": 2,
+                "contradicts_a_property": true
+              },
+              {
                 "candidate": "0203-whole-dry-after-the-drive-tone-first",
                 "model": "inferences/models/0203-whole-dry-after-the-drive-tone-first.json",
-                "mean_share_of_span": 1.3917,
+                "mean_share_of_span": 1.93,
                 "worst_share_of_span": 3.2632,
                 "leaning_records": 2,
                 "contradicts_a_property": false
@@ -158,46 +181,20 @@
               {
                 "candidate": "0203-whole-dry-after-the-drive-tone-last",
                 "model": "inferences/models/0203-whole-dry-after-the-drive-tone-last.json",
-                "mean_share_of_span": 1.3917,
+                "mean_share_of_span": 1.93,
                 "worst_share_of_span": 3.2632,
                 "leaning_records": 2,
                 "contradicts_a_property": false
-              },
-              {
-                "candidate": "0203-whole-dry-before-the-drive-tone-first",
-                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-first.json",
-                "mean_share_of_span": 1.677,
-                "worst_share_of_span": 2.8563,
-                "leaning_records": 3,
-                "contradicts_a_property": true
-              },
-              {
-                "candidate": "0203-whole-dry-before-the-drive-tone-last",
-                "model": "inferences/models/0203-whole-dry-before-the-drive-tone-last.json",
-                "mean_share_of_span": 1.677,
-                "worst_share_of_span": 2.8563,
-                "leaning_records": 3,
-                "contradicts_a_property": true
               }
             ],
-            "decoy": "0203-whole-dry-after-the-drive-tone-last",
+            "decoy": "0203-whole-dry-before-the-drive-tone-last",
             "beaten_by": "leaning where the winner does not",
-            "separation": 2.666,
+            "separation": 1.488,
             "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
           },
           "breakdown": {
             "passed": false,
-            "breaks_down_at": [
-              {
-                "record": "efx-excursion:excursion_ms [--carrier-hz 440]",
-                "at": [
-                  "book-d2-6/02-03-40-03-03-held_organ-p2",
-                  48
-                ],
-                "residual": 3.2880000000000003,
-                "share_of_span": 1.0
-              }
-            ],
+            "breaks_down_at": null,
             "leaning_records": [
               "efx-excursion:excursion_ms [--carrier-hz 440]"
             ],
@@ -208,11 +205,11 @@
       },
       "gross": {
         "passed": false,
-        "residual_over_span": 3.263,
+        "residual_over_span": 1.832,
         "span": null
       },
       "qualitative": {
-        "passed": true
+        "passed": false
       },
       "breakdown": {
         "passed": false
@@ -301,7 +298,7 @@
             "measured_in": "ms",
             "gross": {
               "passed": false,
-              "residual_over_span": 1.668,
+              "residual_over_span": 1.0,
               "span": 3.288,
               "ceiling": 0.2,
               "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
@@ -319,6 +316,13 @@
                   ],
                   "unit": "rises",
                   "model": "falls",
+                  "same": false
+                },
+                {
+                  "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+                  "property": "the unit's null control shows nothing, and so must the model",
+                  "unit": "nothing above a floor of 0.5187 ms",
+                  "model": "1.82 ms",
                   "same": false
                 }
               ],
@@ -343,20 +347,9 @@
                   ],
                   "residual": 3.2880000000000003,
                   "share_of_span": 1.0
-                },
-                {
-                  "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-                  "at": [
-                    "book-d2-3/02-03-40-03-03-held_organ",
-                    88
-                  ],
-                  "residual": 1.8197,
-                  "share_of_span": 2.067
                 }
               ],
-              "leaning_records": [
-                "efx-excursion:off_the_phase_ms [--carrier-hz 440]"
-              ],
+              "leaning_records": null,
               "records_the_run_did_not_reach": null,
               "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
             }
@@ -457,7 +450,7 @@
   "stopped": {
     "at": 8,
     "gate": "gross",
-    "needs": "gross on efx-excursion:excursion_ms, efx-excursion:off_the_phase_ms, efx-orders:all_of_them_db, undecided at book-d2-1/02-03-40-03-0A-held_organ at 36, 72; book-d2-3/02-03-40-03-03-held_organ at 48, 88; book-d2-6/02-03-40-03-03-held_organ-p2 at 48. Needs a candidate for 02 03 that clears the gross gate, or a measurement that separates the ones standing."
+    "needs": "gross on efx-excursion:excursion_ms, efx-orders:all_of_them_db, undecided at book-d2-1/02-03-40-03-0A-held_organ at 36, 72; book-d2-3/02-03-40-03-03-held_organ at 48, 88; book-d2-6/02-03-40-03-03-held_organ-p2 at 48. Needs a candidate for 02 03 that clears the gross gate, or a measurement that separates the ones standing."
   },
   "equivalent_under_this_test": [],
   "invocation": {

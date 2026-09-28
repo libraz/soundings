@@ -14,7 +14,7 @@
       "measured_in": "ms",
       "gross": {
         "passed": false,
-        "residual_over_span": 2.182,
+        "residual_over_span": 0.331,
         "span": 9.04,
         "ceiling": 0.2,
         "why": "The median residual over the span the effect commands, taken as the worst of the records scored. A rejection bound and not a target: below it the residual is reported and never optimised, because no candidate is decided by it."
@@ -33,6 +33,13 @@
             "unit": "rises",
             "model": "refused",
             "same": false
+          },
+          {
+            "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+            "property": "the unit's null control shows nothing, and so must the model",
+            "unit": "nothing above a floor of 0.0054 ms",
+            "model": "0.0111 ms",
+            "same": false
           }
         ],
         "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -43,23 +50,23 @@
           {
             "candidate": "0209-whole-dry-before-the-chorus",
             "model": "inferences/models/0209-whole-dry-before-the-chorus.json",
-            "mean_share_of_span": 1.2564,
-            "worst_share_of_span": 2.1818,
-            "leaning_records": 2,
+            "mean_share_of_span": 0.3309,
+            "worst_share_of_span": 0.3309,
+            "leaning_records": 1,
             "contradicts_a_property": true
           },
           {
             "candidate": "0209-whole-dry-after-the-chorus",
             "model": "inferences/models/0209-whole-dry-after-the-chorus.json",
-            "mean_share_of_span": 6.3788,
-            "worst_share_of_span": 11.7576,
-            "leaning_records": 1,
+            "mean_share_of_span": 1.0,
+            "worst_share_of_span": 1.0,
+            "leaning_records": 0,
             "contradicts_a_property": true
           }
         ],
         "decoy": "0209-whole-dry-after-the-chorus",
         "beaten_by": "contradicting a property the winner satisfies",
-        "separation": 9.576,
+        "separation": 0.669,
         "why": "The runner-up in the catalogue, scored on the same records, and whether it leans or contradicts a property where the winner does neither. The decoy is not chosen -- it is whichever candidate came second, so a strawman cannot be put up in its place. A class holding one candidate is a catalogue that is unfinished, which is a finding and not a pass."
       },
       "breakdown": {
@@ -73,20 +80,10 @@
             ],
             "residual": 9.0401,
             "share_of_span": 1.0
-          },
-          {
-            "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-            "at": [
-              "book-d2-6/02-09-40-03-03-held_organ-p2",
-              10
-            ],
-            "residual": 0.0111,
-            "share_of_span": 3.364
           }
         ],
         "leaning_records": [
-          "efx-excursion:excursion_ms [--carrier-hz 440]",
-          "efx-excursion:off_the_phase_ms [--carrier-hz 440]"
+          "efx-excursion:excursion_ms [--carrier-hz 440]"
         ],
         "records_the_run_did_not_reach": null,
         "why": "A point worse than 0.5 of the span is a failure at that point rather than error at it. A residual that leans with the setting or with frequency is pointing at a structure the model does not have; one that does not is pointing at the room and the converters, and is not made smaller by anything this project can do."
@@ -118,6 +115,13 @@
               "unit": "rises",
               "model": "refused",
               "same": false
+            },
+            {
+              "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
+              "property": "the unit's null control shows nothing, and so must the model",
+              "unit": "nothing above a floor of 0.0054 ms",
+              "model": "0.0042 ms",
+              "same": true
             }
           ],
           "why": "Properties the unit's readings have that the model's readings must have too. No arithmetic over a residual rescues a model that cuts where the unit boosts."
@@ -141,15 +145,6 @@
               ],
               "residual": 9.0401,
               "share_of_span": 1.0
-            },
-            {
-              "record": "efx-excursion:off_the_phase_ms [--carrier-hz 440]",
-              "at": [
-                "book-d2-1/02-09-40-03-05-held_organ",
-                120
-              ],
-              "residual": 0.0042,
-              "share_of_span": 1.273
             }
           ],
           "leaning_records": null,
@@ -216,7 +211,7 @@
   "stopped": {
     "at": 8,
     "gate": "gross",
-    "needs": "gross on efx-excursion:excursion_ms, efx-excursion:off_the_phase_ms, undecided at book-d2-1/02-09-40-03-05-held_organ at 120, 60; book-d2-6/02-09-40-03-03-held_organ-p2 at 10. Needs a candidate for 02 09 that clears the gross gate, or a measurement that separates the ones standing."
+    "needs": "gross on efx-excursion:excursion_ms, undecided at book-d2-1/02-09-40-03-05-held_organ at 120, 60; book-d2-6/02-09-40-03-03-held_organ-p2 at 10. Needs a candidate for 02 09 that clears the gross gate, or a measurement that separates the ones standing."
   },
   "equivalent_under_this_test": [],
   "invocation": {
