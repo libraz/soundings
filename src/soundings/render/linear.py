@@ -24,6 +24,10 @@ from scipy import signal
 
 from .. import reproduce
 
+RECORD = "record"
+"""What `refers` names in place of a model kind when a node reads a published record:
+its path under the tree's root, pinned by the SHA-256 the node carries beside it."""
+
 
 @dataclass(frozen=True)
 class Node:
@@ -408,6 +412,42 @@ def _check_lti(node: dict, referenced) -> None:
             )
 
 
+# ---------------------------------------------------------------- response
+
+
+def _response(node: dict, drawing, a: int, b: int) -> None:
+    """The input convolved with the two channels of a published response.
+
+    The response's first sample sits `starts_at_samples` after the input sample it
+    answers, which is before it where the response rings ahead of its own start.
+    Drawn in blocks, each block's convolution is added where it lands; a response
+    starting before zero has to be drawn over the whole take at once.
+    """
+    published = drawing.referenced[node["record"]]["response"]
+    start = int(published["starts_at_samples"])
+    size = len(drawing.signal(node["input"]))
+    if start < 0 and (a, b) != (0, size):
+        raise ValueError(f"{node['id']} starts before zero and cannot be drawn in blocks")
+    state = drawing.state(node["id"])
+    x = drawing.signal(node["input"])[a:b]
+    for port in ("left", "right"):
+        h = np.asarray(published[port], dtype=float)
+        acc = state.setdefault(port, np.zeros(size + h.size + abs(start)))
+        wet = signal.fftconvolve(x, h)
+        lo = a + start
+        kept = slice(max(lo, 0) - lo, wet.size)
+        acc[max(lo, 0): lo + wet.size] += wet[kept]
+        drawing.output(node["id"], port)[a:b] = acc[a:b]
+
+
+def _check_response(node: dict, referenced) -> None:
+    published = referenced.get("response") or {}
+    left, right = published.get("left") or [], published.get("right") or []
+    if not left or len(left) != len(right):
+        raise ValueError(
+            f"{node['id']} names {node['record']}, which holds no two-channel response")
+
+
 NODES = {
     "gain": Node(_gain, ("input", "gain", "unit"), check=_check_gain),
     "mix": Node(_mix, ("inputs", "weights"), check=_check_mix),
@@ -424,4 +464,11 @@ NODES = {
     "lfo": Node(_lfo, ("shape", "rate_hz", "phase_offset"), check=_check_lfo),
     "section": Node(_section, ("input", "stage"), check=_check_section),
     "lti": Node(_lti, ("input", "model"), check=_check_lti, refers=("model", "lti")),
+    "response": Node(
+        _response,
+        ("input", "record", "sha256"),
+        check=_check_response,
+        ports=("left", "right"),
+        refers=("record", RECORD),
+    ),
 }

@@ -16,7 +16,9 @@ has no order for, so they are drawn only as a response.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
 
 import numpy as np
 import pytest
@@ -24,7 +26,7 @@ from scipy import signal
 
 from soundings import render, reproduce
 
-from .test_render_graph import FS, MODELS, drawn, graph_of, loaded, spec
+from .test_render_graph import FIXTURE_ROOT, FS, MODELS, drawn, graph_of, loaded, spec
 
 INTERPOLATIONS = ("none", "linear", "allpass", "lagrange3")
 GRID = (0, 32, 64, 96, 127)
@@ -489,3 +491,51 @@ def test_an_lti_model_drawn_in_time_is_its_response(name, model):
     for bytes_now in _settings(_addresses(model["chain"])):
         h = impulse_response(graph, bytes_now)
         assert worst_db(h, model, bytes_now) <= TOLERANCE_DB, bytes_now
+
+
+# ---------------------------------------------------------------- response
+
+
+def _response_root(tmp_path, left, right, *, starts_at=0, rate=FS):
+    """The fixture tree with one published response in it, and the node naming it."""
+    root = tmp_path / "root"
+    shutil.copytree(FIXTURE_ROOT, root)
+    rel = "data/units/fixture-unit/send-response/fixture.json"
+    record = {"response": {"rate_hz": rate, "starts_at_samples": starts_at,
+                           "left": list(left), "right": list(right)}}
+    (root / rel).parent.mkdir(parents=True, exist_ok=True)
+    (root / rel).write_text(json.dumps(record))
+    digest = hashlib.sha256((root / rel).read_bytes()).hexdigest()
+    node = {"id": "r", "kind": "response", "input": "x", "record": rel, "sha256": digest}
+    return root, node
+
+
+@pytest.mark.parametrize("starts_at", [0, 3, -2])
+def test_a_response_node_convolves_its_input_with_the_response_it_names(tmp_path, starts_at):
+    rng = np.random.default_rng(5)
+    h_left, h_right = rng.standard_normal(40), rng.standard_normal(40)
+    root, node = _response_root(tmp_path, h_left, h_right, starts_at=starts_at)
+    x = rng.standard_normal(500)
+    model = graph_of([node], outputs={"y": "r.left", "z": "r.right"})
+    out = render.run(render.load_graph(model, models_dir=MODELS, root=root), {"x": x}, {})
+    for h, got in ((h_left, out["y"]), (h_right, out["z"])):
+        full = np.convolve(x, h)
+        want = np.zeros(x.size)
+        for n in range(x.size):
+            k = n - starts_at
+            want[n] = full[k] if 0 <= k < full.size else 0.0
+        np.testing.assert_allclose(got, want, atol=1e-9)
+
+
+def test_a_response_whose_record_has_changed_is_refused(tmp_path):
+    root, node = _response_root(tmp_path, [1.0, 0.5], [0.5, 1.0])
+    model = graph_of([{**node, "sha256": "0" * 64}], outputs={"y": "r.left", "z": "r.right"})
+    with pytest.raises(ValueError, match="sha256"):
+        render.load_graph(model, models_dir=MODELS, root=root)
+
+
+def test_a_response_at_another_rate_is_refused(tmp_path):
+    root, node = _response_root(tmp_path, [1.0], [1.0], rate=48000)
+    model = graph_of([node], outputs={"y": "r.left", "z": "r.right"})
+    with pytest.raises(ValueError, match="Hz"):
+        render.load_graph(model, models_dir=MODELS, root=root)

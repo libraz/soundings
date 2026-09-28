@@ -20,6 +20,7 @@ A take is carried to the model's rate and back through one FIR, and compared bel
 from __future__ import annotations
 
 import functools
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -32,6 +33,7 @@ from ..inferences import EFFECT_BLOCK
 from . import dynamics, linear, pitch
 
 NODES = linear.NODES | dynamics.NODES | pitch.NODES
+RECORD = linear.RECORD
 
 CUT_HZ = 12000
 """The ceiling a drawn take and the unit's take are both cut at before they are compared.
@@ -182,7 +184,24 @@ def _printed(root: Path, unit: str, effect_type: str) -> set[str]:
     }
 
 
-def _referenced(model: dict, models_dir: Path) -> dict[str, dict]:
+def _published(node: dict, name: str, root: Path, model: dict) -> dict:
+    raw = (root / name).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != node["sha256"]:
+        raise ValueError(
+            f"{node['id']} reads {name}, whose sha256 is no longer the one the node carries: "
+            "the record was published again and the model has to be made again from it"
+        )
+    record = json.loads(raw)
+    rate = (record.get("response") or {}).get("rate_hz")
+    if rate != model["sample_rate_hz"]:
+        raise ValueError(
+            f"{node['id']} reads {name}, published at {rate} Hz, into a graph drawn at "
+            f"{model['sample_rate_hz']} Hz: the two rates have to agree"
+        )
+    return record
+
+
+def _referenced(model: dict, models_dir: Path, root: Path) -> dict[str, dict]:
     found = {}
     for node in model["nodes"]:
         refers = NODES[node["kind"]].refers
@@ -190,6 +209,9 @@ def _referenced(model: dict, models_dir: Path) -> dict[str, dict]:
             continue
         key, kind = refers
         name = node[key]
+        if kind == RECORD:
+            found[name] = _published(node, name, root, model)
+            continue
         other = json.loads((models_dir / name).read_text())
         if other["model"].get("kind") != kind:
             raise ValueError(
@@ -216,7 +238,8 @@ def addresses_read(model: dict, *, models_dir: Path) -> set[str]:
     read = _read_bytes(model["nodes"])
     for node in model["nodes"]:
         kind = NODES.get(node.get("kind"))
-        if kind is not None and kind.refers is not None and node.get(kind.refers[0]):
+        if (kind is not None and kind.refers is not None and kind.refers[1] != RECORD
+                and node.get(kind.refers[0])):
             read |= _read_bytes(json.loads((Path(models_dir) / node[kind.refers[0]]).read_text()))
     return read
 
@@ -261,7 +284,7 @@ def load_graph(model: dict, *, models_dir: Path, root: Path) -> dict:
         for key in NODES[node["kind"]].required:
             if key not in node:
                 raise ValueError(f"{node['id']} has no `{key}`, which a {node['kind']} requires")
-    referenced = _referenced(model, Path(models_dir))
+    referenced = _referenced(model, Path(models_dir), Path(root))
     for node in model["nodes"]:
         kind = NODES[node["kind"]]
         if kind.check is not None:
