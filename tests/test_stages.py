@@ -448,6 +448,14 @@ def test_a_swing_nothing_cleared_is_no_swing_and_a_take_without_signal_is_no_rea
         assert scored["drawn_only_refused"] == []
 
 
+def test_a_model_that_does_not_move_where_the_unit_does_is_said_to_hold():
+    unit = {("d", 0): [[0.0]], ("d", 1): [[-3.0]], ("d", 2): [[3.0]]}
+    drawn = {("d", 0): [[1.0]], ("d", 1): [[1.0]], ("d", 2): [[2.0]]}
+    found = stages._directions(stages._medians(unit), stages._medians(drawn), 0.5)
+    assert [(p["unit"], p["model"], p["same"]) for p in found] == [
+        ("falls", "holds", False), ("rises", "rises", True)]
+
+
 def test_a_record_name_spells_what_it_differs_by_as_it_was_passed():
     argv = ["efx-bands", ".cache/takes/d", "--type", "01 02", "--slot", "40 03 03",
             "--setting", "a-v(?P<value>\\d{3})", "--reference", "a-v000",

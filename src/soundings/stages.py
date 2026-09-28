@@ -1138,7 +1138,8 @@ def _directions(u: dict, d: dict, floor: float) -> list[dict]:
             found.append({
                 "property": "direction", "value": [rel, a[1], b[1]],
                 "unit": "rises" if ub > ua else "falls",
-                "model": "refused" if None in (da, db) else "rises" if db > da else "falls",
+                "model": ("refused" if None in (da, db) else "rises" if db > da
+                          else "falls" if db < da else "holds"),
                 "same": bool(same),
             })
     return found
