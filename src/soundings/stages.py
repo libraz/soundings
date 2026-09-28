@@ -371,7 +371,7 @@ def _bypasses(items: list[dict], where: Path) -> dict[str, list[Path]]:
     return found
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _controller(root: Path, rel: str) -> int | None:
     manifest = root / ledger.TAKES_ROOT / rel / "takes-manifest.json"
     try:
@@ -566,6 +566,25 @@ def loudest(made: Directory) -> int:
     return takes.channel_reaching(made.where, names)[0]
 
 
+SENDS = Path("inferences/candidates/sends.json")
+"""The class of the send path, whose `drawn_after_every_type` names the model every
+type's drawing is passed through: the returns the unit's own output carries beside
+the effect's."""
+
+
+def drawn_after(root: Path, unit: str) -> Candidate | None:
+    """The send path this unit's drawings pass through, where one is named for it."""
+    path = Path(root) / SENDS
+    if not path.is_file():
+        return None
+    named = json.loads(path.read_text()).get("drawn_after_every_type")
+    if not named:
+        return None
+    if json.loads((Path(root) / named).read_text())["model"].get("unit_id") != unit:
+        return None
+    return candidate(Path(root) / named, root)
+
+
 def render_directory(
     cand: Candidate,
     root: Path,
@@ -577,9 +596,10 @@ def render_directory(
 ) -> Path:
     """Draw a candidate on one directory, into `.cache/rendered/<model-id>/<rel>/`.
 
-    Each setting take is drawn from a bypass take of its stimulus, its oscillators
-    started `k / n` of a cycle apart across the setting's `n` takes; bypass and
-    silence takes are copied. A directory already drawn by the same model bytes on
+    Each setting take is drawn from the input take of its stimulus, its oscillators
+    started `k / n` of a cycle apart across the setting's `n` takes, then through the
+    unit's send path where one is named (`drawn_after`); bypass and silence takes are
+    copied. A directory already drawn by the same model bytes on
     the same channels from the same input is left as it is.
     """
     root = Path(root)
@@ -589,12 +609,15 @@ def render_directory(
     made = made if made is not None else directory(root, found, rel)
     channels = channels if channels is not None else _pair(loudest(made))
     out = root / RENDERED_ROOT / cand.id / rel
+    after = drawn_after(root, found["unit"])
+    after_sha256 = after.sha256 if after is not None else None
     if (out / "takes-manifest.json").is_file():
         # Read as a file and not through `takes`: checking what drew a directory is
         # not reading what it drew, and must not mark this process as having done so.
         kept = json.loads((out / "takes-manifest.json").read_text()).get("rendered", {})
         if (kept.get("model_sha256") == cand.sha256 and kept.get("channels") == list(channels)
-                and kept.get("input_from") == made.input_from):
+                and kept.get("input_from") == made.input_from
+                and kept.get("after_sha256") == after_sha256):
             return out
         shutil.rmtree(out)
     elif out.exists():
@@ -618,6 +641,9 @@ def render_directory(
             try:
                 drawn = graph.render_take(cand.loaded, take, rate, now, channels=channels,
                                           lfo_phase=k / len(items))
+                if after is not None:
+                    drawn = graph.render_take(after.loaded, drawn, rate, now,
+                                              channels=channels, lfo_phase=k / len(items))
             except graph.Unrenderable:
                 unrenderable.append(value)
                 break
@@ -629,6 +655,8 @@ def render_directory(
         "model_sha256": cand.sha256,
         "from": rel,
         "input_from": made.input_from,
+        "after": after.shown_as if after is not None else None,
+        "after_sha256": after_sha256,
         "channels": list(channels),
         "unrenderable": sorted(set(unrenderable)),
         "numpy": np.__version__,

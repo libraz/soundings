@@ -700,6 +700,41 @@ def test_a_changed_model_is_drawn_again_and_an_unchanged_one_is_not(tmp_path):
     assert not np.allclose(takes.read(take)[0], before)
 
 
+def _halved(model_id: str, unit: str = UNIT) -> dict:
+    """A send path standing in for the real one: both channels at half."""
+    halve = _value(value=0.5, source="document",
+                   rests_on=["documents/fixture-doc/effect-list.json"])
+    nodes = [{"id": f"h_{s}", "kind": "gain", "input": f"in_{s}", "unit": "ratio", "gain": halve}
+             for s in ("l", "r")]
+    model = _graph(model_id, "sends", nodes, {"out_l": "h_l", "out_r": "h_r"},
+                   dict.fromkeys(("40 03 03", "40 03 04", "40 03 05"), "fixed_at_power_on"))
+    model["model"]["unit_id"] = unit
+    return model
+
+
+def test_every_drawing_passes_through_the_send_path_the_unit_names(tmp_path):
+    root = _waves_tree(tmp_path)
+    path = root / "inferences/models/whole-0124-linear.json"
+    alone = stages.render_directory(stages.candidate(path, root), root, WAVES_DIR)
+    before = takes.read(alone / "tone-v127-00.wav")[0]
+    sends = _put_model(root, _halved("sends-half"))
+    _write(root / stages.SENDS, {"drawn_after_every_type": sends.relative_to(root).as_posix()})
+    drawn = stages.render_directory(stages.candidate(path, root), root, WAVES_DIR)
+    # The send path is drawn at its own rate too, so one more round trip is in the take.
+    np.testing.assert_allclose(takes.read(drawn / "tone-v127-00.wav")[0], 0.5 * before,
+                               atol=5e-5)
+    kept = json.loads((drawn / "takes-manifest.json").read_text())["rendered"]
+    assert kept["after"] == "inferences/models/sends-half.json"
+    assert kept["after_sha256"] == stages.candidate(sends, root).sha256
+
+
+def test_a_send_path_named_for_another_unit_is_not_drawn(tmp_path):
+    root = _waves_tree(tmp_path)
+    sends = _put_model(root, _halved("sends-elsewhere", unit="another-unit"))
+    _write(root / stages.SENDS, {"drawn_after_every_type": sends.relative_to(root).as_posix()})
+    assert stages.drawn_after(root, UNIT) is None
+
+
 def test_a_directory_newer_than_the_ledger_stops_the_stage(tmp_path):
     root = _waves_tree(tmp_path)
     shutil.copytree(root / ".cache/takes" / WAVES_DIR, root / ".cache/takes/syn/late")
