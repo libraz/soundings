@@ -269,6 +269,116 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_sway)
 
     p = sub.add_parser(
+        "efx-return",
+        help="read how much of a stereo take is not one fixed L/R direction, and how "
+        "loud the take was, setting by setting, from takes already saved, with no "
+        "machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, controller=True)
+    p.add_argument(
+        "--setting",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting with a group named `value`, which is "
+        "the byte it was taken at. A run names its takes however its own question "
+        "needed, so how the setting is read back out belongs in the invocation -- where "
+        "it lands in the record, and a reader can check it rather than trust it",
+    )
+    p.add_argument(
+        "--control",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the part routed past the effect, "
+        "where the run made any. Without it the record cannot say whether the byte's "
+        "own lowest setting already carries decorrelated return from elsewhere in the "
+        "chain",
+    )
+    p.add_argument(
+        "--silence",
+        metavar="REGEX",
+        help="a pattern naming the takes made with the same chain and nothing played, "
+        "where the run made any. Without it a reading near the floor cannot be told "
+        "from the room and the converter's own channel separation",
+    )
+    p.add_argument(
+        "--stimulus",
+        help="what was sounded through the effect. What the return holds is bounded by "
+        "what the stimulus fed it, so which stimulus carried the take bounds the record "
+        "rather than decorating it",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it read, and what it held. The "
+        "return this stage reads is downstream of every stage the type has, so a byte "
+        "read with another of them moved is a reading of a different chain",
+    )
+    p.add_argument(
+        "--held-from",
+        default=None,
+        metavar="PATH",
+        help="where --held above was read from -- the report of the run that captured "
+        "this take directory, most often a `contrast` run's own `--prepare` list, "
+        "applied after that run's GS Reset. Named so a reader can tell a held block "
+        "carried in from the capturing run apart from one guessed at or copied from "
+        "another record",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held, or that the "
+        "manifest this take directory carries does not say. Said in words rather than "
+        "guessed at, because a record stating an address that was never held is wrong "
+        "in a way a reader cannot see",
+    )
+    p.add_argument(
+        "--channels",
+        type=int,
+        nargs=2,
+        metavar="N",
+        help="the two interface channels that are the unit's stereo output. Defaults "
+        "to the pair that reached highest across the takes read, chosen once for the "
+        "run: an interface carries inputs the unit is not on, and a take the byte "
+        "turned down far enough would otherwise be read from a pair of idle inputs",
+    )
+    p.add_argument(
+        "--lead", type=float, default=0.6, help="seconds of silence at the head of a take"
+    )
+    p.add_argument(
+        "--trim",
+        type=float,
+        default=0.5,
+        help="seconds trimmed from each end of the held part, for the attack and the "
+        "release",
+    )
+    p.add_argument(
+        "--hold",
+        type=float,
+        help="seconds read as the held part, where the manifest's own take length is "
+        "not one second longer than it. A struck note's own hold is far shorter than "
+        "the tail a return decays over, so this defaults to the rest of the take rather "
+        "than to the stimulus's own hold_s",
+    )
+    p.add_argument(
+        "--frame",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help="how wide a frame a direction is fitted over. Defaults to fifty "
+        "milliseconds, which is short enough that an ordinary panning motion moves "
+        "little inside one and long enough to hold thousands of samples",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_efx_return)
+
+    p = sub.add_parser(
         "efx-bands",
         help="read what one insertion effect's parameter did to the level of each third "
         "octave, setting by setting, from takes already saved, with no machine attached",
@@ -2027,5 +2137,64 @@ def cmd_efx_sway(args) -> int:
         )
     if missed := found["takes_not_matching"]["count"]:
         print(f"  {missed} takes did not match the pattern and were not read")
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_efx_return(args) -> int:
+    """How much of a stereo take is not one L/R direction, read from takes already saved."""
+    from .. import efxreturn
+
+    def said(reading) -> None:
+        print(
+            f"  {reading['value']:5d} -> incoherent {reading['incoherent_db']:+7.2f} dB "
+            f"of {reading['level_db']:+7.2f} dB overall, {reading['frames']} frames"
+        )
+
+    found = efxreturn.read_directory(
+        args.takes,
+        type_id=args.type,
+        address=args.slot,
+        controller=args.cc,
+        setting=args.setting,
+        control=args.control,
+        silence=args.silence,
+        stimulus=args.stimulus,
+        held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
+        held_from=args.held_from,
+        held_not_spelled_out=args.held_not_spelled_out,
+        channels=tuple(args.channels) if args.channels else None,
+        lead_s=args.lead,
+        trim_s=args.trim,
+        hold_s=args.hold,
+        **({"frame_s": args.frame} if args.frame is not None else {}),
+        progress=said,
+    )
+    if not found["readings"]:
+        print(
+            f"no take under {args.takes} has a setting matching {args.setting!r}; "
+            f"{found['takes_not_matching']['count']} were looked at"
+        )
+        return 1
+    picked = found["channel"]
+    print(
+        f"  read from channels {picked['read']} of {len(picked['reached_db'])} "
+        f"({picked['chosen_by']}): "
+        + " ".join(f"{v:.0f}" for v in picked["reached_db"])
+        + " dBFS"
+    )
+    if found["floor_incoherent_db"] is None:
+        print("  (no setting taken twice: the record carries no floor)")
+    else:
+        print(
+            f"  the repeats of one setting agree to {found['floor_incoherent_db']:.2f} dB "
+            f"incoherent, {found['floor_level_db']:.2f} dB overall"
+        )
+    if not found["control"]["takes"]:
+        print("  (no --control: the record cannot say whether the lowest setting was unity)")
+    if not found["silence"]["takes"]:
+        print("  (no --silence: a reading near the floor reads as though it were a return)")
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)
     return 0

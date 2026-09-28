@@ -1,0 +1,176 @@
+{
+  "record": {
+    "schema_version": 2,
+    "unit_id": "roland-sc8850-01",
+    "stage": "efx-return",
+    "invocation": [
+      "efx-return",
+      ".cache/takes/efx-params-11-07/40-03-17",
+      "--type",
+      "11 07",
+      "--slot",
+      "40 03 17",
+      "--setting",
+      "^(?P<value>\\d+)$",
+      "--channels",
+      "2",
+      "3",
+      "--lead",
+      "0.6",
+      "--trim",
+      "0.5",
+      "--held",
+      "40 03 00=11 07",
+      "--held",
+      "40 42 22=01",
+      "--held-from",
+      ".cache/efx-params-11-07/40-03-17.json",
+      "--stimulus",
+      "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
+      "--out",
+      "data/units/roland-sc8850-01/efx-return/11-07-17.json"
+    ],
+    "measured_at": "2026-09-28T13:38:02+00:00",
+    "elapsed_s": 0.1,
+    "midi_device_id": null,
+    "midi_model_id": null
+  },
+  "question": "How much of a stereo take is not one fixed L/R direction, and how loud the take was, at each setting of the byte.",
+  "type": "11 07",
+  "address": "40 03 17",
+  "method": "The held part of each take was cut into non-overlapping 50 ms frames on the two channels named as the unit's stereo pair. Each frame's 2x2 covariance of the two channels was decomposed and its smaller eigenvalue -- the power left once the single strongest linear combination of the two channels for that frame is subtracted out -- was averaged across the frames, with the larger eigenvalue beside it as the take's overall level. The direction is found separately in every frame, so a pan that moves between frames is not itself counted as decorrelation.",
+  "limits": "`incoherent_db` and `level_db` are both powers averaged over the frames and read back as decibels, so each moves by the frame-to-frame scatter of the take and not by any one sample. `floor_incoherent_db` and `floor_level_db` are the spread of the run's own repeats of one setting, and are what a difference between settings has to clear; both are null where no setting was taken more than once. The reading has no notion of what put power off the fixed line: an inverted, filtered or hard-panned copy of the same source is still one direction in every frame and reads as fully coherent, whatever it sounds like, and a genuinely decorrelated return is not told apart from room noise or the converter's own channel separation. A return that moves slower than the frame width has part of its own motion absorbed into the frame's best direction instead of left as the remainder, so a slow return reads less diffuse than it is at the frame width used.",
+  "not_in_this_record": "No claim about what the decorrelated power is -- a reverb tail, a chorus voice, a comb of early reflections or the room the unit's own converter sits in. This reads a share and a level, not a structure behind either of them.",
+  "frame_s": 0.05,
+  "channel": {
+    "read": [
+      2,
+      3
+    ],
+    "chosen_by": "given",
+    "reached_db": [
+      -85.3,
+      -90.3,
+      -58.4,
+      -57.5,
+      -240.0,
+      -240.0
+    ],
+    "why": "Which pair of channels every figure in this record was read from, and the highest each channel of the interface reached across the swept takes. An interface carries inputs the unit is not on, and those are not silent, so the pair is chosen once for the run and named rather than picked per take -- a take the byte turned down far enough would otherwise be read from a pair of idle inputs and its incoherent share would be the interface's own crosstalk."
+  },
+  "control": {
+    "takes": [],
+    "incoherent_db": null,
+    "level_db": null,
+    "why": "The same reading taken from the takes made with the part routed past the effect, where the run made any. Without it the record cannot say whether the byte's own lowest setting already carries decorrelated return from somewhere else in the chain, or none at all."
+  },
+  "silence": {
+    "takes": [],
+    "incoherent_db": null,
+    "level_db": null,
+    "why": "The same reading taken from takes made with the chain and nothing played, where the run made any. What a setting at the floor returns is the room and the converter's own channel separation read as an incoherent share, and without this a reading near that floor cannot be told from silence."
+  },
+  "held": [
+    {
+      "address": "40 03 00",
+      "bytes": "11 07"
+    },
+    {
+      "address": "40 42 22",
+      "bytes": "01"
+    }
+  ],
+  "why_held": "What else the run had written when it took these readings. The return this stage reads is downstream of every stage the type has, so a byte read with another of them moved is a reading of a different chain, and nothing in the numbers says so.",
+  "held_from": ".cache/efx-params-11-07/40-03-17.json",
+  "why_held_from": "Where `held` above was read from, rather than carried in by hand from another record's held block. The capture this stage reads was itself made by a `contrast` run, and a `contrast` run applies a GS Reset before it writes its own `--prepare` list -- once, at the start of the run, not between the settings it then swept -- so `held` is exactly that list, applied to a freshly reset unit and left standing for every setting read here.",
+  "takes_from": ".cache/takes/efx-params-11-07/40-03-17",
+  "manifest": {
+    "lists": 8,
+    "files_present": 8,
+    "not_listed": [],
+    "why": "A take store rewrites its manifest when it closes, so a run repeated for one setting leaves a manifest naming that setting alone. The takes are still on disk and are read here; which of them the manifest had forgotten is named, because a record silently built from a shortened manifest reads exactly like a complete one."
+  },
+  "settings_asked": [
+    0,
+    127
+  ],
+  "readings": [
+    {
+      "value": 0,
+      "incoherent_db": -64.44,
+      "level_db": -62.95,
+      "frames": 38,
+      "take": "struck_kit-0-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 0,
+      "incoherent_db": -63.08,
+      "level_db": -62.07,
+      "frames": 38,
+      "take": "struck_kit-0-01.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 0,
+      "incoherent_db": -62.81,
+      "level_db": -61.69,
+      "frames": 38,
+      "take": "struck_kit-0-02.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 0,
+      "incoherent_db": -64.03,
+      "level_db": -62.5,
+      "frames": 38,
+      "take": "struck_kit-0-03.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 127,
+      "incoherent_db": -61.82,
+      "level_db": -60.86,
+      "frames": 38,
+      "take": "struck_kit-127-00.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 127,
+      "incoherent_db": -62.06,
+      "level_db": -61.25,
+      "frames": 38,
+      "take": "struck_kit-127-01.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 127,
+      "incoherent_db": -60.74,
+      "level_db": -59.95,
+      "frames": 38,
+      "take": "struck_kit-127-02.wav",
+      "named_by": "manifest"
+    },
+    {
+      "value": 127,
+      "incoherent_db": -61.99,
+      "level_db": -61.02,
+      "frames": 38,
+      "take": "struck_kit-127-03.wav",
+      "named_by": "manifest"
+    }
+  ],
+  "floor_incoherent_db": 1.63,
+  "floor_level_db": 1.3,
+  "settings_taken_twice": [
+    0,
+    127
+  ],
+  "why_floor": "How far apart the reading put one setting's own repeats, on each figure, which is what a difference between two settings has to clear to be a difference. Null where no setting was taken more than once, in which case this run measured no floor.",
+  "takes_not_matching": {
+    "count": 0,
+    "settings": [],
+    "why": "Takes under the same directory whose setting the pattern did not name. Counted rather than dropped: a pattern that matches nothing and a directory that holds nothing leave the same empty record otherwise."
+  },
+  "stimulus": "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1"
+}
