@@ -289,19 +289,31 @@ def register(sub) -> None:
         "it lands in the record, and a reader can check it rather than trust it",
     )
     p.add_argument(
-        "--control",
-        metavar="REGEX",
-        help="a pattern naming the takes made with the part routed past the effect, "
-        "where the run made any. Without it the record cannot say whether the byte's "
-        "own lowest setting already carries decorrelated return from elsewhere in the "
-        "chain",
+        "--control-from",
+        metavar="DIR",
+        help="a directory of its own to read a positive control from -- takes known to "
+        "carry a real decorrelated return, so a reader can see this reading move on "
+        "material it has something to find rather than trusting it on the send bytes "
+        "alone. Read the same way --control-setting names, not this directory's own",
     )
     p.add_argument(
-        "--silence",
+        "--control-setting",
         metavar="REGEX",
-        help="a pattern naming the takes made with the same chain and nothing played, "
-        "where the run made any. Without it a reading near the floor cannot be told "
-        "from the room and the converter's own channel separation",
+        help="a --setting-shaped pattern over --control-from, with a group named "
+        "`value`. Required together with --control-from",
+    )
+    p.add_argument(
+        "--silence-from",
+        metavar="DIR",
+        help="a directory of its own to read the floor from -- a setting known to carry "
+        "nothing, so a reading near it can be told from silence rather than assumed to "
+        "be it. Read the same way --silence-setting names, not this directory's own",
+    )
+    p.add_argument(
+        "--silence-setting",
+        metavar="REGEX",
+        help="a --setting-shaped pattern over --silence-from, with a group named "
+        "`value`. Required together with --silence-from",
     )
     p.add_argument(
         "--stimulus",
@@ -324,10 +336,17 @@ def register(sub) -> None:
         default=None,
         metavar="PATH",
         help="where --held above was read from -- the report of the run that captured "
-        "this take directory, most often a `contrast` run's own `--prepare` list, "
-        "applied after that run's GS Reset. Named so a reader can tell a held block "
-        "carried in from the capturing run apart from one guessed at or copied from "
-        "another record",
+        "this take directory. Named so a reader can tell a held block carried in from "
+        "the capturing run apart from one guessed at or copied from another record",
+    )
+    p.add_argument(
+        "--held-from-shows",
+        default=None,
+        metavar="TEXT",
+        help="what the report named by --held-from itself states, beyond that --held "
+        "was read from it -- said only as far as that report's own fields back it, "
+        "because a run report from before this stage's own envelope existed may carry "
+        "no word on whether a reset preceded its --prepare list",
     )
     p.add_argument(
         "--held-not-spelled-out",
@@ -2237,11 +2256,14 @@ def cmd_efx_return(args) -> int:
         address=args.slot,
         controller=args.cc,
         setting=args.setting,
-        control=args.control,
-        silence=args.silence,
+        control_from=args.control_from,
+        control_setting=args.control_setting,
+        silence_from=args.silence_from,
+        silence_setting=args.silence_setting,
         stimulus=args.stimulus,
         held=[{"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held],
         held_from=args.held_from,
+        held_from_shows=args.held_from_shows,
         held_not_spelled_out=args.held_not_spelled_out,
         channels=tuple(args.channels) if args.channels else None,
         lead_s=args.lead,
@@ -2270,10 +2292,14 @@ def cmd_efx_return(args) -> int:
             f"  the repeats of one setting agree to {found['floor_incoherent_db']:.2f} dB "
             f"incoherent, {found['floor_level_db']:.2f} dB overall"
         )
-    if not found["control"]["takes"]:
-        print("  (no --control: the record cannot say whether the lowest setting was unity)")
-    if not found["silence"]["takes"]:
-        print("  (no --silence: a reading near the floor reads as though it were a return)")
+    if found["control"]["shows"]:
+        print(f"  control: {found['control']['shows']}")
+    else:
+        print("  (no --control-from: the record has no positive control)")
+    if found["silence"]["shows"]:
+        print(f"  silence: {found['silence']['shows']}")
+    else:
+        print("  (no --silence-from: a reading near the floor cannot be told from silence)")
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
     report.write_json(args.out, found)

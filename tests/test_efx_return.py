@@ -150,6 +150,49 @@ def test_the_directory_sweep_reports_each_setting_and_its_own_floor(swept) -> No
     assert found["address"] == "40 03 17"
 
 
+def test_control_and_silence_come_from_named_directories(swept, tmp_path) -> None:
+    """Both are read from a directory of their own, not from `where`."""
+    quiet_dir = tmp_path / "quiet"
+    store = takes.Store.open(quiet_dir)
+    silent = np.zeros((int(2.0 * SR), 4))
+    store.keep(takes_recording(silent), stimulus="struck_kit", setting="quiet-000", take=0)
+    store.close(question="silence")
+
+    found = efxreturn.read_directory(
+        swept,
+        type_id="01 26",
+        address="40 03 17",
+        setting=r"send-(?P<value>\d+)",
+        channels=(2, 3),
+        lead_s=0.0,
+        trim_s=0.0,
+        hold_s=2.0,
+        control_from=swept,
+        control_setting=r"send-(?P<value>\d+)",
+        silence_from=quiet_dir,
+        silence_setting=r"quiet-(?P<value>\d+)",
+    )
+    assert found["control"]["from"] == str(swept)
+    assert {r["value"] for r in found["control"]["readings"]} == {0, 64, 127}
+    assert found["control"]["shows"]
+    assert found["silence"]["from"] == str(quiet_dir)
+    assert [r["value"] for r in found["silence"]["readings"]] == [0]
+    assert found["silence"]["shows"]
+
+
+def test_control_and_silence_are_empty_when_not_named(swept) -> None:
+    found = efxreturn.read_directory(
+        swept, type_id="01 26", address="40 03 17",
+        setting=r"send-(?P<value>\d+)", channels=(2, 3),
+    )
+    assert found["control"] == {
+        "from": None, "readings": [], "shows": None, "why": efxreturn.WHY_CONTROL,
+    }
+    assert found["silence"] == {
+        "from": None, "readings": [], "shows": None, "why": efxreturn.WHY_SILENCE,
+    }
+
+
 def test_a_setting_pattern_without_a_value_group_is_refused(swept) -> None:
     with pytest.raises(ValueError, match="value"):
         efxreturn.read_directory(
@@ -182,7 +225,34 @@ def test_held_from_names_where_held_was_read_and_says_so(swept) -> None:
     )
     assert found["held_from"] == ".cache/efx-params-01-26/40-03-17.json"
     assert found["why_held_from"]
+    assert "GS Reset" not in found["why_held_from"]
+
+
+def test_held_from_shows_carries_only_what_the_cited_report_states(swept) -> None:
+    """The GS-Reset claim is added only where the caller says the report backs it."""
+    found = efxreturn.read_directory(
+        swept,
+        type_id="01 26",
+        address="40 03 17",
+        setting=r"send-(?P<value>\d+)",
+        channels=(2, 3),
+        held=[{"address": "40 03 00", "bytes": "01 26"}],
+        held_from=".cache/efx-params-01-26/40-03-17.json",
+        held_from_shows="GS Reset, confirmed by the report's own reset_before_each_setting.",
+    )
     assert "GS Reset" in found["why_held_from"]
+
+    unconfirmed = efxreturn.read_directory(
+        swept,
+        type_id="01 20",
+        address="40 03 17",
+        setting=r"send-(?P<value>\d+)",
+        channels=(2, 3),
+        held=[{"address": "40 03 00", "bytes": "01 20"}],
+        held_from=".cache/efx-params-01-20/40-03-17.json",
+        held_from_shows="the reset is not recorded in this report.",
+    )
+    assert "not recorded" in unconfirmed["why_held_from"]
 
 
 def test_no_held_from_is_omitted_rather_than_null(swept) -> None:

@@ -25,12 +25,22 @@
       "40 42 22=01",
       "--held-from",
       ".cache/efx-params-03-00/40-03-18.json",
+      "--held-from-shows",
+      "The cited report is a `contrast` run's own account of itself -- it carries `reset_before_each_setting: false` -- and `cmd_contrast` applies a GS Reset and then writes its own `--prepare` list once, at the start of the run, before any setting it then sweeps, which is exactly what `held` above carries.",
+      "--control-from",
+      ".cache/takes/cc91-kit",
+      "--control-setting",
+      "^(?P<value>\\d+)$",
+      "--silence-from",
+      ".cache/takes/efx-params-01-00/40-03-16",
+      "--silence-setting",
+      "^(?P<value>0)$",
       "--stimulus",
       "channel 2, program 0, note 49, velocity 100, held 0.15 s, captured 4.0 s, 40 12 15 = 1",
       "--out",
       "data/units/roland-sc8850-01/efx-return/03-00-18.json"
     ],
-    "measured_at": "2026-09-28T13:37:51+00:00",
+    "measured_at": "2026-09-28T14:12:22+00:00",
     "elapsed_s": 0.1,
     "midi_device_id": null,
     "midi_model_id": null
@@ -38,7 +48,7 @@
   "question": "How much of a stereo take is not one fixed L/R direction, and how loud the take was, at each setting of the byte.",
   "type": "03 00",
   "address": "40 03 18",
-  "method": "The held part of each take was cut into non-overlapping 50 ms frames on the two channels named as the unit's stereo pair. Each frame's 2x2 covariance of the two channels was decomposed and its smaller eigenvalue -- the power left once the single strongest linear combination of the two channels for that frame is subtracted out -- was averaged across the frames, with the larger eigenvalue beside it as the take's overall level. The direction is found separately in every frame, so a pan that moves between frames is not itself counted as decorrelation.",
+  "method": "The held part of each take was cut into non-overlapping 50 ms frames on the two channels named as the unit's stereo pair. Each frame's 2x2 covariance of the two channels was decomposed into its two eigenvalues; the smaller of them -- the power left once the single strongest linear combination of the two channels for that frame is subtracted out -- was averaged across the frames as the incoherent share, and the mean of the two eigenvalues -- half the pair's combined power, which is its power per channel -- was averaged across the frames beside it as the take's overall level. The direction is found separately in every frame, so a pan that moves between frames is not itself counted as decorrelation.",
   "limits": "`incoherent_db` and `level_db` are both powers averaged over the frames and read back as decibels, so each moves by the frame-to-frame scatter of the take and not by any one sample. `floor_incoherent_db` and `floor_level_db` are the spread of the run's own repeats of one setting, and are what a difference between settings has to clear; both are null where no setting was taken more than once. The reading has no notion of what put power off the fixed line: an inverted, filtered or hard-panned copy of the same source is still one direction in every frame and reads as fully coherent, whatever it sounds like, and a genuinely decorrelated return is not told apart from room noise or the converter's own channel separation. A return that moves slower than the frame width has part of its own motion absorbed into the frame's best direction instead of left as the remainder, so a slow return reads less diffuse than it is at the frame width used.",
   "not_in_this_record": "No claim about what the decorrelated power is -- a reverb tail, a chorus voice, a comb of early reflections or the room the unit's own converter sits in. This reads a share and a level, not a structure behind either of them.",
   "frame_s": 0.05,
@@ -59,16 +69,51 @@
     "why": "Which pair of channels every figure in this record was read from, and the highest each channel of the interface reached across the swept takes. An interface carries inputs the unit is not on, and those are not silent, so the pair is chosen once for the run and named rather than picked per take -- a take the byte turned down far enough would otherwise be read from a pair of idle inputs and its incoherent share would be the interface's own crosstalk."
   },
   "control": {
-    "takes": [],
-    "incoherent_db": null,
-    "level_db": null,
-    "why": "The same reading taken from the takes made with the part routed past the effect, where the run made any. Without it the record cannot say whether the byte's own lowest setting already carries decorrelated return from somewhere else in the chain, or none at all."
+    "from": ".cache/takes/cc91-kit",
+    "readings": [
+      {
+        "value": 0,
+        "incoherent_db": -109.48,
+        "level_db": -59.79,
+        "takes": [
+          "struck_kit-0-00.wav",
+          "struck_kit-0-01.wav",
+          "struck_kit-0-02.wav",
+          "struck_kit-0-03.wav"
+        ]
+      },
+      {
+        "value": 100,
+        "incoherent_db": -64.63,
+        "level_db": -58.56,
+        "takes": [
+          "struck_kit-100-00.wav",
+          "struck_kit-100-01.wav",
+          "struck_kit-100-02.wav",
+          "struck_kit-100-03.wav"
+        ]
+      }
+    ],
+    "shows": "At 100 the incoherent share reads -64.63 dB, +44.85 dB over 0's -109.48 dB, on a directory known to carry a real decorrelated return -- which is what this reading returns where one is knowingly present.",
+    "why": "The same reading taken at two settings of a directory known to carry a real decorrelated return -- a positive control, so a reader can see this reading move on material it is known to have something to find, rather than trusting the method on the strength of the send bytes alone. `shows` states the two figures and the gap between them; without a control the record cannot say whether this reading would see a return at all."
   },
   "silence": {
-    "takes": [],
-    "incoherent_db": null,
-    "level_db": null,
-    "why": "The same reading taken from takes made with the chain and nothing played, where the run made any. What a setting at the floor returns is the room and the converter's own channel separation read as an incoherent share, and without this a reading near that floor cannot be told from silence."
+    "from": ".cache/takes/efx-params-01-00/40-03-16",
+    "readings": [
+      {
+        "value": 0,
+        "incoherent_db": -111.84,
+        "level_db": -109.47,
+        "takes": [
+          "struck_kit-0-00.wav",
+          "struck_kit-0-01.wav",
+          "struck_kit-0-02.wav",
+          "struck_kit-0-03.wav"
+        ]
+      }
+    ],
+    "shows": "At 0, known to carry nothing, the take reads -111.84 dB incoherent and -109.47 dB overall, which is the floor a reading near either figure cannot be told from.",
+    "why": "The same reading taken from a setting known to carry nothing -- the chain's own floor, read the same way as every other setting rather than assumed. What a setting at the floor returns is the room and the converter's own channel separation, and without this a reading near it cannot be told from silence."
   },
   "held": [
     {
@@ -82,7 +127,7 @@
   ],
   "why_held": "What else the run had written when it took these readings. The return this stage reads is downstream of every stage the type has, so a byte read with another of them moved is a reading of a different chain, and nothing in the numbers says so.",
   "held_from": ".cache/efx-params-03-00/40-03-18.json",
-  "why_held_from": "Where `held` above was read from, rather than carried in by hand from another record's held block. The capture this stage reads was itself made by a `contrast` run, and a `contrast` run applies a GS Reset before it writes its own `--prepare` list -- once, at the start of the run, not between the settings it then swept -- so `held` is exactly that list, applied to a freshly reset unit and left standing for every setting read here.",
+  "why_held_from": "Where `held` above was read from, rather than carried in by hand from another record's held block. The cited report is a `contrast` run's own account of itself -- it carries `reset_before_each_setting: false` -- and `cmd_contrast` applies a GS Reset and then writes its own `--prepare` list once, at the start of the run, before any setting it then sweeps, which is exactly what `held` above carries.",
   "takes_from": ".cache/takes/efx-params-03-00/40-03-18",
   "manifest": {
     "lists": 8,

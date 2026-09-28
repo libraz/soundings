@@ -33,7 +33,6 @@ power off the fixed line, and none of that is told apart from any other here.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import numpy as np
@@ -61,11 +60,13 @@ QUESTION = (
 METHOD = (
     "The held part of each take was cut into non-overlapping 50 ms frames on the two "
     "channels named as the unit's stereo pair. Each frame's 2x2 covariance of the two "
-    "channels was decomposed and its smaller eigenvalue -- the power left once the "
-    "single strongest linear combination of the two channels for that frame is "
-    "subtracted out -- was averaged across the frames, with the larger eigenvalue beside "
-    "it as the take's overall level. The direction is found separately in every frame, "
-    "so a pan that moves between frames is not itself counted as decorrelation."
+    "channels was decomposed into its two eigenvalues; the smaller of them -- the power "
+    "left once the single strongest linear combination of the two channels for that "
+    "frame is subtracted out -- was averaged across the frames as the incoherent share, "
+    "and the mean of the two eigenvalues -- half the pair's combined power, which is its "
+    "power per channel -- was averaged across the frames beside it as the take's overall "
+    "level. The direction is found separately in every frame, so a pan that moves between "
+    "frames is not itself counted as decorrelation."
 )
 
 LIMITS = (
@@ -105,17 +106,19 @@ WHY_FLOOR = (
 )
 
 WHY_CONTROL = (
-    "The same reading taken from the takes made with the part routed past the effect, "
-    "where the run made any. Without it the record cannot say whether the byte's own "
-    "lowest setting already carries decorrelated return from somewhere else in the "
-    "chain, or none at all."
+    "The same reading taken at two settings of a directory known to carry a real "
+    "decorrelated return -- a positive control, so a reader can see this reading move on "
+    "material it is known to have something to find, rather than trusting the method on "
+    "the strength of the send bytes alone. `shows` states the two figures and the gap "
+    "between them; without a control the record cannot say whether this reading would "
+    "see a return at all."
 )
 
 WHY_SILENCE = (
-    "The same reading taken from takes made with the chain and nothing played, where the "
-    "run made any. What a setting at the floor returns is the room and the converter's "
-    "own channel separation read as an incoherent share, and without this a reading near "
-    "that floor cannot be told from silence."
+    "The same reading taken from a setting known to carry nothing -- the chain's own "
+    "floor, read the same way as every other setting rather than assumed. What a setting "
+    "at the floor returns is the room and the converter's own channel separation, and "
+    "without this a reading near it cannot be told from silence."
 )
 
 WHY_HELD = (
@@ -126,11 +129,7 @@ WHY_HELD = (
 
 WHY_HELD_FROM = (
     "Where `held` above was read from, rather than carried in by hand from another "
-    "record's held block. The capture this stage reads was itself made by a `contrast` "
-    "run, and a `contrast` run applies a GS Reset before it writes its own `--prepare` "
-    "list -- once, at the start of the run, not between the settings it then swept -- so "
-    "`held` is exactly that list, applied to a freshly reset unit and left standing for "
-    "every setting read here."
+    "record's held block."
 )
 
 
@@ -198,20 +197,69 @@ def _matched(pattern, listed: dict, files: list[str]) -> list[tuple[str, dict, o
     return out
 
 
-def _averaged(where: Path, names: list[str], *, indices, lead_s, trim_s, hold_s, frame_s) -> dict:
-    incoherent, level = [], []
-    for name in names:
-        samples, rate = takes.read(where / name)
+def _readings_by_value(
+    directory: Path, pattern, *, indices, lead_s, trim_s, hold_s, frame_s
+) -> list[dict]:
+    """Every take under `directory` matching `pattern`, averaged per captured value.
+
+    For a control or a silence read from a directory of its own rather than from
+    `where`: the takes there are somebody else's repeats of somebody else's
+    settings, and the one thing worth doing with several of them is exactly what
+    the main sweep already does with its own -- average within a setting, not
+    across them.
+    """
+    listed, files = takes.listing(directory)
+    grouped: dict[int, list[tuple[float, float]]] = {}
+    names: dict[int, list[str]] = {}
+    for name, _entry, (_source, found) in _matched(pattern, listed, files):
+        samples, rate = takes.read(directory / name)
         body = _body(samples, rate, indices=indices, lead_s=lead_s, trim_s=trim_s, hold_s=hold_s)
-        found = measure(body, rate, frame_s=frame_s)
-        if found["incoherent_db"] is not None:
-            incoherent.append(found["incoherent_db"])
-            level.append(found["level_db"])
-    return {
-        "takes": sorted(names),
-        "incoherent_db": round(float(np.mean(incoherent)), 2) if incoherent else None,
-        "level_db": round(float(np.mean(level)), 2) if level else None,
-    }
+        result = measure(body, rate, frame_s=frame_s)
+        if result["incoherent_db"] is None:
+            continue
+        value = int(found.group(VALUE))
+        grouped.setdefault(value, []).append((result["incoherent_db"], result["level_db"]))
+        names.setdefault(value, []).append(name)
+    return [
+        {
+            "value": value,
+            "incoherent_db": round(float(np.mean([row[0] for row in rows])), 2),
+            "level_db": round(float(np.mean([row[1] for row in rows])), 2),
+            "takes": sorted(names[value]),
+        }
+        for value, rows in sorted(grouped.items())
+    ]
+
+
+def _control_shows(readings: list[dict]) -> str | None:
+    """What a positive control's two readings say, in one sentence -- or nothing.
+
+    Needs two settings to show a gap at all; a control read at one setting has
+    nothing to be a control against.
+    """
+    if len(readings) < 2:
+        return None
+    lo = min(readings, key=lambda r: r["value"])
+    hi = max(readings, key=lambda r: r["value"])
+    delta = round(hi["incoherent_db"] - lo["incoherent_db"], 2)
+    return (
+        f"At {hi['value']} the incoherent share reads {hi['incoherent_db']:.2f} dB, "
+        f"{delta:+.2f} dB over {lo['value']}'s {lo['incoherent_db']:.2f} dB, on a "
+        "directory known to carry a real decorrelated return -- which is what this "
+        "reading returns where one is knowingly present."
+    )
+
+
+def _silence_shows(readings: list[dict]) -> str | None:
+    """What a silence reading says, in one sentence -- or nothing where there is none."""
+    if not readings:
+        return None
+    row = readings[0]
+    return (
+        f"At {row['value']}, known to carry nothing, the take reads "
+        f"{row['incoherent_db']:.2f} dB incoherent and {row['level_db']:.2f} dB overall, "
+        "which is the floor a reading near either figure cannot be told from."
+    )
 
 
 def read_directory(
@@ -221,11 +269,14 @@ def read_directory(
     address: str | None = None,
     controller: int | None = None,
     setting: str,
-    control: str | None = None,
-    silence: str | None = None,
+    control_from: str | Path | None = None,
+    control_setting: str | None = None,
+    silence_from: str | Path | None = None,
+    silence_setting: str | None = None,
     stimulus: str | None = None,
     held: list[dict] | None = None,
     held_from: str | None = None,
+    held_from_shows: str | None = None,
     held_not_spelled_out: str | None = None,
     channels: tuple[int, int] | None = None,
     lead_s: float = 0.6,
@@ -239,17 +290,22 @@ def read_directory(
     Exactly one of `address` and `controller`: a run swept one thing, and a
     record naming both would not say which of them the figures belong to.
 
-    A take none of the three patterns names is counted rather than dropped: a
+    A take that does not match `setting` is counted rather than dropped: a
     pattern that matches nothing and a directory that holds nothing produce the
     same empty record otherwise, and they are different mistakes.
+
+    `control_from`/`control_setting` and `silence_from`/`silence_setting` each
+    name a directory of their own and a `--setting`-shaped pattern over it,
+    because the control and the silence this stage wants are not takes this
+    directory holds -- they are another directory's own settings, read the same
+    way `where`'s own sweep is. Either is optional and either is empty here
+    where the other one is not given.
     """
     if (address is None) == (controller is None):
         raise ValueError("a record is about one address or one controller, not both or neither")
     where = Path(where)
     listed, files = takes.listing(where)
     swept = takes.capturing(setting, VALUE)
-    bypassed = re.compile(control) if control else None
-    quiet = re.compile(silence) if silence else None
 
     matched = [
         (name, listed.get(name, {}), *takes.named_by(swept, listed.get(name, {}), name))
@@ -289,22 +345,31 @@ def read_directory(
     floor_incoherent_db = round(float(max(spreads_i)), 2) if spreads_i else None
     floor_level_db = round(float(max(spreads_l)), 2) if spreads_l else None
 
-    claimed = {name for name, _, _, found in matched if found}
-    control_names = [name for name, _, _ in _matched(bypassed, listed, files)] if bypassed else []
-    silence_names = [name for name, _, _ in _matched(quiet, listed, files)] if quiet else []
-    claimed |= set(control_names) | set(silence_names)
+    control_readings: list[dict] = []
+    if control_from is not None:
+        control_pattern = takes.capturing(control_setting, VALUE)
+        control_readings = _readings_by_value(
+            Path(control_from), control_pattern, indices=used,
+            lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, frame_s=frame_s,
+        )
     control_block = {
-        **_averaged(
-            where, control_names, indices=used, lead_s=lead_s, trim_s=trim_s,
-            hold_s=hold_s, frame_s=frame_s,
-        ),
+        "from": str(control_from) if control_from is not None else None,
+        "readings": control_readings,
+        "shows": _control_shows(control_readings),
         "why": WHY_CONTROL,
     }
+
+    silence_readings: list[dict] = []
+    if silence_from is not None:
+        silence_pattern = takes.capturing(silence_setting, VALUE)
+        silence_readings = _readings_by_value(
+            Path(silence_from), silence_pattern, indices=used,
+            lead_s=lead_s, trim_s=trim_s, hold_s=hold_s, frame_s=frame_s,
+        )
     silence_block = {
-        **_averaged(
-            where, silence_names, indices=used, lead_s=lead_s, trim_s=trim_s,
-            hold_s=hold_s, frame_s=frame_s,
-        ),
+        "from": str(silence_from) if silence_from is not None else None,
+        "readings": silence_readings,
+        "shows": _silence_shows(silence_readings),
         "why": WHY_SILENCE,
     }
 
@@ -326,7 +391,16 @@ def read_directory(
         "silence": silence_block,
         "held": held or [],
         "why_held": WHY_HELD,
-        **({"held_from": held_from, "why_held_from": WHY_HELD_FROM} if held_from else {}),
+        **(
+            {
+                "held_from": held_from,
+                "why_held_from": (
+                    f"{WHY_HELD_FROM} {held_from_shows}" if held_from_shows else WHY_HELD_FROM
+                ),
+            }
+            if held_from
+            else {}
+        ),
         **(
             {"held_not_spelled_out": held_not_spelled_out}
             if held_not_spelled_out
