@@ -379,6 +379,86 @@ def register(sub) -> None:
     p.set_defaults(needs_unit=False, func=cmd_efx_return)
 
     p = sub.add_parser(
+        "send-response",
+        help="recover the stereo response that turns a dry take's channel mean into what "
+        "a wet take adds on each channel, from note takes already saved at the two "
+        "settings, with no machine attached",
+    )
+    p.add_argument(
+        "takes",
+        help="a directory of takes with the takes-manifest.json a --save run wrote",
+    )
+    options.add_subject(p, controller=True)
+    p.add_argument(
+        "--dry",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting naming the takes the response is read "
+        "from as the input. At least four: they are split in two halves in file-name "
+        "order, and within a half the dry take subtracted is never the one used as the "
+        "input",
+    )
+    p.add_argument(
+        "--wet",
+        required=True,
+        metavar="REGEX",
+        help="a pattern over each take's setting naming the takes whose addition over the "
+        "dry ones is the response. At least two, split in halves the same way. A take "
+        "both patterns name is refused",
+    )
+    p.add_argument(
+        "--stimulus",
+        help="what was sounded. The response is recovered only as far as the stimulus "
+        "excited it, so which stimulus carried the takes bounds the record rather than "
+        "decorating it",
+    )
+    p.add_argument(
+        "--held",
+        type=options.write_spec,
+        action="append",
+        default=[],
+        metavar="ADDR=BYTES",
+        help="an address the run had written while it took the takes, and what it held. "
+        "The response is of the whole chain, so the same two settings taken with another "
+        "byte moved are a response of a different chain",
+    )
+    p.add_argument(
+        "--held-from",
+        default=None,
+        metavar="PATH",
+        help="where --held above was read from -- the report of the run that captured "
+        "this take directory. Named so a reader can tell a held block carried in from the "
+        "capturing run apart from one guessed at or copied from another record",
+    )
+    p.add_argument(
+        "--held-not-spelled-out",
+        default=None,
+        metavar="TEXT",
+        help="something the run held that has no address to give --held, or that the "
+        "manifest this take directory carries does not say. Said in words rather than "
+        "guessed at, because a record stating an address that was never held is wrong "
+        "in a way a reader cannot see",
+    )
+    p.add_argument(
+        "--channels",
+        type=int,
+        nargs=2,
+        metavar="N",
+        help="the two interface channels that are the unit's stereo output, left then "
+        "right. Defaults to the pair that reached highest across the takes read, chosen "
+        "once for the run",
+    )
+    p.add_argument(
+        "--lead",
+        type=float,
+        default=0.6,
+        help="seconds of silence at the head of a take, where the input's own noise -- "
+        "and so the regularisation -- is read",
+    )
+    options.add_out(p)
+    p.set_defaults(needs_unit=False, func=cmd_send_response)
+
+    p = sub.add_parser(
         "efx-bands",
         help="read what one insertion effect's parameter did to the level of each third "
         "octave, setting by setting, from takes already saved, with no machine attached",
@@ -2196,5 +2276,56 @@ def cmd_efx_return(args) -> int:
         print("  (no --silence: a reading near the floor reads as though it were a return)")
     if missed := found["takes_not_matching"]["count"]:
         print(f"  ({missed} takes under the same directory did not match the pattern)")
+    report.write_json(args.out, found)
+    return 0
+
+
+def cmd_send_response(args) -> int:
+    """The response a wet take adds over a dry one, recovered from takes already saved."""
+    from .. import sendresponse
+
+    try:
+        found = sendresponse.read_directory(
+            args.takes,
+            type_id=args.type,
+            address=args.slot,
+            controller=args.cc,
+            dry=args.dry,
+            wet=args.wet,
+            stimulus=args.stimulus,
+            held=[
+                {"address": a, "bytes": " ".join(f"{b:02X}" for b in v)} for a, v in args.held
+            ],
+            held_from=args.held_from,
+            held_not_spelled_out=args.held_not_spelled_out,
+            channels=tuple(args.channels) if args.channels else None,
+            lead_s=args.lead,
+        )
+    except ValueError as refused:
+        print(refused)
+        return 1
+    picked = found["channel"]
+    shape = found["response"]
+    print(
+        f"  read from channels {picked['read']} ({picked['chosen_by']}); "
+        f"{len(found['dry']['takes'])} dry, {len(found['wet']['takes'])} wet"
+    )
+    print(
+        f"  response from lag {shape['starts_at_samples']} for {shape['length_samples']} "
+        f"samples ({shape['length_s']} s) at {shape['rate_hz']} Hz, below {shape['below_hz']} Hz"
+    )
+    for side, level in found["level"].items():
+        print(
+            f"  {side}: energy {level['energy_db']} dB, "
+            f"{level['return_over_dry_db']} dB over the dry"
+        )
+    print(f"  the halves differ by {found['half_split']['overall_db']} dB")
+    for row in found["held_out"]:
+        print(
+            f"  held out: residual {row['residual_db']} dB "
+            f"(the dry takes repeat to {row['takes_repeat_db']} dB)"
+        )
+    if missed := found["takes_not_matching"]["count"]:
+        print(f"  ({missed} takes under the same directory matched neither pattern)")
     report.write_json(args.out, found)
     return 0

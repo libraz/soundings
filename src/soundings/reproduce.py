@@ -1118,6 +1118,35 @@ def band_limited(wave: np.ndarray, rate: int, ceiling_hz: float) -> np.ndarray:
     return np.fft.irfft(spectrum, n=wave.size)
 
 
+def correlation_size(target: np.ndarray, offered: np.ndarray) -> int:
+    """The FFT length a lag between two waves is read and applied over, with no wrap."""
+    return 1 << int(np.ceil(np.log2(target.size + offered.size)))
+
+
+def lag_of(target: np.ndarray, offered: np.ndarray, size: int) -> float:
+    """How many samples `offered` has to be delayed to sit on `target`, to a fraction.
+
+    The cross correlation's peak with a parabola through it and its two neighbours.
+    One pass is biased towards the nearest whole sample by a few hundredths of one.
+    """
+    cross = np.fft.irfft(
+        np.fft.rfft(target, size) * np.conj(np.fft.rfft(offered, size)), size
+    )
+    peak = int(np.argmax(np.abs(cross)))
+    before, here, after = cross[peak - 1], cross[peak], cross[(peak + 1) % size]
+    curve = before - 2.0 * here + after
+    fraction = 0.0 if curve == 0 else float(
+        np.clip(0.5 * (before - after) / curve, -0.5, 0.5)
+    )
+    return (peak - size if peak > size // 2 else peak) + fraction
+
+
+def delayed(wave: np.ndarray, lag: float, size: int) -> np.ndarray:
+    """`wave` delayed by `lag` samples as a ramp on its phase, `size` samples long."""
+    turns = np.fft.rfftfreq(size)
+    return np.fft.irfft(np.fft.rfft(wave, size) * np.exp(-2j * np.pi * turns * lag), size)
+
+
 def subtracted(target: np.ndarray, offered: np.ndarray) -> dict:
     """What is left of `target` once `offered` is aligned to it and level fitted.
 
@@ -1134,21 +1163,9 @@ def subtracted(target: np.ndarray, offered: np.ndarray) -> dict:
     both are returned: a model needing a different level from every other setting
     is saying something, and so is one needing a different delay.
     """
-    size = 1 << int(np.ceil(np.log2(target.size + offered.size)))
-    cross = np.fft.irfft(
-        np.fft.rfft(target, size) * np.conj(np.fft.rfft(offered, size)), size
-    )
-    peak = int(np.argmax(np.abs(cross)))
-    before, here, after = cross[peak - 1], cross[peak], cross[(peak + 1) % size]
-    curve = before - 2.0 * here + after
-    fraction = 0.0 if curve == 0 else float(
-        np.clip(0.5 * (before - after) / curve, -0.5, 0.5)
-    )
-    lag = (peak - size if peak > size // 2 else peak) + fraction
-    turns = np.fft.rfftfreq(size)
-    shifted = np.fft.irfft(
-        np.fft.rfft(offered, size) * np.exp(-2j * np.pi * turns * lag), size
-    )[: target.size]
+    size = correlation_size(target, offered)
+    lag = lag_of(target, offered, size)
+    shifted = delayed(offered, lag, size)[: target.size]
     power = float(np.dot(shifted, shifted))
     gain = float(np.dot(target, shifted)) / power if power > 0 else 0.0
     left = target - gain * shifted

@@ -92,6 +92,7 @@
     "efx-rate",
     "efx-sway",
     "efx-return",
+    "send-response",
     "efx-bands",
     "efx-orders",
     "efx-time",
@@ -4759,6 +4760,195 @@
           "required": false,
           "help": "how wide a frame a direction is fitted over. Defaults to fifty milliseconds, which is short enough that an ordinary panning motion moves little inside one and long enough to hold thousands of samples",
           "metavar": "SECONDS",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--out"
+          ],
+          "dest": "out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "write the result as JSON",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        }
+      ]
+    },
+    "send-response": {
+      "help": "recover the stereo response that turns a dry take's channel mean into what a wet take adds on each channel, from note takes already saved at the two settings, with no machine attached",
+      "handler": "cmd_send_response",
+      "takes_model_id": false,
+      "needs_unit": false,
+      "options": [
+        {
+          "option_strings": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "nargs": 0,
+          "default": "'==SUPPRESS=='",
+          "required": false,
+          "help": "show this help message and exit",
+          "metavar": null,
+          "choices": null,
+          "class": "_HelpAction"
+        },
+        {
+          "option_strings": [],
+          "dest": "takes",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a directory of takes with the takes-manifest.json a --save run wrote",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--type"
+          ],
+          "dest": "type",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the insertion effect type the takes were made under. Without it the record says what a parameter did without saying whose parameter it was, and a directory of them is identified by its filenames -- which is an index kept by hand beside records that could carry it themselves",
+          "metavar": "'MSB LSB'",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--slot"
+          ],
+          "dest": "slot",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the address that was swept, for the same reason",
+          "metavar": "ADDR",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--cc"
+          ],
+          "dest": "cc",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "the controller that was swept, where the run reached the chain through one instead of through an address. Spelled as the field the index already groups on, so a run about a controller meets the runs that sent one rather than sitting in a group of its own",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--dry"
+          ],
+          "dest": "dry",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting naming the takes the response is read from as the input. At least four: they are split in two halves in file-name order, and within a half the dry take subtracted is never the one used as the input",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--wet"
+          ],
+          "dest": "wet",
+          "nargs": null,
+          "default": "None",
+          "required": true,
+          "help": "a pattern over each take's setting naming the takes whose addition over the dry ones is the response. At least two, split in halves the same way. A take both patterns name is refused",
+          "metavar": "REGEX",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--stimulus"
+          ],
+          "dest": "stimulus",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "what was sounded. The response is recovered only as far as the stimulus excited it, so which stimulus carried the takes bounds the record rather than decorating it",
+          "metavar": null,
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held"
+          ],
+          "dest": "held",
+          "nargs": null,
+          "default": "[]",
+          "required": false,
+          "help": "an address the run had written while it took the takes, and what it held. The response is of the whole chain, so the same two settings taken with another byte moved are a response of a different chain",
+          "metavar": "ADDR=BYTES",
+          "choices": null,
+          "class": "_AppendAction"
+        },
+        {
+          "option_strings": [
+            "--held-from"
+          ],
+          "dest": "held_from",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "where --held above was read from -- the report of the run that captured this take directory. Named so a reader can tell a held block carried in from the capturing run apart from one guessed at or copied from another record",
+          "metavar": "PATH",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--held-not-spelled-out"
+          ],
+          "dest": "held_not_spelled_out",
+          "nargs": null,
+          "default": "None",
+          "required": false,
+          "help": "something the run held that has no address to give --held, or that the manifest this take directory carries does not say. Said in words rather than guessed at, because a record stating an address that was never held is wrong in a way a reader cannot see",
+          "metavar": "TEXT",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--channels"
+          ],
+          "dest": "channels",
+          "nargs": 2,
+          "default": "None",
+          "required": false,
+          "help": "the two interface channels that are the unit's stereo output, left then right. Defaults to the pair that reached highest across the takes read, chosen once for the run",
+          "metavar": "N",
+          "choices": null,
+          "class": "_StoreAction"
+        },
+        {
+          "option_strings": [
+            "--lead"
+          ],
+          "dest": "lead",
+          "nargs": null,
+          "default": "0.6",
+          "required": false,
+          "help": "seconds of silence at the head of a take, where the input's own noise -- and so the regularisation -- is read",
+          "metavar": null,
           "choices": null,
           "class": "_StoreAction"
         },
